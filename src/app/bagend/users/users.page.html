@@ -10,7 +10,8 @@
           <ion-card-header>
             <ion-card-title>
                 <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('displayName')" [(ngModel)]="users[activeTab].displayName"></ion-input>
-                <ion-label color="medium">{{users[activeTab].email}}</ion-label>
+                <ion-label color="medium">{{users[activeTab].email}} ({{users[activeTab].id}})</ion-label><br><br>
+                <ion-label color="medium">Since {{helpers.showLocalDate(users[activeTab].registeredAt,'',0,true)}}</ion-label>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>

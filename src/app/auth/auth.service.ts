@@ -14,7 +14,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 })
 export class AuthService {
   user$: Observable<firebase.User | null>;
-  userRoles$: Observable<{ isAdmin: boolean } | null>;
+  userRoles$: Observable<{ isAdmin: boolean, isConfirmed:boolean } | null>;
   userInfo:any = {}
   subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
   conversations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Conversaties als Observable
@@ -30,10 +30,15 @@ export class AuthService {
       switchMap((user) => {
         if (!user) return of(null);
         return this.firestore
-          .doc<{ isAdmin: boolean }>(`users/${user.uid}`)
+          .doc<{ isAdmin: boolean; isConfirmed: boolean }>(`users/${user.uid}`) // Verwerk beide velden
           .valueChanges()
           .pipe(
-            map((roles) => roles || { isAdmin: false })
+            map((roles) => {
+              return {
+                isAdmin: roles?.isAdmin ?? false,
+                isConfirmed: roles?.isConfirmed ?? false,
+              };
+            })
           );
       })
     );
@@ -137,7 +142,6 @@ export class AuthService {
   }
 
 
-
   // Controleer of een gebruiker geauthenticeerd is
   isAuthenticated(): Observable<boolean> {
     return this.user$.pipe(
@@ -150,6 +154,12 @@ export class AuthService {
   isAdmin(): Observable<boolean> {
     return this.userRoles$.pipe(
       map((roles) => roles?.isAdmin ?? false) // Retourneer true als de gebruiker admin is
+    );
+  }
+
+  isConfirmed(): Observable<boolean> {
+    return this.userRoles$.pipe(
+      map((roles) => roles?.isConfirmed ?? false) // Retourneer true als de gebruiker confirmed is
     );
   }
 

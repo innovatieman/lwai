@@ -48,7 +48,7 @@ export class ConversationService implements OnDestroy {
       .doc(`users/${this.auth.userInfo.uid}/conversations/${conversationId}`)
       .valueChanges({ idField: 'conversationId' })
       .subscribe((conversation:any) => {
-        console.log(conversation)
+        // console.log(conversation)
         this.activeConversation = { ...conversation };
           // console.log(this.activeConversation)
           if(this.activeConversation.attitude!=undefined && this.activeConversation.attitude!=this.attitude){

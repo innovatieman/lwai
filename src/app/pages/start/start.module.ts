@@ -9,6 +9,7 @@ import { StartPageRoutingModule } from './start-routing.module';
 import { StartPage } from './start.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @NgModule({
   imports: [
@@ -19,6 +20,9 @@ import { PipesModule } from 'src/app/pipes/pipes.module';
     ComponentsModule,
     PipesModule
   ],
-  declarations: [StartPage]
+  declarations: [StartPage],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+
+
 })
 export class StartPageModule {}

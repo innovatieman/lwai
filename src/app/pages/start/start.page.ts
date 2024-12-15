@@ -4,6 +4,7 @@ import { CasesService } from 'src/app/services/cases.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { NavService } from 'src/app/services/nav.service';
 
+
 @Component({
   selector: 'app-start',
   templateUrl: './start.page.html',

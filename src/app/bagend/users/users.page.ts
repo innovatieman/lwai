@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FirestoreService } from 'src/app/services/firestore.service';
+import { HelpersService } from 'src/app/services/helpers.service';
 
 @Component({
   selector: 'app-users',
@@ -10,7 +11,8 @@ export class UsersPage implements OnInit {
   users:any = []
   activeTab: number = 0;
   constructor(
-    private firestore:FirestoreService
+    private firestore:FirestoreService,
+    public helpers:HelpersService
   ) { }
 
   ngOnInit() {
@@ -21,6 +23,10 @@ export class UsersPage implements OnInit {
     this.firestore.get('users').subscribe((users) => {
       this.users = users.map((user:any) => {
         return { id: user.payload.doc.id, ...user.payload.doc.data() }
+      })
+      //sotrt by registeredAt
+      this.users.sort((a:any,b:any) => {
+        return a.registeredAt > b.registeredAt ? -1 : 1
       })
     })
   }

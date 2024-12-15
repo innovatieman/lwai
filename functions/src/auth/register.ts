@@ -9,6 +9,8 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
             email:user.email,
             displayName:user.displayName || 'New User',
             registeredAt:moment().unix(),
+            isAdmin:false,
+            isConfirmed:false,
         })
         .then(()=>{
             const freeSubscription = {
