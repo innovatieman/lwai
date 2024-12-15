@@ -1,0 +1,78 @@
+
+.hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f4f6ff, #e9ecff);
+  
+    .hero-content {
+      max-width: 600px;
+  
+      h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+      }
+  
+      p {
+        font-size: 1.2rem;
+        margin: 1rem 0;
+        color: #666;
+      }
+  
+      ion-button {
+        margin: 1rem 0;
+      }
+  
+      img {
+        max-width: 100%;
+        height: auto;
+        margin-top: 2rem;
+      }
+    }
+  }
+  
+  .overview {
+    padding: 2rem;
+    background-color: #fff;
+  
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+  
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+  
+      ion-card {
+        text-align: center;
+  
+        ion-card-title {
+          font-size: 1.2rem;
+          color: #007acc;
+        }
+      }
+    }
+  }
+  
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+  
+    p {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  
+    ion-button {
+      --color: #007acc;
+    }
+  }
+  

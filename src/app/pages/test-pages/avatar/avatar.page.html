@@ -1,0 +1,18 @@
+<app-header title="Test Avatar"></app-header>
+<main>
+  <div class="HeyGenStreamingAvatar">
+    <video #videoElement id="videoElement" autoplay playsinline></video>
+    <div class="Actions">
+      <input
+        class="InputField"
+        [(ngModel)]="textToSpeak"
+        type="text"
+        placeholder="Typ hier tekst voor de avatar"
+      />
+      
+      <ion-button color="success" (click)="initializeAvatar()">Start</ion-button>
+      <ion-button (click)="speakText()" >Laat spreken</ion-button>
+      <ion-button color="danger" (click)="disconnect()">Verbreek connectie</ion-button>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,26 @@
+main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+  
+    form {
+      width: 100%;
+      max-width: 400px;
+  
+      ion-item {
+        margin-bottom: 1rem;
+      }
+    }
+  
+    .social-login {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 30px;
+  
+      ion-button {
+        margin-bottom: 0.5rem;
+      }
+    }
+  }

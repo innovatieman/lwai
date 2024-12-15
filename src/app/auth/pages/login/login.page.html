@@ -1,0 +1,29 @@
+<app-header [title]="!showPassWordReset ? 'Login' : 'Reset Password'"></app-header>
+<main class="mainSmall">
+  <form (submit)="!showPassWordReset ? login() : sendPasswordReset()">
+    <ion-item>
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input type="email" [(ngModel)]="email" name="email" required></ion-input>
+    </ion-item>
+
+    <ion-item *ngIf="!showPassWordReset">
+      <ion-label position="stacked">Password</ion-label>
+      <ion-input type="password" [(ngModel)]="password" name="password" required></ion-input>
+    </ion-item>
+
+    <ion-button *ngIf="!showPassWordReset" [disabled]="!email||!password" expand="full" type="submit">Login</ion-button>
+    <ion-button *ngIf="showPassWordReset" [disabled]="!email" expand="full" type="submit">Reset password</ion-button>
+  </form>
+
+  <div class="social-login">
+    <ion-button expand="full" *ngIf="!showPassWordReset" color="tertiary" (click)="loginWithGoogle()">Login with Google</ion-button>
+  </div>
+  <div>
+    <ion-button expand="full" *ngIf="!showPassWordReset" color="secondary" (click)="nav.go('register')">Register</ion-button>
+  </div>
+  <div align-center>
+    <ion-button fill="clear" color="medium" *ngIf="!showPassWordReset" (click)="showPassWordReset=!showPassWordReset">Forgot password</ion-button>
+    <ion-button fill="clear" color="medium" *ngIf="showPassWordReset" (click)="showPassWordReset=!showPassWordReset">I just remembered</ion-button>
+  </div>
+
+</main>

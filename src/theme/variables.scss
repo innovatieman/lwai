@@ -1,0 +1,66 @@
+:root{
+    --color:#3D4250;
+    --ion-color-primary: #315eff;
+    --ion-color-primary-rgb: 49,94,255;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-primary-contrast-rgb: 255,255,255;
+    --ion-color-primary-shade: #2b53e0;
+    --ion-color-primary-tint: #466eff;
+
+    --ion-color-secondary: #47c8ff;
+    --ion-color-secondary-rgb: 72,201,255;
+    --ion-color-secondary-contrast: #ffffff;
+    --ion-color-secondary-contrast-rgb:255,255,255;
+    --ion-color-secondary-shade: #3fb1e0;
+    --ion-color-secondary-tint: #5aceff;
+    
+    --ion-color-tertiary: #FADA2B;
+    --ion-color-tertiary-rgb: 250,218,43;
+    --ion-color-tertiary-contrast: #000000;
+    --ion-color-tertiary-contrast-rgb: 0,0,0;
+    --ion-color-tertiary-shade: #dcc026;
+    --ion-color-tertiary-tint: #fbde40;
+
+    --ion-color-warning: #e0ac08;
+    --ion-color-warning-rgb: 224,172,8;
+    --ion-color-warning-contrast: #000000;
+    --ion-color-warning-contrast-rgb: 0,0,0;
+    --ion-color-warning-shade: #c59707;
+    --ion-color-warning-tint: #e3b421;
+
+    --ion-color-danger: #ff4961;
+    --ion-color-danger-rgb: 255,73,97;
+    --ion-color-danger-contrast: #000000;
+    --ion-color-danger-contrast-rgb: 0,0,0;
+    --ion-color-danger-shade: #e04055;  
+    --ion-color-danger-tint: #ff5b71;
+
+  /** dark **/
+    --ion-color-dark: #3D4250;
+	--ion-color-primary-rgb: 61,66,80;
+	--ion-color-dark-contrast: #ffffff;
+	--ion-color-dark-contrast-rgb: 255,255,255;
+	--ion-color-dark-shade: #363a46;
+	--ion-color-dark-tint: #505562;
+
+  /** medium **/
+    --ion-color-medium: #d0d1d2;
+    --ion-color-medium-rgb: 208,209,210;
+    --ion-color-medium-contrast: #000000;
+    --ion-color-medium-contrast-rgb: 0,0,0;
+    --ion-color-medium-shade: #b7b8b9;
+    --ion-color-medium-tint: #d5d6d7;
+
+    /** light **/
+    --ion-color-light: #f4f5f8;
+    --ion-color-light-rgb: 244, 245, 248;
+    --ion-color-light-contrast: #000000;
+    --ion-color-light-contrast-rgb: 0, 0, 0;
+    --ion-color-light-shade: #d7d8da;
+    --ion-color-light-tint: #f5f6f9;
+    
+    
+    --ion-background-color: #ffffff; //#121212;
+    --ion-background-color-rgb: 255,255,255 //18,18,18;
+
+}

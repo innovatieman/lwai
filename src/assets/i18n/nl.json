@@ -1,0 +1,16 @@
+{
+    "date_formats":{
+        "long":"D MMMM YYYY",
+        "short":"DD-MM-YYYY",
+        "longDateTime":"D MMMM YYYY HH:mm",
+        "shortDate":"DD-MM-YY",
+        "shortDateTime":"D-MM-YY HH:mm",
+        "month_long":"MMMM YYYY"
+    },
+    "menu":{
+        "login": "Inloggen",
+        "logout": "Uitloggen",
+        "register": "Account aanmaken",
+        "unkown_user": "Welkom"
+    }
+}

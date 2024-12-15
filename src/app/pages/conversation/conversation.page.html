@@ -1,0 +1,206 @@
+<app-header [title]="conversationTitle"></app-header>
+<main>
+  <ion-grid *ngIf="!started">
+    <ion-row>
+      <ion-col size="4">
+        <ion-card borderPrimary basicPadding pointer (click)="startOver()">
+          <ion-card-header>
+            <ion-card-title>Start opnieuw een {{conversationTitle}}</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="4" *ngIf="savedConversation">
+        <ion-card borderPrimary basicPadding pointer (click)="continueConversation()">
+          <ion-card-header>
+            <ion-card-title>Ga verder waar je gebleven was.</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="4">
+        <ion-card borderPrimary basicPadding pointer (click)="nav.go('start')">
+          <ion-card-header>
+            <ion-card-title>Ga terug</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid *ngIf="started" center-left>
+    <ion-row *ngIf="conversation.activeConversation?.messages&&conversation.dialog_role">
+      
+      <!-- Facts -->
+      <ion-col flex style="padding:0px;padding-left:15px" center-ver center-hor size="10">
+        <ion-card noMargin fullwidth fullheight class="new_fact" *ngIf="(conversation.activeConversation.facts | lastesAssistantItem | parseJSON).new_fact">
+          <div>
+            <div [innerHtml]="(conversation.activeConversation.facts | lastesAssistantItem | parseJSON).new_fact"></div>
+          </div>
+        </ion-card>
+      </ion-col>
+
+      <!-- Cipher -->
+      <ion-col size="2" style="padding:0px 15px" flex center-ver center-hor *ngIf="(conversation.activeConversation?.feedback | lastesAssistantItem | parseJSON)">
+        <ion-card noMargin class="cipher" flex center-ver center-hor fullwidth fullheight>
+          <span>{{conversation.avarageCipher()}}</span>
+          <span class="lastCipher" *ngIf="!conversation.isLoading('feedback')">{{(conversation.activeConversation?.feedback | lastesAssistantItem | parseJSON)?.feedbackCipher}}</span>
+          <span class="lastCipher" *ngIf="conversation.isLoading('feedback')"><ion-spinner color="dark"></ion-spinner></span>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="conversation.activeConversation?.messages&&conversation.dialog_role">
+      <ion-col size="6">
+        <ion-card basicPadding class="chatCard" >
+          <ion-card-header>
+            <ion-card-title>Jouw dialoog met een {{conversation.dialog_role}}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content noPadding>
+            <div class="innerChatDiv" id="innerChatDiv">
+              <div class="chatItem" *ngFor="let message of conversation.activeConversation.messages;let index=index" [ngClass]="message.role">
+                <div *ngIf="message.role === 'assistant'">
+                  <div>{{message.content | cleanReaction}}</div>
+                </div>
+                <div *ngIf="message.role === 'user'">
+                  <div>{{message.content}}</div>
+                </div>
+              </div>
+              <div class="chatItem assistant" *ngIf="conversation.messageTemp.content">
+                <div>
+                  <div>{{conversation.messageTemp.content}}</div>
+                </div>
+              </div>
+
+              <div class="chatItem user" *ngIf="conversation.latestUserItem(conversation.messages)!=conversation.tempTextUser&&conversation.tempTextUser">
+                <div>
+                  <div>{{conversation.tempTextUser}}</div>
+                </div>
+              </div>
+
+              
+              <div class="chatItem assistant" *ngIf="conversation.waiting&&!conversation.messageTemp.content">
+                <div>
+                  <ion-spinner style="color:white;" name="dots"></ion-spinner>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+        <ion-card>
+          <ion-card-content>
+            <ion-textarea [autoGrow]="true" font-18 rows="4" [(ngModel)]="question" placeholder="Geef een reactie"></ion-textarea>
+              <div flex center-ver>
+                <ion-button color="tertiary" [disabled]="conversation.isLoading('reacion')||conversation.isLoading('choices')" (click)="showChoices()">
+                  Help <ion-spinner class="help_spinner" *ngIf="conversation.isLoading('choices')"></ion-spinner>
+                </ion-button>
+                <span class="spacer"></span>
+                <ion-button [disabled]="conversation.waiting" (click)="conversation.addMessage(question);question=''">Verstuur</ion-button>
+              </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-row>
+          
+          <!-- avatar -->
+          <ion-col size="6" *ngIf="conversation.caseItem.avatarName">
+            <ion-card noPadding fullwidth class="avatarCard">
+              <video class="avatar" id="avatar_video" autoplay playsinline></video>
+              <ion-button class="avatarBtn" color="danger" (click)="conversation.heyGen.disconnect('avatar_video')">Stop Avatar</ion-button>
+            </ion-card>
+          </ion-col>
+          <!-- Attitude -->
+          <ion-col size="6">
+            <ion-card class="graphCard">
+              <ion-card-header>
+                <ion-card-title>Attitude gesprekspartner</ion-card-title>
+              </ion-card-header>
+              <highcharts-chart 
+                [Highcharts]="Highcharts"
+                [options]="chartOptions"
+                [callbackFunction]="chartCallback"
+                style="width: 100%; height: 300px; display: block;"
+              ></highcharts-chart>
+              <div class="attitudeTitle" *ngIf="info.getAttitude(conversation.attitude)">{{info.getAttitude(conversation.attitude).title}}</div>
+            </ion-card>
+          </ion-col>
+          
+          
+        
+        <!-- feedback -->
+          <ion-col flex style="padding:0px 15px" center-ver center-hor size="12">
+            <ion-card noMargin basicPadding fullwidth fullheight class="feedback" *ngIf="!conversation.isLoading('feedback')&&(conversation.activeConversation?.feedback | lastesAssistantItem | parseJSON)?.feedback">
+              Feedback:
+              <br><br>
+              {{(conversation.activeConversation?.feedback | lastesAssistantItem | parseJSON)?.feedback}}
+            </ion-card>
+          </ion-col>
+
+
+          <!-- phases -->
+          <ion-col size="12">
+            <ion-card class="graphCard">
+              <ion-card-header>
+                <ion-card-title flex center-ver fullwidth>
+                  Gespreksniveau
+                  <span class="spacer"></span>
+                  <fa-icon [icon]="icon.get('faInfoCircle')" (click)="showInfo(conversation.caseItem.conversation,'phases','Gespreksniveau')" pointer></fa-icon>
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content *ngIf="conversation.activeConversation?.phases">
+                <div *ngIf="!(conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels">
+                  <ion-spinner name="dots"></ion-spinner>
+                </div>
+                <div class="graphPhases" *ngIf="(conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels">
+                  <ion-grid>
+                    <ion-row>
+                      <ion-col class="graphPhasesCol" [size]="12/(conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels.length" *ngFor="let element of (conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels;let i=index">
+                        <div class="phaseBar" [ngClass]="'level'+(i+1)" [ngStyle]="{'max-height':(element.score)+'%'}"></div>
+                        <!-- <div class="phaseDifference"><span *ngIf="element.score_difference>0">+</span>{{element.score_difference}}</div> -->
+                      </ion-col>
+                    </ion-row>
+                    <ion-row *ngIf="(conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels?.length>0">
+                      <ion-col [size]="12/(conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels.length" *ngFor="let phase of (conversation.activeConversation?.phases | lastesAssistantItem | parseJSON)?.element_levels;let i=index">
+                        <div class="phaseTitle">{{phase.short}}</div>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+                  
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+        </ion-row>
+        
+
+        <!-- Choices -->
+        <!-- <ion-row>
+          <ion-card fullwidth>
+            <ion-card-header>
+              <ion-card-title>Mogelijke reacties</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div *ngIf="conversation.isLoading('choices')||conversation.isLoading('reaction')">
+                <ion-spinner name="dots"></ion-spinner>
+              </div>
+              <div *ngIf="!conversation.isLoading('choices')&&conversation.activeConversation?.choices&&!conversation.isLoading('reaction')">
+                <div *ngFor="let item of conversation.activeConversation.choices | lastesAssistantItem | parseChoices">
+                  <ion-card font-16 basicPadding pointer (click)="selectOption(item.choice)">
+                    <div weight700>{{ item.choice }}</div>
+                    <div text-medium>{{ item.description }}</div>
+                  </ion-card>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-row> -->
+        
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</main>

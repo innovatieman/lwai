@@ -1,0 +1,27 @@
+<app-header [title]="'Start'"></app-header>
+<main>
+    <ion-grid>
+        <ion-row>
+            <ion-col size="4" *ngFor="let conversation of cases.conversations">
+                <ion-card borderPrimary  basicPadding pointer (click)="selectConversation(conversation)">
+                    <ion-card-header>
+                        <ion-card-title>{{conversation}}</ion-card-title>
+                    </ion-card-header>
+                </ion-card>
+            </ion-col>
+        </ion-row>
+        <hr>
+        <ion-row *ngIf="selectedConversation">
+            <ion-col size="3" *ngFor="let case of cases.all | filterKey : 'conversation' : selectedConversation">
+                <ion-card borderTertiary basicPadding pointer (click)="startConversation(case)">
+                    <ion-card-header>
+                        <ion-card-title>{{case.title}}</ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content *ngIf="case.photo">
+                        <img [src]="case.photo" alt="">
+                    </ion-card-content>
+                </ion-card>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+</main>

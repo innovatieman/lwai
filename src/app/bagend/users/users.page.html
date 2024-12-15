@@ -1,0 +1,38 @@
+<app-header title="Edit users"></app-header>
+<main>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3">
+        <ion-card basicPadding pointer font16 weight700 tab *ngFor="let user of users;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{user.displayName | capitalize}}</ion-card>
+      </ion-col>
+      <ion-col size="9">
+        <ion-card basicPadding *ngIf="users?.length>0">
+          <ion-card-header>
+            <ion-card-title>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('displayName')" [(ngModel)]="users[activeTab].displayName"></ion-input>
+                <ion-label color="medium">{{users[activeTab].email}}</ion-label>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+
+
+            <ion-item lines="none">
+              <ion-toggle color="primary" [(ngModel)]="users[activeTab].isAdmin" (ionChange)="update('isAdmin')">
+                Administrator
+              </ion-toggle>
+            </ion-item>
+          </ion-card-content>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-toggle color="primary" [(ngModel)]="users[activeTab].isConfirmed" (ionChange)="update('isConfirmed')">
+                Confirmed
+              </ion-toggle>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+
+</main>

@@ -1,0 +1,21 @@
+
+<div header padding20 flex center-ver>
+  <div class="title" *ngIf="title">
+    <h3 class="subtitle-top" noMargin>{{title}}</h3>
+  </div>
+  <span class="spacer"></span>
+  <ion-button (click)="modal.dismiss()" fill="clear" color="dark">
+    <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
+  </ion-button>
+</div>
+<div *ngIf="!video" [innerHtml]="content | sanitizeHtml" weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':(media.screenSize==='xs' || media.screenSize==='sm') ? 'calc(100vh - 40px)' : '80vh'}"></div>
+<div *ngIf="video" class="inner-content">
+  <div class="video-container">
+    <iframe [src]="content | sanitizeHtml : 'urlResource'" (load)="hideLoader()" frameborder="0" ></iframe>
+  </div>
+</div>
+<div flex *ngIf="buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':btnsClass==='flex-column'}">
+  <span [ngClass]="{'spacer':!last}" *ngFor="let btn of buttons;let last = last">
+  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modal.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':btnsClass==='flex-column'}"></ion-button>
+  </span>
+</div>

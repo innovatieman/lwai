@@ -1,0 +1,106 @@
+<app-header title="Account"></app-header>
+<main>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3">
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='account'}" (click)="changeTab('account')">Mijn gegevens</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='profile'}" (click)="changeTab('profile')">Mijn profiel</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='courses'}" (click)="changeTab('courses')">Mijn cursussen</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='conversations'}" (click)="changeTab('conversations')">Mijn gesprekken</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='badges'}" (click)="changeTab('badges')">Mijn prestaties</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='subscriptions'}" (click)="changeTab('subscriptions')">Mijn abonnementen</ion-card>
+      </ion-col>
+
+      <ion-col size="9" center-left>
+        <ion-card basicPadding *ngIf="activeTab=='account'">
+          <ion-row>
+            <ion-col size="6">
+              <ion-card-header>
+                <ion-card-title>Mijn gegevens</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-list>
+                  <ion-item>
+                    <ion-label position="stacked">Naam</ion-label>
+                    <ion-input type="text" [(ngModel)]="account.displayName"></ion-input>
+                  </ion-item>
+                </ion-list>
+                <ion-button expand="block" (click)="updateAccount()">Opslaan</ion-button>
+              </ion-card-content>
+            </ion-col>
+            <ion-col size="6">
+              <ion-card flex center>
+                <fa-icon [icon]="icon.get('faUser')" avatarIcon></fa-icon>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='profile'">
+          <ion-card-header>
+            <ion-card-title>Mijn Profiel</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Hier komt het profiel dat iemand kan instellen
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='courses'">
+          <ion-card-header>
+            <ion-card-title>Mijn cursussen</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Hier komt het overzicht van de cursussen die iemand volgt
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='conversations'">
+          <ion-card-header>
+            <ion-card-title>Mijn gesprekken</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-card basicPadding pointer *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp'" flex center-ver fullwidth (click)="openConversation(conversation)">
+              <ion-card-title>{{ conversation.role }}</ion-card-title>
+              <span class="spacer"></span>
+              <ion-note>{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
+            </ion-card>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='badges'">
+          <ion-card-header>
+            <ion-card-title>Mijn prestaties</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-row>
+              <ion-col size="4">
+                <app-badge title="Rookie" subtitle="Niveau 1" class="yellow"></app-badge>
+              </ion-col>
+              <ion-col size="4">
+                <app-badge title="Trainer" subtitle="Niveau 6" class="red"></app-badge>
+              </ion-col>
+            </ion-row>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='subscriptions'">
+          <ion-card-header>
+            <ion-card-title>Mijn abonnement</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item *ngFor="let subscription of subscriptions$ | async">
+                <ion-label>
+                  <h2>{{ subscription.type | titlecase }} ({{ subscription.period }})</h2>
+                  <p>Status: {{ subscription.status }}</p>
+                  <p>Start: {{ subscription.startDate?.toDate() | date }}</p>
+                  <p>Eind: {{ subscription.endDate?.toDate() | date }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

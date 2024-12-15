@@ -1,0 +1,77 @@
+<!-- <div class="menuImg">
+</div> -->
+<div class="card">
+  <div flex center-ver fullwidth style="padding:10px" class="namePart" pointer (click)="execute(['user', 'editUser']);popoverController.dismiss()">
+    <div style="margin-right: 5px;">
+      <img src="assets/icon/favicon.png" class="avatar">
+    </div>
+    <div style="margin-right: 5px;">
+    </div>
+    <div>
+      <div *ngIf="auth.userInfo?.displayName" class="displayName">{{auth.userInfo?.displayName}}</div>
+      <div *ngIf="!auth.userInfo?.displayName" class="displayName"> {{'menu.unkown_user' | translate}}</div>
+    </div>
+  </div> 
+
+  <ion-list id="inbox-list">
+    <div *ngFor="let p of appPages; let i = index">
+      <ion-item (click)="popoverController.dismiss()" pointer [ngClass]="p.class" (click)="nav.go(p.url)" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
+        <fa-icon [icon]="icons.get(p.icon)" slot="start"></fa-icon>
+        <ion-label>{{ trl(p.title) }}</ion-label>
+      </ion-item> 
+
+
+    </div>
+  </ion-list>
+
+  <div class="actionButtons">
+
+    <div fullwidth >
+      <ion-button color="primary" *ngIf="!isAuthenticated" (click)="nav.go('register');popoverController.dismiss()">
+        {{'menu.register' | translate}}
+      </ion-button>
+      <ion-button color="dark" fill="clear" *ngIf="!isAuthenticated" (click)="nav.go('login');popoverController.dismiss()">
+        {{'menu.login' | translate}}
+      </ion-button>
+
+    </div>
+
+    <ion-button color="secondary" style="--border-radius:20px;" *ngIf="isAuthenticated" (click)="execute(['auth','logout']);popoverController.dismiss()">
+      {{'menu.logout' | translate}}
+    </ion-button>
+
+    <!-- <div>
+      <ion-button *ngFor="let lang of store.get('languageList')" (click)="nav.setLang(lang);popoverController.dismiss()" fill="clear">
+        <img style="width: 30px;position: relative;top: 4px;margin-right: 10px;" [src]="'assets/img/'+lang+'.png'">
+      </ion-button>
+    </div> -->
+  </div>
+  
+  <ion-accordion-group *ngIf="isAuthenticated&&isAdmin">
+    <ion-accordion value="administrator">
+      <ion-item slot="header" >
+        <ion-label>Admin opties</ion-label>
+      </ion-item>
+  
+      <ion-list slot="content">
+        <div auto-hide="false" *ngFor="let p of editPages; let i = index">
+          <ion-item (click)="popoverController.dismiss()" routerDirection="forward" [routerLink]="[p.url]" lines="none" detail="false" [class.selected]="getMainUrl(router.url)==p.url" *ngIf="p.url">
+            <fa-icon [icon]="icons.get(p.icon)" slot="start"></fa-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item> 
+          <ion-item style="cursor: pointer;" routerDirection="forward" (click)="execute(p.function);popoverController.dismiss()" lines="none" detail="false" *ngIf="!p.url">
+            <fa-icon [icon]="icons.get(p.icon)" slot="start"></fa-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        </div>
+
+      </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
+
+
+</div>
+
+
+
+

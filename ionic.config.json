@@ -1,0 +1,7 @@
+{
+  "name": "lwai",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

@@ -1,0 +1,125 @@
+import * as functions from 'firebase-functions/v1';
+import admin from '../firebase'
+import * as logging from '../logging/events'
+import * as responder from '../utils/responder'
+import { UserRecord } from 'firebase-functions/v1/auth';
+
+
+exports.setRole = functions.region('europe-west1').https.onCall((data,context)=>{
+    if(context.auth?.token.admin!==true){
+        new logging.Logging('setRole',data,context)
+        return new responder.Message('not authorized',403)
+    }
+    return setRole(data.email,data.role).then(()=>{
+        return new responder.Message(data.role+' saved')
+    })
+
+})
+
+
+exports.deleteUser = functions.region('europe-west1').https.onCall((data,context)=>{
+    if(context.auth?.token.admin!==true){
+        new logging.Logging('deleteUser',data,context)
+        return new responder.Message('not authorized',403)
+    }
+    if(data.email){
+        return admin.auth().getUserByEmail(data.email)
+        .then(user=>{
+            return admin.auth().deleteUser(user.uid)
+        })
+    }
+    else if(data.uid){
+        return admin.auth().deleteUser(data.uid)
+    }
+    return new responder.Message('no email or uid',404)
+})
+
+exports.removeRole = functions.region('europe-west1').https.onCall((data,context)=>{
+    if(context.auth?.token.admin!==true){
+        new logging.Logging('removeRole',data,context)
+        return new responder.Message('not authorized',403)
+    }
+    return removeRole(data.email,data.role).then(()=>{
+        return new responder.Message(data.role+' removed')
+    })
+})
+
+async function removeRole(email:string,role:string):Promise<void>{
+    const user = await admin.auth().getUserByEmail(email)
+    if(user.customClaims && (user.customClaims as any)[role]===true ){
+        let roleObj:any = {}
+        roleObj[role] = false
+        return admin.auth().setCustomUserClaims(user.uid,roleObj)
+    }
+    return
+}
+
+async function setRole(email:string,role:string):Promise<void>{
+    const user = await admin.auth().getUserByEmail(email)
+    if(user.customClaims && (user.customClaims as any)[role]===true ){
+        return
+    }
+    let roleObj:any = {}
+    roleObj[role] = true
+    return admin.auth().setCustomUserClaims(user.uid,roleObj)
+}
+
+exports.getUserNameByEmail = functions.region('europe-west1').https.onCall((data,context)=>{
+    return getUserByEmail(data.email).then((user:any)=>{
+        return new responder.Message(user)
+    })
+})
+
+exports.getUserActivityByEmail = functions.region('europe-west1').https.onCall((data,context)=>{
+    return getUserLastLoginByEmail(data.email).then((user:any)=>{
+        return new responder.Message(user)
+    })
+})
+
+async function getUserByEmail(email:string){
+    try{
+        const user = await admin.auth().getUserByEmail(email)
+        return user.displayName
+    }
+    catch(err){
+        return null
+    }
+}
+
+async function getUserLastLoginByEmail(email:string){
+    try{
+        const user = await admin.auth().getUserByEmail(email)
+        return user.metadata.lastSignInTime
+    }
+    catch(err){
+        return null
+    }
+}
+
+exports.setVerified = functions.region('europe-west1').https.onCall((data,context)=>{
+    if(context.auth?.token.admin!==true){
+        new logging.Logging('setVerified',data,context)
+        return new responder.Message('not authorized',403)
+    }
+ //   console.log('verify '+ data.email)
+    return setVerified(data.email)
+    .then(result=>{
+        if(result){
+            return new responder.Message('email verified',200)
+        }
+        return new responder.Message('Not a user',200)
+
+    })
+    .catch(err=>{
+        return new responder.Message([err,data.email],200)
+    })
+})
+
+async function setVerified(email:string){
+    const user:UserRecord = await admin.auth().getUserByEmail(email)
+    if(user){
+     //   console.log('user found: '+ user.uid)
+        return admin.auth().updateUser(user.uid,{emailVerified:true})
+    }
+    return null
+}

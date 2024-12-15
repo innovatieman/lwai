@@ -1,0 +1,73 @@
+<app-header title="Edit Attitudes"></app-header>
+<main>
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="end">
+        <ion-button fill="outline" (click)="firestore.backup('attitudes',attitudes)">Backup</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3">
+        <ion-card basicPadding>
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+              Attitudes
+              <span class="spacer"></span>
+            <fa-icon [icon]="icon.get('faPlus')" *ngIf="!newAttitude.visible" (click)="newAttitude.visible=!newAttitude.visible;changeTab(-1)"></fa-icon>
+            <fa-icon [icon]="icon.get('faMinus')" *ngIf="newAttitude.visible" (click)="newAttitude.visible=!newAttitude.visible;changeTab(0)"></fa-icon>
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab newTab *ngIf="newAttitude.visible" [ngClass]="{'activeTab':activeTab==-1}" (click)="changeTab(-1)">New Attitude</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab *ngFor="let attitude of attitudes;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{attitude.level}}. {{attitude.title}}</ion-card>
+      </ion-col>
+      <ion-col size="9">
+        <ion-card basicPadding *ngIf="attitudes?.length>0&&activeTab>-1">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="attitudes[activeTab].title"></ion-input>
+                <span class="spacer"></span>
+                <fa-icon [icon]="icon.get('faTrashAlt')" trash pointer (click)="removeAttitude()"></fa-icon>
+              </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-label position="stacked">Level</ion-label>
+              <ion-input type="number" rows="4" [(ngModel)]="attitudes[activeTab].level" (ionChange)="update('level')"></ion-input>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="attitudes[activeTab].description" (ionChange)="update('description')">
+                <div slot="label">Description</div>
+              </ion-textarea>
+            </ion-item>        
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab==-1">
+          <ion-card-header>
+            <ion-card-title>
+                <ion-input style="font-size:1.25rem" weight700 type="text" [(ngModel)]="newAttitude.title"></ion-input>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-label position="stacked">Level</ion-label>
+              <ion-input type="number" rows="4" [(ngModel)]="newAttitude.level"></ion-input>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="newAttitude.description">
+                <div slot="label">Description</div>
+              </ion-textarea>
+            </ion-item>   
+            <ion-button expand="block" (click)="addAttitude()">Add</ion-button>     
+          </ion-card-content>
+        </ion-card>
+
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+
+</main>

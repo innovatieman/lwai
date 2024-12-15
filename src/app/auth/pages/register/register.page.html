@@ -1,0 +1,24 @@
+<app-header [title]="'Register'"></app-header>
+<main>
+  <div class="mainSmall">
+    <form [formGroup]="registerForm" (ngSubmit)="registerWithEmail()">
+      <ion-item>
+        <ion-label position="floating">E-mail</ion-label>
+        <ion-input type="email" formControlName="email"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Wachtwoord</ion-label>
+        <ion-input type="password" formControlName="password"></ion-input>
+      </ion-item>
+  
+      <ion-button expand="block" type="submit" [disabled]="!registerForm.valid">Registreer</ion-button>
+    </form>
+  
+    <div class="social-login">
+      <ion-button expand="block" color="tertiary" (click)="auth.registerWithGoogle()">Registreer met Google</ion-button>
+    </div>
+    <div>
+      <ion-button fill="clear" color="medium" (click)="nav.go('login')">Ik heb al een account</ion-button>
+    </div>
+  </div>
+</main>

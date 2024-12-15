@@ -1,0 +1,75 @@
+@import url(https://fonts.googleapis.com/css?family=Montserrat:400,700);
+@import url(https://fonts.googleapis.com/css?family=Fjalla+One);
+
+.badge{
+  position: relative;
+  width: 108px;
+  display: inline-block;
+  margin: 25px;
+//   transform:scale(0.5);
+  .title{
+    font-family: "Montserrat", sans-serif;
+    font-weight: bold;
+    font-size: 1.2em;
+    position: absolute;
+    top: -10px;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    width: 100%;
+    background: red;
+    padding: 15px 0;
+    text-transform: uppercase;
+  }
+  .subtitle{
+    position: absolute;
+    text-transform: uppercase;
+    font-family: "Fjalla One", sans-serif;
+    font-size: 1.3em;
+    width: 100%;
+    text-align: center;
+    color: white;
+    position: absolute;
+    top: 60px;
+    &:after{
+        content: "★ ★ ★";
+        display: block;
+        font-size: .6em;
+        position: relative;
+        margin: 0;
+        transition: all .3s;
+      }
+  }
+  &:hover .subtitle:after{
+      word-spacing: 10px; 
+  }
+}
+
+@mixin setColor($color,$contrast: white){
+  .title{
+      background: $color;
+      color: $contrast;
+  }
+  .subtitle:after{
+      color: $color;
+  }
+}
+
+.red{
+  @include setColor(#DC514E);
+}
+
+.green{
+  @include setColor(#2ecc71);
+}
+
+.gray{
+  @include setColor(#95a5a6);
+}
+
+.yellow{
+  @include setColor(#f1c40f);
+}
+
+.blue{
+  @include setColor(#3498db);
+}

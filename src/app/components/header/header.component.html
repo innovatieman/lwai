@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    
+    <div style="width:100%;height:100px" center-hor flex>
+      <div style="max-width: 1350px;width:100%" flex center-ver>       
+        <div flex center-ver center-left>
+          <img src="assets/icon/favicon.png" style="width: 50px; height: 50px; margin-right: 10px;">
+          <div style="font-size: 24px;" *ngIf="title">{{title | uppercase}}</div>
+        </div>
+        <span class="spacer"></span>
+        <ion-buttons slot="end" flex center-ver>
+          <ion-button (click)="showshortMenu($event)" size="large">
+            <ion-icon name="menu" noMargin slot="end" style="font-size: 32px;"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </div>
+    </div>
+  </ion-toolbar>
+  <ng-content></ng-content>
+</ion-header>

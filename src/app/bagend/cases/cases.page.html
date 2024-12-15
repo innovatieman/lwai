@@ -1,0 +1,123 @@
+<app-header title="Cases"></app-header>
+<!-- <main>
+    <ion-textarea rows="10" [(ngModel)]="newObj" style="text-align:left" placeholder="Voeg een object toe"></ion-textarea>
+    <ion-button (click)="addCase()" [disabled]="uploading">Opslaan</ion-button>
+</main> -->
+
+<main>
+  <ion-header>
+    <ion-toolbar>
+        
+        <ion-buttons slot="end">
+        <ion-select #selectNew id="selectNew" [(ngModel)]="newConversation" (ionChange)="add()">
+            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
+        </ion-select>
+
+        <ion-button fill="outline" (click)="openAdd()">Nieuw</ion-button>
+        <ion-button fill="outline" (click)="firestore.backup('cases',cases)">Backup</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-grid>
+    <ion-row>
+        <ion-col size="3">
+            <div *ngFor="let conversationType of (cases | groupBy:'conversation') | keyvalue">
+                <ion-card>
+                    <ion-card-header>
+                        <ion-card-title *ngIf="categoryInfo(conversationType.key)">{{ categoryInfo(conversationType.key).title }}</ion-card-title>
+                    </ion-card-header>
+                </ion-card>
+                <ion-card basicPadding pointer font16 weight700 tab *ngFor="let casus of conversationType.value;let i = index" [ngClass]="{'activeTab':caseItem.id==casus.id}" (click)="selectCasus(casus)">
+                    {{casus.title | capitalize}}
+                </ion-card>
+            </div>
+        </ion-col>
+
+
+      <!-- <ion-col size="3">
+        <ion-card basicPadding pointer font16 weight700 tab *ngFor="let casus of cases;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{casus.title | capitalize}}</ion-card>
+      </ion-col> -->
+      <ion-col size="9">
+        <div *ngIf="!caseItem.id">Selecteer een casus</div>
+        <ion-card basicPadding *ngIf="caseItem?.id">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
+                <span class="spacer"></span>
+                <ion-button fill="clear" (click)="deleteCase()">
+                    <fa-icon [icon]="icon.get('faTrashAlt')" trash></fa-icon>
+                </ion-button>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-row>
+                <ion-col size="8">
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Conversation Type</ion-label>
+                        <ion-select [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
+                            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+        
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Rol</ion-label>
+                        <ion-input [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Foto URL</ion-label>
+                        <ion-input [(ngModel)]="caseItem.photo" (ionChange)="update('photo')"></ion-input>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="4">
+                    <ion-card style="height: calc(100% - 20px);">
+                        <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
+                            <!-- <img [src]="caseItem.photo" alt=""> -->
+                        </ion-card-content>
+                        <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
+                            <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
+                        </ion-card-content>
+                    </ion-card>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="12">
+                    <ion-item lines="none">
+                      <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description" (ionChange)="update('description')">
+                        <div slot="label">Omschrijving</div>
+                      </ion-textarea>
+                    </ion-item>
+
+                    <ion-item lines="none">
+                        <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_public" (ionChange)="update('open_to_public')">
+                            Open voor iedereen
+                        </ion-toggle>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
+                            Open voor Users
+                        </ion-toggle>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_admin" (ionChange)="update('open_to_admin')">
+                            Open voor Admins
+                        </ion-toggle>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
+                            <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
+                            <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
+                        </ion-range>
+                    </ion-item>
+                </ion-col>
+                    
+            </ion-row>
+
+
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+
+</main>

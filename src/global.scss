@@ -1,0 +1,285 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+
+html,body{
+    font-family: 'Roboto','Arial';
+    font-size: 14px;
+    color:var(--ion-color-dark);
+    font-weight:400;
+}
+
+h1, h2,h3{
+    font-family: 'Roboto','Arial';
+    font-weight: 600;
+    color: black; //#fe8853;
+}
+h2{
+    font-size: 4em;
+}
+h3{
+    font-size: 2em;
+}
+.spacer{
+    flex: 1 1 auto;
+}
+[font-14]{
+    font-size: 14px;
+}
+[font-16]{
+    font-size: 16px;
+}
+[font-18]{
+    font-size: 18px;
+}
+[weight700]{
+    font-weight: 700;
+}
+[weight600]{
+    font-weight: 600;
+}
+[weight500]{
+    font-weight: 500;
+}
+[left]{
+    text-align: left;
+}
+[right]{
+    text-align: right;
+}
+[italic]{
+    font-style: italic;
+}
+[relative]{
+    position: relative;
+}
+[text-secondary]{
+    color: var(--ion-color-secondary);
+}
+[text-primary]{
+    color: var(--ion-color-primary);
+}
+[text-tertiary]{
+    color: var(--ion-color-tertiary);
+}
+[text-light]{
+    color: var(--ion-color-light);
+}
+[text-dark]{
+    color: var(--ion-color-dark);
+}
+[text-medium]{
+    color: var(--ion-color-medium);
+}
+
+[flex], .flex{
+    display: flex!important;
+}
+[flex-column],.flex-column{
+    flex-flow: column;
+}
+[center-ver]{
+    align-items: center;
+}
+[center-hor]{
+    justify-content: center;
+}
+[center]{
+    justify-content: center;
+    text-align: center;
+}
+[center-hor-prio]{
+    justify-content: center!important;
+    text-align: center!important;
+}
+[center-right]{
+    justify-content: flex-end;
+    text-align: right;
+}
+[center-left]{
+    justify-content: flex-start;
+    text-align: left;
+}
+[align-right]{
+    text-align: right;
+}
+[align-left]{
+    text-align: left;
+}
+[align-center]{
+    text-align: center;
+}
+
+[fullwidth]{
+    width: 100%;
+}
+[fullheight]{
+    height: 100%;
+}
+
+[pointer]{
+    cursor: pointer;
+}
+[pointer]:hover{
+    transform:scale(1.005)
+}
+[basicPadding]{
+    padding: 15px;
+}
+[noPadding]{
+    padding: 0;
+}
+[noMargin]{
+    margin: 0;
+}
+[padding20]{
+    padding: 20px;
+}
+
+
+
+[borderPrimary]{
+    border: solid 2px var(--ion-color-primary);
+}
+[borderSecondary]{
+    border: solid 2px var(--ion-color-secondary);
+}
+[borderTertiary]{
+    border: solid 2px var(--ion-color-tertiary);
+}
+[borderLight]{
+    border: solid 2px var(--ion-color-light);
+}
+[borderDark]{
+    border: solid 2px var(--ion-color-dark);
+}
+[borderMedium]{
+    border: solid 2px var(--ion-color-medium);
+}
+[borderDanger]{
+    border: solid 2px var(--ion-color-danger);
+}
+[borderSuccess]{
+    border: solid 2px var(--ion-color-success);
+}
+[borderWarning]{
+    border: solid 2px var(--ion-color-warning);
+}
+[trash]{
+    color: var(--ion-color-danger);
+}
+[backgroundImage]{
+    height: 100%;
+    width: 100%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.mainSmall{
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+app-header{
+    ion-button{
+        box-shadow: none;
+        border-radius: inherit;
+        --border-radius: inherit;
+    }
+}
+
+[tab]:hover{
+    background-color: var(--ion-color-light);
+}
+.activeTab, .activeTab:hover{
+    background-color: var(--ion-color-medium);
+}
+[newTab]{
+    border-color: var(--ion-color-primary);
+    border-width: 2px;
+    border-style: solid;
+}
+
+
+
+video{
+    width: 400px;
+    height: 400px;
+  }
+  
+  ion-textarea{
+    border: solid 2px rgba(0, 0, 0, 0.6);
+    padding: 0 10px;
+    border-radius: 10px;
+  
+  }
+  
+
+
+
+  ion-modal.infoModal, ion-modal.show-modal {
+    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
+    --backdrop-opacity: var(--ion-backdrop-opacity, 0.32)!important;
+    --border-radius:20px;
+    &.bottom {
+        align-items: flex-end;
+    }
+
+    --height: auto;
+
+    .ion-page {
+        position: relative;
+        display: block;
+        contain: content;
+        max-height: 100vh;
+        
+        .inner-content {
+            max-height: 80vh;
+            overflow: auto;
+            padding: 10px;
+        }
+        .inner-shadow{
+            box-shadow: 0px 0px 10px;
+            border-radius: 15px;
+        }
+    }
+    [role="dialog"]{
+        border-radius: 15px;
+    }
+}

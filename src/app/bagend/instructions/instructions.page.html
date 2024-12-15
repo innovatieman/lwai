@@ -1,0 +1,47 @@
+<app-header title="Edit instructions"></app-header>
+<main>
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="end">
+        <ion-button fill="outline" (click)="firestore.backup('instructions',instructions)">Backup</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3">
+        <ion-card basicPadding pointer font16 weight700 tab *ngFor="let instruction of instructions;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{instruction.id | capitalize}}</ion-card>
+      </ion-col>
+      <ion-col size="9">
+        <ion-card basicPadding *ngIf="instructions?.length>0">
+          <ion-card-header>
+            <ion-card-title>
+                {{instructions[activeTab].id | capitalize}}
+                <!-- <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="instructions[activeTab].title"></ion-input> -->
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="instructions[activeTab].systemContent" (ionChange)="update('systemContent')">
+                <div slot="label">System content</div>
+              </ion-textarea>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="instructions[activeTab].format" (ionChange)="update('format')">
+                <div slot="label">Retour Format</div>
+              </ion-textarea>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="instructions[activeTab].content" (ionChange)="update('content')">
+                <div slot="label">User Content</div>
+              </ion-textarea>
+            </ion-item>
+
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+
+</main>
