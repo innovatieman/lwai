@@ -1,8 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonSelect } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { BackupService } from 'src/app/services/backup.service';
 import { CasesService } from 'src/app/services/cases.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
+import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
 
@@ -18,10 +21,15 @@ export class CasesPage implements OnInit {
   caseItem: any = {}
   categories: any[] = []
   newConversation: string = ''
+  showBackups:boolean = false
+  backupDate: number = 0
   constructor(
     public firestore:FirestoreService,
     public icon:IconsService,
-    private modal:ModalService
+    private modal:ModalService,
+    public backupService:BackupService,
+    public helpers:HelpersService,
+    public translate:TranslateService
   ) { }
 
 
@@ -103,5 +111,36 @@ export class CasesPage implements OnInit {
     })
   }
 
+  getBackups(type:string){
+    this.backupService.getBackups(type,(backups:any)=>{
+      this.modal.backups(this.backupService.backups,{},'Select a backup to restore',(response:any)=>{
+        if(response.data){
+            console.log(response.data)
+            this.cases = response.data.content
+            this.showBackups = true
+            this.backupDate = response.data.timestamp
+        }
+      })
+    })
+
+  }
+  hideBackups(){
+    this.loadCases()
+    this.backupService.hideBackups()
+    this.showBackups = false
+  }
+
+  returnBackup(obj:any){
+    this.modal.showConfirmation('Are you sure you want to restore this backup?').then((result:any) => {
+      if(result){
+        delete obj.id
+        this.firestore.create('cases',obj).then(()=>{
+          this.loadCases()
+          this.showBackups = false
+        })
+      }
+    })
+
+  }
 
 }

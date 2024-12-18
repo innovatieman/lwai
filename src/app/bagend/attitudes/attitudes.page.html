@@ -3,7 +3,8 @@
   <ion-header>
     <ion-toolbar>
       <ion-buttons slot="end">
-        <ion-button fill="outline" (click)="firestore.backup('attitudes',attitudes)">Backup</ion-button>
+        <ion-button fill="outline" (click)="getBackups('attitudes')">Haal Backup</ion-button>
+        <ion-button fill="outline" (click)="firestore.backup('attitudes',attitudes)">Maak Backup</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -41,6 +42,9 @@
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="attitudes[activeTab].description" (ionChange)="update('description')">
                 <div slot="label">Description</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('attitudes')" (click)="getBackup(attitudes[activeTab].id,'description')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>        
           </ion-card-content>
         </ion-card>

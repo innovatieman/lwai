@@ -4,21 +4,23 @@
     <ion-button (click)="addCase()" [disabled]="uploading">Opslaan</ion-button>
 </main> -->
 
-<main>
+<main [ngClass]="{'backupGrid':showBackups}">
   <ion-header>
     <ion-toolbar>
-        
+        <ion-title *ngIf="showBackups">Backup {{helpers.showLocalDate(backupDate,translate.instant('date_formats.longDateTime'),0,true)}}</ion-title>
         <ion-buttons slot="end">
         <ion-select #selectNew id="selectNew" [(ngModel)]="newConversation" (ionChange)="add()">
             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
         </ion-select>
 
-        <ion-button fill="outline" (click)="openAdd()">Nieuw</ion-button>
-        <ion-button fill="outline" (click)="firestore.backup('cases',cases)">Backup</ion-button>
+        <ion-button fill="outline" (click)="openAdd()" *ngIf="backupService.activebackups!='cases'">Nieuw</ion-button>
+        <ion-button fill="outline" (click)="getBackups('cases')" *ngIf="backupService.activebackups!='cases'">Laad Backups</ion-button>
+        <ion-button fill="outline" (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'">Verberg Backup</ion-button>
+        <ion-button fill="outline" (click)="firestore.backup('cases',cases)" *ngIf="backupService.activebackups!='cases'">Maak Backup</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-grid>
+  <ion-grid >
     <ion-row>
         <ion-col size="3">
             <div *ngFor="let conversationType of (cases | groupBy:'conversation') | keyvalue">
@@ -44,9 +46,12 @@
             <ion-card-title flex center-ver>
                 <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
                 <span class="spacer"></span>
-                <ion-button fill="clear" (click)="deleteCase()">
-                    <fa-icon [icon]="icon.get('faTrashAlt')" trash></fa-icon>
+                <ion-button *ngIf="!showBackups" fill="clear" (click)="deleteCase()">
+                    <fa-icon style="font-size:30px;" [icon]="icon.get('faTrashAlt')" trash></fa-icon>
                 </ion-button>
+                <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="showBackups" (click)="returnBackup(caseItem)">
+                    <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+                  </ion-button>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
@@ -54,18 +59,18 @@
                 <ion-col size="8">
                     <ion-item lines="none">
                         <ion-label position="stacked">Conversation Type</ion-label>
-                        <ion-select [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
+                        <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
                             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
                         </ion-select>
                     </ion-item>
         
                     <ion-item lines="none">
                         <ion-label position="stacked">Rol</ion-label>
-                        <ion-input [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
+                        <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
                     </ion-item>
                     <ion-item lines="none">
                         <ion-label position="stacked">Foto URL</ion-label>
-                        <ion-input [(ngModel)]="caseItem.photo" (ionChange)="update('photo')"></ion-input>
+                        <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.photo" (ionChange)="update('photo')"></ion-input>
                     </ion-item>
                 </ion-col>
                 <ion-col size="4">
@@ -81,33 +86,49 @@
             </ion-row>
             <ion-row>
                 <ion-col size="12">
-                    <ion-item lines="none">
-                      <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description" (ionChange)="update('description')">
-                        <div slot="label">Omschrijving</div>
-                      </ion-textarea>
-                    </ion-item>
-
-                    <ion-item lines="none">
+                    
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_public" (ionChange)="update('open_to_public')">
                             Open voor iedereen
                         </ion-toggle>
                     </ion-item>
-                    <ion-item lines="none">
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
                             Open voor Users
                         </ion-toggle>
                     </ion-item>
-                    <ion-item lines="none">
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_admin" (ionChange)="update('open_to_admin')">
                             Open voor Admins
                         </ion-toggle>
                     </ion-item>
-                    <ion-item lines="none">
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
                         <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
                             <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
                             <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
                         </ion-range>
                     </ion-item>
+
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                        <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
+                            <ion-label style="font-size:14px" slot="start">Steadfastness</ion-label>
+                            <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
+                        </ion-range>
+                    </ion-item>
+                    
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                      <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description" (ionChange)="update('description')">
+                        <div slot="label">Omschrijving</div>
+                      </ion-textarea>
+                    </ion-item>
+
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                        <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.casus" (ionChange)="update('casus')">
+                          <div slot="label">Casus</div>
+                        </ion-textarea>
+                      </ion-item>
+
+                    
                 </ion-col>
                     
             </ion-row>

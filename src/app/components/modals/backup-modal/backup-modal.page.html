@@ -1,0 +1,39 @@
+
+<div header padding20 flex center-ver>
+  <h3 class="title" *ngIf="title" noMargin>{{title}}</h3>
+<span class="spacer"></span>
+<ion-button (click)="modalController.dismiss()" fill="clear" color="dark" class="btn_dismiss">
+  <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
+</ion-button>
+</div>
+<div weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':(media.screenSize==='xs' || media.screenSize==='sm') ? 'calc(100vh - 40px)' : '80vh'}">
+  <div class="options">
+    <div *ngFor="let backup of backups">
+      <ion-card font-16 basicPadding  *ngIf="options.field!='phases'" [ngClass]="{'pointer':!options.field}" (click)="!options.field ? modalController.dismiss(backup) : doNothing()">
+        <div weight700>{{ helpers.showLocalDate(backup.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</div>
+        <div *ngFor="let item of backup.content;let i = index" [ngClass]="{'selectionItem':item.id==options.id }" (click)="modalController.dismiss(item[options.field])">
+          <div *ngIf="item.id==options.id">{{item[options.field]}}</div>
+        </div>
+      </ion-card>
+
+      <ion-card font-16 basicPadding *ngIf="options.field=='phases'">
+        <div weight700>{{ helpers.showLocalDate(backup.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</div>
+        <div *ngFor="let item of backup.content;let i = index" [ngClass]="{'selectionItem':item.id==options.id }" (click)="modalController.dismiss(item[options.field])">
+          <div *ngIf="item.id==options.id">
+            <div *ngFor="let phase of item.phases">
+              <ion-card basicPadding>
+                <div weight700>{{phase.title}}</div>
+                <div>{{phase.description}}</div>
+              </ion-card>
+            </div>
+          </div>
+        </div>
+      </ion-card>
+    </div>
+  </div>
+</div>
+<!-- <div flex *ngIf="buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':btnsClass==='flex-column'}">
+  <span [ngClass]="{'spacer':!last}" *ngFor="let btn of buttons;let last = last">
+    <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modal.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':btnsClass==='flex-column'}"></ion-button>
+  </span>
+</div> -->

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { BackupService } from 'src/app/services/backup.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
@@ -17,7 +18,8 @@ export class CategoriesPage implements OnInit {
   constructor(
     public firestore:FirestoreService,
     public icon:IconsService,
-    private modal:ModalService
+    private modal:ModalService,
+    public backupService:BackupService
   ) { }
 
   ngOnInit() {
@@ -146,6 +148,45 @@ export class CategoriesPage implements OnInit {
         this.firestore.delete('categories',this.categories[index].id).then(()=>{
           this.loadCategories()
         })
+      }
+    })
+  }
+
+
+  getBackups(type:string){
+    this.backupService.getBackups(type,(backups:any)=>{
+      // console.log(backups)
+    })
+
+  }
+
+  getBackup(id:string, field:string){
+    this.modal.backups(this.backupService.backups,{id:id,field:field},'Select a backup to restore',(response:any)=>{
+      if(response.data){
+        if(field&&field!='phases'){
+          this.modal.showConfirmation('Are you sure you want to restore this backup?').then((responseConfirmation)=>{
+            if(responseConfirmation){
+              const scrollPosition = window.scrollY;
+              this.firestore.set('categories',this.categories[this.activeTab].id,response.data,field).then(()=>{
+                setTimeout(() => {
+                  window.scrollTo(0, scrollPosition);
+                }, 100);
+              })
+            }
+          })
+        }
+        else{
+          this.modal.showConfirmation('Are you sure you want to restore this backup? All phases of this item will be overwritten.').then((responseConfirmation)=>{
+            if(responseConfirmation){
+              const scrollPosition = window.scrollY;
+              this.firestore.set('categories',this.categories[this.activeTab].id,response.data,field,true).then(()=>{
+                setTimeout(() => {
+                  window.scrollTo(0, scrollPosition);
+                }, 100);
+              })
+            }
+          })
+        }
       }
     })
   }

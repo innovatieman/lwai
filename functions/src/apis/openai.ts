@@ -1,10 +1,11 @@
 const { onRequest } = require("firebase-functions/v2/https");
 import { db } from "../firebase";
 import openai from '../configs/config-openai';
+import { config } from '../configs/config-basics';
 // import { ChatCompletionMessageParam } from 'openai/resources';
 
 // exports.test4 = onRequest(
-//   { cors: ["http://localhost:8100"], region: "europe-west1" },
+//   { cors: config.allowed_cors, region: "europe-west1" },
 //   async (req:any, res:any) => {
 //     res.setHeader("Content-Type", "text/event-stream");
 //     res.setHeader("Cache-Control", "no-cache");
@@ -49,7 +50,7 @@ import openai from '../configs/config-openai';
 
 
 exports.chatAI = onRequest( 
-  { cors: ["http://localhost:8100"], region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -146,119 +147,8 @@ exports.chatAI = onRequest(
 );
 
 
-// exports.conversationAI = onRequest(
-//   { cors: ["http://localhost:8100"], region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.role) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         return res.status(400).send("No previous messages found");
-//       }
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-
-//       const [instructions, categorySnap] = await Promise.all([
-//         getInstructions(body.instructionType), 
-//         categoryRef.get(), 
-//       ]);
-
-//     if (!categorySnap.exists) {
-//       throw new Error("Category not found");
-//     }
-
-//       const categoryData = categorySnap.data();
-
-
-//       let content = instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title);
-//       content = content.split('[message]').join(cleanReactionMessage(messages[messages.length-1].content));
-//       content = content + '\n\n' + instructions.format;
-//       // content = content + '\n\n' + JSON.stringify(messagesToConversationString(messages,body.role));
-
-//       // res.write(content+'\n\n');
-
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-//       messageRef.add({
-//         role: "user",
-//         content: content,
-//         timestamp: new Date().getTime(),
-//       });
-
-//       let sendMessages:any[] = []
-
-//       if(body.allMessages){
-//         sendMessages = messages;
-//       }
-//       else{
-//         sendMessages.push({
-//           role: "user",
-//           content: content,
-//         })
-//       }
-
-//       // 5. Start streaming OpenAI-antwoord
-//       const stream = await openai.chat.completions.create({
-//         model: "gpt-4-turbo",
-//         messages: sendMessages,
-//         temperature: 0.7,
-//         max_tokens: 3000,
-//         stream: true,
-//       });
-      
-//       let completeMessage = '';
-//       for await (const chunk of stream) {
-//         const payload = chunk.choices[0]?.delta?.content;
-//         if (payload) {
-//           res.write(payload);
-//           completeMessage = completeMessage + payload;
-//         }
-//       }
-//       res.end();
-
-//       // let message_id = messages.length;
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-//       messageRef.add({
-//         role: "assistant",
-//         content: completeMessage,
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       });
-
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
-
 exports.conversationAIDirect = onRequest(
-  { cors: ["http://localhost:8100"], region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -361,7 +251,7 @@ exports.conversationAIDirect = onRequest(
 );
 
 exports.factsAI = onRequest(
-  { cors: ["http://localhost:8100"], region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -464,7 +354,7 @@ exports.factsAI = onRequest(
 );
 
 exports.phasesAI = onRequest(
-  { cors: ["http://localhost:8100"], region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -580,7 +470,7 @@ exports.phasesAI = onRequest(
 );
 
 exports.feedbackAI = onRequest(
-  { cors: ["http://localhost:8100"], region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -737,12 +627,19 @@ async function initializeConversation(
     let systemContent = categoryData.systemContent;
     systemContent = systemContent.split("[role]").join(caseData.role); 
     systemContent = systemContent.replace("[description]", caseData.description);
+    if(caseData.steadfastness){
+      systemContent = systemContent.replace("[steadfastness]", caseData.steadfastness.toString());
+    }
     systemContent = systemContent.replace("[attitudes]", attitudesText);
     systemContent = systemContent.replace("[current_attitude]", startAttitude.toString());
     systemContent = systemContent + '\n\n' + instructions.format;
 
     if(caseData.casus){
       systemContent = systemContent + "\nDe casus is als volgt: " + caseData.casus;
+    }
+
+    if(categoryData.extra_info){
+      systemContent = systemContent + "\n\n" + categoryData.extra_info;
     }
 
     return [

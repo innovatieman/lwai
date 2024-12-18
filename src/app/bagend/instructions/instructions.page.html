@@ -3,7 +3,8 @@
   <ion-header>
     <ion-toolbar>
       <ion-buttons slot="end">
-        <ion-button fill="outline" (click)="firestore.backup('instructions',instructions)">Backup</ion-button>
+        <ion-button fill="outline" (click)="getBackups('instructions')">Haal Backup</ion-button>
+        <ion-button fill="outline" (click)="firestore.backup('instructions',instructions)">Maak Backup</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -25,16 +26,25 @@
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="instructions[activeTab].systemContent" (ionChange)="update('systemContent')">
                 <div slot="label">System content</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('instructions')" (click)="getBackup(instructions[activeTab].id,'systemContent')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>
             <ion-item lines="none">
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="instructions[activeTab].format" (ionChange)="update('format')">
                 <div slot="label">Retour Format</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('instructions')" (click)="getBackup(instructions[activeTab].id,'format')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>
             <ion-item lines="none">
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="instructions[activeTab].content" (ionChange)="update('content')">
                 <div slot="label">User Content</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('instructions')" (click)="getBackup(instructions[activeTab].id,'content')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>
 
           </ion-card-content>

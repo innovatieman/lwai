@@ -65,7 +65,7 @@ export class AuthService {
           if(this.userInfo){
             this.userInfo.uid = user.uid
           }
-          console.log(this.userInfo)
+          // console.log(this.userInfo)
         })
       }
     })

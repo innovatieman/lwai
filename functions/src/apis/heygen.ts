@@ -7,7 +7,7 @@ const HEYGEN_API_KEY = config.heygen_api_key;
 const heygen_url_token = 'https://api.heygen.com/v1/streaming.create_token'
 
 exports.getHeyGenToken = onRequest(
-    { cors: ["http://localhost:8100"], region: "europe-west1"  },
+    { cors: config.allowed_cors, region: "europe-west1"  },
     async (req:any, res:any) => {
   try {
     // Token aanvragen bij HeyGen API

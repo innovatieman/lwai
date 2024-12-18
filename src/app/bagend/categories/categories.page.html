@@ -5,7 +5,8 @@
       <ion-buttons slot="end">
         <ion-button fill="outline" (click)="savePhasesToInfo()">Save phases to public info</ion-button>
         <ion-button fill="outline" (click)="newCategory()">Nieuw</ion-button>
-        <ion-button fill="outline" (click)="firestore.backup('categories',categories)">Backup</ion-button>
+        <ion-button fill="outline" (click)="getBackups('categories')">Haal Backup</ion-button>
+        <ion-button fill="outline" (click)="firestore.backup('categories',categories)">Maak Backup</ion-button>
 
       </ion-buttons>
     </ion-toolbar>
@@ -38,23 +39,35 @@
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="categories[activeTab].systemContent" (ionChange)="update('systemContent')">
                 <div slot="label">System content</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(categories[activeTab].id,'systemContent')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>
             <ion-item lines="none">
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="categories[activeTab].openingMessage" (ionChange)="update('openingMessage')">
                 <div slot="label">Opening Message</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(categories[activeTab].id,'openingMessage')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>
             <ion-item lines="none">
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="categories[activeTab].extraInfo" (ionChange)="update('extraInfo')">
                 <div slot="label">Extra informatie voor de AI</div>
               </ion-textarea>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(categories[activeTab].id,'extraInfo')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
             </ion-item>
             <ion-card-header></ion-card-header>
             <div>
               <ion-card-title basicPadding weight700 flex fullwidth center-ver>
                 Phases
               <span class="spacer"></span>
-              <fa-icon [icon]="icon.get('faPlus')" (click)="addPhase()"></fa-icon>
+              <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(categories[activeTab].id,'phases')">
+                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+              </ion-button>
+              <fa-icon [icon]="icon.get('faPlus')" style="font-size:30px" (click)="addPhase()"></fa-icon>
               </ion-card-title>
               <ion-card basicPadding *ngFor="let phase of categories[activeTab].phases;let phase_index = index">
                 <ion-item lines="none">

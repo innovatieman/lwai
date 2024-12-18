@@ -206,7 +206,8 @@ started:boolean = false
   }
 
   showInfo(type:string,infoType:string,title:string){
-    // console.log(type,this.info.getInfo(type))
+    console.log(type,infoType,this.info.public_info)
+    console.log(this.conversation.caseItem)
     let text = ''
     text = text + this.info.getInfo(type)['intro_'+infoType] + '<br><br>'
 
@@ -228,4 +229,15 @@ started:boolean = false
       }
     })
   }
+
+  showImpact(obj:any){
+    let text = '';
+    text = text + '<b>Score Totaal:</b> ' + obj.score + '<br>'
+    text = text + '<b>Score user:</b> ' + obj.score_user + '<br>'
+    text = text + '<b>Score '+this.conversation.caseItem.role+':</b> ' + obj.score_assistant + '<br><br>'
+    text = text + obj.feedback
+    this.modal.showText(text,obj.title)
+
+  }
+
 }

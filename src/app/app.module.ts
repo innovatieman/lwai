@@ -69,8 +69,8 @@ import { USE_EMULATOR as USE_FUNCTIONS_EMULATOR } from '@angular/fire/compat/fun
 import { provideFirebaseApp, initializeApp, getApp  } from '@angular/fire/app';
 import { connectAuthEmulator, getAuth, provideAuth } from '@angular/fire/auth';
 import { connectFirestoreEmulator, Firestore, getFirestore, initializeFirestore, provideFirestore } from '@angular/fire/firestore';
-import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
-import { InfoModalPageModule } from './components/info-modal/info-modal.module';
+import { ConfirmationModalComponent } from './components/modals/confirmation-modal/confirmation-modal.component';
+import { InfoModalPageModule } from './components/modals/info-modal/info-modal.module';
 
 
 @NgModule({

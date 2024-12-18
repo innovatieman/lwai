@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { take, timestamp } from 'rxjs';
-import { ConfirmationModalComponent } from 'src/app/components/confirmation-modal/confirmation-modal.component';
+import { ConfirmationModalComponent } from 'src/app/components/modals/confirmation-modal/confirmation-modal.component';
+import { BackupService } from 'src/app/services/backup.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
@@ -14,11 +15,13 @@ import { ToastService } from 'src/app/services/toast.service';
 export class AttitudesPage implements OnInit {
   attitudes:any = []
   activeTab: number = 0;
+  attitudesSubscription:any
   constructor(
     public firestore: FirestoreService,
     private toast: ToastService,
     public icon:IconsService,
-    private modal:ModalService
+    private modal:ModalService,
+    public backupService:BackupService
   ) { }
 
   ngOnInit() {
@@ -26,7 +29,7 @@ export class AttitudesPage implements OnInit {
   }
 
   loadAttitudes() {
-    this.firestore.get('attitudes').pipe(take(1)).subscribe((attitudes:any) => {
+    this.attitudesSubscription = this.firestore.get('attitudes').pipe(take(1)).subscribe((attitudes:any) => {
       this.attitudes = attitudes.map((docItem: any) => {
         return { id: docItem.payload.doc.id, ...docItem.payload.doc.data() };
       });
@@ -71,6 +74,33 @@ export class AttitudesPage implements OnInit {
         console.log('Actie geannuleerd');
       }
 
+  }
+
+
+  getBackups(type:string){
+    this.backupService.getBackups(type,(backups:any)=>{
+      // console.log(backups)
+    })
+
+  }
+
+  getBackup(id:string, field:string){
+    this.modal.backups(this.backupService.backups,{id:id,field:field},'Select a backup to restore',(response:any)=>{
+      if(response.data){
+          this.modal.showConfirmation('Are you sure you want to restore this backup?').then((responseConfirmation)=>{
+            if(responseConfirmation){
+              const scrollPosition = window.scrollY;
+              this.firestore.set('attitudes',this.attitudes[this.activeTab].id,response.data,field).then(()=>{
+                setTimeout(() => {
+                  this.attitudesSubscription.unsubscribe()
+                  this.loadAttitudes()
+                  window.scrollTo(0, scrollPosition);
+                }, 100);
+              })
+            }
+          })
+      }
+    })
   }
 
 }

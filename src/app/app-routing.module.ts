@@ -67,7 +67,7 @@ const routes: Routes = [
   },
   {
     path: 'info-modal',
-    loadChildren: () => import('./components/info-modal/info-modal.module').then( m => m.InfoModalPageModule)
+    loadChildren: () => import('./components/modals/info-modal/info-modal.module').then( m => m.InfoModalPageModule)
   },
   {
     path: 'bagend/public-info',
@@ -75,11 +75,15 @@ const routes: Routes = [
   },
   {
     path: 'options-modal',
-    loadChildren: () => import('./components/options-modal/options-modal.module').then( m => m.OptionsModalPageModule)
+    loadChildren: () => import('./components/modals/options-modal/options-modal.module').then( m => m.OptionsModalPageModule)
   },
   {
     path: 'avatar',
     loadChildren: () => import('./pages/test-pages/avatar/avatar.module').then( m => m.AvatarPageModule)
+  },
+  {
+    path: 'backup-modal',
+    loadChildren: () => import('./components/modals/backup-modal/backup-modal.module').then( m => m.BackupModalPageModule)
   },
 
 

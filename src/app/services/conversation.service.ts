@@ -132,6 +132,7 @@ export class ConversationService implements OnDestroy {
 
   async startConversation(caseItem:any){
     this.caseItem = caseItem
+    this.caseItem.conversationType = caseItem.conversation
     // userId, conversationId, categoryId, caseId, instructionType, attitude
     this.dialog_role = caseItem.role;
     this.waiting = true;

@@ -47,7 +47,7 @@ html,body{
 h1, h2,h3{
     font-family: 'Roboto','Arial';
     font-weight: 600;
-    color: black; //#fe8853;
+    color: black;
 }
 h2{
     font-size: 4em;
@@ -152,7 +152,7 @@ h3{
     height: 100%;
 }
 
-[pointer]{
+[pointer],.pointer{
     cursor: pointer;
 }
 [pointer]:hover{
@@ -170,7 +170,11 @@ h3{
 [padding20]{
     padding: 20px;
 }
-
+[bgWhite]{
+    background-color: white;
+    --background:white;
+    opacity: 1;
+}
 
 
 [borderPrimary]{
@@ -209,6 +213,11 @@ h3{
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
+}
+
+.backupIcon{
+    font-size: 30px;
+    margin-left:20px;
 }
 
 .mainSmall{

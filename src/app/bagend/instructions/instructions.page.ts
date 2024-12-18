@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { BackupService } from 'src/app/services/backup.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
+import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
   selector: 'app-instructions',
@@ -12,7 +14,9 @@ export class InstructionsPage implements OnInit {
   activeTab: number = 0;
   constructor(
     public firestore:FirestoreService,
-    public icon:IconsService
+    public icon:IconsService,
+    public backupService:BackupService,
+    private modal:ModalService
   ) { }
 
   ngOnInit() {
@@ -42,8 +46,30 @@ export class InstructionsPage implements OnInit {
         }, 100);
       })
     }
+  }
 
+  getBackups(type:string){
+    this.backupService.getBackups(type,(backups:any)=>{
+      // console.log(backups)
+    })
 
+  }
+
+  getBackup(id:string, field:string){
+    this.modal.backups(this.backupService.backups,{id:id,field:field},'Select a backup to restore',(response:any)=>{
+      if(response.data){
+        this.modal.showConfirmation('Are you sure you want to restore this backup?').then((responseConfirmation)=>{
+          if(responseConfirmation){
+            const scrollPosition = window.scrollY;
+            this.firestore.set('instructions',this.instructions[this.activeTab].id,response.data,field).then(()=>{
+              setTimeout(() => {
+                window.scrollTo(0, scrollPosition);
+              }, 100);
+            })
+          }
+        })
+      }
+    })
   }
 
 }

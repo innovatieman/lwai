@@ -22,20 +22,16 @@ async function callGPT(data:string){
 }
 
 exports.callAI = functions.region('europe-west1').runWith({memory:'8GB'}).https.onCall(async (data,context)=>{
-try{
-        const result = await callGPT(data)
-        // console.log('GPT API result:', result);
-        return new responder.Message(result,200)
-}   
-catch(error){
-    console.error('Error in callGPT:', error);
-    return new responder.Message(error,500)
-}
-    
-
-
-
-
-    
+    if(!context.auth){
+        return new responder.Message('Not authorized',401)
+    }
+    try{
+            const result = await callGPT(data)
+            return new responder.Message(result,200)
+    }   
+    catch(error){
+        console.error('Error in callGPT:', error);
+        return new responder.Message(error,500)
+    }
 
 }) 
