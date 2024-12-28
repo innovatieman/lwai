@@ -8,6 +8,7 @@ import { NotAuthorizedPageRoutingModule } from './not-authorized-routing.module'
 
 import { NotAuthorizedPage } from './not-authorized.page';
 import { ComponentsModule } from 'src/app/components/components.module';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { ComponentsModule } from 'src/app/components/components.module';
     FormsModule,
     IonicModule,
     NotAuthorizedPageRoutingModule,
-    ComponentsModule
+    ComponentsModule,
+    FontAwesomeModule
   ],
   declarations: [NotAuthorizedPage]
 })

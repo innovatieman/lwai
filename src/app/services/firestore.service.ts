@@ -285,6 +285,12 @@ export class FirestoreService {
     .catch(err => console.log(err, 'You do not have access!'))
   }
 
+  deleteSubSub(collection:string,doc:string,subcollection:string,subDoc:string,subSubcollection:string,subSubDoc:string){
+    return this.fire.doc(collection+'/'+doc+'/'+subcollection+'/'+subDoc+'/'+subSubcollection+'/'+subSubDoc).delete()
+    .then(_=> {
+    })
+    .catch(err => console.log(err, 'You do not have access!'))
+  }
 
   sizeDoc(collection:string,id:string){
     const snapshot = this.fire

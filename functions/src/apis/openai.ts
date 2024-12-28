@@ -642,6 +642,10 @@ async function initializeConversation(
       systemContent = systemContent + "\n\n" + categoryData.extra_info;
     }
 
+    let userMessage = caseData.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
+    if(!userMessage){
+      userMessage = categoryData.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
+    }
     return [
       {
         role: "system",
@@ -650,7 +654,7 @@ async function initializeConversation(
       },
       {
         role: "user",
-        content: categoryData.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName),
+        content: userMessage,
         timestamp: new Date().getTime(),
       }
     ];

@@ -4,7 +4,9 @@ import { AuthService } from 'src/app/auth/auth.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
+import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
+import { SubscriptionsService } from 'src/app/services/subscriptions.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -18,6 +20,7 @@ export class AccountPage implements OnInit {
   subscriptions$: any;
   hasActiveSubscription: boolean = false;
   conversations$: any;
+  activeSubscriptionTypes: any; 
   constructor(
     private firestore: FirestoreService,
     public auth: AuthService,
@@ -25,7 +28,9 @@ export class AccountPage implements OnInit {
     public icon:IconsService,
     public helper:HelpersService,
     public translate:TranslateService,
-    private nav:NavService
+    public nav:NavService,
+    public subscriptionsService:SubscriptionsService,
+    private modalService:ModalService
   ) { }
 
   ngOnInit() {
@@ -41,10 +46,11 @@ export class AccountPage implements OnInit {
       }
     },200)
 
-    this.subscriptions$ = this.auth.getSubscriptions();
+    this.subscriptions$ = this.subscriptionsService.getSubscriptions();
     this.conversations$ = this.auth.getConversations();
+
     // Controleren op actieve abonnementen
-    this.auth.hasActiveSubscription().subscribe((active) => {
+    this.subscriptionsService.hasActiveSubscription().subscribe((active) => {
       this.hasActiveSubscription = active;
     });
 
@@ -64,5 +70,26 @@ export class AccountPage implements OnInit {
     localStorage.setItem('continueConversation',"true")
     localStorage.setItem('conversation',JSON.stringify(conversation))
     this.nav.go('conversation/'+conversation.conversationType+'/'+conversation.caseId)
+  }
+
+
+
+  upgrade(type:string,paymentMethod:string){
+    this.subscriptionsService.upgradeSubscription(type,paymentMethod,(response:any)=>{
+      console.log(response)
+      this.toast.show('Abonnement geüpgraded')
+    })
+  }  
+
+  deleteConversation(event:any,conversation:any){
+    event.stopPropagation()
+    console.log(conversation)
+    this.modalService.showConfirmation('Weet je zeker dat je dit gesprek wilt verwijderen?').then((response)=>{
+      if(response){
+        this.firestore.deleteSub('users',this.auth.userInfo.uid, 'conversations',conversation.conversationId).then(()=>{
+          this.toast.show('Gesprek verwijderd')
+        })
+      }
+    })
   }
 }

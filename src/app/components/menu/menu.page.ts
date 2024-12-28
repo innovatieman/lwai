@@ -58,6 +58,14 @@ export class MenuPage implements OnInit {
   
    
     {
+      title: 'Agents',
+      icon: 'faCogs',
+      url: '/bagend/agent',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:false,
+    },
+    {
       title: 'Cases',
       icon: 'faSuitcase',
       url: '/bagend/cases',
@@ -68,7 +76,7 @@ export class MenuPage implements OnInit {
     {
       title: 'Categories',
       icon: 'faSitemap',
-      url: '/bagend/categories',
+      url: '/bagend/agent/categories',
       isVisitor:false,
       isAdmin:true,
       isUser:false,
@@ -76,7 +84,7 @@ export class MenuPage implements OnInit {
     {
       title: 'Instructions',
       icon: 'faCogs',
-      url: '/bagend/instructions',
+      url: '/bagend/agent/instructions',
       isVisitor:false,
       isAdmin:true,
       isUser:false,
@@ -84,7 +92,7 @@ export class MenuPage implements OnInit {
     {
       title: 'Attitudes',
       icon: 'faGrinTongue',
-      url: '/bagend/attitudes',
+      url: '/bagend/agent/attitudes',
       isVisitor:false,
       isAdmin:true,
       isUser:false,
@@ -92,7 +100,7 @@ export class MenuPage implements OnInit {
     {
       title: 'Public info',
       icon: 'faInfoCircle',
-      url: '/bagend/public-info',
+      url: '/bagend/agent/public-info',
       isVisitor:false,
       isAdmin:true,
       isUser:false,

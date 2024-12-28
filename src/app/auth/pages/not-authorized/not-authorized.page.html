@@ -1,8 +1,13 @@
 <app-header></app-header>
-
-<main class="mainSmall">
-  <div class="not-authorized">
-    <h1>Not Authorized</h1>
-    <p>You are not authorized to view this page.</p>
+<main>
+  <div class="login-page">
+    <div class="login-container">
+      <div class="icon-wrapper">
+        <fa-icon class="user-icon" [icon]="icon.get('faBan')" ></fa-icon>
+      </div>
+      <h2>Not Authorized</h2>
+      <p>You are not authorized to view this page.</p>
+    </div>
   </div>
 </main>
+

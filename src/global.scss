@@ -135,6 +135,9 @@ h3{
     justify-content: flex-start;
     text-align: left;
 }
+[flex-align-left]{
+    align-items: flex-start;
+}
 [align-right]{
     text-align: right;
 }
@@ -156,7 +159,7 @@ h3{
     cursor: pointer;
 }
 [pointer]:hover{
-    transform:scale(1.005)
+    transform:scale(1.005);
 }
 [basicPadding]{
     padding: 15px;
@@ -170,12 +173,31 @@ h3{
 [padding20]{
     padding: 20px;
 }
+[basicRadius]{
+    border-radius: 10px;
+}
 [bgWhite]{
-    background-color: white;
+    background-color:var(--color-global);
     --background:white;
     opacity: 1;
 }
 
+.upsideDown{
+    transform: rotate(180deg);
+}
+
+[solidPrimary]{
+    background-color: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+}
+[solidSecondary]{
+    background-color: var(--ion-color-secondary);
+    // color: var(--ion-color-secondary-contrast);
+}
+[solidTertiary]{
+    background-color: var(--ion-color-tertiary);
+    color: var(--ion-color-tertiary-contrast);
+}
 
 [borderPrimary]{
     border: solid 2px var(--ion-color-primary);
@@ -259,10 +281,15 @@ video{
   
   }
   
+//////////////////////////////////////
+/// Modal Styles                   ///
+//////////////////////////////////////
 
+.modalIntro{
+    font-size: 16px;
+}
 
-
-  ion-modal.infoModal, ion-modal.show-modal {
+ion-modal.infoModal, ion-modal.show-modal {
     --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
     --backdrop-opacity: var(--ion-backdrop-opacity, 0.32)!important;
     --border-radius:20px;
@@ -277,7 +304,12 @@ video{
         display: block;
         contain: content;
         max-height: 100vh;
+        background: var(--background-global);
+        color: #fff;
         
+        h3{
+            color:var(--color-global);
+        }
         .inner-content {
             max-height: 80vh;
             overflow: auto;
@@ -287,8 +319,110 @@ video{
             box-shadow: 0px 0px 10px;
             border-radius: 15px;
         }
+        ion-card{
+            background: rgba(255, 255, 255, 0.1);
+            color:var(--color-global);
+            ion-card-title{
+                color:var(--color-global);
+            }
+        }
     }
     [role="dialog"]{
         border-radius: 15px;
     }
+}
+
+
+//////////////////////////////////////
+//  Bagend Specific Styles          //
+//////////////////////////////////////
+
+main{
+    position: relative;
+}
+
+.selectMain{
+    ion-card{
+        background: rgba(255, 255, 255, 0.1);
+        color:var(--color-global);
+        ion-card-title{
+            color:var(--color-global);
+        }
+    }
+    ion-card:hover{
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+.buttonBar{
+    position:absolute;
+    top:0;
+    right:0;
+    width: 100%;
+    --background:rgba(255, 255, 255, 0.1);
+    color:var(--color-global);
+}
+.buttonBarMargin{
+    margin-top: 30px;
+}
+
+
+.selectColumn{
+    max-height:calc(100vh - 160px);
+    overflow:hidden;
+    overflow-y:auto;
+    scrollbar-color:var(--color-global) rgba(255, 255, 255, 0);
+    
+    ion-card{
+        background: rgba(255, 255, 255, 0.1);
+        color:var(--color-global);
+        ion-card-title{
+            color:var(--color-global);
+        }
+    }
+    ion-card:hover{
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+.detailColumn{
+    max-height:calc(100vh - 160px);
+    overflow:hidden;
+    overflow-y:auto;
+    scrollbar-color:var(--color-global) rgba(255, 255, 255, 0);
+    ion-card{
+        background: rgba(255, 255, 255, 0.1);
+        color:var(--color-global);
+        ion-card-title{
+            color:var(--color-global);
+        }
+        .fieldItem{
+            border-radius:5px;
+            padding:15px 0px;
+            background: white;
+            margin-bottom:20px;
+            ion-input{
+                min-height:16px;
+                margin-bottom: 10px;
+            }
+        }
+        ion-textarea{
+            border: solid 0px rgba(0, 0, 0, 0.6);
+        }
+        [slot="label"],ion-label{
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .shortItem{
+            padding:0 10px;
+        }
+    }
+    ion-item{
+        border-radius:5px;
+    }
+    .caseAvatar{
+        height: calc(100% - 20px);
+        display: flex;
+        justify-content: center;
+        margin: 0;
+    }
+    
 }

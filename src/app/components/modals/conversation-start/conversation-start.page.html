@@ -1,0 +1,104 @@
+<div header padding20 flex center-ver>
+  <div class="title">
+    <h3 class="subtitle-top" noMargin>Start gesprek</h3>
+  </div>
+  <span class="spacer"></span>
+  <ion-button (click)="modalCtrl.dismiss()" fill="clear" color="dark">
+    <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
+  </ion-button>
+</div>
+
+<ion-card basicPadding basicRadius *ngIf="!step">
+  <ion-card-header>
+    <ion-card-title flex center-ver>
+        <span *ngIf="caseItem" [innerHtml]="caseItem.title"></span>
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content class="detailColumn">
+    <div class="modalIntro">Bepaal hier de instellingen van je gesprekspartner.</div>
+    <ion-row>
+        <ion-col size="8">
+          <ion-item lines="none">
+              <ion-label position="stacked">Rol</ion-label>
+              <ion-input [(ngModel)]="caseItem.role"></ion-input>
+          </ion-item>
+
+          <ion-item bgWhite lines="none">
+            <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description">
+              <div slot="label">Omschrijving</div>
+            </ion-textarea>
+          </ion-item>
+            
+        </ion-col>
+        <ion-col size="4">
+            <ion-card class="caseAvatar">
+                <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
+                </ion-card-content>
+                <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
+                    <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
+                </ion-card-content>
+            </ion-card>
+        </ion-col>
+    </ion-row>
+    <ion-row>
+        <ion-col size="12">
+            
+            <ion-item bgWhite lines="none">
+                <ion-label position="stacked" >Met welke attitude start je gesprekspartner het gesprek</ion-label>
+                <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude">
+                    <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
+                    <ion-label style="font-size:12px;width:110px;text-align:right" slot="end" *ngIf="info.getAttitude(caseItem.attitude)">{{info.getAttitude(caseItem.attitude).title}}</ion-label>
+                    <ion-label style="font-size:12px;width:110px;text-align:right" slot="end" *ngIf="!info.getAttitude(caseItem.attitude)">Stel in</ion-label>
+                </ion-range>
+            </ion-item>
+
+            <ion-item bgWhite lines="none">
+                <ion-label position="stacked" >Hoe vast houdt de gesprekspartner zich vast aan diens overtuigingen?</ion-label>
+                <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness">
+                    <ion-label style="font-size:14px" slot="start">Steadfastness</ion-label>
+                    <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}%</ion-label>
+                </ion-range>
+            </ion-item>
+            
+            
+
+            <!-- <ion-item bgWhite lines="none">
+                <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.casus" >
+                  <div slot="label">Casus</div>
+                </ion-textarea>
+              </ion-item> -->
+
+            
+        </ion-col>
+            
+    </ion-row>
+
+
+  </ion-card-content>
+  <div flex center-ver>
+    <span class="spacer"></span>
+    <ion-button color="secondary" (click)="slide(1)">Volgende</ion-button>
+  </div>
+</ion-card>
+
+<ion-card basicPadding basicRadius *ngIf="step==1">
+  <ion-card-header>
+    <ion-card-title flex center-ver>
+        <span [innerHtml]="caseItem.title"></span>
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+          <!-- <div>Hoe wil je het gesprek beginnen?</div> -->
+          <ion-item bgWhite lines="none">
+            <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage">
+              <div slot="label">Hoe wil je het gesprek beginnen?</div>
+            </ion-textarea>
+          </ion-item>
+  </ion-card-content>
+  <div flex center-ver>
+    <ion-button color="tertiary" (click)="slide(0)">Terug</ion-button>
+    <span class="spacer"></span>
+    <ion-button color="secondary" (click)="close()">Starten</ion-button>
+  </div>
+            
+</ion-card>

@@ -1,6 +1,18 @@
 :root{
     --color:#3D4250;
     --ion-color-primary: #315eff;
+    // --ion-color-primary: linear-gradient(135deg, #ff7eb3, #ff758c);
+    --background-global: linear-gradient(135deg, #312E81 1%, #581C87 49%, #831843 99%);
+    --background-global-rgb: 49,46,129;
+    --background-global-contrast: #ffffff;
+    --background-global-contrast-rgb: 255,255,255;
+    --background-global-shade: #2b2b73;
+    --background-global-tint: #4d4da1;
+
+    --color-global: #ffffff;
+
+
+    
     --ion-color-primary-rgb: 49,94,255;
     --ion-color-primary-contrast: #ffffff;
     --ion-color-primary-contrast-rgb: 255,255,255;

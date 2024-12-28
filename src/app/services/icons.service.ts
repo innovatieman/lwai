@@ -17,7 +17,8 @@ import {
   faMobileAlt,faUndoAlt,faPen,faPenAlt, faAt, faSchool, faRunning, faCog, faCogs, faCheck, faSave, faPrint,
   faEllipsisH,faEllipsisV,faPause,faPlay, faChartBar, faTimesCircle, faChartLine, faChartArea, faCloudUploadAlt,
   faClone,faCloudDownloadAlt, faImage, faMinusCircle, faPlusCircle, faSquare,faSquareFull,faArrowsAlt,faCheckSquare,
-  faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue
+  faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
+  faStop
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -40,6 +41,7 @@ export class IconsService {
     faArrowsAlt,
     faAt,
     faAtom,
+    faBan,
     faBirthdayCake,
     faBook,
     faBuilding,
@@ -116,6 +118,7 @@ export class IconsService {
     faMapPin,
     faMeh,
     faMicrophone,
+    faMinus,
     faMinusCircle,
     faMobileAlt,
     faObjectGroup,
@@ -153,6 +156,7 @@ export class IconsService {
     faSquareFull,
     faStar,
     faStarOutline,
+    faStop,
     faStreetView,
     faSuitcase,
     faSyncAlt,

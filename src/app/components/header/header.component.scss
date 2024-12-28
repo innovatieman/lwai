@@ -1,3 +1,10 @@
 ion-header{
-    padding:0px 15px;
+    padding:0px;
+    ion-toolbar{
+        padding:0px 15px;
+        font-family: 'Roboto', sans-serif;
+        // --background:black;
+    --background: var(--background-global);
+        color:var(--color-global);
+    }
 }

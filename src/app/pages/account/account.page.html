@@ -1,17 +1,20 @@
-<app-header title="Account"></app-header>
+<app-header title="Mijn Account"></app-header>
 <main>
   <ion-grid>
     <ion-row>
-      <ion-col size="3">
+      <ion-col size="3" class="selectColumn">
         <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='account'}" (click)="changeTab('account')">Mijn gegevens</ion-card>
+        <ion-card basicPadding pointer solidSecondary font16 weight700 tab [ngClass]="{'activeTab':activeTab=='trainer'}" (click)="changeTab('trainer')" *ngIf="subscriptionsService.hasActive('trainer') | async">Trainer</ion-card>
         <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='profile'}" (click)="changeTab('profile')">Mijn profiel</ion-card>
         <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='courses'}" (click)="changeTab('courses')">Mijn cursussen</ion-card>
         <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='conversations'}" (click)="changeTab('conversations')">Mijn gesprekken</ion-card>
         <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='badges'}" (click)="changeTab('badges')">Mijn prestaties</ion-card>
         <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='subscriptions'}" (click)="changeTab('subscriptions')">Mijn abonnementen</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='payment'}" (click)="changeTab('payment')">Betaalinstellingen</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='credits'}" (click)="changeTab('credits')">Credits</ion-card>
       </ion-col>
 
-      <ion-col size="9" center-left>
+      <ion-col size="9" class="detailColumn" center-left>
         <ion-card basicPadding *ngIf="activeTab=='account'">
           <ion-row>
             <ion-col size="6">
@@ -63,6 +66,7 @@
               <ion-card-title>{{ conversation.role }}</ion-card-title>
               <span class="spacer"></span>
               <ion-note>{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
+              <fa-icon [icon]="icon.get('faTrashAlt')" trash (click)="deleteConversation($event,conversation)"></fa-icon>
             </ion-card>
           </ion-card-content>
         </ion-card>
@@ -88,8 +92,26 @@
             <ion-card-title>Mijn abonnement</ion-card-title>
           </ion-card-header>
           <ion-card-content>
+            <div>
+              <span class="subTag" *ngIf="subscriptionsService.hasActive('basic') | async">
+                Basis
+              </span>
+              <span class="subTag" *ngIf="subscriptionsService.hasActive('trial') | async">
+                Trial
+              </span>
+              <span class="subTag" *ngIf="subscriptionsService.hasActive('premium') | async">
+                Premium
+              </span>
+              <span class="subTag" *ngIf="subscriptionsService.hasActive('trainer') | async">
+                Trainer
+              </span>
+            </div>
+            <div>
+              <ion-button expand="block" *ngIf="!(subscriptionsService.hasActive('premium') | async)" (click)="upgrade('premium','iDEAL')">Upgrade Premium</ion-button>
+              <ion-button expand="block" *ngIf="!(subscriptionsService.hasActive('trainer') | async)" (click)="upgrade('trainer','iDEAL')">Upgrade Trainer</ion-button>
+            </div>
             <ion-list>
-              <ion-item *ngFor="let subscription of subscriptions$ | async">
+              <ion-item *ngFor="let subscription of subscriptions$ | async ">
                 <ion-label>
                   <h2>{{ subscription.type | titlecase }} ({{ subscription.period }})</h2>
                   <p>Status: {{ subscription.status }}</p>
@@ -98,6 +120,56 @@
                 </ion-label>
               </ion-item>
             </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='payment'">
+          <ion-card-header>
+            <ion-card-title>Betalingen</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Hier komt de betaal instellingen
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='credits'">
+          <ion-card-header>
+            <ion-card-title>Credits</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Hier komt de de credits gegevens
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='trainer'">
+          <ion-card-header>
+            <ion-card-title>Trainer</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-row>
+              <ion-col size="4">
+                <ion-card basicPadding solidTertiary pointer (click)="nav.go('trainer/cases')">
+                  <ion-card-header>
+                    <ion-card-title>Beheer casussen</ion-card-title>
+                  </ion-card-header>
+                </ion-card>
+              </ion-col>
+              <ion-col size="4">
+                <ion-card basicPadding solidTertiary pointer>
+                  <ion-card-header>
+                    <ion-card-title>Beheer Trajecten</ion-card-title>
+                  </ion-card-header>
+                </ion-card>
+              </ion-col>
+              <ion-col size="4">
+                <ion-card basicPadding solidTertiary pointer (click)="nav.go('trainer/credit-codes')">
+                  <ion-card-header>
+                    <ion-card-title>Beheer Toegangscodes</ion-card-title>
+                  </ion-card-header>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+
           </ion-card-content>
         </ion-card>
       </ion-col>

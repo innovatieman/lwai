@@ -1,0 +1,19 @@
+.loader_overall{
+    display: flex;
+    justify-content: center;
+    width:100%;
+    height:calc(100% - 50px);
+    overflow:auto;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    // background: linear-gradient(135deg, #312E81 1%, #581C87 49%, #831843 99%);
+    background: var(--background-global);
+        color:var(--color-global);
+}
+.loader_inner{
+    position: relative;
+    max-width: 1350px;
+    width:100%;
+    // padding:20px;
+}

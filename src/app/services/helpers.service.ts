@@ -57,6 +57,12 @@ export class HelpersService {
     return nr
   }
 
+  floor(nr:number):number{
+    return Math.floor(nr)
+  }
+  ceil(nr:number):number{
+    return Math.ceil(nr)
+  }
 
 
   public sortString(array:any[],key:string,descending?:boolean){

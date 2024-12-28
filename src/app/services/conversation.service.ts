@@ -7,6 +7,7 @@ import { FirestoreService } from './firestore.service';
 import { Subscription } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { HeyGenApiService } from './heygen.service';
+import { ModalService } from './modal.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,8 @@ export class ConversationService implements OnDestroy {
   waiting = false;
   caseItem:any = {}
   extraTemp:any = {}
+  loadReady:boolean = false;
+  
   private conversationSub!: Subscription;
   private subCollectionSubs: Subscription[] = [];
   private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases'];
@@ -34,7 +37,8 @@ export class ConversationService implements OnDestroy {
     private auth:AuthService,
     private firestoreService:FirestoreService,
     private firestore: AngularFirestore,
-    public heyGen:HeyGenApiService
+    public heyGen:HeyGenApiService,
+    private modalService:ModalService,
 
   ) { }
 
@@ -62,9 +66,18 @@ export class ConversationService implements OnDestroy {
       this.dialog_role = caseItem.role;
     }
     if(this.caseItem.avatarName){
-      this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video')
+      this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
+        this.loadReady = true;
+      })
     }
     
+  }
+
+  restartAvatar(){
+    this.heyGen.disconnect('avatar_video')
+    this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
+      this.loadReady = true;
+    })
   }
 
   loadSubCollections(conversationId: string): void {
@@ -85,6 +98,7 @@ export class ConversationService implements OnDestroy {
               };
               if(collectionName == 'messages'){
                 this.scrollChatToBottom()
+                this.reloadAtitude()
               }
              // sorteer de messages op timestamp
                 this.activeConversation[collectionName] = this.activeConversation[collectionName].sort((a:any, b:any) => a.timestamp - b.timestamp);
@@ -99,6 +113,9 @@ export class ConversationService implements OnDestroy {
         console.warn(`Fout bij het verwerken van subcollectie '${collectionName}':`, error);
       }
     });
+    if(!this.caseItem.avatarName){
+      this.loadReady = true;
+    }
   }
 
 
@@ -128,6 +145,15 @@ export class ConversationService implements OnDestroy {
     }
   }
 
+  reloadAtitude(){
+    let attitudeString = ''
+    if(this.latestAssistantItem(this.activeConversation.messages).includes('newAttitude:')){
+      attitudeString = this.latestAssistantItem(this.activeConversation.messages).replace('newAttitude:','').split(', reaction:')[0]
+      this.attitude = parseInt(attitudeString)
+      this.update.emit(true);
+    }
+  }
+
   
 
   async startConversation(caseItem:any){
@@ -137,12 +163,16 @@ export class ConversationService implements OnDestroy {
     this.dialog_role = caseItem.role;
     this.waiting = true;
     let conversationId = ''
+    let openingMessage = caseItem.openingMessage || ''
+    let steadFastness = caseItem.steadFastness || 0
     await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',{
       caseId:caseItem.id,
       timestamp: new Date().getTime(),
       role:caseItem.role,
       attitude:caseItem.attitude,
       conversationType:caseItem.conversation,
+      openingMessage:openingMessage,
+      steadFastness:steadFastness,
     },(response:any)=>{
       conversationId = response.id
       localStorage.setItem('conversation',JSON.stringify({conversationId, ...caseItem}))
@@ -156,6 +186,8 @@ export class ConversationService implements OnDestroy {
       caseId:caseItem.id,
       instructionType:'reaction',
       attitude:this.caseItem.attitude,
+      openingMessage:openingMessage,
+      steadFastness:steadFastness
     }
     this.startLoading('reaction')
     this.startLoading('facts')
@@ -285,12 +317,13 @@ export class ConversationService implements OnDestroy {
     let obj:any = {
       userId:this.auth.userInfo.uid,
       conversationId:this.activeConversation.conversationId,
-      categoryId:this.caseItem.conversation,
+      categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
       caseId:this.activeConversation.caseId,
       instructionType:'reaction',
       attitude:this.attitude,
       prompt:message
     }
+    // console.log(obj)
     this.tempTextUser = message
     this.scrollChatToBottom()
     this.startLoading('reaction')
@@ -309,7 +342,7 @@ export class ConversationService implements OnDestroy {
       conversationId:conversationId,
       instructionType:topic,
       role:this.dialog_role,
-      categoryId:this.caseItem.conversation,
+      categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
     }
     // console.log(obj)
     this.startLoading(topic)
@@ -489,4 +522,23 @@ export class ConversationService implements OnDestroy {
     return Math.round((total/count)*10) / 10;
   }
 
+  undoLastMove(){
+    this.modalService.showConfirmation('Weet je zeker dat je de laatste zet ongedaan wilt maken?').then((response:any)=>{
+      if(response){
+        this.deleteLastMoves('messages',2)
+        this.deleteLastMoves('feedback',3)
+        this.deleteLastMoves('phases',1)
+        this.deleteLastMoves('choices',2)
+      }
+    })
+  }
+
+  deleteLastMoves(topic:string,amount:number){
+    let count = 0;
+    let items = this.activeConversation[topic]
+    let length = items.length
+    for(let i=1;i<=amount;i++){
+      this.firestoreService.deleteSubSub('users', this.auth.userInfo.uid, 'conversations', this.activeConversation.conversationId, topic, items[length-i].id)
+    }
+  }
 }

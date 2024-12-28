@@ -10,6 +10,7 @@ import { StartPage } from './start.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     IonicModule,
     StartPageRoutingModule,
     ComponentsModule,
-    PipesModule
+    PipesModule,
+    FontAwesomeModule
   ],
   declarations: [StartPage],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

@@ -8,6 +8,7 @@ import firebase from 'firebase/compat/app';
 import { NavService } from '../services/nav.service';
 import { ToastService } from '../services/toast.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { SubscriptionsService } from '../services/subscriptions.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,14 +17,14 @@ export class AuthService {
   user$: Observable<firebase.User | null>;
   userRoles$: Observable<{ isAdmin: boolean, isConfirmed:boolean } | null>;
   userInfo:any = {}
-  subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
   conversations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Conversaties als Observable
   
   constructor(
     private nav: NavService,
     private toast: ToastService,
     private afAuth: AngularFireAuth,
-    private firestore: AngularFirestore
+    private firestore: AngularFirestore,
+    private subscriptionsService: SubscriptionsService
   ) {
     this.user$ = this.afAuth.authState;
     this.userRoles$ = this.user$.pipe(
@@ -44,10 +45,10 @@ export class AuthService {
     );
     this.user$.subscribe((user) => {
       if (user) {
-        this.loadSubscriptions(user.uid);
+        this.subscriptionsService.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
       } else {
-        this.subscriptions$.next([]); // Leegmaken bij uitloggen
+        this.subscriptionsService.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
     });
     
@@ -133,8 +134,8 @@ export class AuthService {
 
   async sendPasswordReset(email: string): Promise<void> {
     try {
-      await this.afAuth.sendPasswordResetEmail(email);
-      this.toast.show('Password reset email sent');
+      await this.afAuth.sendPasswordResetEmail(email)
+      this.toast.show('If your email is registered, you will receive a password reset email.');
     } catch (error: any) {
       console.error('Password reset error:', error);
       this.toast.show(error.message);
@@ -171,32 +172,8 @@ export class AuthService {
   // Verwijder admin-rechten van een gebruiker
   async removeAdmin(uid: string): Promise<void> {
     await this.firestore.doc(`users/${uid}`).update({ isAdmin: false });
-  }
+  }  
 
-  // Abonnementen ophalen
-  private loadSubscriptions(userId: string) {
-    this.firestore
-      .collection(`users/${userId}/subscriptions`)
-      .valueChanges({ idField: 'id' }) // Voeg het ID toe aan elk document
-      .subscribe((subscriptions) => {
-        this.subscriptions$.next(subscriptions); // Update de BehaviorSubject
-      });
-  }
-
-  // Geef een Observable terug van de abonnementen
-  getSubscriptions(): Observable<any[]> {
-    return this.subscriptions$.asObservable();
-  }
-
-  // Controleer of er een actief abonnement is
-  hasActiveSubscription(): Observable<boolean> {
-    return this.subscriptions$.pipe(
-      map((subscriptions) =>
-        subscriptions.some((sub) => sub.status === 'active')
-      )
-    );
-  }
-  
   private loadConversations(userId: string) {
     this.firestore
       .collection(`users/${userId}/conversations`)

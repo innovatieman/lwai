@@ -1,0 +1,193 @@
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  
+  
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      padding: 40px;
+      width: calc(100% - 30px);
+      max-width:400px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      // background: linear-gradient(135deg, #312E81 1%, #581C87 49%, #831843 99%);
+  
+    }
+  
+    .icon-wrapper {
+      background: linear-gradient(135deg, #ff7eb3, #ff758c);
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  
+      background: linear-gradient(90deg, #EC4899 0%, #A855F7 100%);
+  
+      box-shadow: 0px 4px 6px -4px rgba(168, 85, 247, 0.3),0px 10px 15px -3px rgba(168, 85, 247, 0.3);
+  
+    }
+  
+    .user-icon {
+      font-size: 32px;
+    }
+  
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color:white;
+    }
+  
+    p {
+      margin: 10px 0;
+      // font-size: 0.9rem;
+    }
+  
+    form {
+      margin-top: 20px;
+    }
+  
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+  
+      label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+      }
+  
+      ion-input {
+        width: 100%;
+        padding: 0 10px !important;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        background: white;
+        color: black;
+        outline: none;
+        
+        label{
+            display: flex;
+        }
+        &::placeholder {
+          color: #ddd;
+        }
+      }
+    }
+  
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+  
+      a {
+        font-size: 0.85rem;
+        color: #fff;
+        text-decoration: underline;
+      }
+    }
+  
+    .login-btn {
+      width: 100%;
+      // height: 48px;
+      border-radius: 4px;
+      opacity: 1;
+        
+      /* Smart layout */
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      gap: 0px 0px;
+      font-weight: 500;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      color:white;
+      background: linear-gradient(90deg, #EC4899 0%, #A855F7 100%);
+        
+      box-shadow: 0px 4px 6px -4px rgba(168, 85, 247, 0.3),0px 10px 15px -3px rgba(168, 85, 247, 0.3);
+        
+    }
+  
+    .register-link {
+      margin: 15px 0;
+      font-size: 0.85rem;
+  
+      a {
+        color: #fff;
+        text-decoration: underline;
+      }
+    }
+  
+    .or {
+      margin: 20px 0;
+      font-size: 0.85rem;
+      color: #ddd;
+    }
+  
+    .social-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width:100%;
+            &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            }
+            display:flex;
+            align-items: center;
+            justify-content: center;
+            svg{
+                height:20px;
+                fill:white
+            }
+            span{
+                margin-left:5px;
+                position: relative;
+            }
+        }
+    }
+    .apple-btn{
+        span{
+            top:2px;
+        }
+    }
+    .google-btn{
+        span{
+            top:1px;
+        }
+    }
+  
+    .terms {
+      margin-top: 20px;
+      font-size: 0.75rem;
+  
+      a {
+        color: #fff;
+        text-decoration: underline;
+      }
+    }
+    .showPassWordReset{
+      color:#F472B6;
+      text-decoration: none;
+    }
+  }

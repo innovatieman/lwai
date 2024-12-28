@@ -4,6 +4,7 @@ import { Auth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPop
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AuthService } from '../../auth.service';
 import { NavService } from 'src/app/services/nav.service';
+import { IconsService } from 'src/app/services/icons.service';
 
 @Component({
   selector: 'app-register',
@@ -17,7 +18,8 @@ export class RegisterPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     public auth: AuthService,
-    public nav: NavService
+    public nav: NavService,
+    public icon: IconsService
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -26,10 +28,10 @@ export class RegisterPage implements OnInit {
   }
 
   ngOnInit() {
-    if(this.auth.userInfo.uid){
-      console.log(this.auth.user$)
-      this.nav.go('start')
-    }
+    // if(this.auth.userInfo.uid){
+    //   console.log(this.auth.user$)
+    //   this.nav.go('start')
+    // }
   }
 
   async registerWithEmail() {

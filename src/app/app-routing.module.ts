@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AdminGuard } from './auth/admin.guard';
 import { AuthGuard } from './auth/auth.guard';
+import { TrainerGuard } from './auth/trainer.guard';
 
 const routes: Routes = [
 
@@ -53,25 +54,8 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'bagend/categories',
-    loadChildren: () => import('./bagend/categories/categories.module').then( m => m.CategoriesPageModule),
-    canActivate: [AdminGuard],
-  },
-  {
-    path: 'bagend/attitudes',
-    loadChildren: () => import('./bagend/attitudes/attitudes.module').then( m => m.AttitudesPageModule)
-  },
-  {
-    path: 'bagend/instructions',
-    loadChildren: () => import('./bagend/instructions/instructions.module').then( m => m.InstructionsPageModule)
-  },
-  {
     path: 'info-modal',
     loadChildren: () => import('./components/modals/info-modal/info-modal.module').then( m => m.InfoModalPageModule)
-  },
-  {
-    path: 'bagend/public-info',
-    loadChildren: () => import('./bagend/public-info/public-info.module').then( m => m.PublicInfoPageModule)
   },
   {
     path: 'options-modal',
@@ -84,6 +68,30 @@ const routes: Routes = [
   {
     path: 'backup-modal',
     loadChildren: () => import('./components/modals/backup-modal/backup-modal.module').then( m => m.BackupModalPageModule)
+  },
+  {
+    path: 'trainer/cases',
+    loadChildren: () => import('./trainer/trainer-cases/trainer-cases.module').then( m => m.TrainerCasesPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'trainer/credit-codes',
+    loadChildren: () => import('./trainer/trainer-credit-codes/trainer-credit-codes.module').then( m => m.TrainerCreditCodesPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'bagend/agent',
+    loadChildren: () => import('./bagend/agent/agent.module').then( m => m.AgentPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'bagend/agent/:type',
+    loadChildren: () => import('./bagend/agent/agent.module').then( m => m.AgentPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'conversation-start',
+    loadChildren: () => import('./components/modals/conversation-start/conversation-start.module').then( m => m.ConversationStartPageModule)
   },
 
 

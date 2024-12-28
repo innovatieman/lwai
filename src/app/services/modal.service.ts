@@ -4,6 +4,7 @@ import { ConfirmationModalComponent } from '../components/modals/confirmation-mo
 import { InfoModalPage } from '../components/modals/info-modal/info-modal.page';
 import { OptionsModalPage } from '../components/modals/options-modal/options-modal.page';
 import { BackupModalPage } from '../components/modals/backup-modal/backup-modal.page';
+import { ConversationStartPage } from '../components/modals/conversation-start/conversation-start.page';
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +25,22 @@ export class ModalService {
     const { data } = await modalItem.onWillDismiss();
     return data?.confirmed || false; // Retourneert true of false
   }
+
+
+  async showConversationStart(caseItem: any): Promise<boolean> {
+    const modalItem = await this.modalController.create({
+      component: ConversationStartPage,
+      componentProps: {
+        caseItem: caseItem,
+      },
+    });
+
+    await modalItem.present();
+
+    const { data } = await modalItem.onWillDismiss();
+    return data || false; // Retourneert true of false
+  }
+
 
   public async showText(content:string,title?:string,video?:boolean,buttons?:any[],backdropDismiss?:boolean,callback?:any,btnsClass?:string){
     if(backdropDismiss==undefined){backdropDismiss = true}

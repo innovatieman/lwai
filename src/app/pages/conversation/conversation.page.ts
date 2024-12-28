@@ -10,6 +10,7 @@ import { ConversationService } from 'src/app/services/conversation.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { InfoService } from 'src/app/services/info.service';
+import { HelpersService } from 'src/app/services/helpers.service';
 // import { HeyGenApiService } from 'src/app/services/heygen.service';
 
 highchartsMore(Highcharts);
@@ -26,20 +27,21 @@ export class ConversationPage implements OnInit {
   updateSubscription:Subscription = new Subscription()
   chartOptions: Highcharts.Options = {
     chart: {
-      type: 'gauge'
+      type: 'gauge',
+      backgroundColor: 'transparent',
   },
-
   title: {
       text: ''
   },
+  
   credits:{
     enabled:false
   },
   pane: {
-      startAngle: -150,
-      endAngle: 150,
+      startAngle: -90,
+      endAngle: 90,
       background: [{
-          backgroundColor: 'white',
+          backgroundColor: 'transparent',
           borderWidth: 0
       }]
   },
@@ -49,7 +51,7 @@ export class ConversationPage implements OnInit {
       max: 100,
 
       minorTickInterval: 0,
-      tickColor: '#ffffff',
+      tickColor: 'transparent',
       tickLength: 40,
       tickPixelInterval: 40,
       tickWidth: 2,
@@ -91,7 +93,7 @@ export class ConversationPage implements OnInit {
       }]
   },
   series: [{
-    name: 'Speed',
+    name: 'Attitude',
     type: 'gauge',
     data: [this.conversation.attitude],
     dataLabels: {
@@ -100,7 +102,11 @@ export class ConversationPage implements OnInit {
     },
 
   }]
-}
+  }
+  showFeedback:boolean = false;
+  showFact:boolean = false;
+
+
 chart: Highcharts.Chart | null = null;
 chartCallback: Highcharts.ChartCallbackFunction = (chart) => {
   this.chart = chart;
@@ -110,7 +116,20 @@ conversationTitle:string = ''
 case_id:string = ''
 question:string = ''
 started:boolean = false
-
+interaction:string='chat'
+cipherTerm:any = {
+  "0": "Onbekend",
+  "1": "Slecht",
+  "2": "Zeer matig",
+  "3": "Onvoldoende",
+  "4": "Zwak",
+  "5": "Matig",
+  "6": "Voldoende",
+  "7": "Ruim voldoende",
+  "8": "Goed",
+  "9": "Zeer goed",
+  "10": "Perfect"
+}
   
 
   constructor(
@@ -123,6 +142,7 @@ started:boolean = false
     public icon:IconsService,
     private modal:ModalService,
     public info:InfoService,
+    public helpers:HelpersService
   ) { }
 
 
@@ -148,29 +168,58 @@ started:boolean = false
       this.case_id = params['case']
       
       if(localStorage.getItem('activatedCase')==params['case']){
-        this.started = true
-        let countTries = 0
-        let interval = setInterval(()=>{
-          countTries++
-          if(this.cases.single(params['case'])){
-            clearInterval(interval)
-            localStorage.removeItem('activatedCase')
-            this.conversation.startConversation(this.cases.single(params['case']))
+        
+        if(localStorage.getItem('personalCase')){
+          let personalCase = JSON.parse(localStorage.getItem('personalCase')||'{}')
+          if(personalCase.id==params['case']){
+            this.startConversation(personalCase,true)
           }
-          if(countTries>10){
-            clearInterval(interval)
-          }
-        },500)
+        }
+        else{
+         this.startConversation(this.cases.single(params['case']))
+        }
+
       }
       else{
       }
 
     })
+    setTimeout(() => {
+      this.continueConversation()
+    }, 2000);
   }
 
   ngOnDestroy(){
     this.conversation.heyGen.disconnect('avatar_video')
   }
+
+  startConversation(caseItem:any,personal?:boolean){
+    this.started = true
+    let countTries = 0
+    if(!personal){
+      let interval = setInterval(()=>{
+        countTries++
+        if(this.cases.single(caseItem)){
+          clearInterval(interval)
+          localStorage.removeItem('activatedCase')
+          console.log(this.cases.single(caseItem))
+          if(this.cases.single(caseItem).avatarName){
+            this.interaction = 'video'
+          }
+          this.conversation.startConversation(this.cases.single(caseItem))
+        }
+        if(countTries>10){
+          clearInterval(interval)
+        }
+      },500)
+    }
+    else{
+      this.conversation.startConversation(caseItem)
+    }
+  }
+    
+
+
 
   ionViewDidEnter(){
     if(localStorage.getItem('continueConversation')){
@@ -198,7 +247,13 @@ started:boolean = false
     }
     this.started = true
     let conversation = JSON.parse(localStorage.getItem('conversation')||'{}')
+    if(conversation.avatarName){
+      this.interaction = 'video'
+    }
     this.conversation.loadConversation(conversation.conversationId,conversation)
+    // setTimeout(() => {
+      this.conversation.reloadAtitude()
+    // }, 1000);
   }
 
   get savedConversation(){

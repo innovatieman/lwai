@@ -11,10 +11,10 @@ export class HeyGenApiService {
   private accessToken: string = '';
   private sessionId: string = '';
   public streamingAvatar: any;
-
+  streamIsActive:boolean = false;
   constructor() {}
 
-  async initializeAvatar(avatarName: string,video_id:string) {
+  async initializeAvatar(avatarName: string,video_id:string,callback?:Function) {
     console.log('initializeAvatar');
     try {
       // Vraag token aan via Firebase Function
@@ -27,16 +27,48 @@ export class HeyGenApiService {
         console.log('Stream ready', event);
         const videoElement = document.getElementById(video_id) as HTMLVideoElement;
         videoElement.srcObject = event.detail;
+        const streamInterval = setInterval(() => {
+          console.log('checking stream')
+          if(this.streamingAvatar.mediaStream.active){
+            clearInterval(streamInterval)
+            this.monitorMediaStream(this.streamingAvatar.mediaStream);
+          }
+        },300)
+        if(callback){
+          callback()
+        }
       });
 
       await this.streamingAvatar.createStartAvatar({
         quality: AvatarQuality.Low,
         avatarName: avatarName,
       });
-
+      
     } catch (error) {
       console.error('Error initializing avatar:', error);
     }
+  }
+
+  monitorMediaStream(stream: MediaStream) {
+    console.log(stream);
+    // Controleer de initiële status
+    console.log('MediaStream is active:', stream.active);
+  
+    // Luister naar de 'active' event
+    stream.addEventListener('active', () => {
+      console.log('MediaStream became active.');
+      this.streamIsActive = true;
+      console.log(this.streamIsActive)
+      // Voer hier je logica uit als de stream actief wordt
+    });
+  
+    // Luister naar de 'inactive' event
+    stream.addEventListener('inactive', () => {
+      console.log('MediaStream became inactive.');
+      this.streamIsActive = false;
+      console.log(this.streamIsActive)
+      // Voer hier je logica uit als de stream inactief wordt
+    });
   }
 
   async speakText(text: string) {

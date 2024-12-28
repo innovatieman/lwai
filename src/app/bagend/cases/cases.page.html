@@ -5,24 +5,23 @@
 </main> -->
 
 <main [ngClass]="{'backupGrid':showBackups}">
-  <ion-header>
-    <ion-toolbar>
+    <ion-toolbar class="buttonBar">
         <ion-title *ngIf="showBackups">Backup {{helpers.showLocalDate(backupDate,translate.instant('date_formats.longDateTime'),0,true)}}</ion-title>
         <ion-buttons slot="end">
         <ion-select #selectNew id="selectNew" [(ngModel)]="newConversation" (ionChange)="add()">
             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
         </ion-select>
 
-        <ion-button fill="outline" (click)="openAdd()" *ngIf="backupService.activebackups!='cases'">Nieuw</ion-button>
-        <ion-button fill="outline" (click)="getBackups('cases')" *ngIf="backupService.activebackups!='cases'">Laad Backups</ion-button>
-        <ion-button fill="outline" (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'">Verberg Backup</ion-button>
-        <ion-button fill="outline" (click)="firestore.backup('cases',cases)" *ngIf="backupService.activebackups!='cases'">Maak Backup</ion-button>
-      </ion-buttons>
+        <ion-button fill="outline" color="light" (click)="openAdd()" *ngIf="backupService.activebackups!='cases'">Nieuw</ion-button>
+        <ion-button fill="outline" color="light" (click)="getBackups('cases')" *ngIf="backupService.activebackups!='cases'">Laad Backups</ion-button>
+        <ion-button fill="outline" color="light" (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'">Verberg Backup</ion-button>
+        <ion-button fill="outline" color="light" (click)="firestore.backup('cases',cases)" *ngIf="backupService.activebackups!='cases'">Maak Backup</ion-button>
+        </ion-buttons>
     </ion-toolbar>
-  </ion-header>
+    <div class="buttonBarMargin"></div>
   <ion-grid >
     <ion-row>
-        <ion-col size="3">
+        <ion-col size="3" class="selectColumn">
             <div *ngFor="let conversationType of (cases | groupBy:'conversation') | keyvalue">
                 <ion-card>
                     <ion-card-header>
@@ -39,7 +38,7 @@
       <!-- <ion-col size="3">
         <ion-card basicPadding pointer font16 weight700 tab *ngFor="let casus of cases;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{casus.title | capitalize}}</ion-card>
       </ion-col> -->
-      <ion-col size="9">
+      <ion-col size="9"  class="detailColumn">
         <div *ngIf="!caseItem.id">Selecteer een casus</div>
         <ion-card basicPadding *ngIf="caseItem?.id">
           <ion-card-header>
@@ -74,9 +73,8 @@
                     </ion-item>
                 </ion-col>
                 <ion-col size="4">
-                    <ion-card style="height: calc(100% - 20px);">
+                    <ion-card class="caseAvatar">
                         <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
-                            <!-- <img [src]="caseItem.photo" alt=""> -->
                         </ion-card-content>
                         <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
                             <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>

@@ -3,168 +3,274 @@
   overflow: auto;
 }
 
-.chatCard{
-  ion-card-header{
-    padding-top: 0;
-  }
-}
-.chatItem{
-    div{
-      border-radius:20px;
-      font-size: 16px;
-      padding:10px;
-      display: inline-block;
-    }
-  }
+// .chatCard{
+//   ion-card-header{
+//     padding-top: 0;
+//   }
+// }
+  // .chatItem{
+  //     div{
+  //       border-radius:20px;
+  //       font-size: 16px;
+  //       padding:10px;
+  //       display: inline-block;
+  //     }
+  // }
   
-  .assistant{
-    div{
-      background-color:var(--ion-color-primary);
-      color:var(--ion-color-primary-contrast);
-    }
-    text-align:left;
-    margin-top:20px;
-    margin-bottom:10px;
-    margin-right:20%;
-  }
-  .user{
-    div{
-      background-color:var(--ion-color-tertiary);
-      color:var(--ion-color-tertiary-contrast);
-    }
-    text-align:right;
-    margin-top:20px;
-    margin-bottom:10px;
-    margin-left:20%;
-  }
-  .feedback{
-    background-color:var(--ion-color-secondary);
-    color:var(--ion-color-secondary-contrast);
-    text-align:left;
-    // margin-top:20px;
-    // margin-bottom:20px;
-    border-radius:10px;
-    font-size: 16px;
-    display:inline-block;
-  }
+  // .assistant{
+  //   div{
+  //     background-color:var(--ion-color-primary);
+  //     color:var(--ion-color-primary-contrast);
+  //   }
+  //   text-align:left;
+  //   margin-top:20px;
+  //   margin-bottom:10px;
+  //   margin-right:20%;
+  // }
+  // .user{
+  //   div{
+  //     background-color:var(--ion-color-tertiary);
+  //     color:var(--ion-color-tertiary-contrast);
+  //   }
+  //   text-align:right;
+  //   margin-top:20px;
+  //   margin-bottom:10px;
+  //   margin-left:20%;
+  // }
+  
+  // .feedback{
+  //   background-color:var(--ion-color-secondary);
+  //   color:var(--ion-color-secondary-contrast);
+  //   text-align:left;
+
+  //   border-radius:10px;
+  //   font-size: 16px;
+  //   display:inline-block;
+  // }
   .explanation{
     color: rgba(0, 0, 0, 0.5);
     font-style: italic;
     margin-top: 10px;
   }
-  .cipher{
-    font-weight:700;
-    background-color: var(--ion-color-secondary);
-    color:var(--ion-color-secondary-contrast);
-    // width: 150px;
-    // height: 70px;
-    border-radius:20px;
-    display: inline-flex;
+
+.cipherCard{
+  padding-top:10px;
+  background:rgba(255, 255, 255, 0.1);
+  color:white;
+  ion-card-title{
+    color:white;
+    margin-bottom:10px;
+    font-size:16px;
+  }
+  .cipherDiv{
+    display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 0px;
-    font-size: 36px;
-    .lastCipher{
-      color:var(--ion-color-dark);
-      font-size: 20px;
-      position: relative;
-      top:6px;
-      margin-left: 15px;
-    }
-  }
-
-
-
-  .graphCard{
-    min-height: calc(100% - 20px);
-  }
-
-  .graphPhases{
     margin-top: 20px;
     margin-bottom: 20px;
-    // height:300px;
-    width:100%;
-    border:solid 1px rgba(0, 0, 0, 0.6);
-    .graphPhasesCol{
-        display: flex;
-        align-items: end;
-        flex-flow:column-reverse;
-        text-align: center;
-    }
-    .phaseBar{
-        height:100px;
-        width:100%;
-        margin:0 10px;
-        transition: all 0.5s;
-        // background-color: var(--ion-color-primary);
-        border-bottom:0!important;
-    }
-    .level1{
-        background-color: var(--ion-color-primary);
-        border:solid 2px var(--ion-color-primary);
-    }
-    .level2{
-        background-color: var(--ion-color-secondary);
-        border:solid 2px var(--ion-color-secondary);
-    }
-    .level3{
-        background-color: var(--ion-color-tertiary);
-        border:solid 2px var(--ion-color-tertiary);
-    }
-    .level4{
-        background-color: var(--ion-color-success);
-        border:solid 2px var(--ion-color-success);
-    }
-    .level5{
-        background-color: var(--ion-color-warning);
-        border:solid 2px var(--ion-color-warning);
-    }
-    .level6{
-        background-color: var(--ion-color-danger);
-        border:solid 2px var(--ion-color-danger);
-    }
-    .phaseTitle{
-        font-size: 1.2em;
-        font-weight: 700;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        // white-space: nowrap;
-    }
-    .phaseDifference{
-        font-size: 16px;
-        font-weight: 600;
-        padding:10px;
-        text-align: center;
-        width:100%;
-    }
   }
-
-  .row_fact{
-    padding: 0px 15px;
+  .cipherCipher{
+    font-size: 36px;
+    font-weight: 700;
+    margin-right: 5px;
   }
-  .new_fact{
-    background-color: rgba(var(--ion-color-success-rgb), 0.3);
-    color: var(--ion-color-primary-success-constrast);
-    border-radius: 20px;
-    padding: 15px;
-    // margin-top: 20px;
-    // margin-bottom: 20px;
-    font-size: 1em;
-    font-weight: 600;
-    text-align: left;
-    // display: inline-block;
-    font-size: 14px;
+  .cipherSeparator{
+    font-size: 36px;
+    font-weight: 700;
   }
-
-
-  .attitudeTitle{
+  .lastCipher{
+    color:var(--ion-color-medium);
+    font-size: 24px;
+    position: relative;
+    top:6px;
+    margin-left: 5px;
+  }
+  .subTitle{
     text-align: center;
-    font-size: 16px;
-    padding: 15px;
-    margin-top: -65px;
-    font-weight: 600;
+    font-size: 12px;
+    // margin-top: -60px;
+    font-weight: 400;
+    font-style: italic;
     position: relative;
   }
+  .phaseCardTitle{
+    font-size:16px;
+    margin-bottom:20px;
+  }
+  .phaseTitle{
+    font-size:12px;
+    font-weight: 500;;
+  }
+  .phaseBars{
+    color:var(--ion-color-light);
+  }
+  .phaseBarHorizontal{
+    height: 5px;
+    width: 100%;
+    background-color: rgba(var(--ion-color-medium-rgb),0.3);
+    border-radius: 5px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+  }
+  .phaseBarHorizontalScore{
+    height: 5px;
+    width: 100%;
+    background-color: black;
+    border-radius: 5px;
+  }
+
+}
+
+  // .cipher{
+  //   font-weight:700;
+  //   background-color: var(--ion-color-secondary);
+  //   color:var(--ion-color-secondary-contrast);
+  //   // width: 150px;
+  //   // height: 70px;
+  //   border-radius:20px;
+  //   div{
+  //     display: inline-flex;
+  //     justify-content: center;
+  //     align-items: center;
+
+  //   }
+  //   // margin-left: 0px;
+  //   font-size: 36px;
+  //   .lastCipher{
+  //     color:var(--ion-color-dark);
+  //     font-size: 20px;
+  //     position: relative;
+  //     top:6px;
+  //     margin-left: 15px;
+  //   }
+  // }
+
+
+
+  // .graphCard{
+  //   min-height: calc(100% - 20px);
+  // }
+
+  // .graphPhases{
+  //   margin-top: 20px;
+  //   margin-bottom: 20px;
+  //   // height:300px;
+  //   width:100%;
+  //   border:solid 1px rgba(0, 0, 0, 0.6);
+  //   .graphPhasesCol{
+  //       display: flex;
+  //       align-items: end;
+  //       flex-flow:column-reverse;
+  //       text-align: center;
+  //   }
+  //   .graphPhasesColMinus{
+  //     transform: rotate(180deg);
+  //   }
+  //   .phaseBar{
+  //       height:100px;
+  //       width:100%;
+  //       transition: all 0.5s;
+  //       // background-color: var(--ion-color-primary);
+  //       border-bottom:0!important;
+  //   }
+  //   .phaseBar.negative{
+  //     height:50px;
+  //     width:100%;
+  //     transition: all 0.5s;
+  //     // background-color: var(--ion-color-primary);
+  //     border-bottom:0!important;
+  // }
+  // .x-axis{
+  //   border-top: solid 1px rgba(0, 0, 0, 0.6);
+  //   width: 100%;
+  // }
+  //   .level1{
+  //       background-color: var(--ion-color-primary);
+  //       border:solid 2px var(--ion-color-primary);
+  //   }
+  //   .level2{
+  //       background-color: var(--ion-color-secondary);
+  //       border:solid 2px var(--ion-color-secondary);
+  //   }
+  //   .level3{
+  //       background-color: var(--ion-color-tertiary);
+  //       border:solid 2px var(--ion-color-tertiary);
+  //   }
+  //   .level4{
+  //       background-color: var(--ion-color-success);
+  //       border:solid 2px var(--ion-color-success);
+  //   }
+  //   .level5{
+  //       background-color: var(--ion-color-warning);
+  //       border:solid 2px var(--ion-color-warning);
+  //   }
+  //   .level6{
+  //       background-color: var(--ion-color-danger);
+  //       border:solid 2px var(--ion-color-danger);
+  //   }
+  //   .phaseTitle{
+  //       font-size: 1.2em;
+  //       font-weight: 700;
+  //       writing-mode: vertical-rl;
+  //       transform: rotate(180deg);
+  //       // white-space: nowrap;
+  //   }
+  //   .phaseDifference{
+  //       font-size: 16px;
+  //       font-weight: 600;
+  //       padding:10px;
+  //       text-align: center;
+  //       width:100%;
+  //   }
+  // }
+
+  // .row_fact{
+  //   padding: 0px 15px;
+  // }
+  // .new_fact{
+  //   background-color: rgba(var(--ion-color-success-rgb), 0.3);
+  //   color: var(--ion-color-primary-success-constrast);
+  //   border-radius: 20px;
+  //   padding: 15px;
+  //   // margin-top: 20px;
+  //   // margin-bottom: 20px;
+  //   font-size: 1em;
+  //   font-weight: 600;
+  //   text-align: left;
+  //   // display: inline-block;
+  //   font-size: 14px;
+  // }
+
+
+
+.chartCard{
+  padding-top:10px;
+  background:rgba(255, 255, 255, 0.1);
+  color:white;
+  .chart{
+    width: 100%;
+    height: 150px;
+    display: block;
+    margin-top:-20px;
+  }
+  ion-card-title{
+    color:white;
+    margin-bottom:15px;
+    font-size:16px;
+  }
+  .subTitle{
+    text-align: center;
+    font-size: 12px;
+    margin-top: -60px;
+    font-weight: 400;
+    font-style: italic;
+    position: relative;
+  }
+
+}
+
+
+
   .help_spinner{
     color:var(--ion-color-tertiary-contrast);
     margin-left:10px;
@@ -191,3 +297,135 @@
       bottom: 10px;
     }
   }
+
+  .mainCard{
+    background:rgba(255, 255, 255, 0.1);
+    color:white;
+    .selectCard{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background:rgba(255, 255, 255, 0.1);
+      color:white;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .selectCard:hover{
+      background:rgba(255, 255, 255, 0.2);
+    }
+    .selectCardSelected, .selectCardSelected:hover{
+      background:rgba(0, 0, 0, 0.2);
+    }
+
+    .videoCard{
+      height: 300px;
+    }
+    video{
+      width: fit-content;
+      height: fit-content;
+      background:rgba(255, 255, 255, 0.4);
+    }
+    .avatarBtn{
+      position: absolute;
+      z-index: 10;
+      top: 10px;
+      right: 10px;
+    }
+    .chatCard{
+      height: 300px;
+      background:rgba(255, 255, 255, 0.1);
+      padding:10px;
+
+      .chatItem{
+        div{
+          border-radius:10px;
+          font-size: 14px;
+          padding:5px;
+          display: inline-block;
+        }
+    }
+    
+    .assistant{
+      .chatAssistant{
+        background:rgba(0, 0, 0, 0.2);
+        color:white;
+      }
+      text-align:left;
+      margin-top:20px;
+      margin-bottom:10px;
+      margin-right:20%;
+    }
+    .user{
+      .chatUser{
+        background:rgba(255, 255, 255, 0.2);
+        color:white
+      }
+      text-align:right;
+      margin-top:20px;
+      margin-bottom:10px;
+      margin-left:20%;
+    }
+  }
+}
+
+.inputCard{
+  background:rgba(255, 255, 255, 0.1);
+  padding:15px;
+  border-radius:5px;
+  text-align: left;
+  ion-textarea{
+    background:rgba(255, 255, 255, 0.2);
+    border-radius:10px;
+    padding:10px;
+    color:white;
+    font-size: 14px;
+  }
+}
+
+.feedbackCard{
+  background:rgba(255, 255, 255, 0.1);
+  color:white;
+  .feedback{
+    background-color: rgba(0, 0, 0, 0.4);
+    color:white;
+    text-align:left;
+    border-radius:10px;
+    font-size: 14px;
+    display:inline-block;
+  }
+  .new_fact{
+    background:rgba(255, 255, 255, 0.5);
+    color: black;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: left;
+    font-size: 14px;
+  }
+}
+app-loader{
+  position: absolute;
+  z-index: 1000;
+  width: calc(100% - 40px);
+}
+.loaderCard{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  margin:0;
+  background:transparent;
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color:white;
+  font-size: 16px;
+  ion-spinner{
+    width:100px;
+    height:100px;
+    color:white;
+  }
+}

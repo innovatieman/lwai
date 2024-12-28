@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { IconsService } from 'src/app/services/icons.service';
 import { NavService } from 'src/app/services/nav.service';
 
 @Component({
@@ -10,6 +11,7 @@ export class NotAuthorizedPage implements OnInit {
 
   constructor(
     private nav: NavService,
+    public icon:IconsService
   ) { }
 
   ngOnInit() {
