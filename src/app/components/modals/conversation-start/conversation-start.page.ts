@@ -26,7 +26,6 @@ export class ConversationStartPage implements OnInit {
 
   ngOnInit() {
     if(this.navParams.get('caseItem')){
-      console.log(this.caseItem)
       this.caseItem = this.navParams.get('caseItem')
     }
   }
@@ -38,8 +37,4 @@ export class ConversationStartPage implements OnInit {
     this.modalCtrl.dismiss(this.caseItem)
   }
 
-  ngOnDestroy(){
-    console.log('destroy')
-
-  }
 }

@@ -72,6 +72,7 @@ import { GroupByPipe } from './group-by.pipe';
     DecimalPipe,
     FilterKeyPipe,
     FilterSearchPipe,
-    SortByPipe]
+    SortByPipe,
+    CleanReactionPipe]
 })
 export class PipesModule { }

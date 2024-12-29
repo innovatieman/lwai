@@ -68,6 +68,10 @@
                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
                     </ion-item>
                     <ion-item lines="none">
+                        <ion-label position="stacked">Avatar ID</ion-label>
+                        <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.avatarName" (ionChange)="update('avatarName')"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none">
                         <ion-label position="stacked">Foto URL</ion-label>
                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.photo" (ionChange)="update('photo')"></ion-input>
                     </ion-item>

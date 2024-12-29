@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import StreamingAvatar, { AvatarQuality, StreamingEvents, TaskType } from '@heygen/streaming-avatar';
 import axios from 'axios';
 
@@ -6,6 +6,7 @@ import axios from 'axios';
   providedIn: 'root',
 })
 export class HeyGenApiService {
+  @Output() active: EventEmitter<boolean> = new EventEmitter();
   private token_url = 'https://getheygentoken-p2qcpa6ahq-ew.a.run.app';
   public textToSpeak: string = '';
   private accessToken: string = '';
@@ -50,23 +51,23 @@ export class HeyGenApiService {
   }
 
   monitorMediaStream(stream: MediaStream) {
-    console.log(stream);
+    // console.log(stream);
     // Controleer de initiële status
-    console.log('MediaStream is active:', stream.active);
-  
+    // console.log('MediaStream is active:', stream.active);
+    this.active.emit(true);
     // Luister naar de 'active' event
-    stream.addEventListener('active', () => {
-      console.log('MediaStream became active.');
-      this.streamIsActive = true;
-      console.log(this.streamIsActive)
-      // Voer hier je logica uit als de stream actief wordt
-    });
+    // stream.addEventListener('active', () => {
+    //   console.log('MediaStream became active.');
+      
+    //   // Voer hier je logica uit als de stream actief wordt
+    // });
   
     // Luister naar de 'inactive' event
     stream.addEventListener('inactive', () => {
-      console.log('MediaStream became inactive.');
-      this.streamIsActive = false;
-      console.log(this.streamIsActive)
+      // console.log('MediaStream became inactive.');
+      // this.streamIsActive = false;
+      this.active.emit(false);
+      // console.log(this.streamIsActive)
       // Voer hier je logica uit als de stream inactief wordt
     });
   }

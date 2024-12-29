@@ -25,6 +25,7 @@ export class ConversationPage implements OnInit {
   Highcharts: typeof Highcharts = Highcharts;
   chartConstructor: string = 'chart';
   updateSubscription:Subscription = new Subscription()
+  activeStream:boolean = false; 
   chartOptions: Highcharts.Options = {
     chart: {
       type: 'gauge',
@@ -148,6 +149,12 @@ cipherTerm:any = {
 
   ngOnInit() {
 
+    this.conversation.activeStream.subscribe((active:boolean)=>{
+      console.log(active)
+      this.activeStream = active
+      this.rf.detectChanges()
+    })
+
     this.route.params.subscribe(params=>{
 
       if(!params['conversation']||!params['case']){
@@ -156,7 +163,7 @@ cipherTerm:any = {
       }
       this.updateSubscription = this.conversation.update.subscribe(()=>{
         setTimeout(() => {
-          if(this.chart){
+          if(this.chart?.series&&this.chart?.series[0]){
             const series = this.chart.series[0]; 
             series.setData([this.conversation.attitude], true);
             this.rf.detectChanges();
@@ -166,7 +173,7 @@ cipherTerm:any = {
 
       this.conversationTitle = params['conversation']
       this.case_id = params['case']
-      
+
       if(localStorage.getItem('activatedCase')==params['case']){
         
         if(localStorage.getItem('personalCase')){
@@ -176,16 +183,17 @@ cipherTerm:any = {
           }
         }
         else{
-         this.startConversation(this.cases.single(params['case']))
+         this.startConversation(params['case'])
         }
 
       }
       else{
+        //
       }
 
     })
     setTimeout(() => {
-      this.continueConversation()
+      // this.continueConversation()
     }, 2000);
   }
 
@@ -194,6 +202,7 @@ cipherTerm:any = {
   }
 
   startConversation(caseItem:any,personal?:boolean){
+    console.log('start conversation')
     this.started = true
     let countTries = 0
     if(!personal){
@@ -204,7 +213,7 @@ cipherTerm:any = {
           localStorage.removeItem('activatedCase')
           console.log(this.cases.single(caseItem))
           if(this.cases.single(caseItem).avatarName){
-            this.interaction = 'video'
+            this.interaction = 'combination'
           }
           this.conversation.startConversation(this.cases.single(caseItem))
         }
@@ -214,7 +223,11 @@ cipherTerm:any = {
       },500)
     }
     else{
+      localStorage.removeItem('activatedCase')
       this.conversation.startConversation(caseItem)
+      if(caseItem.avatarName){
+        this.interaction = 'combination'
+      }
     }
   }
     
@@ -224,6 +237,7 @@ cipherTerm:any = {
   ionViewDidEnter(){
     if(localStorage.getItem('continueConversation')){
       localStorage.removeItem('continueConversation')
+      console.log('continue')
       this.continueConversation()
     }
   }
@@ -250,7 +264,7 @@ cipherTerm:any = {
     if(conversation.avatarName){
       this.interaction = 'video'
     }
-    this.conversation.loadConversation(conversation.conversationId,conversation)
+    this.conversation.loadConversation(conversation.conversationId,conversation,true)
     // setTimeout(() => {
       this.conversation.reloadAtitude()
     // }, 1000);

@@ -84,7 +84,7 @@ exports.chatAI = onRequest(
       if (!messages) {
         // 3. Initialiseer nieuw gesprek als er geen berichten zijn
         // console.log('initialize conversation')
-        messages = await initializeConversation(body.categoryId, body.caseId, body.attitude, body.instructionType, body.userId);
+        messages = await initializeConversation(body.categoryId, body.caseId, body.attitude, body.instructionType, body.userId,body);
         for(let i = 0; i < messages.length; i++){
           db.doc(`users/${body.userId}/conversations/${body.conversationId}/messages/${i}`).set(messages[i]);
         }
@@ -601,7 +601,8 @@ async function initializeConversation(
   caseId: string,
   startAttitude: number,
   instructionType: string,
-  userId: string
+  userId: string,
+  data:any
 ): Promise<any[]> {
   try {
     const categoryRef = db.doc(`categories/${categoryId}`);
@@ -642,10 +643,18 @@ async function initializeConversation(
       systemContent = systemContent + "\n\n" + categoryData.extra_info;
     }
 
-    let userMessage = caseData.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
+
+    let userMessage = ''
+    if(data?.openingMessage){
+      userMessage = data.openingMessage;
+    }
     if(!userMessage){
       userMessage = categoryData.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
     }
+
+    // console.log('userMessage: ' + userMessage);
+
+
     return [
       {
         role: "system",

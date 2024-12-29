@@ -1,7 +1,7 @@
 <app-header [title]="conversationTitle"></app-header>
 
 <main>
-  <app-loader *ngIf="!conversation.loadReady">
+  <app-loader *ngIf="!conversation.loadReady&&started">
     <ion-card class="loaderCard" fullwidth fullheight>
       <div center>
         <ion-spinner name="bubbles"></ion-spinner>
@@ -9,7 +9,39 @@
       </div>
     </ion-card>
   </app-loader>
-  <ion-grid>
+  <ion-grid *ngIf="!started">
+    <ion-row>
+
+      <ion-col size="4" *ngIf="savedConversation">
+        <ion-card noPadding pointer (click)="continueConversation()">
+          <ion-card-content noPadding>
+              <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+              <ion-card-header center>
+                  <ion-card-title>Ga verder waar je gebleven was</ion-card-title>
+              </ion-card-header>
+          </ion-card-content>
+      </ion-card>
+
+      </ion-col>
+      <ion-col size="4">
+
+        <ion-card noPadding pointer (click)="nav.go('start')">
+          <ion-card-content noPadding>
+              <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+              <ion-card-header center>
+                  <ion-card-title>Start een nieuw gesprek</ion-card-title>
+              </ion-card-header>
+          </ion-card-content>
+        </ion-card>
+
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid *ngIf="started">
     <ion-row center>
       <ion-col size="3" noPadding>
         <ion-row>
@@ -77,17 +109,17 @@
         <ion-card basicPadding class="mainCard">
           <ion-row>
             <ion-col size="4">
-              <ion-card class="selectCard" (click)="interaction='video'" [ngClass]="{'selectCardSelected':interaction=='video'}">
+              <ion-card class="selectCard" *ngIf="conversation.caseItem.avatarName" (click)="interaction='video'" [ngClass]="{'selectCardSelected':interaction=='video'}">
                 Video
               </ion-card>
             </ion-col>
             <ion-col size="4">
-              <ion-card class="selectCard" (click)="interaction='chat';conversation.scrollChatToBottom()" [ngClass]="{'selectCardSelected':interaction=='chat'}">
+              <ion-card class="selectCard" (click)="conversation.heyGen.disconnect('avatar_video');interaction='chat';conversation.scrollChatToBottom()" [ngClass]="{'selectCardSelected':interaction=='chat'}">
                 Chat
               </ion-card>
             </ion-col>
             <ion-col size="4">
-              <ion-card class="selectCard" (click)="interaction='combination';conversation.scrollChatToBottom()" [ngClass]="{'selectCardSelected':interaction=='combination'}">
+              <ion-card class="selectCard" *ngIf="conversation.caseItem.avatarName" (click)="(!activeStream&&interaction=='chat' ? conversation.restartAvatar() : helpers.doNothing()) ; interaction='combination';conversation.scrollChatToBottom()" [ngClass]="{'selectCardSelected':interaction=='combination'}">
                 Gecombineerd
               </ion-card>
             </ion-col>
@@ -97,10 +129,10 @@
               <ion-card class="videoCard" >
                 <video class="avatar" id="avatar_video" autoplay playsinline *ngIf="conversation.caseItem.avatarName"></video>
                 <img class="avatar" src="assets/img/default_avatar.png" *ngIf="!conversation.caseItem.avatarName">
-                <ion-button class="avatarBtn" color="danger" *ngIf="conversation.heyGen.streamIsActive" (click)="conversation.heyGen.disconnect('avatar_video')">
+                <ion-button class="avatarBtn" color="danger" *ngIf="activeStream" (click)="conversation.heyGen.disconnect('avatar_video')">
                   <fa-icon [icon]="icon.get('faStop')" ></fa-icon>
                 </ion-button>
-                <ion-button class="avatarBtn" color="danger" *ngIf="!conversation.heyGen.streamIsActive" (click)="conversation.restartAvatar()">
+                <ion-button class="avatarBtn" color="danger" *ngIf="!activeStream" (click)="conversation.restartAvatar()">
                   <fa-icon [icon]="icon.get('faPlay')" ></fa-icon>
                 </ion-button>
               </ion-card>

@@ -12,6 +12,7 @@ export class HelpersService {
     public translate:TranslateService
   ) { }
 
+  doNothing(){}
 
   countWords(text:string){
     if(!text){return 0}

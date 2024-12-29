@@ -8,12 +8,14 @@ import { Subscription } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { HeyGenApiService } from './heygen.service';
 import { ModalService } from './modal.service';
+import { CleanReactionPipe } from '../pipes/clean-reaction.pipe';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConversationService implements OnDestroy {
   @Output() update: EventEmitter<boolean> = new EventEmitter();
+  @Output() activeStream: EventEmitter<boolean> = new EventEmitter();
   attitude:number = 0
   tempText:string = ''
   tempTextUser:string = ''
@@ -39,12 +41,56 @@ export class ConversationService implements OnDestroy {
     private firestore: AngularFirestore,
     public heyGen:HeyGenApiService,
     private modalService:ModalService,
+    private cleanReactionPipe:CleanReactionPipe
 
-  ) { }
+  ) { 
+    this.heyGen.active.subscribe((active:boolean)=>{
+      this.activeStream.emit(active)
+    })
+  }
 
+  async startConversation(caseItem:any){
+    console.log(caseItem)
+    this.caseItem = caseItem
+    this.caseItem.conversationType = caseItem.conversation
+    // userId, conversationId, categoryId, caseId, instructionType, attitude
+    this.dialog_role = caseItem.role;
+    this.waiting = true;
+    let conversationId = ''
+    let openingMessage = caseItem.openingMessage || ''
+    let steadFastness = caseItem.steadFastness || 0
+    await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',{
+      caseId:caseItem.id,
+      timestamp: new Date().getTime(),
+      role:caseItem.role,
+      attitude:caseItem.attitude,
+      conversationType:caseItem.conversation,
+      openingMessage:openingMessage,
+      steadFastness:steadFastness,
+    },(response:any)=>{
+      conversationId = response.id
+      localStorage.setItem('conversation',JSON.stringify({conversationId, ...caseItem}))
+      this.loadConversation(conversationId)
+    })
 
+    // let obj:any = {
+    //   userId:this.auth.userInfo.uid,
+    //   conversationId:conversationId,
+    //   categoryId:caseItem.conversation,
+    //   caseId:caseItem.id,
+    //   instructionType:'reaction',
+    //   attitude:this.caseItem.attitude,
+    //   openingMessage:openingMessage,
+    //   steadFastness:steadFastness
+    // }
+    // this.startLoading('reaction')
+    // this.startLoading('facts')
+    // this.getExtraInfo('facts',conversationId)
+    // this.openai_chat(obj)
 
-  loadConversation(conversationId: string,caseItem?:any): void {
+  }
+
+  loadConversation(conversationId: string,caseItem?:any,continuing?:boolean): void {
     // console.log(`users/${this.auth.userInfo.uid}/conversations/${conversationId}`)
     
 
@@ -68,9 +114,35 @@ export class ConversationService implements OnDestroy {
     if(this.caseItem.avatarName){
       this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
         this.loadReady = true;
+        if(this.latestAssistantItem(this.activeConversation.messages) && !this.isLoading('reaction')){
+          console.log('speak')
+          this.heyGen.speakText(this.cleanReactionPipe.transform(this.latestAssistantItem(this.activeConversation.messages)));
+        }
       })
     }
-    
+
+    if(!continuing){
+      let checkInt = setInterval(() => {
+        if(this.activeConversation?.role){
+          clearInterval(checkInt)
+          this.startLoading('reaction')
+          this.startLoading('facts')
+          this.getExtraInfo('facts',conversationId)
+          let obj:any = {
+            userId:this.auth.userInfo.uid,
+            conversationId:conversationId,
+            categoryId:this.caseItem.conversation,
+            caseId:this.caseItem.id,
+            instructionType:'reaction',
+            attitude:this.caseItem.attitude,
+            openingMessage:this.caseItem.openingMessage,
+            steadFastness:this.caseItem.steadFastness
+          }
+          this.openai_chat(obj)
+        }
+      },100);
+    }
+
   }
 
   restartAvatar(){
@@ -156,48 +228,11 @@ export class ConversationService implements OnDestroy {
 
   
 
-  async startConversation(caseItem:any){
-    this.caseItem = caseItem
-    this.caseItem.conversationType = caseItem.conversation
-    // userId, conversationId, categoryId, caseId, instructionType, attitude
-    this.dialog_role = caseItem.role;
-    this.waiting = true;
-    let conversationId = ''
-    let openingMessage = caseItem.openingMessage || ''
-    let steadFastness = caseItem.steadFastness || 0
-    await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',{
-      caseId:caseItem.id,
-      timestamp: new Date().getTime(),
-      role:caseItem.role,
-      attitude:caseItem.attitude,
-      conversationType:caseItem.conversation,
-      openingMessage:openingMessage,
-      steadFastness:steadFastness,
-    },(response:any)=>{
-      conversationId = response.id
-      localStorage.setItem('conversation',JSON.stringify({conversationId, ...caseItem}))
-      this.loadConversation(conversationId)
-    })
-
-    let obj:any = {
-      userId:this.auth.userInfo.uid,
-      conversationId:conversationId,
-      categoryId:caseItem.conversation,
-      caseId:caseItem.id,
-      instructionType:'reaction',
-      attitude:this.caseItem.attitude,
-      openingMessage:openingMessage,
-      steadFastness:steadFastness
-    }
-    this.startLoading('reaction')
-    this.startLoading('facts')
-    this.getExtraInfo('facts',conversationId)
-    this.openai_chat(obj)
-
-  }
+ 
 
 
   async openai_chat(obj:any) {
+    // console.log(obj)
     this.messages.push({role:'user',content:this.message})
     this.attitude = obj.attitude
     this.update.emit(true);
