@@ -42,6 +42,11 @@ html,body{
     font-size: 14px;
     color:var(--ion-color-dark);
     font-weight:400;
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    scrollbar-color:var(--color-global) rgba(255, 255, 255, 0);
 }
 
 h1, h2,h3{
@@ -50,10 +55,37 @@ h1, h2,h3{
     color: black;
 }
 h2{
-    font-size: 4em;
+    font-size: 1.75em;
 }
 h3{
-    font-size: 2em;
+    font-size: 1.4em;
+}
+
+.unavailable{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--background-global);
+    z-index: 5;
+    border-radius: 5px;
+}
+
+
+ion-card-title{
+    font-size: 1.2em;
+}
+ion-item{
+    ion-label{
+        --color:var(--ion-color-dark)!important;
+    }
+    ion-textarea{
+        --color:var(--ion-color-dark)!important;
+    }
+    ion-input{
+        --color:var(--ion-color-dark)!important;
+    }
 }
 .spacer{
     flex: 1 1 auto;
@@ -66,6 +98,12 @@ h3{
 }
 [font-18]{
     font-size: 18px;
+}
+[font-20]{
+    font-size: 20px;
+}
+[font-24]{
+    font-size: 24px;
 }
 [weight700]{
     font-weight: 700;
@@ -106,7 +144,12 @@ h3{
 [text-medium]{
     color: var(--ion-color-medium);
 }
-
+[marginBottom]{
+    margin-bottom: 20px;
+}
+[autoScroll]{
+    overflow: auto;
+}
 [flex], .flex{
     display: flex!important;
 }
@@ -161,6 +204,9 @@ h3{
 [pointer]:hover{
     transform:scale(1.005);
 }
+[reorder]{
+    cursor: grab;
+}
 [basicPadding]{
     padding: 15px;
 }
@@ -168,7 +214,13 @@ h3{
     padding: 0;
 }
 [noMargin]{
-    margin: 0;
+    margin: 0!important;
+}
+[margin10]{
+    margin: 10px;
+}
+[margin20]{
+    margin: 20px;
 }
 [padding20]{
     padding: 20px;
@@ -198,7 +250,30 @@ h3{
     background-color: var(--ion-color-tertiary);
     color: var(--ion-color-tertiary-contrast);
 }
-
+[solidLight]{
+    background-color: var(--ion-color-light);
+    color: var(--ion-color-light-contrast);
+}
+[solidDark]{
+    background-color: var(--ion-color-dark);
+    color: var(--ion-color-dark-contrast);
+}
+[solidMedium]{
+    background-color: var(--ion-color-medium);
+    color: var(--ion-color-medium-contrast);
+}
+[solidDanger]{
+    background-color: var(--ion-color-danger);
+    color: var(--ion-color-danger-contrast);
+}
+[solidSuccess]{
+    background-color: var(--ion-color-success);
+    color: var(--ion-color-success-contrast);
+}
+[solidWarning]{
+    background-color: var(--ion-color-warning);
+    color: var(--ion-color-warning-contrast);
+}
 [borderPrimary]{
     border: solid 2px var(--ion-color-primary);
 }
@@ -226,8 +301,19 @@ h3{
 [borderWarning]{
     border: solid 2px var(--ion-color-warning);
 }
+[singleLine]{
+    border-bottom: solid 2px rgba(255, 255, 255, 0.3);
+    width:100%;
+    margin:15px 0px;
+}
 [trash]{
     color: var(--ion-color-danger);
+}
+[iconContinue]{
+    color: var(--ion-color-warning);
+}
+[iconClosed]{
+    color: var(--ion-color-success);
 }
 [backgroundImage]{
     height: 100%;
@@ -259,8 +345,12 @@ app-header{
     background-color: var(--ion-color-light);
 }
 .activeTab, .activeTab:hover{
-    background-color: var(--ion-color-medium);
+    background: rgba(255, 255, 255, 0.2);
 }
+.activeAgent, .activeAgent:hover{
+    background: rgba(255, 255, 255, 0.4) !important;
+}
+
 [newTab]{
     border-color: var(--ion-color-primary);
     border-width: 2px;
@@ -288,6 +378,10 @@ video{
 .modalIntro{
     font-size: 16px;
 }
+
+.editHtmlModal .modal-wrapper {
+    width: 80%;
+ }
 
 ion-modal.infoModal, ion-modal.show-modal {
     --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
@@ -362,12 +456,12 @@ main{
     color:var(--color-global);
 }
 .buttonBarMargin{
-    margin-top: 30px;
+    margin-top: 50px;
 }
 
 
 .selectColumn{
-    max-height:calc(100vh - 160px);
+    max-height:calc(100%);
     overflow:hidden;
     overflow-y:auto;
     scrollbar-color:var(--color-global) rgba(255, 255, 255, 0);
@@ -382,9 +476,23 @@ main{
     ion-card:hover{
         background: rgba(255, 255, 255, 0.2);
     }
+    
+    .activeTab, .activeTab:hover{
+        background: rgba(255, 255, 255, 0.4);
+    }
+    .headerCard{
+        background: rgba(255, 255, 255, 0.3);
+        color:var(--color-global);
+        ion-card-title{
+            color:var(--color-global);
+        }
+    }
+    .headerCard:hover{
+        background: rgba(255, 255, 255, 0.3);
+    }
 }
 .detailColumn{
-    max-height:calc(100vh - 160px);
+    max-height:calc(100%);
     overflow:hidden;
     overflow-y:auto;
     scrollbar-color:var(--color-global) rgba(255, 255, 255, 0);

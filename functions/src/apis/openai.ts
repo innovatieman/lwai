@@ -1,7 +1,18 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { encoding_for_model } = require("tiktoken");
+// const formidable = require("formidable");
+// const fs = require("fs");
+// const FormData = require("form-data");
+// const { Readable } = require("stream");
+const fs = require("fs");
+const path = require("path");
+
 import { db } from "../firebase";
 import openai from '../configs/config-openai';
 import { config } from '../configs/config-basics';
+
+// const openAiModal = 'gpt-4-turbo';
+const openAiModal = 'gpt-4o';
 // import { ChatCompletionMessageParam } from 'openai/resources';
 
 // exports.test4 = onRequest(
@@ -27,7 +38,7 @@ import { config } from '../configs/config-basics';
 //       ];
 
 //       const stream = await openai.chat.completions.create({
-//         model: "gpt-4-turbo",
+//         model: openAiModal,
 //         messages: messages,
 //         temperature: 0.7,
 //         max_tokens: 512,
@@ -58,7 +69,6 @@ exports.chatAI = onRequest(
 
 
     try {
-      // const { prompt, userId, conversationId, categoryId, caseId, instructionType, attitude } = req.body;
       const body = req.body;
 
       if((!body.userId) || (!body.conversationId) || (!body.categoryId) || (!body.caseId) || (!body.instructionType) || (!body.attitude) || (!body.prompt && !body.conversationId)){
@@ -66,8 +76,6 @@ exports.chatAI = onRequest(
         res.status(400).send("Missing required parameters in request body");
         return;
       }
-
-
 
       // 1. Controleer abonnement
       const hasValidSubscription = await checkUserSubscription(body.userId);
@@ -106,24 +114,46 @@ exports.chatAI = onRequest(
       
       // 4. Voeg prompt toe aan berichten
 
+      // Bereken prompt_tokens
+      const encoding = encoding_for_model(openAiModal);
+      const promptTokens = messages.reduce((total, msg) => {
+        const tokens = encoding.encode(msg.content);
+        return total + tokens.length;
+      }, 0);
+
+      const [agent_instructions] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId), 
+      ]);
+
       // 5. Start streaming OpenAI-antwoord
       const stream = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: openAiModal,
         messages: messages,
-        temperature: 0.7,
-        max_tokens: 3000,
+        temperature: agent_instructions.temperature,
+        max_tokens: agent_instructions.max_tokens,
         stream: true,
       });
       
+
       let completeMessage = '';
+      let completionTokens = 0;
+
       for await (const chunk of stream) {
         const payload = chunk.choices[0]?.delta?.content;
         if (payload) {
           res.write(payload);
           completeMessage = completeMessage + payload;
+
+          // Tel tokens in de huidige chunk
+          const tokens = encoding.encode(payload);
+          completionTokens += tokens.length;
         }
       }
       res.end();
+
+      const totalTokens = promptTokens + completionTokens;
+      encoding.free();
+
       // console.log('messages id found: ' + messages.length)
       let message_id = messages.length;
       let messageRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/messages/${message_id}`);
@@ -139,6 +169,18 @@ exports.chatAI = onRequest(
         loading: false,
       });
       
+      let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      await tokensRef.add({
+        agent: body.instructionType,
+        usage: {
+          prompt_tokens: promptTokens,
+          completion_tokens: completionTokens,
+          total_tokens: totalTokens,
+        },
+        timestamp: new Date().getTime(),
+      });
+
+
     } catch (error) {
       console.error("Error tijdens streaming:", error);
       res.status(500).send("Error tijdens streaming");
@@ -146,8 +188,7 @@ exports.chatAI = onRequest(
   }
 );
 
-
-exports.conversationAIDirect = onRequest(
+exports.choicesAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
     res.setHeader("Content-Type", "text/event-stream");
@@ -179,9 +220,10 @@ exports.conversationAIDirect = onRequest(
 
       const categoryRef = db.doc(`categories/${body.categoryId}`);
 
-      const [instructions, categorySnap] = await Promise.all([
-        getInstructions(body.instructionType), 
+      const [agent_instructions, categorySnap,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId), 
         categoryRef.get(), 
+        getFormats(body.instructionType)
       ]);
 
     if (!categorySnap.exists) {
@@ -190,10 +232,11 @@ exports.conversationAIDirect = onRequest(
 
       const categoryData = categorySnap.data();
 
+      let systemContent = agent_instructions.systemContent
 
-      let content = instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title);
+      let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title);
       content = content.split('[message]').join(cleanReactionMessage(messages[messages.length-1].content));
-      content = content + '\n\n' + instructions.format;
+      content = content + '\n\n' + formats.format + '\n\n' + formats.instructions;
       // content = content + '\n\n' + JSON.stringify(messagesToConversationString(messages,body.role));
 
       // res.write(content+'\n\n');
@@ -212,16 +255,21 @@ exports.conversationAIDirect = onRequest(
       }
       else{
         sendMessages.push({
+          role: "system",
+          content: systemContent,
+        })
+
+        sendMessages.push({
           role: "user",
           content: content,
         })
       }
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: openAiModal,
         messages: sendMessages,
-        temperature: 0.7,
-        max_tokens: 3000,
+        temperature: agent_instructions.temperature,
+        max_tokens: agent_instructions.max_tokens,
       });
 
       const completeMessage = completion.choices[0].message.content;
@@ -239,6 +287,12 @@ exports.conversationAIDirect = onRequest(
         loading: false,
       })
 
+      let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      await tokensRef.add({
+        agent: body.instructionType,
+        usage: completion.usage,
+        timestamp: new Date().getTime(),
+      });
       // 7. Retourneer het complete antwoord
       res.status(200).send('ready');
       //res.write(payload);
@@ -288,9 +342,10 @@ exports.factsAI = onRequest(
 
       const categoryRef = db.doc(`categories/${body.categoryId}`);
 
-      const [instructions, categorySnap] = await Promise.all([
-        getInstructions(body.instructionType), 
+      const [agent_instructions, categorySnap,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId), 
         categoryRef.get(), 
+        getFormats(body.instructionType)
       ]);
 
       if (!categorySnap.exists) {
@@ -299,10 +354,11 @@ exports.factsAI = onRequest(
 
       const categoryData = categorySnap.data();
 
-
-      let content = instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
+      let systemContent = agent_instructions.systemContent
+      
+      let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
       content = content.split('[facts]').join(messageText);
-      content = content + '\n\n' + instructions.format;
+      content = content + '\n\n' + formats.format + '\n\n' + formats.instructions;
 
 
       // messageRef.add({
@@ -314,15 +370,20 @@ exports.factsAI = onRequest(
       let sendMessages:any[] = []
 
       sendMessages.push({
+        role: "system",
+        content: systemContent,
+      })
+
+      sendMessages.push({
         role: "user",
         content: content,
       })
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: openAiModal,
         messages: sendMessages,
-        temperature: 0.7,
-        max_tokens: 500,
+        temperature: agent_instructions.temperature,
+        max_tokens: agent_instructions.max_tokens,
       });
 
       const completeMessage = completion.choices[0].message.content;
@@ -341,6 +402,13 @@ exports.factsAI = onRequest(
       await messageRef.doc(body.instructionType).set({
         loading: false,
       })
+
+      let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      await tokensRef.add({
+        agent: body.instructionType,
+        usage: completion.usage,
+        timestamp: new Date().getTime(),
+      });
 
       // 7. Retourneer het complete antwoord
       res.status(200).send('ready');
@@ -396,9 +464,10 @@ exports.phasesAI = onRequest(
 
       const categoryRef = db.doc(`categories/${body.categoryId}`);
 
-      const [instructions, categorySnap] = await Promise.all([
-        getInstructions(body.instructionType), 
+      const [agent_instructions, categorySnap,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId), 
         categoryRef.get(), 
+        getFormats(body.instructionType)
       ]);
 
       if (!categorySnap.exists) {
@@ -408,10 +477,10 @@ exports.phasesAI = onRequest(
       const categoryData = categorySnap.data();
 
 
-      let systemContent = instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
+      let systemContent = agent_instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
       systemContent = systemContent.split(`[${body.instructionType}]`).join(JSON.stringify(categoryData[body.instructionType]));
       systemContent = systemContent.split(`[feedback]`).join(JSON.stringify(feedback));
-      systemContent = systemContent + '\n\n' + instructions.format;
+      systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
 
       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
 
@@ -428,7 +497,7 @@ exports.phasesAI = onRequest(
         content: systemContent,
       })
 
-      let content = instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
+      let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
       content = content.split(`[conversation]`).join(messageText);
 
 
@@ -437,11 +506,17 @@ exports.phasesAI = onRequest(
         content: content,
       })
 
+      // await messageRef.add({
+      //   role: "user",
+      //   content: content,
+      //   timestamp: new Date().getTime(),
+      // });
+
       const completion = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: openAiModal,
         messages: sendMessages,
-        temperature: 0.2,
-        max_tokens: 1000,
+        temperature: agent_instructions.temperature,
+        max_tokens: agent_instructions.max_tokens,
       });
 
       const completeMessage = completion.choices[0].message.content;
@@ -457,6 +532,13 @@ exports.phasesAI = onRequest(
       await messageRef.doc(body.instructionType).set({
         loading: false,
       })
+
+      let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      await tokensRef.add({
+        agent: body.instructionType,
+        usage: completion.usage,
+        timestamp: new Date().getTime(),
+      });
 
       // 7. Retourneer het complete antwoord
       res.status(200).send('ready');
@@ -519,9 +601,10 @@ exports.feedbackAI = onRequest(
 
       const categoryRef = db.doc(`categories/${body.categoryId}`);
 
-      const [instructions, categorySnap] = await Promise.all([
-        getInstructions(body.instructionType), 
+      const [agent_instructions, categorySnap,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId), 
         categoryRef.get(), 
+        getFormats(body.instructionType)
       ]);
 
       if (!categorySnap.exists) {
@@ -531,17 +614,17 @@ exports.feedbackAI = onRequest(
       const categoryData = categorySnap.data();
 
 
-      let systemContent = instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
+      let systemContent = agent_instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
       systemContent = systemContent.split(`[${body.instructionType}]`).join(JSON.stringify(categoryData[body.instructionType]));
-      systemContent = systemContent + '\n\n' + instructions.format;
+      systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
 
       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
 
-      await messageRef.add({
-        role: "system",
-        content: systemContent,
-        timestamp: new Date().getTime(),
-      });
+      // await messageRef.add({
+      //   role: "system",
+      //   content: systemContent,
+      //   timestamp: new Date().getTime(),
+      // });
 
       let sendMessages:any[] = []
 
@@ -550,14 +633,14 @@ exports.feedbackAI = onRequest(
         content: systemContent,
       })
 
-      let content = instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
+      let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
       content = content.split(`[conversation]`).join(messageText);
 
-      await messageRef.add({
-        role: "user",
-        content: content,
-        timestamp: new Date().getTime(),
-      });
+      // await messageRef.add({
+      //   role: "user",
+      //   content: content,
+      //   timestamp: new Date().getTime(),
+      // });
 
       sendMessages.push({
         role: "user",
@@ -565,10 +648,10 @@ exports.feedbackAI = onRequest(
       })
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: openAiModal,
         messages: sendMessages,
-        temperature: 0.2,
-        max_tokens: 1000,
+        temperature: agent_instructions.temperature,
+        max_tokens: agent_instructions.max_tokens,
       });
 
       const completeMessage = completion.choices[0].message.content;
@@ -585,6 +668,13 @@ exports.feedbackAI = onRequest(
         loading: false,
       })
 
+      let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      await tokensRef.add({
+        agent: body.instructionType,
+        usage: completion.usage,
+        timestamp: new Date().getTime(),
+      });
+
       // 7. Retourneer het complete antwoord
       res.status(200).send('ready');
       //res.write(payload);
@@ -595,6 +685,179 @@ exports.feedbackAI = onRequest(
     }
   }
 );
+
+exports.closingAI = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" },
+  async (req: any, res: any) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+
+    try {
+      const body = req.body;
+      if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.categoryId)){
+        console.log("Missing required parameters in request body");
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+
+      // 1. Controleer abonnement
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      // 2. Haal eerdere berichten op (indien aanwezig)
+      let messages = []
+      messages = await getPreviousMessages(body.userId, body.conversationId);
+      if (!messages) {
+        messages = [{content:`no ${body.instructionType} found`}];
+      }
+
+      let messageText = JSON.stringify(messages);
+      
+
+      const categoryRef = db.doc(`categories/${body.categoryId}`);
+
+      const [agent_instructions,categorySnap,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId),
+        categoryRef.get(), 
+        getFormats(body.instructionType)
+      ]);
+
+      if (!categorySnap.exists) {
+        throw new Error("Category not found");
+      }
+
+      const categoryData = categorySnap.data();
+
+
+      let systemContent = agent_instructions.systemContent
+      systemContent = systemContent.split(`[phases]`).join(JSON.stringify(categoryData['phases']));
+      systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
+
+      let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
+
+      let sendMessages:any[] = []
+
+      sendMessages.push({
+        role: "system",
+        content: systemContent,
+      })
+
+      sendMessages.push({
+        role: "user",
+        content: agent_instructions.content.split('[messages').join(messageText),
+      })
+
+      const completion = await openai.chat.completions.create({
+        model: openAiModal,
+        messages: sendMessages,
+        temperature: 0.5,
+        max_tokens: 3000,
+      });
+
+      const completeMessage = completion.choices[0].message.content;
+
+      await messageRef.add({
+        role: "assistant",
+        content: completeMessage,
+        timestamp: new Date().getTime(),
+      });
+
+      messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
+
+      await messageRef.doc(body.instructionType).set({
+        loading: false,
+      })
+
+      messageRef = db.collection(`users/${body.userId}/conversations/`);
+
+      await messageRef.doc(body.conversationId).update({
+        closed: new Date().getTime(),
+      })
+
+      let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      await tokensRef.add({
+        agent: body.instructionType,
+        usage: completion.usage,
+        timestamp: new Date().getTime(),
+      });
+
+      // 7. Retourneer het complete antwoord
+      res.status(200).send('ready');
+      //res.write(payload);
+        
+    } catch (error) {
+      console.error("Error tijdens streaming:", error);
+      res.status(500).send("Error tijdens streaming");
+    }
+  }
+);
+
+exports.promptCheckerAI = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" },
+  async (req: any, res: any) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+  
+    const body = req.body;
+    if((!body.userId) || (!body.input)){
+      console.log("Missing required parameters in request body");
+      res.status(400).send("Missing required parameters in request body");
+      return;
+    }
+
+    // 1. Controleer abonnement
+    const hasValidSubscription = await checkUserSubscription(body.userId);
+    if (!hasValidSubscription) {
+      res.status(403).send("User does not have a valid subscription");
+      return;
+    }
+    res.status(200).send('ready');
+  }
+)
+
+
+exports.soundToTextAI = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb' },
+
+  async (req:any, res:any) => {
+    try {
+      const { userId, file } = req.body; // Haal de userId en base64-gecodeerde file op
+
+      if (!userId || !file) {
+        res.status(400).send("Missing required fields");
+        return;
+      }
+
+      const buffer:any = Buffer.from(file, "base64");
+      const filePath = path.join("/tmp", `audio-${Date.now()}.webm`);
+      fs.writeFileSync(filePath, buffer);
+
+      const fileStream = fs.createReadStream(filePath);
+      const whisperResponse = await openai.audio.transcriptions.create({
+        model: "whisper-1",
+        file: fileStream,
+        temperature: 0.3,
+      });
+
+      const transcription = whisperResponse.text;
+      fs.unlinkSync(filePath);
+      res.status(200).json({ transcription });
+    } catch (error) {
+      console.error("Error processing request:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+
+)
+
+
+
 
 async function initializeConversation(
   categoryId: string,
@@ -608,24 +871,27 @@ async function initializeConversation(
     const categoryRef = db.doc(`categories/${categoryId}`);
     const caseRef = db.doc(`cases/${caseId}`);
 
-    const [categorySnap, caseSnap, attitudes, instructions, userData] = await Promise.all([
+    const [categorySnap, caseSnap, attitudes, positions, agent_instructions, userData,formats] = await Promise.all([
       categoryRef.get(),                  // Haal category op
       caseRef.get(),                      // Haal case op
       getAllAttitudes(),                  // Haal attitudes op
-      getInstructions(instructionType),   // Haal instructions op
-      getUserInfo(userId)                 // Haal user info op
+      getAllPositions(),                  // Haal positions op
+      getAgentInstructions(instructionType,categoryId),   // Haal instructions op
+      getUserInfo(userId)         ,        // Haal user info op
+      getFormats(instructionType)
     ]);
 
     if (!categorySnap.exists || !caseSnap.exists) {
       throw new Error("Category or Case not found");
     }
 
-    const categoryData = categorySnap.data();
+    // const categoryData = categorySnap.data();
     const caseData = caseSnap.data();
     const attitudesText = JSON.stringify(attitudes);
+    const positionsText = JSON.stringify(positions);
     
 
-    let systemContent = categoryData.systemContent;
+    let systemContent = agent_instructions.systemContent;
     systemContent = systemContent.split("[role]").join(caseData.role); 
     systemContent = systemContent.replace("[description]", caseData.description);
     if(caseData.steadfastness){
@@ -633,23 +899,32 @@ async function initializeConversation(
     }
     systemContent = systemContent.replace("[attitudes]", attitudesText);
     systemContent = systemContent.replace("[current_attitude]", startAttitude.toString());
-    systemContent = systemContent + '\n\n' + instructions.format;
+
+    systemContent = systemContent.replace("[positions]", positionsText);
+    systemContent = systemContent.replace("[current_position]", startAttitude.toString());
+
+    systemContent = systemContent + "\n\n" + formats.format + '\n\n' + formats.instructions;
 
     if(caseData.casus){
       systemContent = systemContent + "\nDe casus is als volgt: " + caseData.casus;
     }
 
-    if(categoryData.extra_info){
-      systemContent = systemContent + "\n\n" + categoryData.extra_info;
+    if(caseData.interest_goals){
+      systemContent = systemContent.replace("[interest_goals]", caseData.interest_goals);
     }
 
+    if(agent_instructions.extra_info){
+      systemContent = systemContent + "\n\n" + agent_instructions.extra_info;
+    }
+
+    
 
     let userMessage = ''
     if(data?.openingMessage){
       userMessage = data.openingMessage;
     }
     if(!userMessage){
-      userMessage = categoryData.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
+      userMessage = agent_instructions.content.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
     }
 
     // console.log('userMessage: ' + userMessage);
@@ -691,10 +966,45 @@ async function getAllAttitudes(): Promise<{ id: string; [key: string]: any }[]> 
   }
 }
 
-async function getInstructions(type: string): Promise<{ [key: string]: any } | null> {
-  // console.log('instructions' + type)
+async function getAllPositions(): Promise<{ id: string; [key: string]: any }[]> {
   try {
-    const snapshot = await db.collection("instructions").doc(type).get();
+    const snapshot = await db.collection("positions").orderBy("level").get();
+    if (snapshot.empty) {
+      console.warn("Geen positions gevonden in Firestore.");
+      return [];
+    }
+
+    return snapshot.docs.map((doc) => {
+      
+      return { id: doc.id, ...doc.data() };
+    });
+  } catch (error) {
+    console.error("Error bij ophalen positions:", error);
+    throw new Error("Kan positions niet ophalen.");
+  }
+}
+
+// async function getInstructions(type: string): Promise<{ [key: string]: any } | null> {
+//   // console.log('instructions' + type)
+//   try {
+//     const snapshot = await db.collection("instructions").doc(type).get();
+//     if (!snapshot.exists) {
+//       console.warn(`Geen instructies gevonden voor type: ${type}`);
+//       return null;
+//     }
+//     return snapshot.data();
+//   } catch (error) {
+//     console.error("Error bij ophalen instructies:", error);
+//     throw new Error("Kan instructies niet ophalen.");
+//   }
+// }
+
+
+async function getAgentInstructions(type: string, categoryId:string): Promise<{ [key: string]: any } | null> {
+  // console.log('instructions' + type)
+
+  try {
+    const snapshot = await db.collection("categories").doc(categoryId).collection('agents').doc(type).get();
     if (!snapshot.exists) {
       console.warn(`Geen instructies gevonden voor type: ${type}`);
       return null;
@@ -704,6 +1014,24 @@ async function getInstructions(type: string): Promise<{ [key: string]: any } | n
     console.error("Error bij ophalen instructies:", error);
     throw new Error("Kan instructies niet ophalen.");
   }
+
+}
+
+async function getFormats(type: string): Promise<{ [key: string]: any } | null> {
+  // console.log('instructions' + type)
+
+  try {
+    const snapshot = await db.collection("formats").doc(type).get();
+    if (!snapshot.exists) {
+      console.warn(`Geen formats gevonden voor type: ${type}`);
+      return null;
+    }
+    return snapshot.data();
+  } catch (error) {
+    console.error("Error bij ophalen instructies:", error);
+    throw new Error("Kan instructies niet ophalen.");
+  }
+
 }
 
 async function checkUserSubscription(userId: string): Promise<boolean> {
@@ -777,7 +1105,10 @@ async function getPreviousMessages(userId: string, conversationId: string, subCo
 
 function cleanReactionMessage(message:string){
   let cleanMessageArr = message.split(', reaction:');
+  if(cleanMessageArr.length < 2){
+    return message;
+  }
   cleanMessageArr.splice(0,1);
-  let reaction = cleanMessageArr.join(', reaction:');
+  let reaction = cleanMessageArr.join('');
   return reaction;
 }

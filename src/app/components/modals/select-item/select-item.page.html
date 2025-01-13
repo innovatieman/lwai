@@ -1,0 +1,70 @@
+
+
+  <ion-header>
+    <ion-toolbar style="padding-left:20px">
+      <div class="toolbox-title">
+        <p class="subtitle-top" noMargin>{{title}}</p>
+      </div>
+      <!-- <h3 style="padding: 0 15px;color:var(--ion-color-primary)" font-title>{{title}}</h3> -->
+    </ion-toolbar>
+    <ion-toolbar style="padding:0 10px;">
+      <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" *ngIf="!extraData||!extraData.multiple" [placeholder]="translate.instant('search')"></ion-searchbar>
+      <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" (keyup)="selectAll(true)" *ngIf="extraData&&extraData.multiple" [placeholder]="translate.instant('search')"></ion-searchbar>
+    </ion-toolbar>
+  </ion-header>
+  <div class="inner-content">
+      <div *ngIf="text" style="padding: 10px 15px 0px 15px;font-weight:500;font-size:18" [innerHtml]="text"></div>
+      <div style="max-height: calc(100% - 200px);overflow: auto;margin-bottom: 60px;">
+    
+        <ion-list>
+          <div  style="margin-bottom:15px;" *ngIf="!extraData||!extraData.object">
+            <ion-item *ngFor="let listItem of list | filterSearch : search" button (click)="modal.dismiss(listItem)">
+              <ion-thumbnail slot="start" *ngIf="listItem.lang" style="--size:30px;width:35px;height:25px;">
+                <img [src]="'./assets/img/'+listItem.value+'.png'" [alt]="listItem.lang">
+              </ion-thumbnail>
+              <fa-icon *ngIf="listItem.icon" [icon]="iconList ? icon.get(listItem) : icon.get(listItem.icon)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
+              <fa-icon *ngIf="!listItem.icon&&iconList" [icon]="icon.get(listItem)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
+              <ion-label *ngIf="listItem.title" color="dark" [innerHtml]="listItem.title | sanitizeHtml"></ion-label>
+              <ion-label *ngIf="!listItem.title" color="dark" [innerHtml]="listItem | sanitizeHtml"></ion-label>
+              <ion-note color="primary">{{listItem.note}}</ion-note>
+              <fa-icon *ngIf="listItem.iconLast" [icon]="iconList ? icon.get(listItem) : icon.get(listItem.iconLast)" style="font-size:15px;color:var(--ion-color-dark);width:25px;height: 25px;margin-right: 10px;text-align: center;line-height: 25px;"></fa-icon>
+            </ion-item>
+          </div>
+          <div  style="margin-bottom:15px;" *ngIf="extraData&&extraData.object&&!extraData.multiple">
+            <ion-item *ngFor="let listItem of list | filterSearch : search" button (click)="listItem.type==='subTitle' ? doNothing() : modal.dismiss(listItem)" [lines]="listItem.type==='subTitle' ? 'none' : undefined">
+              <fa-icon *ngIf="listItem.icon" [icon]="iconList ? icon.get(listItem) : icon.get(listItem.icon)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
+              <fa-icon *ngIf="!listItem.icon&&iconList" [icon]="icon.get(listItem)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
+              <ion-label *ngIf="listItem.title" color="dark" [ngClass]="{'font-title' : listItem.type==='subTitle'}" [ngStyle]="{'font-size' : listItem.type==='subTitle' ? '20px' : 'inherit','color':listItem.type==='subTitle' ? 'black' : 'inherit'}" [innerHtml]="listItem.title | sanitizeHtml"></ion-label>
+              <ion-label *ngIf="!listItem.title" color="dark" [innerHtml]="listItem | sanitizeHtml"></ion-label>
+              <ion-note color="primary">{{listItem.note}}</ion-note>
+            </ion-item>
+          </div>
+          <div  style="margin-bottom:15px;" *ngIf="extraData&&extraData.object&&extraData.multiple">
+            <ion-item button (click)="selectAll()">
+              <ion-checkbox [ngModel]="allSelected" disabled (click)="preventBubble($event);selectAll()" style="margin-right: 10px;"></ion-checkbox>
+              <ion-label color="medium">{{'modal_select_item_select_all' | translate}}</ion-label>
+              <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
+            </ion-item>
+            <ion-item *ngFor="let listItem of list | filterSearch : search : false : ['name']" button (click)="listItem.selected=!listItem.selected">
+              <ion-checkbox [(ngModel)]="listItem.selected" (click)="preventBubble($event)" style="margin-right: 10px;"></ion-checkbox>
+              <ion-label *ngIf="listItem[extraData.field]" color="medium">{{listItem[extraData.field]}}</ion-label>
+              <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
+            </ion-item>
+          </div>
+
+        </ion-list>
+
+      </div>
+    
+      <div flex center-hor paddingBasic style="position: absolute;box-shadow: 0px 0px 4px rgba(0,0,0,0.2);bottom:0;left:0;width:100%;background-color: white;z-index: 2">
+        <ion-button color="light" (click)="modal.dismiss()" >
+          {{'buttons.cancel' | translate}}
+        </ion-button>
+        <span class="spacer"></span>
+        <ion-button color="tertiary" *ngIf="extraData?.multiple" (click)="okMultiple()">
+          {{'buttons.ok' | translate}}
+        </ion-button>
+      </div>
+  </div>
+  <!-- </ion-content> -->
+  

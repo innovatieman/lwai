@@ -1,5 +1,5 @@
-<div class="main_overall" [ngStyle]="{'height':full ? '100vh' : 'calc(100vh - 100px)'}">
-  <div class="main_inner">  
+<div class="main_overall" [ngStyle]="{'height':full ? '100%' : (fullXs ? 'calc(100% - 51px)' : 'calc(100% - 51px)'),'top':full ? '0' : (fullXs ? '51px' : '51px')}">
+  <div class="main_inner" [ngStyle]="{'padding':padding}">  
     <ng-content></ng-content>
   </div>
 </div>

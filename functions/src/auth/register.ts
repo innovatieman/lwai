@@ -11,6 +11,11 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
             registeredAt:moment().unix(),
             isAdmin:false,
             isConfirmed:false,
+            preferences:{
+              themes:{
+                basic:true,
+              }
+            }
         })
         .then(()=>{
             const basicSubscription = {

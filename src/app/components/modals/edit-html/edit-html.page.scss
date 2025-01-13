@@ -1,0 +1,34 @@
+ion-toolbar{
+    --background:var(--background-global);
+    color:var(--color-global);
+}
+ion-content{
+    height:400px;
+    position: relative;
+}
+.pureHtml{
+    width: calc(100% - 22px);
+    height: 250px;
+    border: solid 1px rgba(0, 0, 0, 0.12);
+    margin-top: -1px;
+    padding:10px;
+    resize: none;
+}
+quill-editor > div.ql-container.ql-snow > div.ql-editor > p{
+    margin-bottom:10px!important;
+}
+
+quill-editor{
+    width:100%;
+    height:100%;
+}
+.ql-size-small{
+    font-size: 0.75em;
+}
+.ql-size-large{
+    font-size: 1.5em;
+}
+.ql-size-huge{
+    font-size:2.5em
+}
+

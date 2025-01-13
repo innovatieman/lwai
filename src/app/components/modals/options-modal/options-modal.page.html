@@ -2,16 +2,16 @@
 <div header padding20 flex center-ver>
   <h3 class="title" *ngIf="title" noMargin>{{title}}</h3>
 <span class="spacer"></span>
-<ion-button (click)="modalController.dismiss()" fill="clear" color="dark" class="btn_dismiss">
+<ion-button (click)="modalController.dismiss()" fill="clear" color="light" class="btn_dismiss">
   <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
 </ion-button>
 </div>
-<div weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':(media.screenSize==='xs' || media.screenSize==='sm') ? 'calc(100vh - 40px)' : '80vh'}">
-  <div *ngIf="intro" [innerHtml]="intro | sanitizeHtml"></div>
+<div weight400 basicPadding autoScroll [ngStyle]="{'max-height':(media.screenSize==='xs' || media.screenSize==='sm') ? 'calc(100vh - 40px)' : '80vh'}">
+  <div *ngIf="intro" marginBottom [innerHtml]="intro | sanitizeHtml"></div>
   <div class="options">
     <div *ngFor="let option of options">
-      <ion-card font-16 basicPadding pointer (click)="modalController.dismiss(option.choice)">
-        <div weight700>{{ option.choice }}</div>
+      <ion-card margin10 font-14 basicPadding pointer (click)="modalController.dismiss(option.choice)">
+        <div weight600>{{ option.choice }}</div>
         <div text-medium>{{ option.description }}</div>
       </ion-card>
     </div>

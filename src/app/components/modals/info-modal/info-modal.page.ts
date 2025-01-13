@@ -19,7 +19,7 @@ export class InfoModalPage implements OnInit {
   @ViewChild("iframe",{static:false}) iframe!: ElementRef;
 
   constructor(
-    public modal:ModalController,
+    public modalCtrl:ModalController,
     private navParams:NavParams,
     public icon:IconsService,
     private toast:ToastService,

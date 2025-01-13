@@ -23,7 +23,7 @@
     <ion-row>
         <ion-col size="3" class="selectColumn">
             <div *ngFor="let conversationType of (cases | groupBy:'conversation') | keyvalue">
-                <ion-card>
+                <ion-card class="headerCard">
                     <ion-card-header>
                         <ion-card-title *ngIf="categoryInfo(conversationType.key)">{{ categoryInfo(conversationType.key).title }}</ion-card-title>
                     </ion-card-header>
@@ -60,6 +60,13 @@
                         <ion-label position="stacked">Conversation Type</ion-label>
                         <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
                             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Thema</ion-label>
+                        <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.theme" (ionChange)="update('theme')">
+                            <ion-select-option *ngFor="let theme of infoService.themes" [value]="theme.id">{{theme.id}}</ion-select-option>
                         </ion-select>
                     </ion-item>
         
@@ -104,6 +111,14 @@
                             Open voor Admins
                         </ion-toggle>
                     </ion-item>
+
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Attitude Type</ion-label>
+                        <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.attitudeType" (ionChange)="update('attitudeType')">
+                            <ion-select-option *ngFor="let attitudeType of infoService.attitudeTypes" [value]="attitudeType.id">{{attitudeType.id}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+
                     <ion-item bgWhite [disabled]="showBackups" lines="none">
                         <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
                             <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
@@ -128,8 +143,15 @@
                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.casus" (ionChange)="update('casus')">
                           <div slot="label">Casus</div>
                         </ion-textarea>
-                      </ion-item>
+                    </ion-item>
 
+                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                        <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.interest_goals" (ionChange)="update('interest_goals')">
+                          <div slot="label">Interest Goals</div>
+                        </ion-textarea>
+                    </ion-item>
+
+                      
                     
                 </ion-col>
                     

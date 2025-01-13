@@ -75,11 +75,6 @@ const routes: Routes = [
     canActivate: [AdminGuard,TrainerGuard],
   },
   {
-    path: 'trainer/credit-codes',
-    loadChildren: () => import('./trainer/trainer-credit-codes/trainer-credit-codes.module').then( m => m.TrainerCreditCodesPageModule),
-    canActivate: [AdminGuard,TrainerGuard],
-  },
-  {
     path: 'bagend/agent',
     loadChildren: () => import('./bagend/agent/agent.module').then( m => m.AgentPageModule),
     canActivate: [AdminGuard],
@@ -93,6 +88,41 @@ const routes: Routes = [
     path: 'conversation-start',
     loadChildren: () => import('./components/modals/conversation-start/conversation-start.module').then( m => m.ConversationStartPageModule)
   },
+  {
+    path: 'trainer/courses',
+    loadChildren: () => import('./trainer/trainer-courses/trainer-courses.module').then( m => m.TrainerCoursesPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'input-fields',
+    loadChildren: () => import('./components/modals/input-fields/input-fields.module').then( m => m.InputFieldsPageModule)
+  },
+  {
+    path: 'edit-html',
+    loadChildren: () => import('./components/modals/edit-html/edit-html.module').then( m => m.EditHtmlPageModule)
+  },
+  {
+    path: 'select-item',
+    loadChildren: () => import('./components/modals/select-item/select-item.module').then( m => m.SelectItemPageModule)
+  },
+  {
+    path: 'select-date',
+    loadChildren: () => import('./components/modals/select-date/select-date.module').then( m => m.SelectDatePageModule)
+  },  
+  {
+    path: 'popover-menu',
+    loadChildren: () => import('./components/modals/popover-menu/popover-menu.module').then( m => m.PopoverMenuPageModule)
+  },
+  {
+    path: 'trainer/info-items',
+    loadChildren: () => import('./trainer/trainer-info-items/trainer-info-items.module').then( m => m.TrainerInfoItemsPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'bagend/engine',
+    loadChildren: () => import('./bagend/engine/engine.module').then( m => m.EnginePageModule)
+  },
+ 
 
 
 

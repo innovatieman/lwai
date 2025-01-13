@@ -1,0 +1,39 @@
+<ion-content>
+  <ion-list lines="none">
+    <div>
+      <div *ngFor="let listItem of list;let i = index">
+        <ion-item pointer button (click)="!listItem.subList ? popOver.dismiss(listItem) : showSubList(i)">
+          <!-- <fa-icon *ngIf="listItem.icon" [icon]="iconList ? icon.get(listItem) : icon.get(listItem.icon)" style="font-size:15px;width:25px;height: 25px;margin-right: 10px;border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon> -->
+          <ion-label *ngIf="listItem.title">{{listItem.title}}</ion-label>
+          <ion-label *ngIf="!listItem.title">{{listItem}} --</ion-label>
+          <ion-note color="primary" *ngIf="listItem.note">{{listItem.note}}</ion-note>
+          <fa-icon *ngIf="showIcon&&!listItem.subList" class="right" style="color:black" [icon]="icon.get('faArrowRight')" slot="end"></fa-icon>
+          <fa-icon *ngIf="showIcon&&listItem.subList" class="right" style="color:black;transition: all 0.3s" [icon]="icon.get('faChevronDown')" slot="end" [ngStyle]="{'transform':showingSubList==i ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+        </ion-item>
+        <div style="overflow:hidden;height:auto;transition: all 0.3s;padding-left: 20px;" [ngStyle]="{'max-height': listItem.subList&&showingSubList==i ? (60*listItem.subList.length) + 'px' : 0}">
+          <div *ngFor="let subListItem of listItem.subList;let ii=index">
+            <ion-item pointer button (click)="!subListItem.subList ? popOver.dismiss(subListItem) : showSubList(ii,true)" [ngClass]="{'createNew':subListItem.new}">
+              <ion-label *ngIf="subListItem.title">
+                <div style="font-weight:600">{{subListItem.title}}</div>
+                <div *ngIf="subListItem.note" style="font-size: 12px;color: var(--ion-color-primary);">{{subListItem.note}}</div>
+              </ion-label>
+              <ion-label *ngIf="!subListItem.title">{{subListItem}}</ion-label>
+              <!-- <ion-note color="primary" *ngIf="subListItem.note">{{subListItem.note}}</ion-note> -->
+              <fa-icon *ngIf="showIcon&&!subListItem.subList" class="right" style="color:black" [icon]="icon.get('faArrowRight')" slot="end"></fa-icon>
+              <fa-icon *ngIf="showIcon&&subListItem.subList" class="right" style="color:black;transition: all 0.3s" [icon]="icon.get('faChevronDown')" slot="end" [ngStyle]="{'transform':showingSubSubList==i ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+            </ion-item>
+            <div *ngIf="subListItem.subList&&showingSubSubList==ii"  style="overflow:hidden;height:auto;transition: all 0.3s;padding-left: 40px;">
+              <ion-item pointer button *ngFor="let subSubListItem of subListItem.subList;let ii=index" (click)="popOver.dismiss(subSubListItem)">
+                <ion-label *ngIf="subListItem.title">{{subSubListItem.title}}</ion-label>
+                <ion-label *ngIf="!subSubListItem.title">{{subSubListItem}}</ion-label>
+                <ion-note color="primary" *ngIf="subSubListItem.note">{{subSubListItem.note}}</ion-note>
+                <fa-icon *ngIf="showIcon&&!subSubListItem.subList" class="right" style="color:black" [icon]="icon.get('faArrowRight')" slot="end"></fa-icon>
+              </ion-item>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </ion-list>
+</ion-content>

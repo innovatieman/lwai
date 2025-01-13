@@ -15,7 +15,18 @@ export class FilterKeyPipe implements PipeTransform {
     for(let i=0;i<array.length;i++){
       if(typeof value=='string'|| typeof value=='boolean' || typeof value=='number'){
         
-        if(value=='notEmpty'){
+        if(value=='empty'){
+          if(key.indexOf('.')>-1){
+            let keys=key.split('.')
+            if(!array[i][keys[0]][keys[1]]){
+              nwArr.push(array[i])
+            }
+          }
+          else if(!array[i][key]){
+            nwArr.push(array[i])
+          }
+        }
+        else if(value=='notEmpty'){
           if(key.indexOf('.')>-1){
             let keys=key.split('.')
             if(array[i][keys[0]][keys[1]]){
@@ -121,15 +132,36 @@ export class FilterKeyPipe implements PipeTransform {
           }
         }
         else{
-          if(key.indexOf('.')>-1){
-            let keys=key.split('.')
-            if(value.indexOf(array[i][keys[0]][keys[1]])>-1){
+
+          if(typeof array[i][key]=='string'|| typeof array[i][key]=='boolean' || typeof array[i][key]=='number'){
+            if(key.indexOf('.')>-1){
+              let keys=key.split('.')
+              if(value.indexOf(array[i][keys[0]][keys[1]])>-1){
+                nwArr.push(array[i])
+              }
+            }
+            else if(value.indexOf(array[i][key])>-1){
               nwArr.push(array[i])
             }
           }
-          else if(value.indexOf(array[i][key])>-1){
-            nwArr.push(array[i])
+          else{
+            if(key.indexOf('.')>-1){
+              let keys=key.split('.')
+              for(let j=0;j<array[i][keys[0]][keys[1]].length;j++){
+                if(value.indexOf(array[i][keys[0]][keys[1]][j])>-1){
+                  nwArr.push(array[i])
+                }
+              }
+            }
+            else{
+              for(let j=0;j<array[i][key].length;j++){
+                if(value.indexOf(array[i][key][j])>-1){
+                  nwArr.push(array[i])
+                }
+              }
+            }
           }
+
         }
       }
     }

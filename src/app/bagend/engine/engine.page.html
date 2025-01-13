@@ -1,0 +1,279 @@
+<app-header [title]="'Engine'"></app-header>
+
+<main>
+  <ion-grid>
+    <ion-row>
+      <ion-col class="selectColumn" size="3">
+        <ion-card basicPadding>
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+              <span font-18>Edit Options</span>
+              <span class="spacer"></span>
+            <!-- <fa-icon [icon]="icon.get('faPlus')" *ngIf="!newItem.visible" (click)="newItem.visible=!newItem.visible;changeTab(-1)"></fa-icon> -->
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+        <div singleLine></div>
+
+        <ion-card basicPadding pointer font16 weight700 *ngFor="let item of settingsItems;let i = index" [ngClass]="{'activeTab':activeItem?.id==item.id}" (click)="activateItem(item,true)">
+          <span style="width:30px;display:inline-block;text-align:center">
+            <fa-icon [icon]="icon.get('faCogs')"></fa-icon>
+          </span>
+          <span *ngIf="item.level">{{item.level}}. </span> 
+          <span *ngIf="item.title">{{item.title | capitalize}}</span>
+          <span *ngIf="!item.title">{{item.id | capitalize}}</span>
+        </ion-card>
+
+        <div singleLine></div>
+        <ion-card basicPadding pointer font16 weight700 tab *ngFor="let item of categories;let i = index" [ngClass]="{'activeTab':activeItem?.id==item.id}" (click)="activateItem(item)">
+          <span style="width:30px;display:inline-block;text-align:center">
+            <fa-icon [icon]="icon.get('faUser')" style="width:30px;"></fa-icon>
+          </span>
+          <span *ngIf="item.level">{{item.level}}. </span> 
+          <span *ngIf="item.title">{{item.title | capitalize}}</span>
+          <span *ngIf="!item.title">{{item.id | capitalize}}</span>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="9" class="detailColumn" >
+
+        <!-- Buttons -->
+        <ion-row relative>
+          <div *ngIf="activeItem.id=='attitudes'||activeItem.id=='positions'" class="unavailable"></div>
+          <!-- Basic -->
+          <ion-col size="3" center noMargin>
+            <ion-card basicPadding pointer noMargin (click)="changeAgent(basicContent)" [ngClass]="{'activeAgent':activeAgent.id==basicContent.id}">
+              <ion-card-title>{{basicContent.title}}</ion-card-title>
+            </ion-card>
+          </ion-col>
+          <!-- Agents -->
+          <ion-col size="3" center noMargin *ngFor="let agent of agents" >
+            <ion-card basicPadding pointer noMargin (click)="changeAgent(agent)" [ngClass]="{'activeAgent':activeAgent.id==agent.id}">
+              <ion-card-title>{{agent.title}}</ion-card-title>
+            </ion-card>
+          </ion-col>
+          <!-- Phases -->
+          <ion-col size="3" center noMargin>
+            <ion-card basicPadding pointer noMargin (click)="changeAgent(phaseList)" [ngClass]="{'activeAgent':activeAgent.id==phaseList.id}">
+              <ion-card-title>{{phaseList.title}}</ion-card-title>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+
+        <!-- editable -->
+        <ion-row>
+          <ion-col size="12">
+            <ion-card basicPadding *ngIf="categories?.length==0||!activeItem?.id">
+              Gegevens worden geladen...
+            </ion-card>
+            
+            <ion-card basicPadding *ngIf="categories?.length>0&&activeItem?.id">
+              <ion-card-header >
+                <ion-card-title font-20 flex center-ver>
+                    {{activeItem.title | capitalize}} - {{activeAgent.title | capitalize}}
+                    <span class="spacer"></span>
+                  </ion-card-title>
+              </ion-card-header>
+    
+              <ion-card-content *ngIf="activeAgent.id!='main'&&activeAgent.id!='phaseList'&&activeItem.id!='formats'&&activeItem.id!='attitudes'&&activeItem.id!='positions'">
+                
+                <div class="fieldItem" *ngFor="let field of fieldOptions | filterKey : 'agents' : ['all',activeAgent.id]">
+                  <ion-item lines="none" *ngIf="field.type=='text' && activeItem[activeAgent.id]">
+                    <ion-label position="stacked">{{field.label}}</ion-label>
+                    <ion-input type="text" rows="4" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
+                  </ion-item>
+    
+                  <ion-item lines="none" *ngIf="field.type=='number' && activeItem[activeAgent.id] ">
+                    <ion-label position="stacked">{{field.label}}</ion-label>
+                    <ion-input type="number" rows="4" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
+                  </ion-item>
+    
+                  <ion-item bgWhite *ngIf="field.type=='range' && activeItem[activeAgent.id] " lines="none">
+                    <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)">
+                        <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
+                        <ion-label style="font-size:18px" slot="end">{{activeItem[activeAgent.id][field.field]}}</ion-label>
+                    </ion-range>
+                  </ion-item>
+    
+                  <ion-item lines="none" *ngIf="field.type=='textarea' && activeItem[activeAgent.id]">
+                    <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)">
+                      <div slot="label" *ngIf="!firstInputlabels[field.field]">{{field.label}}</div>
+                      <div slot="label" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</div>
+                    </ion-textarea>
+                    <!-- <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups(activeAgent)" (click)="getBackup(activeItem[activeAgent.id].id,field.field)">
+                      <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+                    </ion-button> -->
+                  </ion-item>
+    
+                </div>
+
+
+                
+                <!-- <div *ngIf="items[activeTab].phases&&type=='public_info'">
+                  <ion-label>Fases, zijn aanwezig, en kunnen worden aangepast bij de categorieën. Sla ze daar op als public info</ion-label>
+                </div>
+                <div *ngIf="items[activeTab].phases&&type!='public_info'">
+                  <ion-card-title basicPadding weight700 flex fullwidth center-ver>
+                    Phases
+                  <span class="spacer"></span>
+                  <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(items[activeTab].id,'phases')">
+                    <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+                  </ion-button>
+                  <fa-icon [icon]="icon.get('faPlus')" style="font-size:30px" (click)="addPhase()"></fa-icon>
+                  </ion-card-title>
+                  <ion-card class="fieldItem" basicPadding *ngFor="let phase of items[activeTab].phases;let phase_index = index">
+                    <ion-item lines="none">
+                      <ion-input font-16 weight600 placeholder="Phase title" [(ngModel)]="phase.title" (ionChange)="update('phases')"></ion-input>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" (click)="movePhase(phase_index,-1)"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')" (click)="movePhase(phase_index,1)"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faTrashAlt')" trash (click)="removePhase(phase_index)"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" class="shortItem">
+                      <ion-label position="stacked">Short title</ion-label>
+                      <ion-input type="text" [(ngModel)]="phase.short" (ionChange)="update('phases')">
+                      </ion-input>
+                    </ion-item>
+                    <ion-item lines="none">
+                      <ion-textarea labelPlacement="floating" [(ngModel)]="phase.description" (ionChange)="update('phases')">
+                        <div slot="label">Description</div>
+                      </ion-textarea>
+                    </ion-item>
+                  </ion-card>
+                </div> -->
+    
+              </ion-card-content>
+
+              <ion-card-content *ngIf="activeAgent.id=='main'&&activeItem.id!='formats'&&activeItem.id!='attitudes'&&activeItem.id!='positions'">
+                <div class="fieldItem" *ngFor="let field of fieldOptions | filterKey : 'agents' : [activeAgent.id]">
+                  <ion-item lines="none" *ngIf="field.type=='text' && activeItem">
+                    <ion-label position="stacked">{{field.label}}</ion-label>
+                    <ion-input type="text" rows="4" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)"></ion-input>
+                  </ion-item>
+    
+                  <ion-item lines="none" *ngIf="field.type=='number' && activeItem ">
+                    <ion-label position="stacked">{{field.label}}</ion-label>
+                    <ion-input type="number" rows="4" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)"></ion-input>
+                  </ion-item>
+    
+                  <ion-item bgWhite *ngIf="field.type=='range' && activeItem " lines="none">
+                    <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)">
+                        <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
+                        <ion-label style="font-size:18px" slot="end">{{activeItem[field.field]}}</ion-label>
+                    </ion-range>
+                  </ion-item>
+    
+    
+                  <ion-item lines="none" *ngIf="field.type=='textarea' && activeItem">
+                    <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)">
+                      <div slot="label">{{field.label}}</div>
+                    </ion-textarea>
+                  </ion-item>
+    
+                </div>
+              </ion-card-content>
+
+              <ion-card-content *ngIf="activeAgent.id=='phaseList'&&activeItem.id!='formats'&&activeItem.id!='attitudes'&&activeItem.id!='positions'">
+                  <ion-card-title basicPadding weight700 flex fullwidth center-ver>
+                    {{phaseList.title}}
+                  <span class="spacer"></span>
+                  <!-- <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(items[activeTab].id,'phases')">
+                    <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+                  </ion-button> -->
+                  <fa-icon [icon]="icon.get('faPlus')" style="font-size:30px" (click)="addPhase()"></fa-icon>
+                  </ion-card-title>
+                  <ion-card class="fieldItem" basicPadding *ngFor="let phase of activeItem.phaseList;let phase_index = index">
+                    <ion-item lines="none">
+                      <ion-input font-16 weight600 placeholder="Phase title" [(ngModel)]="phase.title" (ionChange)="update('phaseList')"></ion-input>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" (click)="movePhase(phase_index,-1)"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')" (click)="movePhase(phase_index,1)"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faTrashAlt')" trash (click)="removePhase(phase_index)"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" class="shortItem">
+                      <ion-label position="stacked">Short title</ion-label>
+                      <ion-input type="text" [(ngModel)]="phase.short" (ionChange)="update('phaseList')">
+                      </ion-input>
+                    </ion-item>
+                    <ion-item lines="none">
+                      <ion-textarea labelPlacement="floating" [(ngModel)]="phase.description" (ionChange)="update('phaseList')">
+                        <div slot="label">Description</div>
+                      </ion-textarea>
+                    </ion-item>
+                  </ion-card>
+
+
+              </ion-card-content>
+
+              <ion-card-content *ngIf="activeItem.id=='formats' && activeAgent.id!='main' && activeAgent.id!='phaseList'">
+                <div class="fieldItem" *ngFor="let field of fieldOptionsFormat | filterKey : 'agents' : [activeAgent.id]">
+                  <ion-item lines="none" *ngIf="field.type=='text' && activeItem">
+                    <ion-label position="stacked">{{field.label}}</ion-label>
+                    <ion-input type="text" rows="4" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
+                  </ion-item>
+    
+                  <ion-item lines="none" *ngIf="field.type=='number' && activeItem ">
+                    <ion-label position="stacked">{{field.label}}</ion-label>
+                    <ion-input type="number" rows="4" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
+                  </ion-item>
+    
+                  <ion-item bgWhite *ngIf="field.type=='range' && activeItem " lines="none">
+                    <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)">
+                        <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
+                        <ion-label style="font-size:18px" slot="end">{{activeItem[field.field]}}</ion-label>
+                    </ion-range>
+                  </ion-item>
+    
+                  <ion-item lines="none" *ngIf="field.type=='textarea' && activeItem">
+                    <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)">
+                      <div slot="label">{{field.label}}</div>
+                    </ion-textarea>
+                  </ion-item>
+    
+                </div>
+
+              </ion-card-content>
+
+              <ion-card-content *ngIf="activeItem.id=='formats' && (activeAgent.id=='main' || activeAgent.id=='phaseList')">
+                <ion-card basicPadding>
+                  <ion-card-title>Selecteer een agent om wijzigingen door te voeren</ion-card-title>
+                </ion-card>
+              </ion-card-content>
+
+              <ion-card-content *ngIf="activeItem.id=='attitudes'||activeItem.id=='positions'">
+                <ion-card basicPadding *ngFor="let item of activeItem.items">
+                  <div class="fieldItem" *ngFor="let field of fieldOptionsList">
+                    <ion-item lines="none" *ngIf="field.type=='text' && activeItem">
+                      <ion-label position="stacked">{{field.label}}</ion-label>
+                      <ion-input type="text" rows="4" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)"></ion-input>
+                    </ion-item>
+      
+                    <ion-item lines="none" *ngIf="field.type=='number' && activeItem ">
+                      <ion-label position="stacked">{{field.label}}</ion-label>
+                      <ion-input type="number" rows="4" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)"></ion-input>
+                    </ion-item>
+      
+                    <ion-item bgWhite *ngIf="field.type=='range' && activeItem " lines="none">
+                      <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)">
+                          <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
+                          <ion-label style="font-size:18px" slot="end">{{activeItem[field.field]}}</ion-label>
+                      </ion-range>
+                    </ion-item>
+      
+      
+                    <ion-item lines="none" *ngIf="field.type=='textarea' && activeItem">
+                      <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)">
+                        <div slot="label">{{field.label}}</div>
+                      </ion-textarea>
+                    </ion-item>
+      
+                  </div>
+                </ion-card>
+              </ion-card-content>
+
+            </ion-card>
+          </ion-col>
+        </ion-row>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

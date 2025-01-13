@@ -4,6 +4,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
+import { InfoService } from 'src/app/services/info.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
 import { SubscriptionsService } from 'src/app/services/subscriptions.service';
@@ -30,7 +31,8 @@ export class AccountPage implements OnInit {
     public translate:TranslateService,
     public nav:NavService,
     public subscriptionsService:SubscriptionsService,
-    private modalService:ModalService
+    private modalService:ModalService,
+    public infoService:InfoService
   ) { }
 
   ngOnInit() {
@@ -64,6 +66,13 @@ export class AccountPage implements OnInit {
     this.firestore.set('users',this.auth.userInfo.uid,this.account.displayName,'displayName').then(()=>{
       this.toast.show('Account gegevens bijgewerkt')
     })
+  }
+  updatePreference(){
+    
+    let obj:any =  {
+      preferences:JSON.parse(JSON.stringify(this.account.preferences))
+    }
+    this.firestore.update('users',this.auth.userInfo.uid,obj)
   }
 
   openConversation(conversation:any){

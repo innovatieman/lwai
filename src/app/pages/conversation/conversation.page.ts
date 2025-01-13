@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CasesService } from 'src/app/services/cases.service';
 import { NavService } from 'src/app/services/nav.service';
@@ -11,6 +11,8 @@ import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { InfoService } from 'src/app/services/info.service';
 import { HelpersService } from 'src/app/services/helpers.service';
+import { MediaService } from 'src/app/services/media.service';
+import { RecordService } from 'src/app/services/record.service';
 // import { HeyGenApiService } from 'src/app/services/heygen.service';
 
 highchartsMore(Highcharts);
@@ -22,6 +24,11 @@ solidGauge(Highcharts);
   styleUrls: ['./conversation.page.scss'],
 })
 export class ConversationPage implements OnInit {
+  @HostListener('window:resize', ['$event'])
+  onResize(){
+    this.media.setScreenSize()
+    this.rf.detectChanges()
+  }
   Highcharts: typeof Highcharts = Highcharts;
   chartConstructor: string = 'chart';
   updateSubscription:Subscription = new Subscription()
@@ -112,7 +119,7 @@ chart: Highcharts.Chart | null = null;
 chartCallback: Highcharts.ChartCallbackFunction = (chart) => {
   this.chart = chart;
 };
-
+showDetails:boolean = false;
 conversationTitle:string = ''
 case_id:string = ''
 question:string = ''
@@ -141,16 +148,18 @@ cipherTerm:any = {
     private zone: NgZone,
     private rf:ChangeDetectorRef,
     public icon:IconsService,
-    private modal:ModalService,
+    public modal:ModalService,
     public info:InfoService,
-    public helpers:HelpersService
+    public helpers:HelpersService,
+    public media:MediaService,
+    public record:RecordService,
   ) { }
 
 
   ngOnInit() {
 
     this.conversation.activeStream.subscribe((active:boolean)=>{
-      console.log(active)
+      // console.log(active)
       this.activeStream = active
       this.rf.detectChanges()
     })
@@ -255,18 +264,20 @@ cipherTerm:any = {
   }
 
   continueConversation(){
-    console.log('continue')
+    // console.log('continue')
     if(!localStorage.getItem('conversation')){
       return
     }
     this.started = true
     let conversation = JSON.parse(localStorage.getItem('conversation')||'{}')
     if(conversation.avatarName){
-      this.interaction = 'video'
+      this.interaction = 'combination'
     }
     this.conversation.loadConversation(conversation.conversationId,conversation,true)
+    this.conversation.reloadAtitude()
     // setTimeout(() => {
-      this.conversation.reloadAtitude()
+    //   console.log(this.conversation) 
+    //   console.log(this.interaction)
     // }, 1000);
   }
 
@@ -309,4 +320,77 @@ cipherTerm:any = {
 
   }
 
+  endConversation(){
+    this.modal.showConfirmation('Weet je zeker dat je de conversatie wilt beëindigen?').then(response=>{
+      // console.log(response)
+      if(response){
+        this.conversation.closing = true
+        let countTries = 0
+        this.conversation.closeConversation(()=>{
+          let closeInterval = setInterval(() => {
+            countTries++
+            if(countTries>20){
+              // console.log(this.conversation.activeConversation)
+              // console.log('clear interval')
+              clearInterval(closeInterval)
+
+              // this.modal.showText('De conversatie is afgesloten','Afsluiting',false,[],false,()=>{
+                // this.nav.go('start')
+              // })
+            }
+            if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
+              clearInterval(closeInterval)
+              this.modal.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
+                this.nav.go('start')
+                this.conversation.closing = false
+              })
+            }
+            console.log('checking close')
+          }, 200);
+        })
+      }
+    })
+  }
+
+  showLatestFact(){
+    this.modal.showText(JSON.parse(this.conversation.latestAssistantItem(this.conversation.activeConversation.facts)).new_fact,'Feitje')
+  }
+
+  showEvaluation(){
+    this.modal.showText(this.conversation.activeConversation.close[0].content,'Evaluatie')
+  }
+  
+  toggleVideo(){
+    if(this.interaction=='combination'){
+      this.conversation.heyGen.disconnect('avatar_video')
+      this.interaction = 'chat'
+    }
+    else if(this.interaction=='chat'){
+      this.interaction = 'combination'
+      this.conversation.restartAvatar()
+    }
+
+  }
+
+  startRecordingAudio(){
+    this.record.startRecording('audioToText',(response:any)=>{
+      if(response){
+        this.loadingTextFromAudio = false
+        if(this.question==''){
+          this.question = response
+        }
+        else{
+          this.question = this.question + ' ' + response
+        }
+        this.rf.detectChanges()
+      }
+    })
+  }
+  loadingTextFromAudio:boolean = false
+  stopRecordingAudio(){
+    this.loadingTextFromAudio = true
+    this.record.stopRecording(()=>{
+      this.rf.detectChanges()
+    })
+  }
 }

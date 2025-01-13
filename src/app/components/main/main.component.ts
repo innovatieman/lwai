@@ -7,6 +7,11 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class MainComponent  implements OnInit {
   @Input() full:boolean = false
+  @Input() fullXs:boolean = false
+  @Input() padding:string = '0px'
+
+  
+  
   constructor() { }
 
   ngOnInit() {}

@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Wijzig tekst</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="modal.dismiss()">Annuleren</ion-button>
+      <ion-button color="secondary" (click)="dismiss()" size="small" fill="solid" class="headerBtn">Wijzig</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <quill-editor *ngIf="!showHtml" [(ngModel)]="data.value" [modules]="configModules" (onEditorCreated)="startEditor($event)"></quill-editor>
+    <ion-toolbar *ngIf="showHtml" style="padding-left:10px;">
+      <ion-buttons slot="start">
+        <ion-button (click)="showEditor()">
+          <fa-icon [icon]="icon.get('faArrowLeft')" slot="start">keyboard_arrow_left</fa-icon>
+          Terug
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <textarea *ngIf="showHtml" class="pureHtml" [(ngModel)]="data.value"></textarea>
+</ion-content>

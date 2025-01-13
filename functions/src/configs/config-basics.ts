@@ -6,5 +6,5 @@ export const config = {
   d_id_token: process.env.D_ID_TOKEN || '',
   openai_secret_key: process.env.OPEN,
   heygen_api_key: process.env.HEYGEN_API_KEY,
-  allowed_cors: ['http://localhost:8100', 'https://lwai-3bac8.web.app'],
+  allowed_cors:['*']
 };

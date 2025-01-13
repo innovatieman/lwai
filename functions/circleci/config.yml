@@ -1,0 +1,76 @@
+version: 2.1
+
+# Define the jobs we want to run for this project
+jobs:
+  test:
+    working_directory: ~/alicialabs
+    docker:
+        - image: circleci/node:16-browsers
+    steps:
+        # Checkout the code from the branch into the working_directory
+        - checkout
+        # Log the current branch
+        - run:
+            name: Show current branch
+            command: echo ${CIRCLE_BRANCH}
+        # Restore local dependencies from cache
+        - restore_cache:
+            keys:
+            - v1-dependencies-{{ checksum "package-lock.json" }}
+            - v1-dependencies-
+        # Install project dependencies
+        - run:
+            name: Install local dependencies
+            command: npm install
+        # Cache local dependencies if they don't exist
+        - save_cache:
+            key: v1-dependencies-{{ checksum "package-lock.json" }}
+            paths:
+                - node_modules
+        # Lint the source code
+        - run:
+            name: Linting
+            command: npm run lint
+        # Test the source code
+        # - run:
+        #     name: Testing
+        #     command: npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+
+  build:
+    circleci_ip_ranges: true # opts the job into the IP ranges feature
+    docker:
+      - image: cimg/node:16.14
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:g0VJ9q0itRNCJ9Q6EkPlIltbYGSXQffVIXp4dq5/Wmo marknierop@MacBook-Pro-van-Mark-2.local"
+      - checkout
+      - run: 
+          name: install_node
+          command: |
+            npm install
+            npm run build -- --configuration production 
+            ssh -o StrictHostKeyChecking=no deb141788n8@alicialabs.com "mkdir ./domains/alicialabs.com/_tmp"
+            scp -P22 -rp ./www/* deb141788n8@alicialabs.com:./domains/alicialabs.com/_tmp
+            ssh -p22 deb141788n8@alicialabs.com "cp -a ./domains/alicialabs.com/constant_files/. ./domains/alicialabs.com/_tmp/"
+            ssh -p22 deb141788n8@alicialabs.com "mv ./domains/alicialabs.com/public_html/conversation ./domains/alicialabs.com/_old && mv ./domains/alicialabs.com/_tmp ./domains/alicialabs.com/public_html/conversation"
+            ssh -p22 deb141788n8@alicialabs.com "rm -rf ./domains/alicialabs.com/_old"
+
+
+
+# Orchestrate our job run sequence
+workflows:
+  version: 2
+  build-project:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only:
+                - main
+      - build:
+          filters:
+            branches:
+              only:
+                - main
+          requires: [test]

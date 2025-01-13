@@ -51,16 +51,10 @@ export class MenuPage implements OnInit {
       isAdmin:false,
       isUser:false
     },
-    
-
-  ];
-  public editPages:any = [
-  
-   
     {
-      title: 'Agents',
+      title: 'Agents en Settings',
       icon: 'faCogs',
-      url: '/bagend/agent',
+      url: '/bagend/engine',
       isVisitor:false,
       isAdmin:true,
       isUser:false,
@@ -74,33 +68,9 @@ export class MenuPage implements OnInit {
       isUser:false,
     },
     {
-      title: 'Categories',
-      icon: 'faSitemap',
-      url: '/bagend/agent/categories',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
-    {
-      title: 'Instructions',
-      icon: 'faCogs',
-      url: '/bagend/agent/instructions',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
-    {
-      title: 'Attitudes',
-      icon: 'faGrinTongue',
-      url: '/bagend/agent/attitudes',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
-    {
       title: 'Public info',
       icon: 'faInfoCircle',
-      url: '/bagend/agent/public-info',
+      url: '/bagend/agent/public_info',
       isVisitor:false,
       isAdmin:true,
       isUser:false,
@@ -113,14 +83,89 @@ export class MenuPage implements OnInit {
       isAdmin:true,
       isUser:false,
     },
-    {
-      title: 'Test Avatar',
-      icon: 'faUsers',
-      url: '/avatar',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
+  ];
+  public editPages:any = [
+  
+   
+    // {
+    //   title: 'Agents en Settings',
+    //   icon: 'faCogs',
+    //   url: '/bagend/engine',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Cases',
+    //   icon: 'faSuitcase',
+    //   url: '/bagend/cases',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+
+
+
+    // {
+    //   title: 'Categories',
+    //   icon: 'faSitemap',
+    //   url: '/bagend/agent/categories',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Instructions',
+    //   icon: 'faCogs',
+    //   url: '/bagend/agent/instructions',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Attitudes',
+    //   icon: 'faGrinTongue',
+    //   url: '/bagend/agent/attitudes',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Positions',
+    //   icon: 'faList',
+    //   url: '/bagend/agent/positions',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+
+
+    // {
+    //   title: 'Public info',
+    //   icon: 'faInfoCircle',
+    //   url: '/bagend/agent/public_info',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Users',
+    //   icon: 'faUsers',
+    //   url: '/bagend/users',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+
+
+    // {
+    //   title: 'Test Avatar',
+    //   icon: 'faUsers',
+    //   url: '/avatar',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
    
   ];
 

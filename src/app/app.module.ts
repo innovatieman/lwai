@@ -30,6 +30,7 @@ import { connectAuthEmulator, getAuth, provideAuth } from '@angular/fire/auth';
 import { connectFirestoreEmulator, Firestore, getFirestore, initializeFirestore, provideFirestore } from '@angular/fire/firestore';
 import { ConfirmationModalComponent } from './components/modals/confirmation-modal/confirmation-modal.component';
 import { InfoModalPageModule } from './components/modals/info-modal/info-modal.module';
+import { QuillModule } from 'ngx-quill';
 
 
 @NgModule({
@@ -52,6 +53,23 @@ import { InfoModalPageModule } from './components/modals/info-modal/info-modal.m
           useFactory: HttpLoaderFactory,
           deps: [HttpClient]
       }
+    }),
+    QuillModule.forRoot({
+      theme:'snow',
+      modules:{
+        toolbar:{
+          container:[
+            ['bold', 'italic', 'underline'],
+            [{ 'color': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'align': [] }],
+            ['link'],
+            ['clean']
+          ]
+        }
+      },
+      placeholder:'Vul hier je tekst...'
     }),
   ],
   providers: [
@@ -86,6 +104,7 @@ import { InfoModalPageModule } from './components/modals/info-modal/info-modal.m
     }),
   ],
   bootstrap: [AppComponent],
+  exports:[HighchartsChartModule]
 })
 export class AppModule {}
 

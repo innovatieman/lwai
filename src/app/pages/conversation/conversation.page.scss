@@ -1,5 +1,19 @@
+ion-header{
+  padding:0px;
+  ion-toolbar{
+    padding:0px;
+    font-family: 'Roboto', sans-serif;
+    --background: var(--background-global);
+    color:var(--color-global);
+    fa-icon{
+      color:var(--color-global);
+    }
+  }
+}
+
+
 .innerChatDiv{
-  max-height: calc(100vh - 532px);
+  // max-height: calc(100vh - 532px);
   overflow: auto;
 }
 
@@ -7,50 +21,7 @@
   height: 200px;
   width:100%;
 }
-// .chatCard{
-//   ion-card-header{
-//     padding-top: 0;
-//   }
-// }
-  // .chatItem{
-  //     div{
-  //       border-radius:20px;
-  //       font-size: 16px;
-  //       padding:10px;
-  //       display: inline-block;
-  //     }
-  // }
-  
-  // .assistant{
-  //   div{
-  //     background-color:var(--ion-color-primary);
-  //     color:var(--ion-color-primary-contrast);
-  //   }
-  //   text-align:left;
-  //   margin-top:20px;
-  //   margin-bottom:10px;
-  //   margin-right:20%;
-  // }
-  // .user{
-  //   div{
-  //     background-color:var(--ion-color-tertiary);
-  //     color:var(--ion-color-tertiary-contrast);
-  //   }
-  //   text-align:right;
-  //   margin-top:20px;
-  //   margin-bottom:10px;
-  //   margin-left:20%;
-  // }
-  
-  // .feedback{
-  //   background-color:var(--ion-color-secondary);
-  //   color:var(--ion-color-secondary-contrast);
-  //   text-align:left;
 
-  //   border-radius:10px;
-  //   font-size: 16px;
-  //   display:inline-block;
-  // }
   .explanation{
     color: rgba(0, 0, 0, 0.5);
     font-style: italic;
@@ -302,6 +273,20 @@
     }
   }
 
+  .inputCard{
+    background:rgba(255, 255, 255, 0.1);
+    padding:15px;
+    border-radius:5px;
+    text-align: left;
+    ion-textarea{
+      background:rgba(255, 255, 255, 0.2);
+      border-radius:10px;
+      padding:10px;
+      color:var(--color-global);
+      font-size: 14px;
+    }
+  }
+
   .mainCard{
     background:rgba(255, 255, 255, 0.1);
     color:var(--color-global);
@@ -326,9 +311,12 @@
 
     .videoCard{
       height: 300px;
+      // border-radius: 0;
+      // margin-bottom:5px!important
+      // height: 99%;
     }
     video{
-      width: fit-content;
+      width: 100%;// fit-content;
       height: fit-content;
       background:rgba(255, 255, 255, 0.4);
     }
@@ -373,21 +361,138 @@
       margin-left:20%;
     }
   }
-}
-
-.inputCard{
-  background:rgba(255, 255, 255, 0.1);
-  padding:15px;
-  border-radius:5px;
-  text-align: left;
-  ion-textarea{
-    background:rgba(255, 255, 255, 0.2);
-    border-radius:10px;
-    padding:10px;
-    color:var(--color-global);
-    font-size: 14px;
   }
-}
+
+  .mainCardMobile{
+    // background:rgba(255, 255, 255, 0.1);
+    // color:var(--color-global);
+    height:calc(100% - 110px);
+    overflow: hidden;
+    .selectCard{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background:rgba(255, 255, 255, 0.1);
+      color:var(--color-global);
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .selectCard:hover{
+      background:rgba(255, 255, 255, 0.2);
+    }
+    .selectCardSelected, .selectCardSelected:hover{
+      background:rgba(0, 0, 0, 0.2);
+    }
+
+    .videoCard{
+      // height: 300px;
+      border-radius: 0;
+      margin-bottom:5px!important
+    }
+    video{
+      // width: fit-content;
+      height: fit-content;
+      width:100%;
+      background:rgba(255, 255, 255, 0.4);
+    }
+    .avatarBtn{
+      position: absolute;
+      z-index: 10;
+      top: 10px;
+      right: 10px;
+    }
+    .chatCard{
+      // height: 300px;
+      background:rgba(255, 255, 255, 0);
+      box-shadow: none;
+      padding:0px;
+      overflow: auto;
+
+      .chatItem{
+        div{
+          border-radius:10px;
+          font-size: 14px;
+          padding:5px;
+          display: inline-block;
+        }
+      }
+      
+      .assistant{
+        .chatAssistant{
+          background:rgba(0, 0, 0, 0.2);
+          color:var(--color-global);
+        }
+        text-align:left;
+        margin-top:20px;
+        margin-bottom:10px;
+        display:flex;
+        align-items: center;
+        width: 100%;
+        .chatAssistentInfo{
+          width:25%;
+          min-width: 25%;
+          text-align: center;
+          color:var(--color-global);
+          position: relative;
+          top: 15px;
+          div{
+            font-size: 10px;
+            position: relative;
+            top: -30px;
+            opacity: 0.6;
+          }
+          // padding:0px 40px;
+        }
+        // margin-right:20%;
+      }
+      .user{
+        .chatUser{
+          background:rgba(255, 255, 255, 0.2);
+          color:var(--color-global);
+          text-align: left;
+        }
+        text-align:right;
+        margin-top:20px;
+        margin-bottom:10px;
+        display:flex;
+        align-items: center;
+        width: 100%;
+        .chatUserInfo{
+          width:25%;
+          min-width: 25%;
+          text-align: center;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color:var(--color-global);
+          font-size: 20px;
+          div{
+            opacity: 0.6;
+
+          }
+          .userCipher{
+            font-size: 20px;
+            font-weight: 600;
+            margin-right: 10px;
+          }
+          .high{
+            color:var(--ion-color-success);
+          }
+          .low{
+            color:var(--ion-color-danger);
+          }
+        }
+        // margin-left:20%;
+      }
+    }
+    
+  }
+
+
+
 
 .feedbackCard{
   background:rgba(255, 255, 255, 0.1);
@@ -410,9 +515,11 @@
   }
 }
 app-loader{
-  position: absolute;
+  position: fixed;
   z-index: 1000;
-  width: calc(100% - 40px);
+  width: calc(100% - 0px);
+  height: 100vh;
+  top:0;
 }
 .loaderCard{
   position: absolute;
@@ -431,5 +538,84 @@ app-loader{
     width:100px;
     height:100px;
     color:var(--color-global);
+  }
+}
+
+
+.bottomPart{
+  position: absolute;
+  overflow: hidden;
+  width: 100%;
+  height: 110px;
+  left: 0;
+  bottom: 0;
+  .inputCard{
+    background:rgba(255, 255, 255, 0);
+    padding:0;
+    // border-radius:0px;
+    text-align: left;
+    ion-textarea{
+      background:rgba(255, 255, 255, 0.2);
+      border-radius:10px;
+      padding:10px;
+      color:var(--color-global);
+      font-size: 14px;
+      --padding-top: 0;
+      --padding-bottom: 0;
+    }
+  }
+  fa-icon{
+    font-size: 20px;
+  }
+  ion-col{
+    text-align: center;
+  }
+  ion-button{
+    margin:0;
+    margin-bottom:10px;
+  }
+  
+  .sendButton{
+    --border-radius: 5px;
+    width: 40px;
+    height: 40px;
+  }
+  .detailBtn{
+    position: relative;
+    top:4px;
+  }
+}
+
+.detailPart{
+  position: absolute;
+  overflow: auto;
+  width: 100%;
+  height: 100vh;
+  left: 0;
+  z-index: 99;
+  background: var(--background-global);
+  transition: all 0.5s;
+  .closeBtn{
+    color:var(--color-global);
+    font-size: 20px;
+  }
+  ion-card-title{
+    color:var(--color-global);
+  }
+  ion-card{
+    margin:0 10px
+  }
+
+}
+.professorBtn{
+  position: absolute;
+  top: 5px;
+  right:5px;
+  z-index: 5;
+  display: flex;
+  ion-button{
+    --background:var(--background-global);
+    color:var(--color-global);
+    box-shadow: 0 0 7px rgba(0, 0, 0, 0.3);
   }
 }

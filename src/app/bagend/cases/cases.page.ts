@@ -7,6 +7,7 @@ import { CasesService } from 'src/app/services/cases.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
+import { InfoService } from 'src/app/services/info.service';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
@@ -29,7 +30,8 @@ export class CasesPage implements OnInit {
     private modal:ModalService,
     public backupService:BackupService,
     public helpers:HelpersService,
-    public translate:TranslateService
+    public translate:TranslateService,
+    public infoService:InfoService,
   ) { }
 
 

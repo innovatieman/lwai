@@ -8,12 +8,12 @@
   </ion-button>
 </div>
 
-<ion-card basicPadding basicRadius *ngIf="!step">
+<ion-card basicPadding basicRadius *ngIf="!step" class="mainCard">
   <ion-card-header>
     <ion-card-title flex center-ver>
         <span *ngIf="caseItem" [innerHtml]="caseItem.title"></span>
     </ion-card-title>
-  </ion-card-header>
+  </ion-card-header>  
   <ion-card-content class="detailColumn">
     <div class="modalIntro">Bepaal hier de instellingen van je gesprekspartner.</div>
     <ion-row>
@@ -47,8 +47,9 @@
                 <ion-label position="stacked" >Met welke attitude start je gesprekspartner het gesprek</ion-label>
                 <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude">
                     <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
-                    <ion-label style="font-size:12px;width:110px;text-align:right" slot="end" *ngIf="info.getAttitude(caseItem.attitude)">{{info.getAttitude(caseItem.attitude).title}}</ion-label>
-                    <ion-label style="font-size:12px;width:110px;text-align:right" slot="end" *ngIf="!info.getAttitude(caseItem.attitude)">Stel in</ion-label>
+                    <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="caseItem.conversation.attitudeType!='position' && info.getAttitude(caseItem.attitude)">{{info.getAttitude(caseItem.attitude).title}}</ion-label>
+                    <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="caseItem.conversation.attitudeType=='position' && info.getPosition(caseItem.attitude)">{{info.getPosition(caseItem.attitude).title}}</ion-label>
+                    <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="!info.getAttitude(caseItem.attitude)">Stel in</ion-label>
                 </ion-range>
             </ion-item>
 
@@ -81,7 +82,7 @@
   </div>
 </ion-card>
 
-<ion-card basicPadding basicRadius *ngIf="step==1">
+<ion-card basicPadding basicRadius *ngIf="step==1" class="mainCard">
   <ion-card-header>
     <ion-card-title flex center-ver>
         <span [innerHtml]="caseItem.title"></span>

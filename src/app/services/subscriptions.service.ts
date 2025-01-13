@@ -15,6 +15,7 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 })
 export class SubscriptionsService {
   subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
+  private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
 
   constructor(
     // private nav: NavService,
@@ -33,9 +34,13 @@ export class SubscriptionsService {
       .valueChanges({ idField: 'id' }) // Voeg het ID toe aan elk document
       .subscribe((subscriptions) => {
         this.subscriptions$.next(subscriptions); // Update de BehaviorSubject
+        this.subscriptionsLoaded.next(true);
       });
   }
 
+  areSubscriptionsLoaded(): Observable<boolean> {
+    return this.subscriptionsLoaded.asObservable();
+  }
   // Geef een Observable terug van de abonnementen
   getSubscriptions(): Observable<any[]> {
     return this.subscriptions$.asObservable();

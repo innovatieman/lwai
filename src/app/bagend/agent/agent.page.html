@@ -59,6 +59,14 @@
                 <ion-input type="number" rows="4" [(ngModel)]="items[activeTab][field.field]" (ionChange)="update(field.field)"></ion-input>
               </ion-item>
 
+              <ion-item bgWhite *ngIf="field.type=='range'" lines="none">
+                <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="items[activeTab][field.field]" (ionChange)="update(field.field)">
+                    <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
+                    <ion-label style="font-size:18px" slot="end">{{items[activeTab][field.field]}}</ion-label>
+                </ion-range>
+              </ion-item>
+
+
               <ion-item lines="none" *ngIf="field.type=='textarea'">
                 <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="items[activeTab][field.field]" (ionChange)="update(field.field)">
                   <div slot="label">{{field.label}}</div>

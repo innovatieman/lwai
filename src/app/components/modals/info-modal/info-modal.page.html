@@ -4,7 +4,7 @@
     <h3 class="subtitle-top" noMargin>{{title}}</h3>
   </div>
   <span class="spacer"></span>
-  <ion-button (click)="modal.dismiss()" fill="clear" color="dark">
+  <ion-button (click)="modalCtrl.dismiss()" fill="clear" color="light">
     <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
   </ion-button>
 </div>
@@ -16,6 +16,6 @@
 </div>
 <div flex *ngIf="buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':btnsClass==='flex-column'}">
   <span [ngClass]="{'spacer':!last}" *ngFor="let btn of buttons;let last = last">
-  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modal.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':btnsClass==='flex-column'}"></ion-button>
+  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':btnsClass==='flex-column'}"></ion-button>
   </span>
 </div>

@@ -22,16 +22,28 @@ export class AgentPage implements OnInit {
 
   types:any = [
     {title:'Attitudes',type:'attitudes'},
+    {title:'Positions',type:'positions'},
     {title:'Instructions',type:'instructions'},
     {title:'Categories',type:'categories'},
     {title:'Public Info',type:'public_info'},
   ]
 
+  agents:any = [
+    {title:'Gesprekspartner',type:'reaction'},
+    {title:'Feedback',type:'feedback'},
+    {title:'Fases',type:'phases'},
+    {title:'Soufleur',type:'choices'},
+    {title:'Feiten noemer',type:'facts'},
+    {title:'Eindevaluatie',type:'close'},
+  ]
+
   sortByOptions:any = {
     'attitudes':'level',
+    'positions':'level',
   }
   newItemOptions:any = {
     'attitudes':{title:'New Attitude',description:'',level:0,visible:false},
+    'positions':{title:'New Position',description:'',level:0,visible:false},
     'instructions':{systemContent:'',format:'',content:'',visible:false},
     'categories':{title:'New Category',systemContent:'',openingMessage:'',extraInfo:'',visible:false,phases:[]},
     'public_info':{intro:'',background:'',intro_phases:'',visible:false},
@@ -41,15 +53,24 @@ export class AgentPage implements OnInit {
       {field:'level',label:'Level',type:'number',required:true},
       {field:'description',label:'Description',type:'textarea',required:true},
     ],
+    'positions':[
+      {field:'level',label:'Level',type:'number',required:true},
+      {field:'description',label:'Description',type:'textarea',required:true},
+    ],
     'instructions':[
       {field:'systemContent',label:'System Content',type:'textarea'},
       {field:'format',label:'Format',type:'textarea'},
       {field:'content',label:'Content',type:'textarea'},
+      {field:'temperature',label:'Creativiteits temparatuur',type:'range',min:0,max:2.0, step:0.1},
+      {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:500,max:10000, step:100},
+
     ],
     'categories':[
       {field:'systemContent',label:'System Content',type:'textarea'},
       {field:'openingMessage',label:'Opening Message',type:'textarea'},
       {field:'extraInfo',label:'Extra informatie voor de AI',type:'textarea'},
+      {field:'closingFeedback',label:'Instructies voor de afsluitende feedback',type:'textarea'},
+      {field:'closingFeedbackMessage',label:'Opdracht voor de afsluitende feedback',type:'textarea'},
     ],
     'public_info':[
       {field:'intro',label:'Intro',type:'textarea'},
@@ -70,6 +91,7 @@ export class AgentPage implements OnInit {
   ) { }
 
   ngOnInit() {
+
     this.route.params.subscribe(params=>{
 
       if(params['type']){
@@ -159,7 +181,11 @@ export class AgentPage implements OnInit {
           this.modalService.showConfirmation('Are you sure you want to restore this backup?').then((responseConfirmation)=>{
             if(responseConfirmation){
               const scrollPosition = window.scrollY;
-              this.firestore.set(this.type,this.items[this.activeTab].id,response.data,field).then(()=>{
+              let arrayOnPurpose = false
+              if(field=='phases'){
+                arrayOnPurpose = true
+              }
+              this.firestore.set(this.type,this.items[this.activeTab].id,response.data,field,arrayOnPurpose).then(()=>{
                 setTimeout(() => {
                   this.itemSubscription.unsubscribe()
                   this.load(this.type)

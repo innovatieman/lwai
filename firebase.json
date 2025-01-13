@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "alicilabs",
     "public": "www",
     "headers":[
       {

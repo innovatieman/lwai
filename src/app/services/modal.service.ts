@@ -5,6 +5,9 @@ import { InfoModalPage } from '../components/modals/info-modal/info-modal.page';
 import { OptionsModalPage } from '../components/modals/options-modal/options-modal.page';
 import { BackupModalPage } from '../components/modals/backup-modal/backup-modal.page';
 import { ConversationStartPage } from '../components/modals/conversation-start/conversation-start.page';
+import { InputFieldsPage } from '../components/modals/input-fields/input-fields.page';
+import { EditHtmlPage } from '../components/modals/edit-html/edit-html.page';
+import { SelectItemPage } from '../components/modals/select-item/select-item.page';
 
 @Injectable({
   providedIn: 'root',
@@ -102,4 +105,55 @@ export class ModalService {
     })
     return await modalItem.present()
   } 
+
+  public async inputFields(title:string,text:string,fields:any[],callback:Function,extraData?:any){
+    const modal = await this.modalController.create({
+      component:InputFieldsPage,
+      componentProps:{
+        text:text,
+        fields:fields,
+        title:title,
+        extraData:extraData
+      },
+      cssClass:'infoModal',
+    })
+    modal.onWillDismiss().then(result=>{
+      callback(result)
+    })
+    return await modal.present()
+  }
+
+  public async editHtmlItem(data:any,callback:Function){
+    const modal = await this.modalController.create({
+      component:EditHtmlPage,
+      componentProps:{
+        data:data,
+      },
+      cssClass:'editHtmlModal',
+    })
+    modal.onWillDismiss().then(data=>{
+      callback(data)
+    })
+    return await modal.present()
+    // return await modal.present
+  }
+
+  public async selectItem(text:string,list:any[],callback:Function,iconList?:any[],title?:string,extraData?:any){
+    const modal = await this.modalController.create({
+      component:SelectItemPage,
+      componentProps:{
+        text:text,
+        list:list,
+        iconList:iconList,
+        title:title,
+        extraData:extraData
+      },
+      cssClass:'listModal',
+    })
+    modal.onWillDismiss().then(result=>{
+      callback(result)
+    })
+    return await modal.present()
+  }
+
 }

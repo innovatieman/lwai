@@ -29,7 +29,7 @@ export class HeyGenApiService {
         const videoElement = document.getElementById(video_id) as HTMLVideoElement;
         videoElement.srcObject = event.detail;
         const streamInterval = setInterval(() => {
-          console.log('checking stream')
+          // console.log('checking stream')
           if(this.streamingAvatar.mediaStream.active){
             clearInterval(streamInterval)
             this.monitorMediaStream(this.streamingAvatar.mediaStream);
@@ -88,7 +88,9 @@ export class HeyGenApiService {
     if (this.streamingAvatar) {
       await this.streamingAvatar.stopAvatar({ stopSessionRequest: { sessionId: this.sessionId } });
       const videoElement = document.getElementById(video_id) as HTMLVideoElement;
-      videoElement.srcObject = null;
+      if(videoElement){
+        videoElement.srcObject = null;
+      }
     }
   }
 }

@@ -1,0 +1,30 @@
+
+  <div class="inner-content">
+    <div style="color:black;text-align: center;cursor: pointer;">
+      <!-- <ionic-calendar-date-picker 
+        [date]="date" 
+        (onSelect)="selectDate($event)"
+        [monthLabels]="['jan','feb','mar','apr','mei','jun','jul','aug','sep','okt','nov','dec']"
+        [dayLabels]="['M','D','W','D','V','Z','Z']"
+        [itemSelectedStyle]="{'background':'var(--ion-color-primary)','color':'white'}"
+        [notInCalendarStyle]="{'color':'rgba(0,0,0,0.4)'}"
+        ></ionic-calendar-date-picker> -->
+        <ion-datetime *ngIf="extraData" [min]="extraData.min" [max]="extraData.max" [locale]="currentLang" size="cover" presentation="date" [value]="date" (click)="selectDateClick($event)" (ionChange)="selectDate($event)"></ion-datetime>
+        <ion-datetime *ngIf="!extraData" [locale]="currentLang" size="cover" presentation="date" [value]="date" (click)="selectDateClick($event)" (ionChange)="selectDate($event)"></ion-datetime>
+    </div>  
+
+
+
+    <ion-button color="medium" fill="clear" class="dismissBtn" size="small" (click)="modal.dismiss()" >
+      <ion-icon name="close"></ion-icon>
+    </ion-button>
+    
+     
+    <!-- <div flex center-hor paddingBasic>
+      <span class="spacer"></span>
+      <ion-button color="light" (click)="modal.dismiss()" >
+        Annuleren
+      </ion-button>
+    </div> -->
+  </div>
+  

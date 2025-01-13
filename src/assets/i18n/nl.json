@@ -12,5 +12,24 @@
         "logout": "Uitloggen",
         "register": "Account aanmaken",
         "unkown_user": "Welkom"
+    },
+    "confirmation_questions":{
+        "delete": "Weet u zeker dat u dit item wilt verwijderen?"
+    },
+    "error_messages":{
+        "no_selection":"Er is geen selectie gemaakt."
+    },
+    "buttons":{
+        "cancel":"Annuleren",
+        "delete":"Verwijderen",
+        "edit":"Bewerken",
+        "save":"Opslaan",
+        "search":"Zoeken",
+        "select":"Selecteer",
+        "submit":"Verzenden",
+        "ok":"OK",
+        "yes":"Ja",
+        "no":"Nee"
+
     }
 }

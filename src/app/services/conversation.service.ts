@@ -29,10 +29,11 @@ export class ConversationService implements OnDestroy {
   caseItem:any = {}
   extraTemp:any = {}
   loadReady:boolean = false;
-  
+  closing:boolean = false;
+
   private conversationSub!: Subscription;
   private subCollectionSubs: Subscription[] = [];
-  private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases'];
+  private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases','close','tokens'];
 
   constructor(
     public levels:LevelsService,
@@ -111,11 +112,11 @@ export class ConversationService implements OnDestroy {
       this.caseItem = caseItem
       this.dialog_role = caseItem.role;
     }
-    if(this.caseItem.avatarName){
+    if(this.caseItem.avatarName&&!this.activeConversation.closed){
       this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
         this.loadReady = true;
         if(this.latestAssistantItem(this.activeConversation.messages) && !this.isLoading('reaction')){
-          console.log('speak')
+          // console.log('speak')
           this.heyGen.speakText(this.cleanReactionPipe.transform(this.latestAssistantItem(this.activeConversation.messages)));
         }
       })
@@ -146,10 +147,12 @@ export class ConversationService implements OnDestroy {
   }
 
   restartAvatar(){
-    this.heyGen.disconnect('avatar_video')
-    this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
-      this.loadReady = true;
-    })
+    if(!this.activeConversation.closed){
+      this.heyGen.disconnect('avatar_video')
+      this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
+        this.loadReady = true;
+      })
+    }
   }
 
   loadSubCollections(conversationId: string): void {
@@ -236,7 +239,7 @@ export class ConversationService implements OnDestroy {
     this.messages.push({role:'user',content:this.message})
     this.attitude = obj.attitude
     this.update.emit(true);
-    const response = await fetch("https://chatAI-p2qcpa6ahq-ew.a.run.app", {
+    const response = await fetch("https://chatai-p2qcpa6ahq-ew.a.run.app", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -254,30 +257,6 @@ export class ConversationService implements OnDestroy {
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
     let done = false;
-  
-    // while (!done) {
-    //   const { value, done: readerDone } = await reader.read();
-    //   done = readerDone;
-  
-    //   if (value) {
-    //     const chunk = decoder.decode(value);
-    //     if(this.tempText.includes(', reaction:')){
-    //       if(this.heyGen.streamingAvatar){
-    //         this.heyGen.speakText(chunk)
-    //       }
-
-    //       this.messageTemp.content = this.messageTemp.content + chunk
-    //       this.scrollChatToBottom()
-    //       if(!this.attitudeSet){
-    //         this.cleanTempText()
-    //         this.setAttitude()
-    //       }
-    //     }
-    //     else{
-    //       this.tempText = this.tempText + chunk
-    //     }
-    //   }
-    // }
 
     let buffer = ''; // Buffer om incomplete zinnen op te slaan
 
@@ -385,7 +364,8 @@ export class ConversationService implements OnDestroy {
   }
 
   async openai_extra_save(obj:any) {
-    let url = 'https://conversationAIDirect-p2qcpa6ahq-ew.a.run.app'
+    let url = ''
+    // let url = 'https://conversationAIDirect-p2qcpa6ahq-ew.a.run.app'
     if(obj.instructionType == 'facts'){
       url = 'https://factsai-p2qcpa6ahq-ew.a.run.app'
     }
@@ -394,6 +374,13 @@ export class ConversationService implements OnDestroy {
     }
     else if(obj.instructionType == 'feedback'){
       url = 'https://feedbackai-p2qcpa6ahq-ew.a.run.app'
+    }
+    else if(obj.instructionType == 'choices'){
+      url = 'https://choicesai-p2qcpa6ahq-ew.a.run.app'
+    }
+    if(!url){
+      console.error('No url found')
+      return;
     }
     const response = await fetch(url, {
       method: "POST",
@@ -557,6 +544,44 @@ export class ConversationService implements OnDestroy {
     return Math.round((total/count)*10) / 10;
   }
 
+  getAttitude(index:number){
+    if(!this.activeConversation.messages||this.activeConversation.messages.length<1){
+      return 0;
+    }
+    let messages = JSON.parse(JSON.stringify(this.activeConversation.messages))
+    let assistantMessage = messages[index].content
+    // console.log(index,messages,assistantMessage)
+    let attitude = 0
+    let attitudeString = ''
+    if(assistantMessage.includes('reaction:')){
+      attitudeString = assistantMessage.replace('newAttitude:','').split(', reaction:')[0]
+      attitude = parseInt(attitudeString)
+    }
+    return attitude;
+  }
+
+  getFeedbackChat(index:number,type:string){
+    let messages = JSON.parse(JSON.stringify(this.activeConversation.messages))
+    let userMessages = []
+    for(let i=0;i<messages.length;i++){
+      if(messages[i].role == 'user'){
+        messages[i].index = i
+        userMessages.push(messages[i])
+      }
+    }
+    let newIndex = -1
+    for(let i=0;i<userMessages.length;i++){
+      if(userMessages[i].index == index){
+        newIndex = i
+      }
+    }
+    if(newIndex<0 || !this.activeConversation.feedback || this.activeConversation.feedback.length<1 || !this.activeConversation.feedback[newIndex]){
+      return '';
+    }
+    let feedback = JSON.parse(this.activeConversation.feedback[newIndex].content)
+    return feedback[type];
+  }
+
   undoLastMove(){
     this.modalService.showConfirmation('Weet je zeker dat je de laatste zet ongedaan wilt maken?').then((response:any)=>{
       if(response){
@@ -576,4 +601,50 @@ export class ConversationService implements OnDestroy {
       this.firestoreService.deleteSubSub('users', this.auth.userInfo.uid, 'conversations', this.activeConversation.conversationId, topic, items[length-i].id)
     }
   }
+
+  async closeConversation(callback:Function) {
+    this.startLoading('close')
+    // console.log(obj)
+    let obj:any = {
+      conversationId:this.activeConversation.conversationId,
+      userId:this.auth.userInfo.uid,
+      instructionType:'close',
+      categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
+    }
+    const response = await fetch("https://closingai-p2qcpa6ahq-ew.a.run.app", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(obj),
+    });
+    
+    if (!response.ok) {
+      console.error("Request failed:", response.status, response.statusText);
+      return;
+    }
+    if (!response.body) {
+      throw new Error("Response body is null");
+    }
+    callback()
+    
+  }
+
+  get usedTokens(){
+    let usage:any = {
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0,
+    }
+
+    if(this.activeConversation.tokens){
+      for(let i=0;i<this.activeConversation.tokens.length;i++){
+          usage.prompt_tokens += this.activeConversation.tokens[i].usage.prompt_tokens
+          usage.completion_tokens += this.activeConversation.tokens[i].usage.completion_tokens
+          usage.total_tokens += this.activeConversation.tokens[i].usage.total_tokens
+      }
+    }
+    return usage;
+  }
+
 }

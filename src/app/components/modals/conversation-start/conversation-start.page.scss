@@ -8,3 +8,7 @@ ion-textarea{
 ion-item{
     margin-bottom:20px;
 }
+.mainCard{
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+}

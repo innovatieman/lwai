@@ -1,0 +1,271 @@
+<app-header title="Your Courses"></app-header>
+<main>
+    <!-- <ion-toolbar class="buttonBar">
+        <ion-buttons slot="end">
+          <ion-button fill="outline" color="light" (click)="add()">Nieuw</ion-button>
+        </ion-buttons>
+    </ion-toolbar> -->
+    <!-- <div class="buttonBarMargin"></div> -->
+  <ion-grid>
+    <ion-row fullheight>
+        <ion-col size="3">
+          <ion-row noPadding noMargin fullheight>
+            <ion-col noPadding class="SelectionPart" size="12">
+              <div flex center-ver>
+                <h3>Courses</h3>
+                <span class="spacer"></span>
+                <fa-icon [icon]="icon.get('faPlus')" pointer font-16 (click)="add()"></fa-icon>
+              </div>
+              <div class="selectColumn">
+                <ion-card basicPadding pointer font16 weight700 tab *ngFor="let course of courses;let i = index" [ngClass]="{'activeTab':item.id==course.id}" (click)="selectItem(course)">
+                  {{course.title | capitalize}}
+                </ion-card>
+              </div>
+            </ion-col>
+
+            <ion-col noPadding class="SelectionPart" size="12">
+              <div flex center-ver>
+                <h3>Cases Templates</h3>
+                <ion-select #selectNewCase id="selectNewCase" [(ngModel)]="newCaseConversation" (ionChange)="newCase()">
+                  <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
+                </ion-select>
+                <span class="spacer"></span>
+                <fa-icon [icon]="icon.get('faPlus')" pointer font-16 (click)="createCase()"></fa-icon>
+              </div>
+              <div class="selectColumn">
+                <ion-card basicPadding pointer flex center-ver font16 weight700 tab *ngFor="let case of cases | filterKey : 'courseId' : 'empty' ;let i = index">
+                  {{case.title | capitalize}}
+                  <span class="spacer"></span>
+                  <fa-icon [icon]="icon.get('faPen')" font-16 pointer (click)="editCase(case)"></fa-icon>
+                  <fa-icon [icon]="icon.get('faArrowRight')" font-16 pointer (click)="addCase(case)"></fa-icon>
+                </ion-card>
+              </div>
+            </ion-col>
+
+            <ion-col noPadding class="SelectionPart" size="12">
+              <div flex center-ver>
+                <h3>Intermezzos Templates</h3>
+                <span class="spacer"></span>
+                <fa-icon [icon]="icon.get('faPlus')" pointer font-16 (click)="newInfoItem()"></fa-icon>
+              </div>
+              <div class="selectColumn">
+                <ion-card basicPadding pointer flex center-ver font16 weight700 tab *ngFor="let item of infoItems | filterKey : 'courseId' : 'empty' ;let i = index">
+                  {{item.title | capitalize}}
+                  <span class="spacer"></span>
+                  <fa-icon [icon]="icon.get('faPen')" font-16 pointer (click)="editInfoItem(item)"></fa-icon>
+                  <fa-icon [icon]="icon.get('faArrowRight')" font-16 pointer (click)="addInfoItem(item)"></fa-icon>
+                </ion-card>
+              </div>
+            </ion-col>
+
+
+          </ion-row>
+        </ion-col>
+
+      <ion-col size="9"  class="detailColumn">
+        <ion-card basicPadding *ngIf="!item?.id&&!caseItem.id&&!infoItem.id">
+          <ion-card-title>Selecteer een item</ion-card-title>
+        </ion-card>
+        
+        <!-- Courses -->
+        <ion-card *ngIf="item?.id && !caseItem.id && !infoItem.id">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="item.title"></ion-input>
+                <span class="spacer"></span>
+                <ion-button fill="outline" color="light" (click)="deleteCourse()">Verwijderen</ion-button>
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+        <div *ngIf="item?.id && !caseItem.id && !infoItem.id" class="reOrderList">
+          <h3>Course Onderdelen</h3>
+          <ion-reorder-group *ngIf="item?.id" [disabled]="false" (ionItemReorder)="handleReorderItems($any($event))">
+            <ion-item *ngFor="let item of item.itemIds;let item_index=index" class="subItem">
+              <!-- <ion-card  basicPadding font16 weight700 reorder  flex center-ver> -->
+                <div>
+                  <ion-card-title>{{getItem(item.id,item.type).title}}</ion-card-title>
+                  <ion-card-subtitle>{{item.type}}</ion-card-subtitle>
+                </div>
+                <ion-button slot="end" fill="clear" (click)="removeItem(item_index)">
+                  <fa-icon trash [icon]="icon.get('faTrashAlt')" font-16 ></fa-icon>
+                </ion-button>
+                <ion-reorder slot="end" color="light"></ion-reorder>
+              <!-- </ion-card> -->
+            </ion-item>
+          </ion-reorder-group>
+          
+        </div>
+
+        <!-- Cases -->
+        <ion-card basicPadding *ngIf="caseItem?.id">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('cases','title')" [(ngModel)]="caseItem.title"></ion-input>
+                <span class="spacer"></span>
+                <fa-icon font-24 pointer [icon]="icon.get('faTimes')" (click)="closeCase()"></fa-icon>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-row>
+                <ion-col size="8">
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Conversation Type</ion-label>
+                        <ion-select [(ngModel)]="caseItem.conversation" (ionChange)="update('cases','conversation')">
+                            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Thema</ion-label>
+                        <ion-select [(ngModel)]="caseItem.theme" (ionChange)="update('cases','theme')">
+                            <ion-select-option *ngFor="let theme of infoService.themes" [value]="theme.id">{{theme.id}}</ion-select-option>
+                        </ion-select>
+                    </ion-item>
+        
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Rol</ion-label>
+                        <ion-input [(ngModel)]="caseItem.role" (ionChange)="update('cases','role')"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Avatar ID</ion-label>
+                        <ion-input [(ngModel)]="caseItem.avatarName" (ionChange)="update('cases','avatarName')"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-label position="stacked">Foto URL</ion-label>
+                        <ion-input [(ngModel)]="caseItem.photo" (ionChange)="update('cases','photo')"></ion-input>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="4">
+                    <ion-card class="caseAvatar">
+                        <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
+                        </ion-card-content>
+                        <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
+                            <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
+                        </ion-card-content>
+                    </ion-card>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="12">
+                    
+                    <ion-item bgWhite lines="none">
+                        <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('cases','attitude')">
+                            <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
+                            <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
+                        </ion-range>
+                    </ion-item>
+
+                    <ion-item bgWhite lines="none">
+                        <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('cases','steadfastness')">
+                            <ion-label style="font-size:14px" slot="start">Steadfastness</ion-label>
+                            <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
+                        </ion-range>
+                    </ion-item>
+                    
+                    <ion-item bgWhite lines="none">
+                      <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description" (ionChange)="update('cases','description')">
+                        <div slot="label">Omschrijving</div>
+                      </ion-textarea>
+                    </ion-item>
+
+                    <ion-item bgWhite lines="none">
+                        <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.casus" (ionChange)="update('cases','casus')">
+                          <div slot="label">Casus</div>
+                        </ion-textarea>
+                      </ion-item>
+
+                    
+                </ion-col>
+                    
+            </ion-row>
+
+            <div flex center-ver>
+              <span class="spacer"></span>
+              <ion-button color="danger" (click)="deleteCase(caseItem)" fill="solid">
+                <fa-icon [icon]="icon.get('faTrashAlt')" font-16></fa-icon>
+                Verwijderen
+              </ion-button>
+            </div>
+            
+          </ion-card-content>
+        </ion-card>
+
+
+        <!-- Info Items -->
+        <ion-card *ngIf="infoItem?.id">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('InfoItems','title')" [(ngModel)]="infoItem.title"></ion-input>
+                <span class="spacer"></span>
+                <fa-icon font-24 pointer [icon]="icon.get('faTimes')" (click)="closeInfoItem()"></fa-icon>
+            </ion-card-title>
+            <ion-card-content>
+              <ion-row>
+                <ion-col size="8">
+                  <ion-item lines="none">
+                    <ion-label position="stacked">Information Type</ion-label>
+                    <ion-select [(ngModel)]="infoItem.type" (ionChange)="update('InfoItems','type')">
+                        <ion-select-option value="text">Text</ion-select-option>
+                        <ion-select-option value="video">Video</ion-select-option>
+                        <ion-select-option value="audio">Audio</ion-select-option>
+                        <ion-select-option value="image_only">Image only</ion-select-option>
+                        <ion-select-option value="quiz">Quiz</ion-select-option>
+                      </ion-select>
+                  </ion-item>
+                  <ion-item bgWhite lines="none">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.description" (ionChange)="update('InfoItems','description')">
+                      <div slot="label">Description (for trainer only)</div>
+                    </ion-textarea>
+                  </ion-item>
+                  <ion-item lines="none">
+                    <ion-label position="stacked">Image URL</ion-label>
+                    <ion-input [(ngModel)]="infoItem.photo" (ionChange)="update('InfoItems','photo')"></ion-input>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-item bgWhite lines="none">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.intro" (ionChange)="update('InfoItems','intro')">
+                      <div slot="label">Introductie (HTML)</div>
+                      <ion-button fill="clear" style="font-size:16px;" color="dark" slot="end" (click)="editHtml('intro')">
+                        <fa-icon slot="icon-only" [icon]="icon.get('faCode')" pointer></fa-icon>
+                      </ion-button>
+                    </ion-textarea>
+                      
+
+                  </ion-item>
+                  <ion-item bgWhite lines="none" *ngIf="infoItem.type=='text'">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.content" (ionChange)="update('InfoItems','content')">
+                      <div slot="label">Content (HTML)</div>
+                      <ion-button fill="clear" style="font-size:16px;" color="dark" slot="end" (click)="editHtml('content')">
+                        <fa-icon slot="icon-only" [icon]="icon.get('faCode')" pointer></fa-icon>
+                      </ion-button>
+                    </ion-textarea>
+                  </ion-item>
+
+                </ion-col>
+              </ion-row>
+                
+              <div flex center-ver>
+                <span class="spacer"></span>
+                <ion-button color="danger" (click)="deleteInfoItem(infoItem)" fill="solid">
+                  <fa-icon [icon]="icon.get('faTrashAlt')" font-16></fa-icon>
+                  Verwijderen
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card-header>
+        </ion-card>
+
+
+        <!-- <div *ngIf="item?.id" flex center-ver fullwidth>
+          <span class="spacer"></span>
+          <ion-button fill="outline" color="light" (click)="addInfo()">Voeg intermezzo toe</ion-button>
+          <ion-button fill="outline" color="light" (click)="addCase()">Voeg casus toe</ion-button>
+          
+        </div> -->
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

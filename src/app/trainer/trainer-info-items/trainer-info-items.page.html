@@ -1,0 +1,85 @@
+<app-header title="Information modules"></app-header>
+<main>
+    <ion-toolbar class="buttonBar">
+        <ion-buttons slot="end">
+          <ion-button fill="outline" color="light" (click)="add()">Nieuw</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+    <div class="buttonBarMargin"></div>
+  <ion-grid >
+    <ion-row>
+        <ion-col size="3" class="selectColumn">
+          <ion-card basicPadding pointer font16 weight700 tab *ngFor="let infoItem of infoItems;let i = index" [ngClass]="{'activeTab':item.id==infoItem.id}" (click)="selectItem(infoItem)">
+            {{infoItem.title | capitalize}}
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="9"  class="detailColumn">
+        <ion-card *ngIf="!item?.id">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+              Selecteer een item
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+        <ion-card *ngIf="item?.id">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="item.title"></ion-input>
+                <span class="spacer"></span>
+            </ion-card-title>
+            <ion-card-content>
+              <ion-row>
+                <ion-col size="8">
+                  <ion-item lines="none">
+                    <ion-label position="stacked">Information Type</ion-label>
+                    <ion-select [(ngModel)]="item.type" (ionChange)="update('type')">
+                        <ion-select-option value="text">Text</ion-select-option>
+                        <ion-select-option value="video">Video</ion-select-option>
+                        <ion-select-option value="audio">Audio</ion-select-option>
+                        <ion-select-option value="image_only">Image only</ion-select-option>
+                        <ion-select-option value="quiz">Quiz</ion-select-option>
+                      </ion-select>
+                  </ion-item>
+                  <ion-item bgWhite lines="none">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="item.description" (ionChange)="update('description')">
+                      <div slot="label">Description (for trainer only)</div>
+                    </ion-textarea>
+                  </ion-item>
+                  <ion-item lines="none">
+                    <ion-label position="stacked">Image URL</ion-label>
+                    <ion-input [(ngModel)]="item.photo" (ionChange)="update('photo')"></ion-input>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-item bgWhite lines="none">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="item.intro" (ionChange)="update('intro')">
+                      <div slot="label">Introductie (HTML)</div>
+                      <ion-button fill="clear" style="font-size:16px;" color="dark" slot="end" (click)="editHtml('intro')">
+                        <fa-icon slot="icon-only" [icon]="icon.get('faCode')" pointer></fa-icon>
+                      </ion-button>
+                    </ion-textarea>
+                      
+
+                  </ion-item>
+                  <ion-item bgWhite lines="none" *ngIf="item.type=='text'">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="item.content" (ionChange)="update('content')">
+                      <div slot="label">Content (HTML)</div>
+                      <ion-button fill="clear" style="font-size:16px;" color="dark" slot="end" (click)="editHtml('content')">
+                        <fa-icon slot="icon-only" [icon]="icon.get('faCode')" pointer></fa-icon>
+                      </ion-button>
+                    </ion-textarea>
+                  </ion-item>
+
+                </ion-col>
+              </ion-row>
+                
+            </ion-card-content>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>
