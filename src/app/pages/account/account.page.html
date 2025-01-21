@@ -1,17 +1,15 @@
-<app-header title="Mijn Account"></app-header>
+<app-header page="account"></app-header>
 <main>
   <ion-grid>
     <ion-row>
       <ion-col size="3" class="selectColumn">
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='account'}" (click)="changeTab('account')">Mijn gegevens</ion-card>
-        <ion-card basicPadding pointer solidSecondary font16 weight700 tab [ngClass]="{'activeTab':activeTab=='trainer'}" (click)="changeTab('trainer')" *ngIf="subscriptionsService.hasActive('trainer') | async">Trainer</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='profile'}" (click)="changeTab('profile')">Mijn profiel</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='courses'}" (click)="changeTab('courses')">Mijn cursussen</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='conversations'}" (click)="changeTab('conversations')">Mijn gesprekken</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='badges'}" (click)="changeTab('badges')">Mijn prestaties</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='subscriptions'}" (click)="changeTab('subscriptions')">Mijn abonnementen</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='payment'}" (click)="changeTab('payment')">Betaalinstellingen</ion-card>
-        <ion-card basicPadding pointer font16 weight700 tab [ngClass]="{'activeTab':activeTab=='credits'}" (click)="changeTab('credits')">Credits</ion-card>
+        <ion-card basicPadding pointer font16 weight700 tab flex center-ver *ngFor="let item of menuItems" [ngClass]="{'activeTab':activeTab==item.tab}" (click)="changeTab(item.tab)">
+          <div center listIcon>
+            <fa-icon [icon]="icon.get(item.icon)" ></fa-icon>
+          </div>
+          <span>{{item.title}}</span>
+        </ion-card>
+
       </ion-col>
 
       <ion-col size="9" class="detailColumn" center-left>
@@ -23,12 +21,12 @@
               </ion-card-header>
               <ion-card-content>
                 <ion-list>
-                  <ion-item>
+                  <ion-item lines="none" class="fieldItem">
                     <ion-label position="stacked">Naam</ion-label>
-                    <ion-input type="text" [(ngModel)]="account.displayName"></ion-input>
+                    <ion-input placeholder="Naam" type="text" [(ngModel)]="account.displayName"></ion-input>
                   </ion-item>
                 </ion-list>
-                <ion-button expand="block" (click)="updateAccount()">Opslaan</ion-button>
+                <ion-button class="saveButton" [disabled]="!account.displayName" (click)="updateAccount()">Opslaan</ion-button>
               </ion-card-content>
             </ion-col>
             <ion-col size="6">
@@ -49,7 +47,7 @@
                 <ion-card-title>Thema voorkeuren</ion-card-title>
                 
               </ion-card-header>
-              <ion-item marginBottom lines="none" *ngFor="let theme of infoService.themes">
+              <ion-item marginBottom listCard lines="none" *ngFor="let theme of infoService.themes">
                 <ion-toggle color="primary" [(ngModel)]="account.preferences.themes[theme.id]" (ionChange)="updatePreference()">
                 <!-- <ion-toggle color="primary" [(ngModel)]="account.preferences.themes[theme.id]"> -->
                   {{theme.id | capitalize}}
@@ -73,13 +71,13 @@
             <ion-card-title>Mijn gesprekken</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <ion-card basicPadding pointer *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp'" flex center-ver fullwidth (click)="openConversation(conversation)">
+            <ion-card basicPadding listCard pointer *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp'" flex center-ver fullwidth (click)="openConversation(conversation)">
               <ion-card-title>{{ conversation.role }}</ion-card-title>
               <span class="spacer"></span>
               <ion-note>{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
-              <fa-icon [icon]="icon.get('faPlay')" iconContinue listIcon *ngIf="!conversation.closed" ></fa-icon>
-              <fa-icon [icon]="icon.get('faCheckCircle')" iconClosed listIcon *ngIf="conversation.closed" ></fa-icon>
-              <fa-icon [icon]="icon.get('faTrashAlt')" trash listIcon (click)="deleteConversation($event,conversation)"></fa-icon>
+              <fa-icon [icon]="icon.get('faPlay')" iconContinue noteIcon *ngIf="!conversation.closed" ></fa-icon>
+              <fa-icon [icon]="icon.get('faCheckCircle')" iconClosed noteIcon *ngIf="conversation.closed" ></fa-icon>
+              <fa-icon [icon]="icon.get('faTrashAlt')" trash noteIcon (click)="deleteConversation($event,conversation)"></fa-icon>
             </ion-card>
           </ion-card-content>
         </ion-card>

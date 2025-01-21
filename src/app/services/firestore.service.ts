@@ -348,15 +348,14 @@ export class FirestoreService {
     })
   }
 
-  backup(collection:string,data:any){
+  backup(collection:string,agent:string,data:any){
 
     let backupData = {
-      type: collection,
       content: data,
       timestamp: new Date().getTime()
     }
 
-    return this.fire.collection('backups').add(backupData)
+    return this.fire.collection('backups').doc(collection).collection(agent).add(backupData)
     .then(response=> {
       this.toast.show('Backup gemaakt')
     })

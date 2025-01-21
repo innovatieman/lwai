@@ -3,14 +3,28 @@
     
     <div style="width:100%;height:45px" center-hor flex>
       <div style="max-width: 1350px;width:100%" flex center-ver>       
-        <div flex center-ver center-left>
-          <img src="assets/icon/favicon_white.png" style="width: 30px; height: 30px; margin-right: 10px;">
-          <div style="font-size: 24px;" *ngIf="title">{{title | uppercase}}</div>
+        <div flex center-ver center-left slot="start">
+          <!-- <img src="assets/icon/favicon_white.png" style="width: 30px; height: 30px; margin-right: 10px;"> -->
+          <img src="assets/icon/logo_full_black_sm.png" style="margin-right: 10px;height:30px;min-width:135px;" *ngIf="media.screenSize!='sm'">
+          <img src="assets/icon/logo_single_black.png" style="margin-right: 10px;height:30px;min-width:30px;" *ngIf="media.screenSize=='sm'">
+          <!-- <div style="font-size: 24px;" *ngIf="title">{{title | uppercase}}</div> -->
         </div>
+        <div class="menuList" *ngIf="!media.smallDevice">
+          <div *ngFor="let item of menuItems">
+            <div class="menuItem" (click)="item.url ? nav.go(item.url) : action(item)" [ngClass]="{'activeMenuItem':page==item.page}" *ngIf="shouldShowPage(item)">
+              <span>{{item.title}}</span>
+              <ion-icon *ngIf="item.dropDown" name="caret-down" class="dropDownIcon"></ion-icon>
+            </div>
+          </div>
+        </div>
+
+        
+
         <span class="spacer"></span>
-        <ion-buttons slot="end" flex center-ver>
-          <ion-button color="light" (click)="showshortMenu($event)" size="large">
-            <ion-icon name="menu" noMargin slot="end" style="font-size: 24px;"></ion-icon>
+        
+        <ion-buttons slot="end" flex center-ver >
+          <ion-button color="primary" (click)="showshortMenu($event)" size="large">
+            <ion-icon name="person-circle" noMargin slot="end" style="font-size: 24px;"></ion-icon>
           </ion-button>
         </ion-buttons>
       </div>

@@ -17,7 +17,7 @@ import { EllipsisPipe } from './ellipsis.pipe';
 import { MaxLengthPipe } from './max-length.pipe';
 import { CleanReactionPipe } from './clean-reaction.pipe';
 import { ParseChoicesPipe } from './parse-choices.pipe';
-import { LastesAssistantItemPipe } from './lastes-assistant-item.pipe';
+import { lastestAssistantItemPipe } from './lastest-assistant-item.pipe';
 import { ParseJSONPipe } from './parse-json.pipe';
 import { GroupByPipe } from './group-by.pipe';
 
@@ -40,7 +40,7 @@ import { GroupByPipe } from './group-by.pipe';
     MaxLengthPipe,
     CleanReactionPipe,
     ParseChoicesPipe,
-    LastesAssistantItemPipe,
+    lastestAssistantItemPipe,
     ParseJSONPipe,
     GroupByPipe
   ],
@@ -64,7 +64,7 @@ import { GroupByPipe } from './group-by.pipe';
     MaxLengthPipe,
     CleanReactionPipe,
     ParseChoicesPipe,
-    LastesAssistantItemPipe,
+    lastestAssistantItemPipe,
     ParseJSONPipe,
     GroupByPipe],
   providers:[

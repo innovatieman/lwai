@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { Auth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -96,6 +96,18 @@ export class AuthService {
     }
   }
 
+  async loginWithApple(): Promise<void> {
+    try {
+      const provider = new OAuthProvider('apple.com');
+      await this.afAuth.signInWithPopup(provider);
+      this.nav.go('start')
+    } catch (error) {
+      console.error('Apple login failed:', error);
+      this.toast.show('Login mislukt');
+      throw error;
+    }
+  }
+
   // Registreer een nieuwe gebruiker
   async register(email: string, password: string): Promise<void> {
     try {
@@ -120,6 +132,17 @@ export class AuthService {
     }
   }
 
+  async registerWithApple() {
+    const provider = new OAuthProvider('apple.com');
+    try {
+      const userCredential = await this.afAuth.signInWithPopup(provider);
+      console.log('Apple Login Succes:', userCredential.user);
+      this.nav.go('start')
+    } catch (error) {
+      console.error('Apple Login Mislukt:', error);
+      this.toast.show('Apple Login Mislukt');
+    }
+  }
   // Uitloggen
   async logout(): Promise<void> {
     try {

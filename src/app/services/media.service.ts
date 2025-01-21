@@ -6,7 +6,7 @@ import { Platform } from '@ionic/angular';
 })
 export class MediaService {
   private activeScreenSize:string = 'md'
-  
+  public screenWidth:number = window.innerWidth
   constructor(
     public platform:Platform,
   ) {
@@ -36,6 +36,9 @@ export class MediaService {
     } 
   }
 
+  get smallDevice(){
+    return this.activeScreenSize == 'xs' || this.activeScreenSize == 'sm'
+  }
 
   get browser() {
     if ((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) != -1) {

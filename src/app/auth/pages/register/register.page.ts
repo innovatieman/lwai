@@ -32,7 +32,10 @@ export class RegisterPage implements OnInit {
     //   console.log(this.auth.user$)
     //   this.nav.go('start')
     // }
+    this.doNothing();
   }
+
+  doNothing() {}
 
   async registerWithEmail() {
     const { email, password } = this.registerForm.value;

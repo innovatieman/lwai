@@ -4,30 +4,116 @@ import { MediaService } from 'src/app/services/media.service';
 import { NavService } from 'src/app/services/nav.service';
 import { MenuPage } from '../menu/menu.page';
 import { PopoverController } from '@ionic/angular';
+import { AuthService } from 'src/app/auth/auth.service';
+import { SubscriptionsService } from 'src/app/services/subscriptions.service';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
+
+
 export class HeaderComponent  implements OnInit {
-  // @HostListener('window:resize', ['$event'])
+  [x:string]:any; 
   @Input() title:string = ''
+  @Input() page:string = ''
+  @HostListener('window:resize', ['$event'])
   onResize(){
     this.media.setScreenSize()
     this.ref.detectChanges()
   }
+  
+  isAuthenticated: boolean = false;
+  isAdmin: boolean = false;
+  isTrainer: boolean = false;
+
+
+  menuItems:any=[
+    {
+      url:'start',
+      page:'start',
+      title:'Start',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:true,
+      isTrainer:true,
+    },
+    {
+      url:'account',
+      page:'account',
+      title:'Account',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:true,
+      isTrainer:true,
+    },
+    {
+      url:'trainer/courses',
+      page:'trainer-courses',
+      title:'Trainer',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:false,
+      isTrainer:true,
+    },
+    {
+      action:'adminMenu',
+      page:'admin',
+      title:'Admin',
+      dropDown:true,
+      isVisitor:false,
+      isAdmin:true,
+      isUser:false,
+      isTrainer:false,
+    },
+    
+  ]
+
+  adminItems:any=[
+    {
+      title: 'Agents en Settings',
+      icon: 'faCogs',
+      url: '/bagend/engine',
+    },
+    {
+      title: 'Cases',
+      icon: 'faSuitcase',
+      url: '/bagend/cases',
+    },
+    {
+      title: 'Users',
+      icon: 'faUsers',
+      url: '/bagend/users',
+    },
+  ]
   constructor(
     public nav:NavService,
-    // public auth:AuthService,
+    public auth:AuthService,
     public icon:IconsService,
     public media:MediaService,
     private ref:ChangeDetectorRef,
-    private popoverController:PopoverController
+    private popoverController:PopoverController,
+    private subscriptions:SubscriptionsService
   ) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    const path = window.location.pathname;
+    this.auth.isAuthenticated().subscribe((auth) => {
+      this.isAuthenticated = auth;
+    });
 
+    this.auth.isAdmin().subscribe((admin) => {
+      this.isAdmin = admin;
+    });
+    this.subscriptions.hasActive('trainer').subscribe((trainer)=>{
+      this.isTrainer = trainer
+    })
+  }
+
+  action(item:any){
+    this[item.action]()
+  }
 
   shortMenu:any
   async showshortMenu(event:any){
@@ -41,5 +127,49 @@ export class HeaderComponent  implements OnInit {
     });
     await this.shortMenu.present();
   }
+
+  async adminMenu(){
+    
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        customMenu:true,
+        pages:this.adminItems
+      },
+      cssClass: 'customMenu',
+      event: event,
+      translucent: false,
+      reference:'trigger',
+    });
+    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+
+    await this.shortMenu.present();
+
+    console.log('adminMenu')
+    
+  }
+
+  shouldShowPage(page: any): boolean {
+    if (this.isAdmin && page.isAdmin) {
+      return true;
+    }
+
+    if (!this.isAuthenticated && page.isVisitor) {
+      return true;
+    }
+
+    if (this.isAuthenticated && page.isUser) {
+      return true;
+    }
+
+    if (this.isTrainer && page.isTrainer) {
+      return true;
+    }
+
+    return false;
+  }
+
+
+  
 
 }

@@ -1,20 +1,23 @@
 import { Injectable } from '@angular/core';
 import { combineLatest, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AuthService } from '../auth/auth.service';
 import { FirestoreService } from './firestore.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CasesService {
+  selectedType:any = undefined
   all:any[] = []
   isAdmin:boolean = false
   constructor(
     private fire:AngularFirestore,
     private auth:AuthService,
-    private firestore: FirestoreService
+    private firestore: FirestoreService,
+    private translate: TranslateService
   ) { 
     this.auth.isAdmin().subscribe((admin) => {
       this.isAdmin = admin;
@@ -40,41 +43,86 @@ export class CasesService {
   }
 
 
+  // loadCases() {
+  //   const userQuery = this.fire.collection('cases', ref => ref.where('open_to_user', '==', true)).snapshotChanges();
+  //   const publicQuery = this.fire.collection('cases', ref => ref.where('open_to_public', '==', true)).snapshotChanges();
+  
+  //   let adminQuery = of([] as any[]);
+  
+  //   if (this.isAdmin) {
+  //     adminQuery = this.fire.collection('cases', ref => ref.where('title', '!=', '')).snapshotChanges();
+  //   }
+  
+  //   // Combineer alle observables
+  //   combineLatest([userQuery, publicQuery, adminQuery])
+  //     .pipe(
+  //       map(([userDocs, publicDocs, adminDocs]) => {
+  //         const allDocs = [...userDocs, ...publicDocs, ...adminDocs];
+  
+  //         // Filter dubbele documenten op ID
+  //         const uniqueDocs = allDocs.reduce((acc: any[], current) => {
+  //           if (!acc.some((doc:any) => doc.payload.doc.id === current.payload.doc.id)) {
+  //             acc.push(current);
+  //           }
+  //           return acc;
+  //         }, []);
+  
+  //         return uniqueDocs.map((e:any) => ({
+  //           id: e.payload.doc.id,
+  //           ...e.payload.doc.data(),
+  //         }));
+  //       })
+  //     )
+  //     .subscribe(docs => {
+  //       this.all = docs;
+  //     });
+  // }
+
+
   loadCases() {
-    const userQuery = this.fire.collection('cases', ref => ref.where('open_to_user', '==', true)).snapshotChanges();
-    const publicQuery = this.fire.collection('cases', ref => ref.where('open_to_public', '==', true)).snapshotChanges();
-  
-    let adminQuery = of([] as any[]);
-  
-    if (this.isAdmin) {
-      adminQuery = this.fire.collection('cases', ref => ref.where('title', '!=', '')).snapshotChanges();
-    }
-  
-    // Combineer alle observables
-    combineLatest([userQuery, publicQuery, adminQuery])
+    const currentLang = this.translate.currentLang || 'en-EN';
+    // Query voor cases die toegankelijk zijn voor de gebruiker
+    this.fire
+      .collection('cases', ref => ref.where('open_to_user', '==', true))
+      .snapshotChanges()
       .pipe(
-        map(([userDocs, publicDocs, adminDocs]) => {
-          const allDocs = [...userDocs, ...publicDocs, ...adminDocs];
-  
-          // Filter dubbele documenten op ID
-          const uniqueDocs = allDocs.reduce((acc: any[], current) => {
-            if (!acc.some((doc:any) => doc.payload.doc.id === current.payload.doc.id)) {
-              acc.push(current);
-            }
-            return acc;
-          }, []);
-  
-          return uniqueDocs.map((e:any) => ({
+        // Map documenten naar objecten
+        map(docs =>
+          docs.map((e: any) => ({
             id: e.payload.doc.id,
             ...e.payload.doc.data(),
-          }));
-        })
+          }))
+        ),
+        // Haal vertalingen op voor de huidige taal
+        switchMap(cases =>
+          combineLatest(
+            cases.map(doc =>
+              this.fire
+                .collection(`cases/${doc.id}/translations`)
+                .doc(currentLang)
+                .get()
+                .pipe(
+                  map(translationDoc => ({
+                    ...doc,
+                    translation: translationDoc.exists ? translationDoc.data() : null,
+                  }))
+                )
+            )
+          )
+        )
       )
-      .subscribe(docs => {
-        this.all = docs;
+      .subscribe(cases => {
+        // Combineer hoofdgegevens en vertalingen
+        this.all = cases.map(doc => ({
+          ...doc,
+          title: doc.translation?.title || doc.title,
+          content: doc.translation?.content || doc.content,
+        }));
       });
+      setTimeout(() => {
+        console.log(this.all)
+      }, 3000);
   }
-
 
   query(collection:string,where:string,key:any,operator?:any){
     if(!operator){

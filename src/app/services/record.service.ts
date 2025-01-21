@@ -139,6 +139,21 @@ export class RecordService {
   }
 
   // async openai_extra_save(obj:any) {
+  sounds: any = {
+    achievement:'assets/sounds/achievement_3.mp3'
+  }
 
+
+  audio: any
+  playSound(sound:string) {
+    if(!this.audio){
+      this.audio = new Audio(this.sounds[sound]);
+      this.audio.play()
+      this.audio.onended = () => {
+        this.audio.remove();
+        this.audio = null;
+      }
+    }
+  }
 
 }

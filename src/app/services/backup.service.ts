@@ -11,9 +11,9 @@ export class BackupService {
     private firestore:FirestoreService
   ) { }
 
-  async getBackups(type:string,callback:Function){
+  async getBackups(type:string,agent:string,callback:Function){
     this.backups = [];
-    let subs = await this.firestore.query('backups','type',type).subscribe((data:any)=>{
+    let subs = await this.firestore.getSub('backups',type,agent).subscribe((data:any)=>{
       data.forEach((backup:any)=>{
         let dataItem = backup.payload.doc.data();
         dataItem.id = backup.payload.doc.id;
@@ -31,5 +31,9 @@ export class BackupService {
   }
   hideBackups(){
     this.activebackups =''
+  }
+
+  createbackups(type:string,agent:string,data:any){
+    this.firestore.createSub('backups',type,agent,{type:type,data:data,timestamp:new Date().getTime()});
   }
 }

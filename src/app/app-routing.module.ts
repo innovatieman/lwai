@@ -75,16 +75,6 @@ const routes: Routes = [
     canActivate: [AdminGuard,TrainerGuard],
   },
   {
-    path: 'bagend/agent',
-    loadChildren: () => import('./bagend/agent/agent.module').then( m => m.AgentPageModule),
-    canActivate: [AdminGuard],
-  },
-  {
-    path: 'bagend/agent/:type',
-    loadChildren: () => import('./bagend/agent/agent.module').then( m => m.AgentPageModule),
-    canActivate: [AdminGuard],
-  },
-  {
     path: 'conversation-start',
     loadChildren: () => import('./components/modals/conversation-start/conversation-start.module').then( m => m.ConversationStartPageModule)
   },
@@ -127,11 +117,11 @@ const routes: Routes = [
 
 
 
-  // {
-  //   path: '**',
-  //   redirectTo: 'conversations/transformative',
-  //   pathMatch: 'full'
-  // },
+  {
+    path: '**',
+    redirectTo: 'start',
+    pathMatch: 'full'
+  },
   
 
 

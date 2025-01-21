@@ -1,14 +1,17 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonSelect } from '@ionic/angular';
+import { IonSelect, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { MenuPage } from 'src/app/components/menu/menu.page';
 import { BackupService } from 'src/app/services/backup.service';
 import { CasesService } from 'src/app/services/cases.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { InfoService } from 'src/app/services/info.service';
+import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { SelectMenuService } from 'src/app/services/select-menu.service';
 
 @Component({
   selector: 'app-cases',
@@ -16,12 +19,13 @@ import { ModalService } from 'src/app/services/modal.service';
   styleUrls: ['./cases.page.scss'],
 })
 export class CasesPage implements OnInit {
-  @ViewChild('selectNew', { static: false }) selectNew!: IonSelect;
+  // @ViewChild('selectNew', { static: false }) selectNew!: IonSelect;
   activeTab: number = 0;
   cases: any[] = []
   caseItem: any = {}
   categories: any[] = []
-  newConversation: string = ''
+  categoriesList: any[] = []
+  // newConversation: string = ''
   showBackups:boolean = false
   backupDate: number = 0
   constructor(
@@ -32,6 +36,9 @@ export class CasesPage implements OnInit {
     public helpers:HelpersService,
     public translate:TranslateService,
     public infoService:InfoService,
+    private popoverController:PopoverController,
+    private selectMenuservice:SelectMenuService,
+    public media:MediaService
   ) { }
 
 
@@ -40,18 +47,21 @@ export class CasesPage implements OnInit {
     this.loadCategories()
   }
 
-  private loadCases() {
+  private loadCases(callback?:Function) {
     this.firestore.get('cases').subscribe((cases) => {
       this.cases = cases.map((casus:any) => {
         return { id: casus.payload.doc.id, ...casus.payload.doc.data() }
       })
-      
+      if(callback) callback()
     })
   }
   private loadCategories() {
     this.firestore.get('categories').subscribe((categories) => {
       this.categories = categories.map((category:any) => {
         return { id: category.payload.doc.id, ...category.payload.doc.data() }
+      })
+      this.categoriesList = this.categories.map((category:any) => {
+        return { select: category.id, title: category.title, id: category.id, icon: 'faArrowRight' }
       })
     })
   }
@@ -81,27 +91,194 @@ export class CasesPage implements OnInit {
     }
   }
   
-  openAdd(){
-    this.selectNew.open()
+  onToggleChange(key: any, event: any) {
+    this.caseItem.editable_by_user[key] = event.detail.checked;
+    this.update('editable_by_user');
   }
 
-  add(){
-    if(this.newConversation){
-      this.firestore.create('cases',
+  log(event:any){
+    console.log(event)
+  }
+  // openAdd(){
+  //   this.selectNew.open()
+  // }
+
+  shortMenu:any
+  async openAdd(){
+    
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        customMenu:true,
+        pages:this.categoriesList
+      },
+      cssClass: 'customMenu',
+      event: event,
+      translucent: false,
+    });
+    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+
+    await this.shortMenu.present()
+    await this.shortMenu.onWillDismiss();
+
+
+    if(this.selectMenuservice.selectedItem){
+      console.log(this.categoryInfo(this.selectMenuservice.selectedItem.id))
+      let casus =
         {
-          conversation:this.newConversation,
+          conversation:this.selectMenuservice.selectedItem.id,
           open_to_user:false,
           open_to_public:false,
           open_to_admin:true,
           title:'New Case',
           role:'',
           description:'',
-          attitude:1
-        }).then(()=>{
-          this.newConversation = ''
-        })
+          attitude:1,
+          steadfastness:50,
+          goals:{
+            phases:[],
+            free:'',
+            attitude:0,
+          },
+          max_time:30,
+          minimum_goals:0,
+          openingMessage:this.categoryInfo(this.selectMenuservice.selectedItem.id).openingMessage,
+          goal:false,
+          editable_by_user:{
+            role:false,
+            description:false,
+            function:false,
+            vision:false,
+            interests:false,
+            communicationStyle:false,
+            externalFactors:false,
+            history:false,
+            attitude:false,
+            steadfastness:false,
+
+            casus:false,
+            
+            goals:{
+              phases:false,
+              free:false,
+              attitude:false,
+            },
+            max_time:false,
+            minimum_goals:false,
+            openingMessage:true
+          }
+        }
+        this.editCase(casus)
+        
     }
+    
   }
+
+  editCase(caseItem:any,existing:boolean = false){
+
+    if(!caseItem.goalsItems){
+      caseItem.goalsItems = {
+        phases:[],
+        free:'',
+        attitude:0,
+      }
+    }
+    if(!caseItem.editable_by_user){
+      caseItem.editable_by_user = {
+        role:false,
+        description:false,
+        function:false,
+        vision:false,
+        interests:false,
+        communicationStyle:false,
+        externalFactors:false,
+        history:false,
+        attitude:false,
+        steadfastness:false,
+        casus:false,
+        goals:{
+          phases:false,
+          free:false,
+          attitude:false,
+        },
+        max_time:false,
+        minimum_goals:false,
+        openingMessage:true
+      }
+    }
+    if(!caseItem.max_time){
+      caseItem.max_time = 30
+    }
+    if(!caseItem.minimum_goals){
+      caseItem.minimum_goals = 0
+    }
+    if(!caseItem.goal){
+      caseItem.goal = false
+    }
+    if(!caseItem.openingMessage){
+      caseItem.openingMessage = this.categoryInfo(caseItem.conversation).openingMessage
+    }
+    if(existing){
+      caseItem.existing = true
+    }
+
+    this.modal.showConversationStart({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...caseItem}).then((res:any)=>{
+          
+      // console.log(res)
+      if(res && !res.id){
+        delete res.admin
+        delete res.conversationInfo
+        delete res.existing
+        this.firestore.create('cases',res).then(()=>{
+          this.loadCases(()=>{
+            this.caseItem = this.cases.filter((e:any) => {
+              return e.id === res.id
+            })[0]
+          })
+        })
+      }
+      else if(res && res.id){
+        delete res.admin
+        delete res.conversationInfo
+        delete res.existing
+        // console.log(res)
+
+        this.firestore.set('cases',res.id,res).then(()=>{
+          this.loadCases(()=>{
+            this.caseItem = this.cases.filter((e:any) => {
+              return e.id === res.id
+            })[0]
+          })
+        })
+      }
+    })
+    this.selectMenuservice.selectedItem = undefined
+  }
+
+
+  // add(){
+  //   if(this.newConversation){
+  //     let casus =
+  //       {
+  //         conversation:this.newConversation,
+  //         open_to_user:false,
+  //         open_to_public:false,
+  //         open_to_admin:true,
+  //         title:'New Case',
+  //         role:'',
+  //         description:'',
+  //         attitude:1
+  //       }
+  //     this.newConversation = ''
+      
+  //     this.modal.showConversationStart({admin:true,...casus}).then((res:any)=>{
+
+  //         console.log(res)
+  //       })
+        
+        
+  //   }
+  // }
 
   deleteCase(){
     this.modal.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
@@ -113,8 +290,8 @@ export class CasesPage implements OnInit {
     })
   }
 
-  getBackups(type:string){
-    this.backupService.getBackups(type,(backups:any)=>{
+  getBackups(type:string,agent:string){
+    this.backupService.getBackups(type,agent,(backups:any)=>{
       this.modal.backups(this.backupService.backups,{},'Select a backup to restore',(response:any)=>{
         if(response.data){
             console.log(response.data)

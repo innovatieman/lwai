@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { FirestoreService } from './firestore.service';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InfoService {
-  public_info:any = []
+  // public_info:any = []
   attitudes:any = []
   positions:any = []
   themes:any = []
@@ -15,18 +16,20 @@ export class InfoService {
     { id: 'position', name: 'Position' }
   ]
   constructor(
-    public firestore:FirestoreService
+    public firestore:FirestoreService,
+    private functions:AngularFireFunctions
   ) { 
     this.loadInfo()
   }
 
   loadInfo() {
-    this.firestore.get('public_info').subscribe((info) => {
-      this.public_info = info.map((infoItem:any) => {
-        return { id: infoItem.payload.doc.id, ...infoItem.payload.doc.data() }
-      })
+    // this.firestore.get('public_info').subscribe((info) => {
+    //   this.public_info = info.map((infoItem:any) => {
+    //     return { id: infoItem.payload.doc.id, ...infoItem.payload.doc.data() }
+    //   })
       
-    })
+    // })
+
     this.firestore.get('attitudes').subscribe((attitudes) => {
       this.attitudes = attitudes.map((attitude:any) => {
         return { id: attitude.payload.doc.id, ...attitude.payload.doc.data() }
@@ -41,10 +44,17 @@ export class InfoService {
     })
   }
 
-  getInfo(id:string){
-    // console.log(id,this.public_info[5].intro_phases)
-    return this.public_info.find((info:any) => info.id === id)
+  async loadPublicInfo(collection:string,document:string,field:string){
+    let info = ''
+    await this.functions.httpsCallable('get_public_info')({type:'public_info',collection:collection,document:document,field:field})
+    .forEach((result:any) => {
+      console.log(result)
+      info = result
+    })
+    return info
   }
+
+
 
   getAttitude(level:number){
     let attitude = this.attitudes.find((attitude:any) => attitude.level === level)

@@ -33,6 +33,7 @@ export class ModalService {
   async showConversationStart(caseItem: any): Promise<boolean> {
     const modalItem = await this.modalController.create({
       component: ConversationStartPage,
+      backdropDismiss: false,
       componentProps: {
         caseItem: caseItem,
       },

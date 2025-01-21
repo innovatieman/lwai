@@ -11,6 +11,8 @@ import { ComponentsModule } from "../../components/components.module";
 import { HighchartsChartModule } from 'highcharts-angular';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { DndModule } from 'ngx-drag-drop';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -21,7 +23,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     HighchartsChartModule,
     ComponentsModule,
     PipesModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    DndModule,
+    TranslateModule.forChild()
 ],
   declarations: [ConversationPage]
 })

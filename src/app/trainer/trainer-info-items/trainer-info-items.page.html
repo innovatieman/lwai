@@ -33,7 +33,7 @@
                 <ion-col size="8">
                   <ion-item lines="none">
                     <ion-label position="stacked">Information Type</ion-label>
-                    <ion-select [(ngModel)]="item.type" (ionChange)="update('type')">
+                    <ion-select interface="popover" [(ngModel)]="item.type" (ionChange)="update('type')">
                         <ion-select-option value="text">Text</ion-select-option>
                         <ion-select-option value="video">Video</ion-select-option>
                         <ion-select-option value="audio">Audio</ion-select-option>

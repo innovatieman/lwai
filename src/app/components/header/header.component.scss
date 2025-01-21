@@ -8,3 +8,42 @@ ion-header{
         color:var(--color-global);
     }
 }
+
+.menuList{
+    background:white;
+    border-radius: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    margin-left: 20px;
+    .menuItem{
+        cursor: pointer;
+        border-radius: 38px 38px 38px 38px;
+        border-style: none;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-right: 32px;    
+        padding-left: 32px;  
+        font-size: 15px;  
+        color:var(--color-global);
+        font-weight: 500;
+        margin:2px;
+        position: relative;
+        .dropDownIcon{
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    }
+    .menuItem:hover{
+        background-color: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+    }
+    .activeMenuItem{
+        background-color: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+    }
+}
+

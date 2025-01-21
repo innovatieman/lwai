@@ -1,6 +1,10 @@
 .caseAvatar{
     height: 175px;
 }
+.modalIntro{
+    padding: 0 20px;
+    margin-bottom: 10px;
+}
 ion-textarea{
     border: solid 0px rgba(0, 0, 0, 0.6);
     padding-left:0px
@@ -9,6 +13,59 @@ ion-item{
     margin-bottom:20px;
 }
 .mainCard{
-    max-height: calc(100vh - 120px);
+    background: var(--ion-color-secondary-contrast)!important;
+    border-radius: 24px;
+}
+.content{
+    max-height: calc(100vh - 160px);
+    @media (max-width: 768px) {
+        max-height:calc(100% - 160px); // Voor mobiele apparaten
+    }
     overflow: auto;
+}
+.buttons{
+    padding:10px;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+}
+.caseAvatar{
+    height: 188px;
+}
+ion-spinner{
+    margin-right:10px;
+}
+.selectedType{
+    --background: var(--ion-color-primary)!important;
+    ion-label{
+        --color: var(--ion-color-primary-contrast)!important;
+    }
+}
+.emptyHolder{
+    height: 200px;
+    
+}
+ion-toggle{
+    color: var(--color-global);
+    font-weight: 500;
+    margin: 10px 0px;
+}
+
+.numberInput-container{
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    color:var(--color-global)
+}
+.numberInput{
+    width: 37px;
+    border: solid 2px var(--color-global);
+    height: 35px;
+    min-height: 0px;
+    border-radius: 10px;
+    background: white;
+    text-align: center;
+    line-height: 33px;
+    font-weight: 600;
 }

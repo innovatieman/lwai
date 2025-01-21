@@ -1,4 +1,4 @@
-<app-header title="Your Courses"></app-header>
+<app-header page="trainer-courses"></app-header>
 <main>
     <!-- <ion-toolbar class="buttonBar">
         <ion-buttons slot="end">
@@ -73,7 +73,7 @@
             <ion-card-title flex center-ver>
                 <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="item.title"></ion-input>
                 <span class="spacer"></span>
-                <ion-button fill="outline" color="light" (click)="deleteCourse()">Verwijderen</ion-button>
+                <ion-button fill="outline" color="danger" (click)="deleteCourse()">Verwijderen</ion-button>
             </ion-card-title>
           </ion-card-header>
         </ion-card>
@@ -89,7 +89,7 @@
                 <ion-button slot="end" fill="clear" (click)="removeItem(item_index)">
                   <fa-icon trash [icon]="icon.get('faTrashAlt')" font-16 ></fa-icon>
                 </ion-button>
-                <ion-reorder slot="end" color="light"></ion-reorder>
+                <ion-reorder slot="end" color="secondary"></ion-reorder>
               <!-- </ion-card> -->
             </ion-item>
           </ion-reorder-group>
@@ -110,14 +110,14 @@
                 <ion-col size="8">
                     <ion-item lines="none">
                         <ion-label position="stacked">Conversation Type</ion-label>
-                        <ion-select [(ngModel)]="caseItem.conversation" (ionChange)="update('cases','conversation')">
+                        <ion-select interface="popover" [(ngModel)]="caseItem.conversation" (ionChange)="update('cases','conversation')">
                             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
                         </ion-select>
                     </ion-item>
 
                     <ion-item lines="none">
                         <ion-label position="stacked">Thema</ion-label>
-                        <ion-select [(ngModel)]="caseItem.theme" (ionChange)="update('cases','theme')">
+                        <ion-select interface="popover" [(ngModel)]="caseItem.theme" (ionChange)="update('cases','theme')">
                             <ion-select-option *ngFor="let theme of infoService.themes" [value]="theme.id">{{theme.id}}</ion-select-option>
                         </ion-select>
                     </ion-item>
@@ -204,7 +204,7 @@
                 <ion-col size="8">
                   <ion-item lines="none">
                     <ion-label position="stacked">Information Type</ion-label>
-                    <ion-select [(ngModel)]="infoItem.type" (ionChange)="update('InfoItems','type')">
+                    <ion-select interface="popover" [(ngModel)]="infoItem.type" (ionChange)="update('InfoItems','type')">
                         <ion-select-option value="text">Text</ion-select-option>
                         <ion-select-option value="video">Video</ion-select-option>
                         <ion-select-option value="audio">Audio</ion-select-option>

@@ -15,7 +15,7 @@ export class LoginPage implements OnInit {
   showPassWordReset = false;
   constructor(
     private fb: FormBuilder,
-    private auth: AuthService,
+    public auth: AuthService,
     public nav:NavService,
     public icon:IconsService
   ) {
@@ -34,13 +34,6 @@ export class LoginPage implements OnInit {
   async login() {
     try {
       await this.auth.login(this.form.value.email, this.form.value.password);
-    } catch (error) {
-    }
-  }
-
-  async loginWithGoogle() {
-    try {
-      await this.auth.loginWithGoogle();
     } catch (error) {
     }
   }

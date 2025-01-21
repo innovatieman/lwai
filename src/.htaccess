@@ -1,0 +1,15 @@
+# Sta het gebruik van de RewriteEngine toe
+RewriteEngine On
+
+# Zorg ervoor dat Authorization-header wordt doorgestuurd (indien nodig voor authenticatie)
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Controleer of het verzoek een bestaand bestand, een symlink of een map is
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [NC,L]
+
+# Stuur alles wat geen bestaand bestand/map is naar de Angular index.html
+RewriteRule ^.*$ /index.html [NC,L]

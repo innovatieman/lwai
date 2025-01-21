@@ -32,7 +32,8 @@ export class StartPage implements OnInit {
     private modalService:ModalService,
     public infoService:InfoService,
     public media:MediaService,
-    private rf:ChangeDetectorRef
+    private rf:ChangeDetectorRef,
+    private firestore:FirestoreService
   ) { }
 
   ngOnInit() {
@@ -125,5 +126,16 @@ export class StartPage implements OnInit {
       }
     }
     return found
+  }
+
+  removeActiveConversation(event:Event){
+    event.stopPropagation()
+    this.modalService.showConfirmation('Are you sure you want to remove this conversation?').then((res)=>{
+      console.log(res)
+      if(res){
+        console.log('users',this.auth.userInfo.uid,'conversations',this.activeConversation.conversationId)
+        this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.activeConversation.conversationId)
+      }
+    })
   }
 }

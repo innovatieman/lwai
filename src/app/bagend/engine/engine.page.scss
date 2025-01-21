@@ -1,3 +1,31 @@
 ion-range{
     padding-top:0;
 }
+
+.fieldItem ion-input {
+    background: none;
+    min-height: 16px;
+    border: none;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --padding-top: 7px;
+    --padding-bottom: 7px;
+    color: var(--color-global);
+}
+// [listCardTop]{
+//     border-bottom-left-radius: 0px;
+//     border-bottom-right-radius: 0px;
+// }
+// [listCardCenter]{
+//     border-top-left-radius: 0px;
+//     border-top-right-radius: 0px;
+//     border-bottom-left-radius: 0px;
+//     border-bottom-right-radius: 0px;
+// }
+// [listCardBottom]{
+//     border-top-left-radius: 0px;
+//     border-top-right-radius: 0px;
+// }
+.specialAgent{
+    outline:solid 1px var(--color-global);
+}

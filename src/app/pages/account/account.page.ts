@@ -22,6 +22,20 @@ export class AccountPage implements OnInit {
   hasActiveSubscription: boolean = false;
   conversations$: any;
   activeSubscriptionTypes: any; 
+
+  menuItems:any=[
+    {title:'Mijn gegevens',tab:'account',icon:'faPen'},
+    {title:'Mijn profiel',tab:'profile',icon:'faSlidersH'},
+    {title:'Mijn cursussen',tab:'courses',icon:'faGraduationCap'},
+    {title:'Mijn gesprekken',tab:'conversations',icon:'faComments'},
+    {title:'Mijn prestaties',tab:'badges',icon:'faAward'},
+    {title:'Mijn abonnementen',tab:'subscriptions',icon:'faStar'},
+    {title:'Betaalinstellingen',tab:'payment',icon:'faCreditCard'},
+    {title:'Credits',tab:'credits',icon:'faCoins'},
+
+  ]
+
+
   constructor(
     private firestore: FirestoreService,
     public auth: AuthService,

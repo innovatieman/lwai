@@ -52,6 +52,8 @@ export class EnginePage implements OnInit {
     {title:'Feiten noemer',id:'facts'},
     {title:'Eindevaluatie',id:'close'},
     {title:'Doel checker',id:'goals'},
+    {title:'Case Prompter',id:'case_prompter'},
+    {title:'Achtergrond',id:'background'},
   ]
 
   firstInputlabels:any = {
@@ -63,6 +65,8 @@ export class EnginePage implements OnInit {
       'facts':'Vraag aan Agent',
       'close':'Vraag aan Agent',
       'goals':'Vraag aan Agent',
+      'case_prompter':'Vraag aan Agent',
+      'background':'Vraag aan Agent',
     }
   }
   
@@ -70,16 +74,16 @@ export class EnginePage implements OnInit {
 
   fieldOptions:any = [
     {field:'title',label:'Title',type:'text',agents:['main']},
-    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals']},
+    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
     {field:'extraInfo',label:'Extra kennis input over de categorie',type:'textarea',agents:['reaction']},
-    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals']},
-    {field:'temperature',label:'Creativiteits temparatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals']},
-    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:500,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals']},
+    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
+    {field:'temperature',label:'Creativiteits temparatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
+    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:500,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
   ]
   
   fieldOptionsFormat:any = [
-    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals']},
-    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals']},
+    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
+    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
   ]
   
   fieldOptionsList:any = [
@@ -126,6 +130,7 @@ export class EnginePage implements OnInit {
             ...this.activeItem,
             [agent.id]: data,
           };
+
         })
         this.subCollectionSubs.push(subCollectionSub);
       }
@@ -187,6 +192,7 @@ export class EnginePage implements OnInit {
         }
       }
     }
+
     // setTimeout(() => {
     //   console.log(this.activeAgent)
     //   console.log(this.activeItem)
@@ -278,18 +284,6 @@ export class EnginePage implements OnInit {
     this.update('phaseList')
   }
 
-  savePhasesToInfo(){
-    for(let i=0;i<this.categories.length;i++){
-      this.firestoreService.set('public_info',this.categories[i].id,this.categories[i].phaseList,'phaseList',true,'',()=>{
-        //on error
-        let obj = {
-          phases:this.categories[i].phaseList
-        }
-        this.firestoreService.set('public_info',this.categories[i].id,obj)
-      })
-    }
-  }
-
 
   // addItem(){
   //   this.modalService.showConfirmation('Weet je zeker dat je deze actie wilt uitvoeren?').then((response)=>{
@@ -344,5 +338,30 @@ export class EnginePage implements OnInit {
   //     }
   //   })
   // }
+
+  editmenu:any[]= [
+    {title:'Maak backup formats',icon:'edit',id:'backup_format'},
+    {title:'Maak backup attitudes',icon:'edit',id:'backup_attitude'},
+    {title:'Maak backup positions',icon:'edit',id:'backup_position'},
+    {title:'Maak backup [category]',icon:'edit',id:'backup_category'},
+
+  ]
+
+  createBackups(){
+
+    // for(let i=0;i<this.agents.length;i++){
+    //   this.backupService.createbackups(this.activeItem.id,this.agents[i].id,this.activeItem[this.agents[i].id])
+    // }
+
+    // for(let i=0;i<this.formats.length;i++){
+    //   this.backupService.createbackups('formats',this.formats[i].id,this.formats[i])
+    // }
+
+    // this.backupService.createbackups('attitudes','attitudes',{attitudes:this.attitudes})
+    // this.backupService.createbackups('positions','positions',{positions:this.positions})
+
+  }
+
+
 
 }

@@ -9,13 +9,16 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { HeyGenApiService } from './heygen.service';
 import { ModalService } from './modal.service';
 import { CleanReactionPipe } from '../pipes/clean-reaction.pipe';
+import { RecordService } from './record.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConversationService implements OnDestroy {
   @Output() update: EventEmitter<boolean> = new EventEmitter();
+  @Output() updateAchievements: EventEmitter<boolean> = new EventEmitter();
   @Output() activeStream: EventEmitter<boolean> = new EventEmitter();
+  @Output() activateVideoScreen: EventEmitter<boolean> = new EventEmitter();
   attitude:number = 0
   tempText:string = ''
   tempTextUser:string = ''
@@ -31,9 +34,11 @@ export class ConversationService implements OnDestroy {
   loadReady:boolean = false;
   closing:boolean = false;
 
+  allLoaded:boolean = false;
+
   private conversationSub!: Subscription;
   private subCollectionSubs: Subscription[] = [];
-  private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases','close','tokens'];
+  private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases','close','tokens','goals','background'];
 
   constructor(
     public levels:LevelsService,
@@ -42,7 +47,8 @@ export class ConversationService implements OnDestroy {
     private firestore: AngularFirestore,
     public heyGen:HeyGenApiService,
     private modalService:ModalService,
-    private cleanReactionPipe:CleanReactionPipe
+    private cleanReactionPipe:CleanReactionPipe,
+    private record:RecordService,
 
   ) { 
     this.heyGen.active.subscribe((active:boolean)=>{
@@ -68,6 +74,12 @@ export class ConversationService implements OnDestroy {
       conversationType:caseItem.conversation,
       openingMessage:openingMessage,
       steadFastness:steadFastness,
+      goalsItems:caseItem.goalsItems,
+      max_time:caseItem.max_time,
+      minimum_goals:caseItem.minimum_goals,
+      avatarName:caseItem.avatarName,
+      photo:caseItem.photo,
+      video_on:caseItem.avatarName?true:false,
     },(response:any)=>{
       conversationId = response.id
       localStorage.setItem('conversation',JSON.stringify({conversationId, ...caseItem}))
@@ -91,11 +103,11 @@ export class ConversationService implements OnDestroy {
 
   }
 
-  loadConversation(conversationId: string,caseItem?:any,continuing?:boolean): void {
+  async loadConversation(conversationId: string,caseItem?:any,continuing?:boolean): Promise<void> {
     // console.log(`users/${this.auth.userInfo.uid}/conversations/${conversationId}`)
     
 
-    this.conversationSub = this.firestore
+    this.conversationSub = await this.firestore
       .doc(`users/${this.auth.userInfo.uid}/conversations/${conversationId}`)
       .valueChanges({ idField: 'conversationId' })
       .subscribe((conversation:any) => {
@@ -112,8 +124,20 @@ export class ConversationService implements OnDestroy {
       this.caseItem = caseItem
       this.dialog_role = caseItem.role;
     }
-    if(this.caseItem.avatarName&&!this.activeConversation.closed){
-      this.heyGen.initializeAvatar(this.caseItem.avatarName,'avatar_video',()=>{
+    let avatarName = this.activeConversation.avatarName || this.caseItem.avatarName
+
+    let video_on = this.activeConversation.video_on
+    if(video_on===undefined){
+      video_on = this.caseItem.video_on
+    }
+    if(video_on===undefined){
+      video_on = this.caseItem.avatarName?true:false
+    }
+    this.update.emit(true);
+    if(avatarName&&video_on&&!this.activeConversation.closed){
+      this.activateVideoScreen.emit(true)
+      
+      this.heyGen.initializeAvatar(avatarName,'avatar_video',()=>{
         this.loadReady = true;
         if(this.latestAssistantItem(this.activeConversation.messages) && !this.isLoading('reaction')){
           // console.log('speak')
@@ -121,14 +145,16 @@ export class ConversationService implements OnDestroy {
         }
       })
     }
-
+    else{
+      this.loadReady = true;
+    }
     if(!continuing){
       let checkInt = setInterval(() => {
         if(this.activeConversation?.role){
           clearInterval(checkInt)
           this.startLoading('reaction')
-          this.startLoading('facts')
-          this.getExtraInfo('facts',conversationId)
+          // this.startLoading('facts')
+          // this.getExtraInfo('facts',conversationId)
           let obj:any = {
             userId:this.auth.userInfo.uid,
             conversationId:conversationId,
@@ -166,14 +192,27 @@ export class ConversationService implements OnDestroy {
           .collection(`users/${this.auth.userInfo.uid}/conversations/${conversationId}/${collectionName}`)
           .valueChanges({ idField: 'id' })
           .subscribe(
-            (subCollectionData) => {
+            (subCollectionData:any) => {
               this.activeConversation = {
                 ...this.activeConversation,
                 [collectionName]: subCollectionData,
               };
               if(collectionName == 'messages'){
                 this.scrollChatToBottom()
-                this.reloadAtitude()
+                this.reloadAttitude()
+              }
+              if(collectionName == 'loading'){
+                let allLoaded = true
+                for(let i=0;i<subCollectionData.length;i++){
+                  if(subCollectionData[i].loading){
+                    allLoaded = false
+                  }
+                }
+                if(allLoaded&&subCollectionData.length>=5){
+                  this.allLoaded = true;
+                  this.checkGoal('free')
+                }
+                this.checkAllBasicGoals()
               }
              // sorteer de messages op timestamp
                 this.activeConversation[collectionName] = this.activeConversation[collectionName].sort((a:any, b:any) => a.timestamp - b.timestamp);
@@ -220,7 +259,7 @@ export class ConversationService implements OnDestroy {
     }
   }
 
-  reloadAtitude(){
+  reloadAttitude(){
     let attitudeString = ''
     if(this.latestAssistantItem(this.activeConversation.messages).includes('newAttitude:')){
       attitudeString = this.latestAssistantItem(this.activeConversation.messages).replace('newAttitude:','').split(', reaction:')[0]
@@ -313,7 +352,7 @@ export class ConversationService implements OnDestroy {
     this.tempText = ''
     this.tempTextUser = ''
     this.attitudeSet = false
-    this.getExtraInfo('choices')
+    // this.getExtraInfo('choices')
     this.getExtraInfo('phases')
     this.getExtraInfo('feedback')
   }
@@ -377,6 +416,12 @@ export class ConversationService implements OnDestroy {
     }
     else if(obj.instructionType == 'choices'){
       url = 'https://choicesai-p2qcpa6ahq-ew.a.run.app'
+    }
+    else if(obj.instructionType == 'goals'){
+      url = 'https://goalai-p2qcpa6ahq-ew.a.run.app'
+    }
+    else if(obj.instructionType == 'background'){
+      url = 'https://backgroundai-p2qcpa6ahq-ew.a.run.app'
     }
     if(!url){
       console.error('No url found')
@@ -586,7 +631,7 @@ export class ConversationService implements OnDestroy {
     this.modalService.showConfirmation('Weet je zeker dat je de laatste zet ongedaan wilt maken?').then((response:any)=>{
       if(response){
         this.deleteLastMoves('messages',2)
-        this.deleteLastMoves('feedback',3)
+        this.deleteLastMoves('feedback',1)
         this.deleteLastMoves('phases',1)
         this.deleteLastMoves('choices',2)
       }
@@ -646,5 +691,106 @@ export class ConversationService implements OnDestroy {
     }
     return usage;
   }
+
+  checkAllBasicGoals(){
+    this.checkGoal('attitude')
+    this.checkGoal('phases')
+    this.checkGoal('freeTest')
+  }
+
+  completedGoal:any = {}
+  async checkGoal(type:string){
+    
+    if(type=='attitude'&&this.activeConversation?.goalsItems&&this.activeConversation.goalsItems[type]){
+      if(this.activeConversation.goalsItems[type]<=this.attitude){
+        if(!this.activeConversation.accomplishments){
+          this.activeConversation.accomplishments = []
+          this.activeConversation.accomplishmentList = []
+        }
+        if(!this.activeConversation.accomplishments.includes('attitude')){
+          this.completedGoal = {goal:'attitude',explanation:'Je hebt de gewenste houding bereikt.'}
+
+          this.record.playSound('achievement')
+          this.updateAchievements.emit(true)
+        }
+      }
+    }
+    //(conversation.activeConversation?.phases | lastestAssistantItem | parseJSON)?.element_levels
+    else if(type=='phases'&&this.activeConversation?.goalsItems&&this.activeConversation.goalsItems[type]&&this.latestAssistantItem(this.activeConversation.phases)){
+      let elementLevels = JSON.parse(this.latestAssistantItem(this.activeConversation.phases)).element_levels
+      let goals = this.activeConversation.goalsItems[type]
+      let count = 0
+      for(let i=0;i<elementLevels.length;i++){
+        if(elementLevels[i].score>=goals[i]){
+          count++
+        }
+      }
+      if(count==elementLevels.length){
+        if(!this.activeConversation.accomplishments){
+          this.activeConversation.accomplishments = []
+          this.activeConversation.accomplishmentList = []
+        }
+        if(!this.activeConversation.accomplishments.includes('phases')){
+          this.completedGoal = {goal:'phases',explanation:'Je hebt alle fases van het gesprek naar het gewenste niveau gebracht.'}
+
+          this.record.playSound('achievement')
+          this.updateAchievements.emit(true)
+
+
+          // this.updateAchievements.emit(true)
+          // this.activeConversation.accomplishments.push('phases')
+
+          // let accomplishmentList = JSON.parse(JSON.stringify(this.activeConversation.accomplishmentList))
+
+
+          // accomplishmentList.push({goal:'phases',explanation:'Je hebt alle fases van het gesprek naar het gewenste niveau gebracht.'})
+
+          // this.firestoreService.updateSub('users', this.auth.userInfo.uid, 'conversations', this.activeConversation.conversationId, {accomplishments:this.activeConversation.accomplishments,accomplishmentList:accomplishmentList})
+          // console.log('phases goal accomplished')
+        }
+      }
+    }
+
+    else if(type=='free'&&this.activeConversation?.goalsItems&&this.activeConversation?.goalsItems[type]){
+      // console.log('free goal tested')
+      // console.log(this.activeConversation.goals)
+      if(this.activeConversation.messages?.length>4 && this.activeConversation.goals?.length<this.activeConversation.feedback?.length){
+        if(!this.isLoading('goals')){
+          this.startLoading('goals')
+          let obj:any = {
+            userId:this.auth.userInfo.uid,
+            conversationId:this.activeConversation.conversationId,
+            categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
+            caseId:this.activeConversation.caseId,
+            instructionType:'goals',
+          }
+          this.openai_extra_save(obj)
+        }
+      }
+    }
+
+    else if(type=='freeTest'&&this.activeConversation?.goalsItems?.free && !this.activeConversation?.accomplishments?.includes('free')){
+
+
+      if(this.latestAssistantItem(this.activeConversation.goals) && this.latestAssistantItem(this.activeConversation.goals) && JSON.parse(this.latestAssistantItem(this.activeConversation.goals))?.goal_achieved){
+        console.log('free goal achieved')
+        if(!this.activeConversation.accomplishments){
+          this.activeConversation.accomplishments = []
+          this.activeConversation.accomplishmentList = []
+        }
+        if(!this.activeConversation.accomplishments.includes('free')){
+          this.completedGoal = {goal:'free',explanation:this.latestAssistantItem(this.activeConversation.goals).explanation}
+          this.updateAchievements.emit(true)
+          this.activeConversation.accomplishments.push('free')
+          this.activeConversation.accomplishmentList.push({goal:'free',explanation:this.latestAssistantItem(this.activeConversation.goals).explanation})
+          this.firestoreService.updateSub('users', this.auth.userInfo.uid, 'conversations', this.activeConversation.conversationId, {accomplishments:this.activeConversation.accomplishments,accomplishmentList:this.activeConversation.accomplishmentList})
+          console.log('free goal accomplished')
+        }
+      }
+      
+      
+    }
+  }
+
 
 }

@@ -39,7 +39,7 @@ export class ToastService {
 
   async showLoader(message?:string,duration?:number) {
     if(!message){
-      message = this.translate.instant('page_contact_form_btn_loading')
+      message = this.translate.instant('modal_intros.loader')
     }
     if(this.loader){
       return

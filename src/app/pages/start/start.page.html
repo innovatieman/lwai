@@ -1,4 +1,4 @@
-<app-header [title]="'Start'"></app-header>
+<app-header [page]="'start'"></app-header>
 <main class="selectMain">
     <div *ngIf="!auth.userInfo.isConfirmed">
         <ion-card style="font-size:18px" basicPadding>
@@ -7,9 +7,11 @@
     </div>
     <ion-grid>
         <ion-row>
-            <ion-col [size]="media.screenSize!='xs' ? 4 : 12" class="selectColumn" *ngIf="activeConversation">
+            <ion-col [size]="!media.smallDevice ? 4 : 12" class="selectColumn" *ngIf="activeConversation">
                 <ion-card basicPadding pointer (click)="continueConversation(activeConversation)">
                     <ion-card-content noPadding>
+                        <fa-icon removeIcon [icon]="icon.get('faTrashAlt')" font-18 trash (click)="removeActiveConversation($event)"></fa-icon>
+
                         <div backgroundImage class="avatarImage" *ngIf="activeConversation.photo" [ngStyle]="{'background-image': 'url(' + activeConversation.photo + ')'}"></div>
                         <div backgroundImage class="avatarImage" *ngIf="!activeConversation.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
                         <ion-card-header center>
@@ -30,7 +32,7 @@
             <ion-col size="12" class="selectColumn" *ngIf="!activeConversation">
 
                 <ion-row>
-                    <ion-col size="3" *ngFor="let cat of activeCategories;let cat_index = index">
+                    <ion-col [size]="media.smallDevice? 12 : 3" *ngFor="let cat of activeCategories;let cat_index = index">
                         <ion-card basicPadding pointer font16 weight700 tab *ngIf="cat" [ngClass]="{'activeTab':activeCategory==cat}" (click)="selectCategory(cat)">
                             <!-- <fa-icon [icon]="icon.get(cat.icon)" ></fa-icon> -->
                             <span>{{cat | capitalize}}</span>
@@ -45,7 +47,7 @@
                     <ion-col size="12" *ngIf="activeCategory">
                         <div *ngFor="let theme of activeThemes(activeCategory)">
                             <ion-row *ngIf="theme&&themeInPreferences(theme.id)">
-                                <ion-col [size]="media.screenSize!='xs' ? 6 : 12"  *ngIf="theme">
+                                <ion-col [size]="!media.smallDevice ? 6 : 12"  *ngIf="theme">
                                     <ion-card align-left>
                                         <ion-card-header>
                                             <ion-card-title>
@@ -57,7 +59,7 @@
                                 </ion-col>
                             </ion-row>
                             <ion-row *ngIf="theme&&themeInPreferences(theme.id)">
-                                <ion-col [size]="media.screenSize!='xs' ? 4 : 12"  *ngFor="let caseItem of cases.all | filterKey : 'theme' : theme.id | filterKey : 'conversation' : activeCategory">
+                                <ion-col [size]="!media.smallDevice ? 4 : 12"  *ngFor="let caseItem of cases.all | filterKey : 'theme' : theme.id | filterKey : 'conversation' : activeCategory">
                                     <ion-card noPadding pointer (click)="startConversation(caseItem)">
                                         <ion-card-content noPadding>
                                             <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>

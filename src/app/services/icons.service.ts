@@ -19,7 +19,7 @@ import {
   faClone,faCloudDownloadAlt, faImage, faMinusCircle, faPlusCircle, faSquare,faSquareFull,faArrowsAlt,faCheckSquare,
   faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
-  faBolt,faCode
+  faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -42,6 +42,7 @@ export class IconsService {
     faArrowsAlt,
     faAt,
     faAtom,
+    faAward,
     faBan,
     faBirthdayCake,
     faBolt,
@@ -51,6 +52,7 @@ export class IconsService {
     faCalendar,
     faCalendarDay,
     faCameraRetro,
+    faCaretDown,
     faCartPlus,
     faChartArea,
     faChartBar,
@@ -73,12 +75,15 @@ export class IconsService {
     faCode,
     faCog,
     faCogs,
+    faCoins,
     faComment,
     faComments,
     faCommentSlash,
     faCommentDots,
     faCompressAlt,
     faCopy,
+    faCreditCard,
+    faCrow,
     faDog,
     faDownload,
     faDoorOpen,
@@ -92,6 +97,7 @@ export class IconsService {
     faExchangeAlt,
     faExpandAlt,
     faEye,
+    faFastBackward,
     faFileAlt,
     faFileExcel,
     faFistRaised,
@@ -164,6 +170,7 @@ export class IconsService {
     faSort,
     faSquare,
     faSquareFull,
+    faStepBackward,
     faStar,
     faStarOutline,
     faStop,

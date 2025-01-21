@@ -17,7 +17,12 @@
         "delete": "Weet u zeker dat u dit item wilt verwijderen?"
     },
     "error_messages":{
-        "no_selection":"Er is geen selectie gemaakt."
+        "required":"Niet alle verplichte velden zijn ingevuld.",
+        "no_selection":"Er is geen selectie gemaakt.",
+        "no_role":"Er is geen rol ingevuld.",
+        "no_attitude":"Er is geen houding bepaald.",
+        "no_steadfastness":"Er is geen standvastigheid bepaald.",
+        "no_input":"Er zijn geen gegevens om te verwerken."
     },
     "buttons":{
         "cancel":"Annuleren",
@@ -30,6 +35,9 @@
         "ok":"OK",
         "yes":"Ja",
         "no":"Nee"
-
+    },
+    "modal_intros":{
+        "info_phases":"Bij dit gesprek zijn een aantal elementen (of fases) van belang.",
+        "loader":"Gegevens worden geladen..."
     }
 }

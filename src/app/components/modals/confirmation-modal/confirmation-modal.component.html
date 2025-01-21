@@ -7,10 +7,10 @@
     <ion-icon name="close"></ion-icon>
   </ion-button>
 </div>
-<div [innerHtml]="message" weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':(media.screenSize==='xs' || media.screenSize==='sm') ? 'calc(100vh - 40px)' : '80vh'}"></div>
+<div [innerHtml]="message" weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : '80vh'}"></div>
 
 <div flex style="padding:20px;justify-content: flex-end;">
-  <ion-button [color]="'danger'" [innerHTML]="'bevestigen'" (click)="dismiss(true)" fill="solid"></ion-button>
+  <ion-button [color]="'danger'" [innerHTML]="'Bevestigen'" (click)="dismiss(true)" fill="solid"></ion-button>
   <span class="spacer"></span>
-  <ion-button [color]="'dark'" [innerHTML]="'annuleren'" (click)="dismiss(false)" fill="solid"></ion-button>
+  <ion-button [color]="'dark'" [innerHTML]="'Annuleren'" (click)="dismiss(false)" fill="solid"></ion-button>
 </div>

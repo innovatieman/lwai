@@ -1,9 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'lastesAssistantItem',
+  name: 'lastestAssistantItem',
 })
-export class LastesAssistantItemPipe implements PipeTransform {
+export class lastestAssistantItemPipe implements PipeTransform {
 
   transform(messages: any[]): string {
     if(!messages||messages.length<1){

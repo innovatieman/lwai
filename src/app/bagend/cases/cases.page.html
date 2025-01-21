@@ -1,4 +1,4 @@
-<app-header title="Cases"></app-header>
+<app-header page="admin"></app-header>
 <!-- <main>
     <ion-textarea rows="10" [(ngModel)]="newObj" style="text-align:left" placeholder="Voeg een object toe"></ion-textarea>
     <ion-button (click)="addCase()" [disabled]="uploading">Opslaan</ion-button>
@@ -8,20 +8,21 @@
     <ion-toolbar class="buttonBar">
         <ion-title *ngIf="showBackups">Backup {{helpers.showLocalDate(backupDate,translate.instant('date_formats.longDateTime'),0,true)}}</ion-title>
         <ion-buttons slot="end">
-        <ion-select #selectNew id="selectNew" [(ngModel)]="newConversation" (ionChange)="add()">
+        <!-- <ion-select #selectNew id="selectNew" [(ngModel)]="newConversation" (ionChange)="add()">
             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
-        </ion-select>
+        </ion-select> -->
 
-        <ion-button fill="outline" color="light" (click)="openAdd()" *ngIf="backupService.activebackups!='cases'">Nieuw</ion-button>
-        <ion-button fill="outline" color="light" (click)="getBackups('cases')" *ngIf="backupService.activebackups!='cases'">Laad Backups</ion-button>
-        <ion-button fill="outline" color="light" (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'">Verberg Backup</ion-button>
-        <ion-button fill="outline" color="light" (click)="firestore.backup('cases',cases)" *ngIf="backupService.activebackups!='cases'">Maak Backup</ion-button>
+        <ion-button fill="outline" color="secondary" class="saveButton" (click)="openAdd()" *ngIf="backupService.activebackups!='cases'">Nieuw</ion-button>
+        <ion-button fill="outline" color="secondary" class="saveButton" (click)="getBackups('cases','cases')" *ngIf="backupService.activebackups!='cases'">Laad Backups</ion-button>
+        <ion-button fill="outline" color="secondary" class="saveButton" (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'">Verberg Backup</ion-button>
+        <ion-button fill="outline" color="secondary" class="saveButton" (click)="firestore.backup('cases','cases',cases)" *ngIf="backupService.activebackups!='cases'">Maak Backup</ion-button>
         </ion-buttons>
     </ion-toolbar>
     <div class="buttonBarMargin"></div>
   <ion-grid >
     <ion-row>
-        <ion-col size="3" class="selectColumn">
+
+        <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
             <div *ngFor="let conversationType of (cases | groupBy:'conversation') | keyvalue">
                 <ion-card class="headerCard">
                     <ion-card-header>
@@ -38,52 +39,56 @@
       <!-- <ion-col size="3">
         <ion-card basicPadding pointer font16 weight700 tab *ngFor="let casus of cases;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{casus.title | capitalize}}</ion-card>
       </ion-col> -->
-      <ion-col size="9"  class="detailColumn">
-        <div *ngIf="!caseItem.id">Selecteer een casus</div>
+      <ion-col [size]="media.smallDevice ? 12 : 9"  class="detailColumn">
+        <ion-card basicPadding *ngIf="!caseItem.id"><ion-card-title>Selecteer een casus</ion-card-title></ion-card>
+
         <ion-card basicPadding *ngIf="caseItem?.id">
           <ion-card-header>
             <ion-card-title flex center-ver>
                 <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
                 <span class="spacer"></span>
+                <ion-button *ngIf="!showBackups" fill="clear" color="secondary" (click)="editCase(caseItem,true)">
+                    <fa-icon style="font-size:30px;" [icon]="icon.get('faPen')"></fa-icon>
+                </ion-button>
                 <ion-button *ngIf="!showBackups" fill="clear" (click)="deleteCase()">
                     <fa-icon style="font-size:30px;" [icon]="icon.get('faTrashAlt')" trash></fa-icon>
                 </ion-button>
                 <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="showBackups" (click)="returnBackup(caseItem)">
                     <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
-                  </ion-button>
+                </ion-button>
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-row>
-                <ion-col size="8">
-                    <ion-item lines="none">
+                <ion-col [size]="media.smallDevice ? 12 : 8">
+                    <ion-item lines="none" listCard>
                         <ion-label position="stacked">Conversation Type</ion-label>
-                        <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
+                        <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
                             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
                         </ion-select>
                     </ion-item>
 
-                    <ion-item lines="none">
+                    <ion-item lines="none" listCard>
                         <ion-label position="stacked">Thema</ion-label>
-                        <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.theme" (ionChange)="update('theme')">
+                        <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.theme" (ionChange)="update('theme')">
                             <ion-select-option *ngFor="let theme of infoService.themes" [value]="theme.id">{{theme.id}}</ion-select-option>
                         </ion-select>
                     </ion-item>
         
-                    <ion-item lines="none">
+                    <ion-item lines="none" listCard>
                         <ion-label position="stacked">Rol</ion-label>
                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
                     </ion-item>
-                    <ion-item lines="none">
+                    <ion-item lines="none" listCard>
                         <ion-label position="stacked">Avatar ID</ion-label>
                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.avatarName" (ionChange)="update('avatarName')"></ion-input>
                     </ion-item>
-                    <ion-item lines="none">
+                    <ion-item lines="none" listCard>
                         <ion-label position="stacked">Foto URL</ion-label>
                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.photo" (ionChange)="update('photo')"></ion-input>
                     </ion-item>
                 </ion-col>
-                <ion-col size="4">
+                <ion-col [size]="media.smallDevice ? 12 : 4">
                     <ion-card class="caseAvatar">
                         <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
                         </ion-card-content>
@@ -95,68 +100,85 @@
             </ion-row>
             <ion-row>
                 <ion-col size="12">
-                    
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
-                        <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_public" (ionChange)="update('open_to_public')">
-                            Open voor iedereen
-                        </ion-toggle>
-                    </ion-item>
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                    <ion-item [disabled]="showBackups" lines="none" listCard>
                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
                             Open voor Users
                         </ion-toggle>
                     </ion-item>
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                    <ion-item [disabled]="showBackups" lines="none" listCard>
                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_admin" (ionChange)="update('open_to_admin')">
                             Open voor Admins
                         </ion-toggle>
                     </ion-item>
 
-                    <ion-item lines="none">
+                    <ion-item lines="none" listCard>
                         <ion-label position="stacked">Attitude Type</ion-label>
-                        <ion-select [disabled]="showBackups" [(ngModel)]="caseItem.attitudeType" (ionChange)="update('attitudeType')">
+                        <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.attitudeType" (ionChange)="update('attitudeType')">
                             <ion-select-option *ngFor="let attitudeType of infoService.attitudeTypes" [value]="attitudeType.id">{{attitudeType.id}}</ion-select-option>
                         </ion-select>
                     </ion-item>
 
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                    <ion-item [disabled]="showBackups" lines="none" listCard>
                         <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
                             <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
                             <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
                         </ion-range>
                     </ion-item>
 
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                    <ion-item [disabled]="showBackups" lines="none" listCard>
                         <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
                             <ion-label style="font-size:14px" slot="start">Steadfastness</ion-label>
                             <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
                         </ion-range>
                     </ion-item>
                     
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                    <ion-item [disabled]="showBackups" lines="none" listCard>
                       <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description" (ionChange)="update('description')">
                         <div slot="label">Omschrijving</div>
                       </ion-textarea>
                     </ion-item>
 
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
+                    <ion-item [disabled]="showBackups" lines="none" listCard>
                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.casus" (ionChange)="update('casus')">
                           <div slot="label">Casus</div>
                         </ion-textarea>
-                    </ion-item>
-
-                    <ion-item bgWhite [disabled]="showBackups" lines="none">
-                        <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.interest_goals" (ionChange)="update('interest_goals')">
-                          <div slot="label">Interest Goals</div>
-                        </ion-textarea>
-                    </ion-item>
-
-                      
+                    </ion-item>                      
                     
                 </ion-col>
                     
             </ion-row>
 
+            <ion-row *ngIf="caseItem?.editable_by_user">
+                <ion-col size="12">
+                    <div marginBottom font-18 weight600>Aanpasbaar voor de gebruiker</div>
+                </ion-col>
+                <ion-col size="editable.key!='goals' ? 0 : 4" *ngFor="let editable of caseItem.editable_by_user | keyvalue">
+                    <ion-item lines="none" listCard fullwidth *ngIf="editable.key!='goals'">
+                      <ion-toggle noMargin  [checked]="editable.value" color="primary" weight600 (ionChange)="onToggleChange(editable.key, $event)">{{editable.key}}</ion-toggle>
+                    </ion-item>
+                </ion-col>
+            </ion-row>
+            <ion-row *ngIf="caseItem?.editable_by_user">
+                <ion-col size="12">
+                    <div marginBottom font-18 weight600>Doelen</div>
+                </ion-col>
+                <ion-col size="4">
+                    <ion-item lines="none" listCard fullwidth>
+                        <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.goals.attitude" (ionChange)="update('editable_by_user')" color="primary">Houding van de gesprekspartner</ion-toggle>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="4">
+                    <ion-item lines="none" listCard fullwidth>
+                        <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.goals.phases" (ionChange)="update('editable_by_user')" color="primary">Niveau van de verschillende fases</ion-toggle>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="4">
+                    <ion-item lines="none" listCard fullwidth>
+                        <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.goals.free" (ionChange)="update('editable_by_user')" color="primary">Vrije tekst</ion-toggle>
+                    </ion-item>
+                </ion-col>
+
+            </ion-row>
 
           </ion-card-content>
         </ion-card>

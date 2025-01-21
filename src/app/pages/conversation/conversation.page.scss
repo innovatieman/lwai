@@ -11,7 +11,6 @@ ion-header{
   }
 }
 
-
 .innerChatDiv{
   // max-height: calc(100vh - 532px);
   overflow: auto;
@@ -30,12 +29,16 @@ ion-header{
 
 .cipherCard{
   padding-top:10px;
-  background:rgba(255, 255, 255, 0.1);
+  background:var(--ion-color-primary-contrast);
   color:var(--color-global);
+  border-radius:24px;
+  margin:20px 12px;
+  box-shadow: none;
   ion-card-title{
     color:var(--color-global);
     margin-bottom:10px;
-    font-size:16px;
+    text-transform: uppercase;
+    font-weight: 500;
   }
   .cipherDiv{
     display: flex;
@@ -69,16 +72,13 @@ ion-header{
     position: relative;
   }
   .phaseCardTitle{
-    font-size:16px;
     margin-bottom:20px;
   }
   .phaseTitle{
     font-size:12px;
     font-weight: 500;;
   }
-  .phaseBars{
-    color:var(--ion-color-light);
-  }
+
   .phaseBarHorizontal{
     height: 5px;
     width: 100%;
@@ -90,138 +90,19 @@ ion-header{
   .phaseBarHorizontalScore{
     height: 5px;
     width: 100%;
-    background-color: black;
+    background-color: var(--color-global);
     border-radius: 5px;
   }
 
 }
 
-  // .cipher{
-  //   font-weight:700;
-  //   background-color: var(--ion-color-secondary);
-  //   color:var(--ion-color-secondary-contrast);
-  //   // width: 150px;
-  //   // height: 70px;
-  //   border-radius:20px;
-  //   div{
-  //     display: inline-flex;
-  //     justify-content: center;
-  //     align-items: center;
-
-  //   }
-  //   // margin-left: 0px;
-  //   font-size: 36px;
-  //   .lastCipher{
-  //     color:var(--ion-color-dark);
-  //     font-size: 20px;
-  //     position: relative;
-  //     top:6px;
-  //     margin-left: 15px;
-  //   }
-  // }
-
-
-
-  // .graphCard{
-  //   min-height: calc(100% - 20px);
-  // }
-
-  // .graphPhases{
-  //   margin-top: 20px;
-  //   margin-bottom: 20px;
-  //   // height:300px;
-  //   width:100%;
-  //   border:solid 1px rgba(0, 0, 0, 0.6);
-  //   .graphPhasesCol{
-  //       display: flex;
-  //       align-items: end;
-  //       flex-flow:column-reverse;
-  //       text-align: center;
-  //   }
-  //   .graphPhasesColMinus{
-  //     transform: rotate(180deg);
-  //   }
-  //   .phaseBar{
-  //       height:100px;
-  //       width:100%;
-  //       transition: all 0.5s;
-  //       // background-color: var(--ion-color-primary);
-  //       border-bottom:0!important;
-  //   }
-  //   .phaseBar.negative{
-  //     height:50px;
-  //     width:100%;
-  //     transition: all 0.5s;
-  //     // background-color: var(--ion-color-primary);
-  //     border-bottom:0!important;
-  // }
-  // .x-axis{
-  //   border-top: solid 1px rgba(0, 0, 0, 0.6);
-  //   width: 100%;
-  // }
-  //   .level1{
-  //       background-color: var(--ion-color-primary);
-  //       border:solid 2px var(--ion-color-primary);
-  //   }
-  //   .level2{
-  //       background-color: var(--ion-color-secondary);
-  //       border:solid 2px var(--ion-color-secondary);
-  //   }
-  //   .level3{
-  //       background-color: var(--ion-color-tertiary);
-  //       border:solid 2px var(--ion-color-tertiary);
-  //   }
-  //   .level4{
-  //       background-color: var(--ion-color-success);
-  //       border:solid 2px var(--ion-color-success);
-  //   }
-  //   .level5{
-  //       background-color: var(--ion-color-warning);
-  //       border:solid 2px var(--ion-color-warning);
-  //   }
-  //   .level6{
-  //       background-color: var(--ion-color-danger);
-  //       border:solid 2px var(--ion-color-danger);
-  //   }
-  //   .phaseTitle{
-  //       font-size: 1.2em;
-  //       font-weight: 700;
-  //       writing-mode: vertical-rl;
-  //       transform: rotate(180deg);
-  //       // white-space: nowrap;
-  //   }
-  //   .phaseDifference{
-  //       font-size: 16px;
-  //       font-weight: 600;
-  //       padding:10px;
-  //       text-align: center;
-  //       width:100%;
-  //   }
-  // }
-
-  // .row_fact{
-  //   padding: 0px 15px;
-  // }
-  // .new_fact{
-  //   background-color: rgba(var(--ion-color-success-rgb), 0.3);
-  //   color: var(--ion-color-primary-success-constrast);
-  //   border-radius: 20px;
-  //   padding: 15px;
-  //   // margin-top: 20px;
-  //   // margin-bottom: 20px;
-  //   font-size: 1em;
-  //   font-weight: 600;
-  //   text-align: left;
-  //   // display: inline-block;
-  //   font-size: 14px;
-  // }
-
-
+  
 
 .chartCard{
   padding-top:10px;
-  background:rgba(255, 255, 255, 0.1);
+  background:var(--ion-color-primary-contrast);
   color:var(--color-global);
+  --border-radius:24px;
   .chart{
     width: 100%;
     height: 150px;
@@ -309,12 +190,7 @@ ion-header{
       background:rgba(0, 0, 0, 0.2);
     }
 
-    .videoCard{
-      height: 300px;
-      // border-radius: 0;
-      // margin-bottom:5px!important
-      // height: 99%;
-    }
+
     video{
       width: 100%;// fit-content;
       height: fit-content;
@@ -387,17 +263,13 @@ ion-header{
       background:rgba(0, 0, 0, 0.2);
     }
 
-    .videoCard{
-      // height: 300px;
-      border-radius: 0;
-      margin-bottom:5px!important
-    }
-    video{
-      // width: fit-content;
-      height: fit-content;
-      width:100%;
-      background:rgba(255, 255, 255, 0.4);
-    }
+    // .videoCard{
+    //   // height: 300px;
+    //   border-radius: 0;
+    //   margin-bottom:5px!important;
+    // }
+
+    
     .avatarBtn{
       position: absolute;
       z-index: 10;
@@ -406,24 +278,29 @@ ion-header{
     }
     .chatCard{
       // height: 300px;
-      background:rgba(255, 255, 255, 0);
+      background:var(--ion-color-secondary-contrast);
+      // border:solid 1px var(--ion-color-secondary);
+      // border:solid 1px rgba(var(--ion-color-secondary-rgb),0.3);
+      border-radius: 24px;
       box-shadow: none;
-      padding:0px;
+      padding:10px;
       overflow: auto;
 
       .chatItem{
         div{
-          border-radius:10px;
+          border-radius:24px;
           font-size: 14px;
           padding:5px;
           display: inline-block;
+          font-weight: 500;
         }
       }
       
       .assistant{
         .chatAssistant{
-          background:rgba(0, 0, 0, 0.2);
+          background:var(--background-light);
           color:var(--color-global);
+          border:solid 1px rgba(var(--ion-color-secondary-rgb),0.3);
         }
         text-align:left;
         margin-top:20px;
@@ -450,8 +327,9 @@ ion-header{
       }
       .user{
         .chatUser{
-          background:rgba(255, 255, 255, 0.2);
-          color:var(--color-global);
+          // border:solid 1px var(--ion-color-secondary);
+          border:solid 1px rgba(var(--ion-color-secondary-rgb),0.3);
+          color:var(--ion-color-secondary);
           text-align: left;
         }
         text-align:right;
@@ -520,6 +398,7 @@ app-loader{
   width: calc(100% - 0px);
   height: 100vh;
   top:0;
+  left:0;
 }
 .loaderCard{
   position: absolute;
@@ -571,12 +450,19 @@ app-loader{
     text-align: center;
   }
   ion-button{
-    margin:0;
-    margin-bottom:10px;
+    // margin:0;
+    margin:5px 0px;
+  }
+  .processingBtn{
+    margin: 0px -22px -15px 5px;
+    position: absolute;
+    z-index: 999;
+    right: 0;
+    bottom: 0;
   }
   
   .sendButton{
-    --border-radius: 5px;
+    --border-radius: 16px;
     width: 40px;
     height: 40px;
   }
@@ -609,13 +495,117 @@ app-loader{
 }
 .professorBtn{
   position: absolute;
-  top: 5px;
-  right:5px;
+  top: 30px;
+  right:22px;
   z-index: 5;
   display: flex;
+  // border-radius: 16px;
   ion-button{
     --background:var(--background-global);
     color:var(--color-global);
     box-shadow: 0 0 7px rgba(0, 0, 0, 0.3);
+    --border-radius: 16px;
+    border-radius: 16px;
   }
+}
+
+.videoCard{
+  height: 300px;
+  border-radius: 24px;
+  margin-top: 20px;
+  // margin:10px!important;
+  // position: absolute;
+  // top: 10px;
+  // right: 10px;
+}
+
+video{
+  // width: fit-content;
+  // height: fit-content;
+  // width:100%;
+  height:auto;
+  width: auto;
+  background:rgba(255, 255, 255, 0.4);
+}
+
+.totalScreen{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 5;
+}
+
+.draggable {
+  position: absolute;
+  width: 200px;
+  height: 300px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none; /* Tekst niet selecteerbaar */
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+
+
+
+// animation
+
+.animation-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width:100%;
+  justify-content: flex-end;
+}
+
+.checkmark {
+  // position: fixed;
+  // top: 50%;
+  // left: 50%;
+  // transform: translate(-50%, -50%);
+  font-size: 100px;
+  color: green;
+  opacity: 1;
+}
+
+.checkmark.animate {
+  animation: moveToHeader 2s ease-in-out forwards;
+}
+
+@keyframes moveToHeader {
+  0% {
+    // transform: scale(1);
+    transform: scale(1) translate(0, 0);
+    opacity: 1;
+  }
+  80% {
+    // transform: translate(-50%, -50%) scale(0.3);
+    
+    transform:scale(0.30) translate(115px, 5px);
+    opacity: 0.8;
+  }
+  100% {
+    // transform: translate(calc(100vw - 50px), 10px) scale(0.3); /* Pas aan naar jouw headerpositie */
+    transform:scale(0.30) translate(115px, 5px);
+    opacity: 1;
+  }
+}
+
+.header {
+  // position: absolute;
+  // top: -15px;
+  // right: 10px;
+  display: flex;
+  // gap: 10px;
+}
+
+.completed-goals ion-icon {
+  font-size: 30px;
+  color: green;
 }

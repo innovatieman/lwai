@@ -1,7 +1,7 @@
 <!-- <div class="menuImg">
 </div> -->
-<div class="card">
-  <div flex center-ver fullwidth style="padding:10px" class="namePart" pointer (click)="execute(['user', 'editUser']);popoverController.dismiss()">
+<div class="card" [ngClass]="{'listShape':listShape}">
+  <div flex center-ver fullwidth style="padding:10px" class="namePart"  *ngIf="!customMenu" pointer (click)="nav.go('account');popoverController.dismiss()">
     <div style="margin-right: 5px;">
       <img src="assets/icon/favicon.png" class="avatar">
     </div>
@@ -13,30 +13,59 @@
     </div>
   </div> 
 
-  <ion-list id="inbox-list">
+  <ion-list id="inbox-list" *ngIf="!customMenu && media.screenSize=='xs'">
     <div *ngFor="let p of appPages; let i = index">
       <ion-item (click)="popoverController.dismiss()" pointer [ngClass]="p.class" (click)="nav.go(p.url)" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
-        <fa-icon [icon]="icons.get(p.icon)" slot="start"></fa-icon>
+        <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
       </ion-item> 
-
-
     </div>
   </ion-list>
 
-  <div class="actionButtons">
+  <ion-grid>
+    <ion-row *ngIf="customMenu&&!listShape">
+      <ion-col size="6" *ngFor="let p of appPages; let i = index">
+        <ion-card class="customMenuItem" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
+          <ion-row>
+            <ion-col size="4">
+              <div *ngIf="p.image" class="menuItemImage" [ngStyle]="{'background-image':'url(' + p.image + ')'}"></div>
+              <div *ngIf="p.icon" class="menuItemIcon">
+                <fa-icon [icon]="icon.get(p.icon)"></fa-icon>
+              </div>
+            </ion-col>
+            <ion-col size="8">
+              <div class="menuItemTitle" [innerHTML]="p.title"></div>
+            </ion-col>
+          </ion-row>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div *ngIf="customMenu&&listShape">
+    <ion-list>
+      <ion-item lines="none" button *ngFor="let p of appPages; let i = index let first = first;let last=last" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
+        <!-- <ion-icon *ngIf="p.icon" [name]="p.icon" slot="start"></ion-icon> -->
+        <fa-icon *ngIf="p.icon" [icon]="icon.get(p.icon)" slot="start"></fa-icon>
+        <ion-label>{{ p.title }}</ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+
+  <div class="actionButtons" *ngIf="!customMenu">
 
     <div fullwidth >
       <ion-button color="primary" *ngIf="!isAuthenticated" (click)="nav.go('register');popoverController.dismiss()">
         {{'menu.register' | translate}}
       </ion-button>
-      <ion-button color="dark" fill="clear" *ngIf="!isAuthenticated" (click)="nav.go('login');popoverController.dismiss()">
+      <ion-button color="secondary" fill="clear" *ngIf="!isAuthenticated" (click)="nav.go('login');popoverController.dismiss()">
         {{'menu.login' | translate}}
       </ion-button>
 
     </div>
 
-    <ion-button color="secondary" style="--border-radius:20px;" *ngIf="isAuthenticated" (click)="execute(['auth','logout']);popoverController.dismiss()">
+    <ion-button color="primary" class="saveButton" *ngIf="isAuthenticated" (click)="execute(['auth','logout']);popoverController.dismiss()">
       {{'menu.logout' | translate}}
     </ion-button>
 
@@ -56,11 +85,11 @@
       <ion-list slot="content">
         <div auto-hide="false" *ngFor="let p of editPages; let i = index">
           <ion-item (click)="popoverController.dismiss()" routerDirection="forward" [routerLink]="[p.url]" lines="none" detail="false" [class.selected]="getMainUrl(router.url)==p.url" *ngIf="p.url">
-            <fa-icon [icon]="icons.get(p.icon)" slot="start"></fa-icon>
+            <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item> 
           <ion-item style="cursor: pointer;" routerDirection="forward" (click)="execute(p.function);popoverController.dismiss()" lines="none" detail="false" *ngIf="!p.url">
-            <fa-icon [icon]="icons.get(p.icon)" slot="start"></fa-icon>
+            <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>
         </div>
