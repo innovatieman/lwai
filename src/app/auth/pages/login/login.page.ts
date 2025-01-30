@@ -13,6 +13,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class LoginPage implements OnInit {
   form: FormGroup;
   showPassWordReset = false;
+  showPassword = false;
   constructor(
     private fb: FormBuilder,
     public auth: AuthService,

@@ -13,7 +13,7 @@ import { IconsService } from 'src/app/services/icons.service';
 })
 export class RegisterPage implements OnInit {
   registerForm: FormGroup;
-
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,

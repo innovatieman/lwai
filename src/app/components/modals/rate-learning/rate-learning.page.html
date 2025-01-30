@@ -1,0 +1,53 @@
+
+<div header padding20 flex center-ver>
+  <div class="title" *ngIf="title">
+    <h3 class="subtitle-top" noMargin>{{title}}</h3>
+  </div>
+  <span class="spacer"></span>
+  <ion-button (click)="dismiss()" fill="clear" color="secondary">
+    <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
+  </ion-button>
+</div>
+<div style="padding:30px;padding-top:0;overflow: auto;line-height:1.6;">
+  <div [innerHtml]="content | sanitizeHtml" weight400 [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : '80vh'}"></div>
+
+  <div *ngFor="let rate of rating;let i = index" style="background:white;border-radius:24px;padding:15px;margin:10px 0px">
+    <div font-16 weight600>{{rate.question}}</div>
+    <div *ngIf="rate.type=='stars'" style="margin:-20px">
+      <app-star-rating [readOnlyItem]="false" [starAmount]="rate.starAmount ? rate.starAmount : 5" *ngIf="!updatingStars" [fontSize]="media.smallDevice? (!rate.starAmount ? 40 : (200/rate.starAmount)) : (!rate.starAmount ? 50 : (400/rate.starAmount))" [rating]="rate.value" (ratingChanged)="onRatingChanged($event,i)"></app-star-rating>
+      <app-star-rating [readOnlyItem]="true" [starAmount]="rate.starAmount ? rate.starAmount : 5"  *ngIf="updatingStars" [fontSize]="media.smallDevice? (!rate.starAmount ? 40 : (200/rate.starAmount)) : (!rate.starAmount ? 50 : (400/rate.starAmount))" [rating]="rate.value"></app-star-rating>
+    </div>
+
+    <div *ngIf="rate.type=='text'">
+      <ion-textarea [(ngModel)]="rate.value" rows="3" style="border-radius:24px"></ion-textarea>
+    </div>
+
+    <div *ngIf="rate.type=='select'">
+      <ion-select [(ngModel)]="rate.value" style="border-radius:24px" interface="popover">
+        <ion-select-option *ngFor="let option of rate.options" [value]="option">{{option}}</ion-select-option>
+      </ion-select>
+      <!-- <ion-item lines="none" > -->
+        <ion-input *ngIf="rate.value=='other'" [(ngModel)]="rate.other" style="border-radius:24px;border: solid 1px;--padding-start: 15px;--padding-end: 15px;"></ion-input>
+      <!-- </ion-item> -->
+    </div>
+
+    <div *ngIf="rate.type=='radio'">
+      <ion-radio-group [(ngModel)]="rate.value">
+        <ion-item *ngFor="let option of rate.options" lines="none">
+          <!-- <ion-label>{{option.text}}</ion-label> -->
+          <ion-radio slot="start" labelPlacement="end" [value]="option.value">{{option.text}}</ion-radio>
+        </ion-item>
+      </ion-radio-group>
+      <ion-item lines="none" *ngIf="rate.value=='other'">
+        <ion-input [(ngModel)]="rate.other" style="border-radius:24px;border: solid 1px;--padding-start: 15px;--padding-end: 15px;"></ion-input>
+      </ion-item>
+    </div>
+
+  </div>
+</div>
+
+<div flex style="padding:20px;justify-content: flex-end;">
+  <span class="spacer"></span>
+  <ion-button color="primary" [disabled]="nothingFilled()" (click)="dismiss(rating)" fill="solid" class="saveButton">{{'buttons.ok' | translate}}</ion-button>
+  
+</div>

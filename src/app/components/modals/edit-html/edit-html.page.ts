@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { IconsService } from 'src/app/services/icons.service';
 
 @Component({
@@ -9,7 +9,7 @@ import { IconsService } from 'src/app/services/icons.service';
 })
 
 export class EditHtmlPage implements OnInit {
-  data:any
+  @Input() data:any
   configModules={
     toolbar: {
       container:[
@@ -30,12 +30,11 @@ export class EditHtmlPage implements OnInit {
   showHtml:boolean=false
   constructor(
     public modal:ModalController,
-    private navParams:NavParams,
     public icon:IconsService
   ) { }
 
   ngOnInit() {
-    this.data = JSON.parse(JSON.stringify(this.navParams.get('data')))
+    this.data = JSON.parse(JSON.stringify(this.data))
     this.showEditor()
     
   }

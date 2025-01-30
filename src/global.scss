@@ -75,6 +75,28 @@ h3{
     border-radius: 5px;
 }
 
+[print]{
+    display: none;
+}
+@media print {
+    [print],.print{
+        display: block;
+        page-break-inside: auto; /* Voorkomt dat een div halverwege wordt gesplitst */
+        overflow: visible; /* Zorgt dat verborgen inhoud zichtbaar blijft */
+    }
+    .noPrint,[noPrint]{
+        display: none;
+    }
+
+    .pageBreak{ 
+        break-after : always!important;
+        // page-break-inside : avoid!important;
+        // page-break-inside: 
+        // page-break-after: always!important;
+    }
+    div {
+      }
+}
 
 ion-card-title{
     font-size: 1.2em;
@@ -96,6 +118,9 @@ ion-item{
 [font-14]{
     font-size: 14px;
 }
+[font-15]{
+    font-size: 15px;
+}
 [font-16]{
     font-size: 16px;
 }
@@ -103,6 +128,9 @@ ion-item{
     font-size: 18px;
 }
 [font-20]{
+    font-size: 20px;
+}
+[font-22]{
     font-size: 20px;
 }
 [font-24]{
@@ -251,7 +279,7 @@ ion-item{
 [noPadding]{
     padding: 0;
 }
-[noMargin]{
+[noMargin],.noMargin{
     margin: 0!important;
 }
 [margin10]{
@@ -275,7 +303,9 @@ ion-item{
 .upsideDown{
     transform: rotate(180deg);
 }
-
+.chevron{
+    transition: all 0.3s;
+}
 [solidPrimary]{
     background-color: var(--ion-color-primary);
     color: var(--ion-color-primary-contrast);
@@ -339,6 +369,19 @@ ion-item{
 [borderWarning]{
     border: solid 2px var(--ion-color-warning);
 }
+[borderRadius5]{
+    border-radius: 5px;
+}
+[borderRadius10]{
+    border-radius: 10px;
+}
+[borderRadius16]{
+    border-radius: 16px;
+}
+[borderRadius24]{
+    border-radius: 24px;
+}
+
 [singleLine]{
     border-bottom: solid 2px var(--ion-color-primary);
     width: calc(100% - 30px);
@@ -353,6 +396,10 @@ ion-item{
 }
 [iconClosed]{
     color: var(--ion-color-success);
+}
+[titleIcon]{
+    // font-size: 24px;
+    margin-left: 10px;
 }
 [backgroundImage]{
     height: 100%;
@@ -544,11 +591,12 @@ main{
     top:12px;
     right:0;
     width: 100%;
-    --background:none;
+    --background:white;
     color:var(--color-global);
+    border-radius: 16px;
 }
 .buttonBarMargin{
-    margin-top: 50px;
+    margin-top: 70px;
 }
 
 
@@ -662,3 +710,38 @@ main{
     }
 }
 
+.loaderCard{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    margin:0;
+    background:transparent;
+    box-shadow: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color:var(--color-global);
+    font-size: 16px;
+    ion-spinner{
+      width:100px;
+      height:100px;
+      color:var(--color-global);
+    }
+  }
+
+  .tooltip {
+    // pointer-events: auto !important; /* Zorgt dat de tooltip niet direct verdwijnt */
+    z-index: 9999999 !important; /* Zorgt ervoor dat het altijd zichtbaar is */
+  }
+  .tooltip{
+    --backdrop-opacity:0!important;
+    pointer-events: none;
+    --backdrop-pointer-events:none;
+    }
+    .tooltip::part(backdrop){
+        pointer-events: none;
+    }
+  ion-popover {
+    --backdrop-opacity: 0 !important; /* Zorgt ervoor dat er geen transparante laag is */
+  }

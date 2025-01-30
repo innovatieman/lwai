@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 // import {faUser,faUsers,faQuestion,faBullseye,faSitemap,faUserCog,faHandsHelping,faGlobeEurope,faRoad,faMap,faSignOutAlt,faSignInAlt,faList} from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from 'src/app/auth/auth.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { Router } from '@angular/router';
-import { NavParams, PopoverController } from '@ionic/angular';
+import { PopoverController } from '@ionic/angular';
 import { NavService } from 'src/app/services/nav.service';
 import { TranslateService } from '@ngx-translate/core';
 import { UserService } from 'src/app/services/user.service';
 import { MediaService } from 'src/app/services/media.service';
-import { CasesService } from 'src/app/services/cases.service';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 @Component({
   selector: 'app-menu',
@@ -18,10 +17,11 @@ import { SelectMenuService } from 'src/app/services/select-menu.service';
 export class MenuPage implements OnInit {
   isAuthenticated: boolean = false;
   isAdmin: boolean = false;
-  customMenu:boolean = false
-  listShape:boolean = false
+  @Input() customMenu:boolean = false
+  @Input() listShape:boolean = false
   public selectedIndex = 0;
-  public appPages:any = [
+  @Input() pages:any 
+  appPages:any = [
    
     {
       title: 'Start',
@@ -37,7 +37,7 @@ export class MenuPage implements OnInit {
       icon: 'faUser',
       isVisitor:false,
       isAdmin:true,
-      isUser:true
+      isUser:false
     },
     {
       title: 'Register',
@@ -79,6 +79,14 @@ export class MenuPage implements OnInit {
       isAdmin:true,
       isUser:false,
     },
+    {
+      title: 'All Conversations',
+      icon: 'faComments',
+      url: '/bagend/conversations',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:false,
+    },
   ];
 
   [key: string]: any;
@@ -90,21 +98,13 @@ export class MenuPage implements OnInit {
     public popoverController:PopoverController,
     public nav:NavService,
     private translate:TranslateService,
-    private navParams:NavParams,
     public media:MediaService,
     private selectMenuservice:SelectMenuService,
-    private casesService:CasesService
   ) { }
 
   ngOnInit() {
-    if(this.navParams.get('pages')){
-      this.appPages = this.navParams.get('pages')
-    }
-    if(this.navParams.get('customMenu')){
-      this.customMenu = this.navParams.get('customMenu')
-    }
-    if(this.navParams.get('listShape')){
-      this.listShape = this.navParams.get('listShape')
+    if(this.pages){
+      this.appPages = this.pages
     }
     const path = window.location.pathname;
     this.auth.isAuthenticated().subscribe((auth) => {

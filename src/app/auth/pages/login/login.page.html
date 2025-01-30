@@ -20,7 +20,12 @@
 
           <ion-item lines="none" class="fieldItem" *ngIf="!showPassWordReset">
             <ion-label position="stacked">Wachtwoord</ion-label>
-            <ion-input type="password" formControlName="password"></ion-input>
+            <ion-input type="password" *ngIf="!showPassword" formControlName="password">
+              <ion-icon slot="end" name="eye" *ngIf="!showPassword" (click)="showPassword = true"></ion-icon>
+            </ion-input>
+            <ion-input type="text" *ngIf="showPassword" formControlName="password">
+              <ion-icon slot="end" name="eye-off" *ngIf="showPassword" (click)="showPassword = false"></ion-icon>
+            </ion-input>
           </ion-item>
           <!-- <label for="email">E-mailadres</label>
           <ion-input type="email" formControlName="email"></ion-input> -->

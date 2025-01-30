@@ -97,9 +97,9 @@ export class ToastService {
   async showTooltip(event:any,text:string,milliseconds?:number|null){
     this.tooltip = await this.popoverController.create({
       component: TooltipPage,
-      componentProps:{
-        text:text
-      },
+      // componentProps:{
+      //   text:text
+      // },
       cssClass: 'tooltip',
       event: event,
       translucent: true,

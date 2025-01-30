@@ -38,7 +38,8 @@ export class CasesPage implements OnInit {
     public infoService:InfoService,
     private popoverController:PopoverController,
     private selectMenuservice:SelectMenuService,
-    public media:MediaService
+    public media:MediaService,
+    private casesService:CasesService,
   ) { }
 
 
@@ -124,50 +125,8 @@ export class CasesPage implements OnInit {
 
     if(this.selectMenuservice.selectedItem){
       console.log(this.categoryInfo(this.selectMenuservice.selectedItem.id))
-      let casus =
-        {
-          conversation:this.selectMenuservice.selectedItem.id,
-          open_to_user:false,
-          open_to_public:false,
-          open_to_admin:true,
-          title:'New Case',
-          role:'',
-          description:'',
-          attitude:1,
-          steadfastness:50,
-          goals:{
-            phases:[],
-            free:'',
-            attitude:0,
-          },
-          max_time:30,
-          minimum_goals:0,
-          openingMessage:this.categoryInfo(this.selectMenuservice.selectedItem.id).openingMessage,
-          goal:false,
-          editable_by_user:{
-            role:false,
-            description:false,
-            function:false,
-            vision:false,
-            interests:false,
-            communicationStyle:false,
-            externalFactors:false,
-            history:false,
-            attitude:false,
-            steadfastness:false,
-
-            casus:false,
-            
-            goals:{
-              phases:false,
-              free:false,
-              attitude:false,
-            },
-            max_time:false,
-            minimum_goals:false,
-            openingMessage:true
-          }
-        }
+      let casus = this.casesService.defaultCase(this.selectMenuservice.selectedItem.id,this.categoryInfo(this.selectMenuservice.selectedItem.id).openingMessage)
+        
         this.editCase(casus)
         
     }
@@ -203,7 +162,13 @@ export class CasesPage implements OnInit {
         },
         max_time:false,
         minimum_goals:false,
-        openingMessage:true
+        openingMessage:true,
+        agents:{
+          choices:true,
+          facts:true,
+          background:true,
+          undo:true,
+        }
       }
     }
     if(!caseItem.max_time){
@@ -224,16 +189,21 @@ export class CasesPage implements OnInit {
 
     this.modal.showConversationStart({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...caseItem}).then((res:any)=>{
           
-      // console.log(res)
       if(res && !res.id){
         delete res.admin
         delete res.conversationInfo
         delete res.existing
         this.firestore.create('cases',res).then(()=>{
           this.loadCases(()=>{
-            this.caseItem = this.cases.filter((e:any) => {
-              return e.id === res.id
-            })[0]
+            let item = this.cases.filter((e:any) => {
+              return e.created === res.created
+            })
+            if(item.length){
+              this.caseItem = item[0]
+            }
+            else{
+              this.caseItem = {}
+            }
           })
         })
       }
@@ -241,7 +211,6 @@ export class CasesPage implements OnInit {
         delete res.admin
         delete res.conversationInfo
         delete res.existing
-        // console.log(res)
 
         this.firestore.set('cases',res.id,res).then(()=>{
           this.loadCases(()=>{

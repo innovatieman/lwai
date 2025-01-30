@@ -3,6 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonSelect, ItemReorderEventDetail } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
+import { CasesService } from 'src/app/services/cases.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
@@ -36,6 +37,7 @@ export class TrainerCoursesPage implements OnInit {
     public translate:TranslateService,
     public infoService:InfoService,
     public auth:AuthService,
+    private casesService:CasesService,
   ) { }
 
 
@@ -95,7 +97,7 @@ export class TrainerCoursesPage implements OnInit {
     const scrollPosition = window.scrollY;
     if(field){
       let isArrayOnPurpose = false
-      if(field === 'itemIds'){
+      if(field === 'itemIds'||field === 'itemIdList'){
         isArrayOnPurpose = true
       }
       let item = this.item
@@ -104,6 +106,11 @@ export class TrainerCoursesPage implements OnInit {
       }
       else if(type=='infoItems'){
         item = this.infoItem
+      }
+      if(field === 'itemIds'){
+        if(!item.itemIdList){item.itemIdList = []}
+        item.itemIdList = item.itemIds.map((e:any) => e.id)
+        this.firestore.set(type+'_trainer',item.id,item.itemIdList,'itemIdList',isArrayOnPurpose)
       }
       this.firestore.set(type+'_trainer',item.id,item[field],field,isArrayOnPurpose).then(()=>{
         setTimeout(() => {
@@ -178,9 +185,7 @@ export class TrainerCoursesPage implements OnInit {
     })
   }
 
-  createCase(){
-    this.selectNewCase.open()
-  }
+
   addCase(item:any){
     let newCaseItem = JSON.parse(JSON.stringify(item))
         delete newCaseItem.id
@@ -192,20 +197,38 @@ export class TrainerCoursesPage implements OnInit {
         })
   }
 
+  createCase(){
+    this.selectNewCase.open()
+  }
+
   newCase(){
     if(this.newCaseConversation){
-      this.firestore.create('cases_trainer',
-        {
-          conversation:this.newCaseConversation,
-          title:'New Case',
-          role:'',
-          description:'',
-          attitude:1,
-          trainerId:this.auth.userInfo.uid,
-          courseId:''
-        },(result:any)=>{
+
+      let newCaseItem:any = this.casesService.defaultCase(this.newCaseConversation,this.categoryInfo(this.newCaseConversation).openingMessage)
+      newCaseItem.trainerId = this.auth.userInfo.uid
+      console.log(newCaseItem)
+
+      this.firestore.create('cases_trainer',newCaseItem,(result:any)=>{
           this.newCaseConversation = ''
           this.caseItem = this.getCase(result.id)
+          this.caseItem.id = result.id
+          this.firestore.update('cases_trainer',result.id,{id:result.id})
+          this.modal.showConversationStart({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...this.caseItem})
+          .then((res:any)=>{
+            console.log(res)
+            if(res){
+              delete res.admin
+              delete res.conversationInfo
+              delete res.existing
+              if(!res.title || res.title == "New Case"){
+                res.title = res.role
+              }
+              this.firestore.set('cases_trainer',res.id,res).then(()=>{
+                this.load('cases_trainer',this.auth.userInfo.uid)
+                this.caseItem = this.getCase(res.id)
+              })
+            }
+          })
         })
     }
   }
@@ -213,6 +236,22 @@ export class TrainerCoursesPage implements OnInit {
   editCase(caseItem:any){
     this.infoItem = {}
     this.caseItem = caseItem
+  }
+
+  editCaseAll(){
+    this.modal.showConversationStart({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...this.caseItem})
+    .then((res:any)=>{
+      if(res){
+        delete res.admin
+        delete res.conversationInfo
+        delete res.existing
+        this.firestore.set('cases_trainer',res.id,res).then(()=>{
+          this.load('cases_trainer',this.auth.userInfo.uid)
+          this.caseItem = this.getCase(res)
+        })
+      }
+    })
+
   }
 
   deleteCase(caseItem:any){
@@ -314,5 +353,14 @@ export class TrainerCoursesPage implements OnInit {
   }
   closeInfoItem(){
     this.infoItem = {}
+  }
+
+  activateCourse(){
+    this.modal.showConfirmation('Are you sure you want to activate this course?').then((result:any) => {
+      if(result){
+        this.item.status = 'active'
+        this.firestore.create('active_courses',this.item)
+      }
+    })
   }
 }

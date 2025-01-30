@@ -1,4 +1,4 @@
-<app-header page="trainer-courses"></app-header>
+<app-header page="trainer"></app-header>
 <main>
     <!-- <ion-toolbar class="buttonBar">
         <ion-buttons slot="end">
@@ -73,7 +73,14 @@
             <ion-card-title flex center-ver>
                 <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="item.title"></ion-input>
                 <span class="spacer"></span>
-                <ion-button fill="outline" color="danger" (click)="deleteCourse()">Verwijderen</ion-button>
+                <ion-button fill="outline" color="success" (click)="activateCourse()">
+                  activeer
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="deleteCourse()">
+                  <fa-icon [icon]="icon.get('faTrashAlt')" trash font-20></fa-icon>
+                </ion-button>
+
+                
             </ion-card-title>
           </ion-card-header>
         </ion-card>
@@ -102,6 +109,7 @@
             <ion-card-title flex center-ver>
                 <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('cases','title')" [(ngModel)]="caseItem.title"></ion-input>
                 <span class="spacer"></span>
+                <fa-icon font-24 pointer [icon]="icon.get('faPen')" (click)="editCaseAll()"></fa-icon>
                 <fa-icon font-24 pointer [icon]="icon.get('faTimes')" (click)="closeCase()"></fa-icon>
             </ion-card-title>
           </ion-card-header>
@@ -195,7 +203,7 @@
         <ion-card *ngIf="infoItem?.id">
           <ion-card-header>
             <ion-card-title flex center-ver>
-                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('InfoItems','title')" [(ngModel)]="infoItem.title"></ion-input>
+                <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('infoItems','title')" [(ngModel)]="infoItem.title"></ion-input>
                 <span class="spacer"></span>
                 <fa-icon font-24 pointer [icon]="icon.get('faTimes')" (click)="closeInfoItem()"></fa-icon>
             </ion-card-title>
@@ -204,7 +212,7 @@
                 <ion-col size="8">
                   <ion-item lines="none">
                     <ion-label position="stacked">Information Type</ion-label>
-                    <ion-select interface="popover" [(ngModel)]="infoItem.type" (ionChange)="update('InfoItems','type')">
+                    <ion-select interface="popover" [(ngModel)]="infoItem.type" (ionChange)="update('infoItems','type')">
                         <ion-select-option value="text">Text</ion-select-option>
                         <ion-select-option value="video">Video</ion-select-option>
                         <ion-select-option value="audio">Audio</ion-select-option>
@@ -213,20 +221,20 @@
                       </ion-select>
                   </ion-item>
                   <ion-item bgWhite lines="none">
-                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.description" (ionChange)="update('InfoItems','description')">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.description" (ionChange)="update('infoItems','description')">
                       <div slot="label">Description (for trainer only)</div>
                     </ion-textarea>
                   </ion-item>
                   <ion-item lines="none">
                     <ion-label position="stacked">Image URL</ion-label>
-                    <ion-input [(ngModel)]="infoItem.photo" (ionChange)="update('InfoItems','photo')"></ion-input>
+                    <ion-input [(ngModel)]="infoItem.photo" (ionChange)="update('infoItems','photo')"></ion-input>
                   </ion-item>
                 </ion-col>
               </ion-row>
               <ion-row>
                 <ion-col size="12">
                   <ion-item bgWhite lines="none">
-                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.intro" (ionChange)="update('InfoItems','intro')">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.intro" (ionChange)="update('infoItems','intro')">
                       <div slot="label">Introductie (HTML)</div>
                       <ion-button fill="clear" style="font-size:16px;" color="dark" slot="end" (click)="editHtml('intro')">
                         <fa-icon slot="icon-only" [icon]="icon.get('faCode')" pointer></fa-icon>
@@ -236,7 +244,7 @@
 
                   </ion-item>
                   <ion-item bgWhite lines="none" *ngIf="infoItem.type=='text'">
-                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.content" (ionChange)="update('InfoItems','content')">
+                    <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="infoItem.content" (ionChange)="update('infoItems','content')">
                       <div slot="label">Content (HTML)</div>
                       <ion-button fill="clear" style="font-size:16px;" color="dark" slot="end" (click)="editHtml('content')">
                         <fa-icon slot="icon-only" [icon]="icon.get('faCode')" pointer></fa-icon>

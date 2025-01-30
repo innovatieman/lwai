@@ -6,8 +6,16 @@
         </ion-card>
     </div>
     <ion-grid>
+
         <ion-row>
-            <ion-col [size]="!media.smallDevice ? 4 : 12" class="selectColumn" *ngIf="activeConversation">
+            <!-- <ion-button (click)="subscriptionService.getActiveCourses(auth.userInfo.uid)">Load</ion-button> -->
+            <ion-col size="3" *ngFor="let course of subscriptionService.activeCourses">
+                <ion-card (click)="nav.go('course/'+course.id)" pointer font16 weight700 tab basicPadding>{{course.title}}</ion-card>   
+            </ion-col>
+        </ion-row>
+
+        <ion-row>
+            <ion-col [size]="!media.smallDevice ? 3 : 12" class="selectColumn" *ngIf="activeConversation">
                 <ion-card basicPadding pointer (click)="continueConversation(activeConversation)">
                     <ion-card-content noPadding>
                         <fa-icon removeIcon [icon]="icon.get('faTrashAlt')" font-18 trash (click)="removeActiveConversation($event)"></fa-icon>
@@ -31,14 +39,13 @@
 
             <ion-col size="12" class="selectColumn" *ngIf="!activeConversation">
 
-                <ion-row>
+                <!-- <ion-row>
                     <ion-col [size]="media.smallDevice? 12 : 3" *ngFor="let cat of activeCategories;let cat_index = index">
                         <ion-card basicPadding pointer font16 weight700 tab *ngIf="cat" [ngClass]="{'activeTab':activeCategory==cat}" (click)="selectCategory(cat)">
-                            <!-- <fa-icon [icon]="icon.get(cat.icon)" ></fa-icon> -->
                             <span>{{cat | capitalize}}</span>
                         </ion-card>
                     </ion-col>
-                </ion-row>
+                </ion-row> -->
 
 
 
@@ -59,14 +66,16 @@
                                 </ion-col>
                             </ion-row>
                             <ion-row *ngIf="theme&&themeInPreferences(theme.id)">
-                                <ion-col [size]="!media.smallDevice ? 4 : 12"  *ngFor="let caseItem of cases.all | filterKey : 'theme' : theme.id | filterKey : 'conversation' : activeCategory">
-                                    <ion-card noPadding pointer (click)="startConversation(caseItem)">
-                                        <ion-card-content noPadding>
+                                <ion-col [size]="!media.smallDevice ? 3 : 12"  *ngFor="let caseItem of cases.all | filterKey : 'theme' : theme.id | filterKey : 'conversation' : activeCategory">
+                                    <ion-card noPadding pointer (click)="startConversation(caseItem)" fullheight>
+                                        <ion-card-content noPadding fullHeight>
                                             <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
                                             <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                                            <ion-card-header center>
-                                                <ion-card-title>{{caseItem.title}}</ion-card-title>
-                                            </ion-card-header>
+                                            <div flex center center-ver center-hor style="height:calc(100% - 200px)">
+                                                <ion-card-header>
+                                                    <ion-card-title font-18 weight600>{{caseItem.title}}</ion-card-title>
+                                                </ion-card-header>
+                                            </div>
                                         </ion-card-content>
                                     </ion-card>
                                 </ion-col>
@@ -77,45 +86,7 @@
 
 
             </ion-col>
-
-
-            <!-- <ion-col class="selectColumn" size="3" *ngIf="!activeConversation">
-                <ion-card basicPadding pointer font16 weight700 tab *ngFor="let conversation of cases.conversations;let i = index" [ngClass]="{'activeTab':selectedConversation==conversation}" (click)="selectConversation(conversation)">
-                    <span>{{conversation | capitalize}}</span> 
-                </ion-card>
-            </ion-col>
-
-            <ion-col size="9" class="detailColumn" *ngIf="!activeConversation">
-                <ion-row *ngIf="selectedConversation">
-                    <ion-col size="4" *ngFor="let caseItem of cases.all | filterKey : 'conversation' : selectedConversation">
-                        <ion-card noPadding pointer (click)="startConversation(caseItem)">
-                            <ion-card-content noPadding>
-                                <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
-                                <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                                <ion-card-header center>
-                                    <ion-card-title>{{caseItem.title}}</ion-card-title>
-                                </ion-card-header>
-                            </ion-card-content>
-                        </ion-card>
-                    </ion-col>
-                </ion-row>
-            </ion-col> -->
-
-
-
         </ion-row>
-        
-        <!-- <ion-row *ngIf="selectedConversation">
-            <ion-col size="3" *ngFor="let case of cases.all | filterKey : 'conversation' : selectedConversation">
-                <ion-card borderTertiary basicPadding pointer (click)="startConversation(case)">
-                    <ion-card-header>
-                        <ion-card-title>{{case.title}}</ion-card-title>
-                    </ion-card-header>
-                    <ion-card-content *ngIf="case.photo">
-                        <img [src]="case.photo" alt="">
-                    </ion-card-content>
-                </ion-card>
-            </ion-col>
-        </ion-row> -->
+    
     </ion-grid>
 </main>

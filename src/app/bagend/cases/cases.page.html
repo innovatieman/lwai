@@ -40,7 +40,7 @@
         <ion-card basicPadding pointer font16 weight700 tab *ngFor="let casus of cases;let i = index" [ngClass]="{'activeTab':activeTab==i}" (click)="changeTab(i)">{{casus.title | capitalize}}</ion-card>
       </ion-col> -->
       <ion-col [size]="media.smallDevice ? 12 : 9"  class="detailColumn">
-        <ion-card basicPadding *ngIf="!caseItem.id"><ion-card-title>Selecteer een casus</ion-card-title></ion-card>
+        <ion-card basicPadding *ngIf="!caseItem?.id"><ion-card-title>Selecteer een casus</ion-card-title></ion-card>
 
         <ion-card basicPadding *ngIf="caseItem?.id">
           <ion-card-header>
@@ -55,6 +55,9 @@
                 </ion-button>
                 <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="showBackups" (click)="returnBackup(caseItem)">
                     <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+                </ion-button>
+                <ion-button fill="clear" class="backupIcon" (click)="caseItem = {}">
+                    <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
                 </ion-button>
             </ion-card-title>
           </ion-card-header>

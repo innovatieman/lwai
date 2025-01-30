@@ -38,7 +38,7 @@ export class ConversationPage implements OnInit {
     this.rf.detectChanges()
   }
   @ViewChild('draggableElement', { static: false }) draggableElement!: ElementRef;
-
+  [x: string]: any;
   position:any = { x: this.media.screenWidth - 210, y: 10 }; // Startpositie van de div
 
   private gesture!: Gesture;
@@ -129,30 +129,30 @@ export class ConversationPage implements OnInit {
   showFact:boolean = false;
 
 
-chart: Highcharts.Chart | null = null;
-chartCallback: Highcharts.ChartCallbackFunction = (chart) => {
-  this.chart = chart;
-};
-showDetails:boolean = false;
-conversationTitle:string = ''
-case_id:string = ''
-question:string = ''
-started:boolean = false;
-interaction:string='chat'
-cipherTerm:any = {
-  "0": "Onbekend",
-  "1": "Slecht",
-  "2": "Zeer matig",
-  "3": "Onvoldoende",
-  "4": "Zwak",
-  "5": "Matig",
-  "6": "Voldoende",
-  "7": "Ruim voldoende",
-  "8": "Goed",
-  "9": "Zeer goed",
-  "10": "Perfect"
-}
-  
+  chart: Highcharts.Chart | null = null;
+  chartCallback: Highcharts.ChartCallbackFunction = (chart) => {
+    this.chart = chart;
+  };
+  showDetails:boolean = false;
+  conversationTitle:string = ''
+  case_id:string = ''
+  question:string = ''
+  started:boolean = false;
+  interaction:string='chat'
+  cipherTerm:any = {
+    "0": "Onbekend",
+    "1": "Slecht",
+    "2": "Zeer matig",
+    "3": "Onvoldoende",
+    "4": "Zwak",
+    "5": "Matig",
+    "6": "Voldoende",
+    "7": "Ruim voldoende",
+    "8": "Goed",
+    "9": "Zeer goed",
+    "10": "Perfect"
+  }
+  showDetailsPhases:boolean = false;
 
   constructor(
     private route:ActivatedRoute,
@@ -229,7 +229,7 @@ cipherTerm:any = {
       }
       else if(!this.started&&!localStorage.getItem('continueConversation')){
         //
-        console.log('not activated')
+        // console.log('not activated')
         // this.nav.go('start')
       }
 
@@ -384,7 +384,16 @@ cipherTerm:any = {
       this.continueConversation()
     }
     else if(!this.started && !localStorage.getItem('activatedCase')){
-      this.nav.go('start')
+      if(localStorage.getItem('conversation')){
+        let localConversation = JSON.parse(localStorage.getItem('conversation')||'{}')
+        if(localConversation.courseId){
+          this.nav.go('course/'+localConversation.courseId)
+          return
+        }
+        else{
+          this.nav.go('start')
+        }
+      }
     }
   }
 
@@ -479,46 +488,146 @@ cipherTerm:any = {
   }
 
   endConversation(){
-    this.modal.showConfirmation('Weet je zeker dat je de conversatie wilt beëindigen?').then(response=>{
-      // console.log(response)
-      if(response){
-        this.conversation.closing = true
-        let countTries = 0
-        this.conversation.closeConversation(()=>{
-          let closeInterval = setInterval(() => {
-            countTries++
-            if(countTries>20){
-              // console.log(this.conversation.activeConversation)
-              // console.log('clear interval')
-              clearInterval(closeInterval)
+    if(this.conversation.activeConversation.closed){
+      if(this.conversation.activeConversation.courseId){
+        this.nav.go('course/'+this.conversation.activeConversation.courseId)
+        return
+      }
+      else{
+        this.nav.go('start')
+        return
+      }
+    }
 
-              // this.modal.showText('De conversatie is afgesloten','Afsluiting',false,[],false,()=>{
-                // this.nav.go('start')
-              // })
-            }
-            if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
-              clearInterval(closeInterval)
-              this.modal.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
-                this.nav.go('start')
-                this.conversation.closing = false
-              })
-            }
-            console.log('checking close')
-          }, 200);
+
+    this.modal.showVerification(
+      'Afsluiten',
+      'Wil je het gesprek helemaal beëindigen en hier feedback op krijgen?<br> Of wil je later verder gaan?',
+      [
+        {
+          text:'Annuleren',
+          value:false,
+          color:'dark'
+        },
+        {
+        text:'Later verder gaan',
+        value:'pause',
+        color:'warning'
+      },
+      {
+        text:'Afsluiten',
+        value:'end',
+        color:'success'
+      }]
+    ).then(response=>{
+      
+      if(response=='end'){
+        this.conversation.closing = true
+        this.conversation.closeConversation(()=>{
         })
+      }
+      else if(response=='pause'){
+        if(this.conversation.activeConversation.courseId){
+          this.nav.go('course/'+this.conversation.activeConversation.courseId)
+          return
+        }
+        else{
+          this.nav.go('start')
+        }
       }
     })
   }
+
+  
 
   showLatestFact(){
     this.conversation.getExtraInfo('facts')
     this.modal.showText(JSON.parse(this.conversation.latestAssistantItem(this.conversation.activeConversation.facts)).new_fact,'Feitje')
   }
 
-  showEvaluation(){
-    this.modal.showText(this.conversation.activeConversation.close[0].content,'Evaluatie')
+  showEvaluation(firstTime?:boolean){
+    let countTries = 0
+
+    let closeInterval = setInterval(() => {
+      countTries++
+      if(countTries>50){
+        // console.log('clearing interval')
+        clearInterval(closeInterval)
+
+      }
+      if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
+        // console.log('closing')
+        this.conversation.closing = false
+
+        clearInterval(closeInterval)
+        this.modal.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
+          if(firstTime || !this.conversation.activeConversation.rating?.step1Filled){
+
+            this.modal.showRating('Evaluatie','',{type:'conversationId',value:this.conversation.activeConversation.conversationId},[
+      
+              {question:'Wat vond je het meest nuttig aan dit gesprek?',value:'',type:'radio',other:'',
+                options:[
+                  {value:'secure',text:'Ik voel me zekerder in gesprekken door de oefening.'},
+                  {value:'communicate',text:'Ik heb geleerd hoe ik effectiever kan communiceren.'},
+                  {value:'feedback',text:'De feedback was specifiek en direct toepasbaar'},
+                  {value:'swot',text:'Ik heb mijn sterke en zwakke punten beter leren kennen.'},
+                  {value:'nothing',text:'Ik heb helaas niets nieuws geleerd.'},
+                  {value:'other',text:'Anders, namelijk:'},
+              ]},
+              {question:'Hoe waarschijnlijk is het dat je deze app aanbeveelt bij vrienden of bekenden?',value:0,type:'stars',starAmount:10},
+            
+            ])
+            .then((response:any)=>{
+              if(response&&response.conversationId){
+                this.conversation.activeConversation.rating2 = response.rating
+                this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', response.conversationId, {rating2:this.conversation.activeConversation.rating2})
+              }
+            })
+
+            if(this.conversation.activeConversation.courseId){
+              this.nav.go('course/'+this.conversation.activeConversation.courseId)
+              return
+            }
+            else{
+              this.nav.go('start')
+            }
+            
+          }
+        })
+      }
+      // console.log('checking close')
+    }, 200);
+
+    // this.modal.showText(this.conversation.activeConversation.close[0].content,'Evaluatie')
   }
   
+  tempRating_realism:number = 0;
+  updatingStars:boolean = false
+  onRatingChanged(rating: number,field:string): void {
+    if(!this.conversation.activeConversation.rating){
+      this.conversation.activeConversation.rating = {}
+    }
+    this.conversation.activeConversation.rating[field] = rating;
+    this['tempRating_'+field] = rating
+    this.updatingStars = true
+    this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', this.conversation.activeConversation.conversationId, {rating:this.conversation.activeConversation.rating})
+    .then(()=>{
+      this.updatingStars = false
+    })
+  }
+
+  saveRating(step:number){
+    if(!this.conversation.activeConversation.rating){
+      this.conversation.activeConversation.rating = {}
+    }
+    this.conversation.activeConversation.rating['step'+step+'Filled'] = true;
+    this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', this.conversation.activeConversation.conversationId, {rating:this.conversation.activeConversation.rating})
+    if(step==1){
+      this.showEvaluation(true)
+    }
+  }
+
+
   toggleVideo(){
     console.log(this.interaction)
     if(this.interaction=='combination'){
@@ -541,87 +650,110 @@ cipherTerm:any = {
 
   }
 
-  startRecordingAudio(){
-    this.record.startRecording('audioToText',(response:any)=>{
-      if(response){
-        this.loadingTextFromAudio = false
-        if(this.question==''){
-          this.question = response
-        }
-        else{
-          this.question = this.question + ' ' + response
-        }
-        this.rf.detectChanges()
-      }
-    })
-  }
+  // startRecordingAudio(){
+  //   this.record.startRecording('audioToText',(response:any)=>{
+  //     if(response){
+  //       this.loadingTextFromAudio = false
+  //       if(this.question==''){
+  //         this.question = response
+  //       }
+  //       else{
+  //         this.question = this.question + ' ' + response
+  //       }
+  //       this.rf.detectChanges()
+  //     }
+  //   })
+  // }
+  // stopRecordingAudio(){
+  //   this.loadingTextFromAudio = true
+  //   this.record.stopRecording(()=>{
+  //     this.rf.detectChanges()
+  //   })
+  // }
+
+  recordingTimeout: any;
+  maxRecordingTime = 60000; // 1 minuut
   loadingTextFromAudio:boolean = false
-  stopRecordingAudio(){
-    this.loadingTextFromAudio = true
-    this.record.stopRecording(()=>{
-      this.rf.detectChanges()
-    })
+
+  startRecordingAudio() {
+    if (!this.record.recording) {
+      this.record.startRecording('audioToText', (response: any) => {
+        if (response) {
+          this.loadingTextFromAudio = false;
+          this.question = this.question ? this.question + ' ' + response : response;
+          this.rf.detectChanges();
+        }
+      });
+
+      // Stel een timeout in om de opname automatisch te stoppen na 1 minuut
+      this.recordingTimeout = setTimeout(() => {
+        this.stopRecordingAudio();
+      }, this.maxRecordingTime);
+    }
   }
+
+  stopRecordingAudio() {
+    if (this.record.recording) {
+      this.loadingTextFromAudio = true;
+      this.record.stopRecording(() => {
+        this.rf.detectChanges();
+      });
+
+      // Reset de timeout
+      if (this.recordingTimeout) {
+        clearTimeout(this.recordingTimeout);
+      }
+    }
+  }
+
+
 
   shortMenu:any
-  helpMenu:any = [
-    {
-      title:'Geef me wat suggesties om te zeggen',
-      icon:'faList',
-      id:'choices',
-    },
-    {
-      title:'Facts checker',
-      icon:'faUserGraduate',
-      id:'factschecker',
-    },
-    {
-      title:'Geef me wat achtergrond informatie',
-      icon:'faInfoCircle',
-      id:'background',
-    },
-    {
-      title:'Maak het laatste bericht ongedaan',
-      icon:'faStepBackward',
-      id:'undo',
-    },
-    {
-      title:'Start helemaal opnieuw',
-      icon:'faFastBackward',
-      id:'restart',
-    },
-    {
-      title:'Afsluiten en evalueren',
-      icon:'faDoorOpen',
-      id:'evaluation',
-    },
-    {
-      title:'Verwijder dit gesprek',
-      icon:'faTrashAlt',
-      id:'delete',
-    },
-  ]
-
+  helpMenu:any = []
   helpMenuClosed:any = [
-    {
-      title:'Hoe zijn de gespreksfases gegaan?',
-      icon:'faSlidersH',
-      id:'phases',
-    },
+    // {
+    //   title:'Hoe zijn de gespreksfases gegaan?',
+    //   icon:'faSlidersH',
+    //   id:'phases',
+    // },
     {
       title:'Bekijk de eindevaluatie',
       icon:'faUserGraduate',
       id:'showEvaluation',
     },
-    {
-      title:'Verwijder dit gesprek',
-      icon:'faTrashAlt',
-      id:'delete',
-    },
+    // {
+    //   title:'Verwijder dit gesprek',
+    //   icon:'faTrashAlt',
+    //   id:'delete',
+    // },
   ]
 
   async toggleHelp(){
-    let menuList = JSON.parse(JSON.stringify(this.helpMenu))
+    let menuList:any = []//JSON.parse(JSON.stringify(this.helpMenu))
+    if(this.conversation.activeConversation.agentsSettings.choices){
+      menuList.push({
+        title:'Geef me wat suggesties om te zeggen',
+        icon:'faList',
+        id:'choices',
+      })
+    }
+    if(this.conversation.activeConversation.agentsSettings.facts){
+      menuList.push({
+        title:'Check de genoemde feiten voor me',
+        icon:'faUserGraduate',
+        id:'factschecker',
+      })
+    }
+    if(this.conversation.activeConversation.agentsSettings.background){
+      menuList.push({
+        title:'Geef me wat achtergrond informatie',
+        icon:'faInfoCircle',
+        id:'background',
+      })
+    }
+
+
+
     if(this.media.smallDevice){
       menuList.splice(1,0,{
         title:'Hoe staat het met het gesprek?',
@@ -630,9 +762,23 @@ cipherTerm:any = {
       })
     }
     if(this.conversation.activeConversation.closed){
-      menuList = this.helpMenuClosed
+      menuList = JSON.parse(JSON.stringify(this.helpMenuClosed))
+      if(this.media.smallDevice){
+        menuList.push({
+          title:'Hoe zijn de gespreksfases gegaan?',
+          icon:'faSlidersH',
+          id:'phases',
+        })
+      }
 
     }
+
+    menuList.push({
+      title:'Exporteer het gesprek naar PDF',
+      icon:'faPrint',
+      id:'export2Pdf',
+    })
+
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
       componentProps:{
@@ -644,14 +790,14 @@ cipherTerm:any = {
       event: event,
       translucent: false,
     });
-    // this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
 
     await this.shortMenu.present()
     await this.shortMenu.onWillDismiss();
 
 
     if(this.selectMenuservice.selectedItem){
-      console.log(this.selectMenuservice.selectedItem)
+      // console.log(this.selectMenuservice.selectedItem)
       if(this.selectMenuservice.selectedItem.id=='choices'){
         this.getChoices()
       } 
@@ -679,24 +825,21 @@ cipherTerm:any = {
       else if(this.selectMenuservice.selectedItem.id=='undo'){
         this.conversation.undoLastMove()
       }
+      else if(this.selectMenuservice.selectedItem.id=='export2Pdf'){
+        this.conversation.export2Pdf()
+      }
       this.selectMenuservice.selectedItem = null
     }
   }
 
 
 
-  showCheckmark = false;//false; // Toont het vinkje in het midden
-  isAnimating = false; // Start de animatie
-  // completedGoals: any[] = []; // Bevat de vinkjes in de header
-  // completedGoal:any
-  // Start de animatie
+  showCheckmark = false;
+  isAnimating = false;
   completeGoal() {
-    // this.completedGoal = goal
     this.showCheckmark = true;
     this.isAnimating = true;
   }
-
-  // Animatie-einde callback
   onAnimationEnd() {
     this.isAnimating = false;
     // this.conversation.completedGoal = {goal:'attitude',explanation:'Je hebt de gewenste houding bereikt.'}

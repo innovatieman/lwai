@@ -77,7 +77,7 @@ export class EnginePage implements OnInit {
     {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
     {field:'extraInfo',label:'Extra kennis input over de categorie',type:'textarea',agents:['reaction']},
     {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
-    {field:'temperature',label:'Creativiteits temparatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
+    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
     {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:500,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
   ]
   

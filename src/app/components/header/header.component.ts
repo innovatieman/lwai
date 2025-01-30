@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { NavService } from 'src/app/services/nav.service';
@@ -18,6 +18,11 @@ export class HeaderComponent  implements OnInit {
   [x:string]:any; 
   @Input() title:string = ''
   @Input() page:string = ''
+  @Input() noMenuList:boolean = false
+  @Input() back:boolean = false
+  @Input() button:string = ''
+  @Output() buttonResponse = new EventEmitter()
+
   @HostListener('window:resize', ['$event'])
   onResize(){
     this.media.setScreenSize()
@@ -46,12 +51,15 @@ export class HeaderComponent  implements OnInit {
       isVisitor:false,
       isAdmin:true,
       isUser:true,
-      isTrainer:true,
+      isTrainer:false,
     },
     {
-      url:'trainer/courses',
-      page:'trainer-courses',
+      // url:'trainer/courses',
+      action:'trainerMenu',
+      page:'trainer',
       title:'Trainer',
+      dropDown:true,
+
       isVisitor:false,
       isAdmin:true,
       isUser:false,
@@ -86,7 +94,25 @@ export class HeaderComponent  implements OnInit {
       icon: 'faUsers',
       url: '/bagend/users',
     },
+    // {
+    //   title: 'All Conversations',
+    //   icon: 'faComments',
+    //   url: '/bagend/conversations',
+    // },
   ]
+  trainerItems:any=[
+    {
+      title: 'Cursussen maken',
+      icon: 'faBook',
+      url: '/trainer/courses',
+    },
+    {
+      title: 'Actieve cursussen',
+      icon: 'faUsers',
+      url: '/trainer/users',
+    },
+  ]
+
   constructor(
     public nav:NavService,
     public auth:AuthService,
@@ -149,6 +175,27 @@ export class HeaderComponent  implements OnInit {
     
   }
 
+  async trainerMenu(){
+    
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        customMenu:true,
+        pages:this.trainerItems
+      },
+      cssClass: 'customMenu',
+      event: event,
+      translucent: false,
+      reference:'trigger',
+    });
+    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+
+    await this.shortMenu.present();
+
+    console.log('adminMenu')
+    
+  }
+
   shouldShowPage(page: any): boolean {
     if (this.isAdmin && page.isAdmin) {
       return true;
@@ -169,6 +216,9 @@ export class HeaderComponent  implements OnInit {
     return false;
   }
 
+  buttonClick(event:Event){
+    this.buttonResponse.emit(event)
+  }
 
   
 

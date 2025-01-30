@@ -1,0 +1,29 @@
+<app-header page="trainer"></app-header>
+<main>
+    <ion-toolbar class="buttonBar">
+        <ion-buttons slot="end">
+          <ion-button fill="outline" class="saveButton" color="primary" (click)="newCourse()">Nieuw</ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+    <div class="buttonBarMargin"></div>
+  <ion-grid>
+    <ion-row fullheight>
+        <ion-col size="12">
+          <ion-card basicPadding fullwidth *ngFor="let course of active_courses;let i = index">
+            <ion-card-header>
+              <ion-card-title flex center-ver fullwidth>
+                <span>{{course.title}}</span>
+                <span class="spacer"></span>
+                <fa-icon [icon]="icon.get('faCheck')" *ngIf="course.status=='active'" iconClosed pointer font-24 titleIcon></fa-icon>
+                <fa-icon [icon]="icon.get('faExclamationTriangle')" *ngIf="course.status=='concept'" iconContinue pointer font-24 titleIcon (click)="activate(course)"></fa-icon>
+                <fa-icon [icon]="icon.get('faChevronDown')" pointer font-24 titleIcon (click)="course.show = !course.show"></fa-icon>
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content *ngIf="course.show">
+              <ion-label>{{course.itemIds.length}} Onderdelen</ion-label>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

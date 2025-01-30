@@ -8,6 +8,7 @@ import { InfoService } from 'src/app/services/info.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
+import { SubscriptionsService } from 'src/app/services/subscriptions.service';
 
 
 @Component({
@@ -23,7 +24,8 @@ export class StartPage implements OnInit {
   }
   selectedConversation:any = null
   conversations$:any
-  activeCategory:any = null
+  activeCategory:any = 'transformative' //null
+
   constructor(
     public nav:NavService,
     public cases:CasesService,
@@ -33,11 +35,17 @@ export class StartPage implements OnInit {
     public infoService:InfoService,
     public media:MediaService,
     private rf:ChangeDetectorRef,
-    private firestore:FirestoreService
+    private firestore:FirestoreService,
+    public subscriptionService:SubscriptionsService,
   ) { }
 
   ngOnInit() {
     this.conversations$ = this.auth.getConversations();
+    this.auth.userInfo$.subscribe(userInfo => {
+      if (userInfo) {
+        this.subscriptionService.getActiveCourses(this.auth.userInfo.uid)
+      }
+    });
   }
 
   selectCategory(category:any){
@@ -70,9 +78,6 @@ export class StartPage implements OnInit {
     })
   }
 
-  
-
-
   continueConversation(conversation:any){
     localStorage.setItem('continueConversation',"true")
     localStorage.setItem('conversation',JSON.stringify(conversation))
@@ -90,7 +95,7 @@ export class StartPage implements OnInit {
     })
     return conversation
   }
-
+  
   activeThemes(conversation:string):any{
     let themes:any = []
     let themeIds:any = []
@@ -138,4 +143,8 @@ export class StartPage implements OnInit {
       }
     })
   }
+
+  
+
+
 }

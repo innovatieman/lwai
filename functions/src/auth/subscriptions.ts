@@ -71,3 +71,57 @@ exports.addSubscription = functions.region('europe-west1').https.onCall(async (d
     }
 
 })
+
+exports.updateActiveSubscriptions = functions.firestore
+  .document('users/{userId}/subscriptions/{subscriptionId}')
+  .onWrite(async (change, context) => {
+    const userId = context.params.userId;
+    const db = admin.firestore();
+
+    try {
+      // Haal alle actieve subscriptions van de gebruiker op
+      const subscriptionsSnapshot = await db
+        .collection(`users/${userId}/subscriptions`)
+        .where('status', '==', 'active')
+        .get();
+
+      if (subscriptionsSnapshot.empty) {
+        // Geen actieve subscriptions, verwijder velden uit de user-doc
+        await db.doc(`users/${userId}`).update({
+          activeSubscriptionTypes: admin.firestore.FieldValue.delete(),
+          activeCourseIds: admin.firestore.FieldValue.delete(),
+        });
+        return null;
+      }
+
+      // Verzamel unieke subscription types en courseIds
+      const activeSubscriptionTypes = new Set();
+      const activeCourseIds = new Set();
+
+      subscriptionsSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.type) {
+          activeSubscriptionTypes.add(data.type);
+        }
+        if (Array.isArray(data.courseIds)) {
+          data.courseIds.forEach((courseId) => activeCourseIds.add(courseId));
+        }
+      });
+
+      // Zet de unieke types en courseIds om in arrays
+      const subscriptionTypesArray = Array.from(activeSubscriptionTypes);
+      const courseIdsArray = Array.from(activeCourseIds);
+
+      // Update het gebruikersdocument met de unieke arrays
+      await db.doc(`users/${userId}`).update({
+        activeSubscriptionTypes: subscriptionTypesArray,
+        activeCourseIds: courseIdsArray,
+      });
+
+      console.log(`Updated user ${userId} with active subscriptions and courseIds.`);
+    } catch (error) {
+      console.error(`Error updating active subscriptions for user ${userId}:`, error);
+    }
+
+    return null;
+  });

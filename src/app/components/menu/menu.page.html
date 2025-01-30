@@ -1,7 +1,7 @@
 <!-- <div class="menuImg">
 </div> -->
 <div class="card" [ngClass]="{'listShape':listShape}">
-  <div flex center-ver fullwidth style="padding:10px" class="namePart"  *ngIf="!customMenu" pointer (click)="nav.go('account');popoverController.dismiss()">
+  <div flex center-ver fullwidth style="padding:10px" class="namePart"  *ngIf="!customMenu" pointer><!--</div> (click)="nav.go('account');popoverController.dismiss()">-->
     <div style="margin-right: 5px;">
       <img src="assets/icon/favicon.png" class="avatar">
     </div>
@@ -13,7 +13,7 @@
     </div>
   </div> 
 
-  <ion-list id="inbox-list" *ngIf="!customMenu && media.screenSize=='xs'">
+  <ion-list id="inbox-list" *ngIf="!customMenu && media.smallDevice">
     <div *ngFor="let p of appPages; let i = index">
       <ion-item (click)="popoverController.dismiss()" pointer [ngClass]="p.class" (click)="nav.go(p.url)" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>

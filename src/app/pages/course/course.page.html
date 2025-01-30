@@ -1,0 +1,84 @@
+<app-header [page]="'course'" [noMenuList]="true" [back]="!media.smallDevice" [button]="media.smallDevice ? 'menu' : ''" (buttonResponse)="showMenu($event)"></app-header>
+<!-- <app-header [page]="'course'" [noMenuList]="true" [back]="!media.smallDevice"></app-header> -->
+
+<main [fullXs]="true" [padding]="'0px'">
+  <!-- loading conversation -->
+  <app-loader [full]="true" *ngIf="!courseLoaded">
+    <ion-card class="loaderCard" fullwidth fullheight>
+      <div center>
+        <ion-spinner name="bubbles"></ion-spinner>
+        <div>Opening Course</div>
+      </div>
+    </ion-card>
+  </app-loader>
+
+  <ion-grid>
+    <ion-row *ngIf="courseData">
+      <ion-col size="4" *ngIf="!media.smallDevice">
+        <ion-card *ngFor="let item of courseData.itemIds;let i=index" button (click)="gotoItem(i)" basicPadding [ngClass]="{'currentItem': item.id ==currentLoadedItem.id}">
+          <ion-card-header>
+            <ion-card-title *ngIf="getItem(item.id)">
+              <span>{{getItem(item.id).title}}</span>
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+
+      <ion-col [size]="media.smallDevice ? 12 : 8">
+        <ion-card basicPadding *ngIf="currentLoadedItem?.title" [ngClass]="{'noMargin':media.smallDevice}">
+          <ion-card-header>
+            <ion-card-title font-24>
+              <span>{{currentLoadedItem.title}}</span>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div [innerHTML]="currentLoadedItem.intro" weight600 font-16 marginBottom></div>
+            <div *ngIf="currentLoadedItem.photo&&!currentLoadedItem.conversation">
+              <img [src]="currentLoadedItem.photo" alt="" borderRadius24>
+            </div>
+            <div *ngIf="currentLoadedItem.type=='video'">
+              <video controls>
+                <source src="{{currentLoadedItem.video}}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div *ngIf="currentLoadedItem.type=='text'">
+              <div [innerHTML]="currentLoadedItem.content"></div>
+            </div>
+            <div *ngIf="courseData.itemIds[currentIndex].type=='case'">
+              <ion-row>
+                <ion-col size="5">
+                  <ion-card noPadding style="height:300px;">
+                      <ion-card-content noPadding style="height:200px;">
+                        <div backgroundImage class="avatarImage" *ngIf="currentLoadedItem.photo" [ngStyle]="{'background-image': 'url(' + currentLoadedItem.photo + ')'}"></div>
+                        <div backgroundImage class="avatarImage" *ngIf="!currentLoadedItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                      </ion-card-content>
+                        <!-- <div flex center center-ver center-hor style="height:calc(100% - 200px)"> -->
+                        <ion-card-header center flex style="height:100px;">
+                            <ion-card-title font-18 weight600>{{currentLoadedItem.title}}</ion-card-title>
+                        </ion-card-header>
+                        <!-- </div> -->
+                  </ion-card>
+                </ion-col>
+                <ion-col size="7">
+                  <ion-button color="primary" (click)="startConversation(currentLoadedItem)" *ngIf="!getConversation(courseData.trainerId,courseId,currentLoadedItem.id)">Start gesprek</ion-button>
+                  <ion-button color="secondary" (click)="continueConversation(getConversation(courseData.trainerId,courseId,currentLoadedItem.id))" *ngIf="getConversation(courseData.trainerId,courseId,currentLoadedItem.id)&&!getConversation(courseData.trainerId,courseId,currentLoadedItem.id).closed">Ga verder met het gesprek</ion-button>
+                  <ion-button color="success" (click)="continueConversation(getConversation(courseData.trainerId,courseId,currentLoadedItem.id))" *ngIf="getConversation(courseData.trainerId,courseId,currentLoadedItem.id)?.closed">Gesprek is afgerond</ion-button>
+                </ion-col>
+              </ion-row>
+            </div>
+
+
+            <div flex center-ver fullwidth>
+              <ion-button *ngIf="currentIndex!=0" (click)="gotoItem(currentIndex-1)" color="primary" class="saveButton">Terug</ion-button>
+              <span class="spacer"></span>
+              <ion-button *ngIf="currentLoadedItem.finished" (click)="next()" color="primary" class="saveButton">Volgende</ion-button>
+              <ion-button *ngIf="!currentLoadedItem.finished" (click)="finish()" color="secondary" class="saveButton">Klaar</ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  </main>

@@ -8,6 +8,8 @@ import { ConversationStartPage } from '../components/modals/conversation-start/c
 import { InputFieldsPage } from '../components/modals/input-fields/input-fields.page';
 import { EditHtmlPage } from '../components/modals/edit-html/edit-html.page';
 import { SelectItemPage } from '../components/modals/select-item/select-item.page';
+import { VerificationPage } from '../components/modals/verification/verification.page';
+import { RateLearningPage } from '../components/modals/rate-learning/rate-learning.page';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +31,21 @@ export class ModalService {
     return data?.confirmed || false; // Retourneert true of false
   }
 
+  async showVerification(title?:string,message?: string,buttons?:any[]): Promise<any> {
+    const modalItem = await this.modalController.create({
+      component: VerificationPage,
+      componentProps: {
+        title:title,
+        message: message,
+        buttons:buttons
+      },
+    });
+
+    await modalItem.present();
+
+    const { data } = await modalItem.onWillDismiss();
+    return data
+  }
 
   async showConversationStart(caseItem: any): Promise<boolean> {
     const modalItem = await this.modalController.create({
@@ -156,5 +173,24 @@ export class ModalService {
     })
     return await modal.present()
   }
+
+  async showRating(title:string,content:string,id:any,rating: any): Promise<boolean> {
+    const modalItem = await this.modalController.create({
+      component: RateLearningPage,
+      backdropDismiss: false,
+      componentProps: {
+        title: title,
+        content: content,
+        rating: rating,
+        id: id,
+      },
+    });
+
+    await modalItem.present();
+
+    const { data } = await modalItem.onWillDismiss();
+    return data || false;
+  }
+
 
 }

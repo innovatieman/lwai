@@ -1,6 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
-import { ModalController, NavParams } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
 import { IconsService } from 'src/app/services/icons.service';
@@ -14,7 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./conversation-start.page.scss'],
 })
 export class ConversationStartPage implements OnInit {
-  caseItem:any = {}
+  @Input() caseItem:any = {}
   step = -1
   promptChecked:boolean = false
   showGoal:any = {
@@ -24,7 +24,7 @@ export class ConversationStartPage implements OnInit {
   }
   caseItemOriginal:any = {}
   requiredPerPage: any = {
-    0: ['role'],
+    0: ['role','title'],
     1: [],
     2: ['attitude','steadfastness'],
     3: [],
@@ -35,7 +35,6 @@ export class ConversationStartPage implements OnInit {
   }
   constructor(
     public modalCtrl:ModalController,
-    private navParams:NavParams,
     public icon:IconsService,
     private toast:ToastService,
     public media:MediaService,
@@ -46,13 +45,22 @@ export class ConversationStartPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    if(this.navParams.get('caseItem')){
-      this.caseItem = this.navParams.get('caseItem')
 
+    if(this.caseItem){
       if(this.caseItem.goals){
         this.caseItem.goalsItems = JSON.parse(JSON.stringify(this.caseItem.goals))
         delete this.caseItem.goals
       }
+      console.log(this.caseItem)
+      if(!this.caseItem.editable_by_user.agents){
+        this.caseItem.editable_by_user.agents = {
+          choices:true,
+          facts:true,
+          background:true,
+          undo:true,
+        }
+      }
+
 
       this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
       // console.log(this.caseItem)
@@ -79,7 +87,6 @@ export class ConversationStartPage implements OnInit {
   }
 
   async slide(nr:number,back?:boolean,start?:boolean){
-
     let checkNr = nr-1
     if(back){checkNr = nr +1}
 
@@ -111,7 +118,7 @@ export class ConversationStartPage implements OnInit {
       }
       return
     }
-
+    
     this.step = nr
     // this.promptChecked = true
     if(nr === 3){
@@ -126,10 +133,15 @@ export class ConversationStartPage implements OnInit {
       else{
         if(!this.promptChecked&&!this.caseItem.casus&&!this.inputEmpty()&&!this.caseItem.existing){
           this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
-          let text = this.generateReadableText()
-          let output = await this.getPromptOpenAI(text)
-          this.caseItem.casus = output
-          this.promptChecked = true
+          if(!this.caseItem.admin){
+            let text = this.generateReadableText()
+            let output = await this.getPromptOpenAI(text)
+            this.caseItem.casus = output
+            this.promptChecked = true
+          }
+          else{
+            this.promptChecked = true
+          }
         }
       }
     }
@@ -142,8 +154,9 @@ export class ConversationStartPage implements OnInit {
     else if(this.caseItem.minimum_goals>3){
       this.caseItem.minimum_goals = 3
     }
-    this.caseItem.title = this.caseItem.role
-
+    if(!this.caseItem.title){
+      this.caseItem.title = this.caseItem.role
+    }
     if(this.caseItem.avatarName){
       this.caseItem.video_on = true
     }
@@ -166,7 +179,7 @@ export class ConversationStartPage implements OnInit {
       **Case Details**:
   
       **Rol:** ${this.caseItem.role || "Niet ingevuld"}
-      _Geef de Rol een naam/titel._
+      _Wie is de gesprekspartner in deze casus en wordt dus gespeeld door de AI-assistent?_
   
       **Casus / Issue:** ${this.caseItem.description || "Niet ingevuld"}
       _Beschrijf de casus / issue. Zo gedetailleerd mogelijk._
@@ -260,6 +273,7 @@ export class ConversationStartPage implements OnInit {
   }
 
   showStep(step:number){
+    console.log(step)
     if(this.caseItem.admin){
       return true
     }
@@ -333,5 +347,8 @@ export class ConversationStartPage implements OnInit {
     }
   }
  
+  showTooltip(event:any,textItem:string){
+    this.toast.showTooltip(event,this.translate.instant(textItem))
+  }
 
 }

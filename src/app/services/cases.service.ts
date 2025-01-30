@@ -119,9 +119,9 @@ export class CasesService {
           content: doc.translation?.content || doc.content,
         }));
       });
-      setTimeout(() => {
-        console.log(this.all)
-      }, 3000);
+      // setTimeout(() => {
+      //   console.log(this.all)
+      // }, 3000);
   }
 
   query(collection:string,where:string,key:any,operator?:any){
@@ -131,4 +131,56 @@ export class CasesService {
     return this.fire.collection(collection,ref => ref.where(where,operator,key)).snapshotChanges()
   }
 
+  defaultCase(conversationType:string,openingMessage:string){
+    return {
+      created:Date.now(),
+      conversation:conversationType,
+      open_to_user:false,
+      open_to_public:false,
+      open_to_admin:true,
+      title:'New Case',
+      role:'',
+      description:'',
+      attitude:1,
+      steadfastness:50,
+      goals:{
+        phases:[],
+        free:'',
+        attitude:0,
+      },
+      max_time:30,
+      minimum_goals:0,
+      openingMessage:openingMessage,
+      goal:false,
+      editable_by_user:{
+        role:false,
+        description:false,
+        function:false,
+        vision:false,
+        interests:false,
+        communicationStyle:false,
+        externalFactors:false,
+        history:false,
+        attitude:false,
+        steadfastness:false,
+
+        casus:false,
+        
+        goals:{
+          phases:false,
+          free:false,
+          attitude:false,
+        },
+        max_time:false,
+        minimum_goals:false,
+        openingMessage:true,
+        agents:{
+          choices:true,
+          facts:true,
+          background:true,
+          undo:true,
+        }
+      }
+    }
+  }
 }

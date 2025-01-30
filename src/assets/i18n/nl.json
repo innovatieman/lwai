@@ -39,5 +39,28 @@
     "modal_intros":{
         "info_phases":"Bij dit gesprek zijn een aantal elementen (of fases) van belang.",
         "loader":"Gegevens worden geladen..."
+    },
+    "case_options":{
+        "editable_role":"Rol/Naam",
+        "editable_description":"Beschrijving",
+        "editable_function":"Functie aanpassen",
+        "editable_vision":"Visie",
+        "editable_interests":"Belangen",
+        "editable_communicationStyle":"Communicatiestijl",
+        "editable_externalFactors":"Externe factoren",
+        "editable_history":"Geschiedenis",
+        "editable_attitude":"Houding",
+        "editable_steadfastness":"Standvastigheid",
+        "editable_casus":"Casus",
+        "editable_goals_phases":"Doel - Fasen",
+        "editable_goals_free":"Doel - Vrije doelen",
+        "editable_goals_attitude":"Doel - Houding",
+        "editable_max_time":"Maximale tijd",
+        "editable_minimum_goals":"Minimale doelen",
+        "editable_openingMessage":"Openingsbericht",
+        "agents_choices":"Soufleur",
+        "agents_facts":"Factchecker",
+        "agents_background":"Achtergrond informatie",
+        "agents_undo":"Ongedaan maken"
     }
 }

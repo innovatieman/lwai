@@ -25,4 +25,6 @@ export * from './apis/heygen'
 export * from './auth/subscriptions'
 export * from './maintenance/documents'
 export * from './querys/information'
+export * from './auth/courses'
+export * from './maintenance/ratings'
 

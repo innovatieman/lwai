@@ -5,18 +5,21 @@ import * as moment from 'moment'
 
 exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
     (user:any,context:any)=>{
-        return admin.firestore().collection('users').doc(user.uid).set({
-            email:user.email,
-            displayName:user.displayName || 'New User',
-            registeredAt:moment().unix(),
-            isAdmin:false,
-            isConfirmed:false,
-            preferences:{
-              themes:{
-                basic:true,
-              }
-            }
-        })
+      let userObj:any = {
+        email:user.email,
+        displayName:user.displayName || user.email.split('@')[0],
+        registeredAt:moment().unix(),
+        isAdmin:false,
+        isConfirmed:false,
+        preferences:{
+          themes:{
+            basic:true,
+            nature:true,
+          }
+        }
+      }
+      
+      return admin.firestore().collection('users').doc(user.uid).set(userObj)
         .then(()=>{
             const basicSubscription = {
                 type: "basic",

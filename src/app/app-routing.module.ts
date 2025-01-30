@@ -45,30 +45,11 @@ const routes: Routes = [
     loadChildren: () => import('./auth/pages/not-authorized/not-authorized.module').then( m => m.NotAuthorizedPageModule)
   },
   {
-    path: 'landing',
-    loadChildren: () => import('./pages/landing/landing.module').then( m => m.LandingPageModule)
-  },
-  {
     path: 'account',
     loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
     canActivate: [AuthGuard],
   },
-  {
-    path: 'info-modal',
-    loadChildren: () => import('./components/modals/info-modal/info-modal.module').then( m => m.InfoModalPageModule)
-  },
-  {
-    path: 'options-modal',
-    loadChildren: () => import('./components/modals/options-modal/options-modal.module').then( m => m.OptionsModalPageModule)
-  },
-  {
-    path: 'avatar',
-    loadChildren: () => import('./pages/test-pages/avatar/avatar.module').then( m => m.AvatarPageModule)
-  },
-  {
-    path: 'backup-modal',
-    loadChildren: () => import('./components/modals/backup-modal/backup-modal.module').then( m => m.BackupModalPageModule)
-  },
+  
   {
     path: 'trainer/cases',
     loadChildren: () => import('./trainer/trainer-cases/trainer-cases.module').then( m => m.TrainerCasesPageModule),
@@ -82,6 +63,45 @@ const routes: Routes = [
     path: 'trainer/courses',
     loadChildren: () => import('./trainer/trainer-courses/trainer-courses.module').then( m => m.TrainerCoursesPageModule),
     canActivate: [AdminGuard,TrainerGuard],
+  },
+  
+  {
+    path: 'trainer/info-items',
+    loadChildren: () => import('./trainer/trainer-info-items/trainer-info-items.module').then( m => m.TrainerInfoItemsPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'bagend/engine',
+    loadChildren: () => import('./bagend/engine/engine.module').then( m => m.EnginePageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'trainer/users',
+    loadChildren: () => import('./trainer/trainer-users/trainer-users.module').then( m => m.TrainerUsersPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'course/:course_id',
+    loadChildren: () => import('./pages/course/course.module').then( m => m.CoursePageModule)
+  },
+
+  {
+    path: 'bagend/conversations',
+    loadChildren: () => import('./bagend/search-conversations/search-conversations.module').then( m => m.SearchConversationsPageModule),
+    canActivate: [AdminGuard],
+  },
+
+  // rest of the routes
+  {
+    path: '**',
+    redirectTo: 'start',
+    pathMatch: 'full'
+  },
+
+  // modals
+  {
+    path: 'verification',
+    loadChildren: () => import('./components/modals/verification/verification.module').then( m => m.VerificationPageModule)
   },
   {
     path: 'input-fields',
@@ -104,25 +124,26 @@ const routes: Routes = [
     loadChildren: () => import('./components/modals/popover-menu/popover-menu.module').then( m => m.PopoverMenuPageModule)
   },
   {
-    path: 'trainer/info-items',
-    loadChildren: () => import('./trainer/trainer-info-items/trainer-info-items.module').then( m => m.TrainerInfoItemsPageModule),
-    canActivate: [AdminGuard,TrainerGuard],
+    path: 'info-modal',
+    loadChildren: () => import('./components/modals/info-modal/info-modal.module').then( m => m.InfoModalPageModule)
   },
   {
-    path: 'bagend/engine',
-    loadChildren: () => import('./bagend/engine/engine.module').then( m => m.EnginePageModule)
+    path: 'options-modal',
+    loadChildren: () => import('./components/modals/options-modal/options-modal.module').then( m => m.OptionsModalPageModule)
   },
- 
-
-
-
-
   {
-    path: '**',
-    redirectTo: 'start',
-    pathMatch: 'full'
+    path: 'backup-modal',
+    loadChildren: () => import('./components/modals/backup-modal/backup-modal.module').then( m => m.BackupModalPageModule)
   },
-  
+  {
+    path: 'rate-learning',
+    loadChildren: () => import('./components/modals/rate-learning/rate-learning.module').then( m => m.RateLearningPageModule)
+  },
+  {
+    path: 'search-conversations',
+    loadChildren: () => import('./bagend/search-conversations/search-conversations.module').then( m => m.SearchConversationsPageModule)
+  },
+
 
 
 

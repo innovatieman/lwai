@@ -9,6 +9,8 @@ import { BadgeComponent } from './badge/badge.component';
 import { LoaderComponent } from './loader/loader.component';
 import { GraphGaugeComponent } from './graph-gauge/graph-gauge.component';
 import { HighchartsChartModule } from 'highcharts-angular';
+import { StarRatingComponent } from './star-rating/star-rating.component';
+import { TooltipDirective } from './directives/tooltip.directive';
 // import { MenuPage } from './menu.page';
 
 @NgModule({
@@ -19,7 +21,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
     HighchartsChartModule,
 
   ],
-  declarations: [HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent],
-  exports:[HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent]
+  declarations: [HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective],
+  exports:[HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective]
 })
 export class ComponentsModule {}

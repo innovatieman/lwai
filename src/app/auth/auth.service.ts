@@ -18,7 +18,8 @@ export class AuthService {
   userRoles$: Observable<{ isAdmin: boolean, isConfirmed:boolean } | null>;
   userInfo:any = {}
   conversations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Conversaties als Observable
-  
+  userInfo$: BehaviorSubject<any | null> = new BehaviorSubject<any | null>(null);
+
   constructor(
     private nav: NavService,
     private toast: ToastService,
@@ -53,25 +54,36 @@ export class AuthService {
     });
     
     this.getUserInfo()
+
   }
 
+  // async getUserInfo(){
+  //   this.user$.subscribe(user => {
+  //     if(user){
+  //       this.firestore.doc(`users/${user.uid}`).valueChanges().subscribe((data:any) => {
+  //         this.userInfo = data
+  //         if(this.userInfo){
+  //           this.userInfo.uid = user.uid
+  //         }
+  //         // console.log(this.userInfo)
+  //       })
+  //     }
+  //   })
+  // }
 
-  //functie om de gebruikersnaam en email op te halen vanuit een page
-  
-  async getUserInfo(){
+  async getUserInfo() {
     this.user$.subscribe(user => {
-      if(user){
-        this.firestore.doc(`users/${user.uid}`).valueChanges().subscribe((data:any) => {
-          this.userInfo = data
-          if(this.userInfo){
-            this.userInfo.uid = user.uid
+      if (user) {
+        this.firestore.doc(`users/${user.uid}`).valueChanges().subscribe((data: any) => {
+          this.userInfo = data;
+          if (this.userInfo) {
+            this.userInfo.uid = user.uid;
           }
-          // console.log(this.userInfo)
-        })
+          this.userInfo$.next(this.userInfo); // Update de BehaviorSubject
+        });
       }
-    })
+    });
   }
-
   // Login met e-mail en wachtwoord
   async login(email: string, password: string): Promise<void> {
     try {
@@ -111,6 +123,8 @@ export class AuthService {
   // Registreer een nieuwe gebruiker
   async register(email: string, password: string): Promise<void> {
     try {
+      email = email.toLowerCase();
+      password = 'ProbeerAlicia1'
       await this.afAuth.createUserWithEmailAndPassword(email, password);
       this.nav.go('start')
       } catch (error) {

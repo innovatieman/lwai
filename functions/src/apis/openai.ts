@@ -9,6 +9,8 @@ import { config } from '../configs/config-basics';
 
 const openAiModal = 'gpt-4o';
 
+//firebase deploy --only functions:chatAI,functions:choicesAI,functions.factsAI,functions:backgroundAI,functions:phasesAI,functions:feedbackAI,functions:closingAI,functions:promptCheckerAI,functions:case_prompt,functions:goalAI
+
 exports.chatAI = onRequest( 
   { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
@@ -167,10 +169,14 @@ exports.choicesAI = onRequest(
         return res.status(400).send("No previous messages found");
       }
 
-      let messageText = '';
-      for(let i = 0; i < messages.length; i++){
-        messageText = messageText + messages[i].role + ': ' + cleanReactionMessage(messages[i].content) + '\n\n';
-      }
+      // let messageText = '';
+      // for(let i = 0; i < messages.length; i++){
+      //   messageText = messageText + '\n\n' + messages[i].role + 'prompt: ' + cleanReactionMessage(messages[i].content) + '\n\n';
+      // }
+      let messageText = JSON.stringify(messages);
+      let lastMessage =  cleanReactionMessage(messages[messages.length-1].content);
+
+
 
       const categoryRef = db.doc(`categories/${body.categoryId}`);
 
@@ -186,16 +192,25 @@ exports.choicesAI = onRequest(
 
       const categoryData = categorySnap.data();
 
+      // console.log('agent_instructions: ' + body.instructionType + ' /// ' + JSON.stringify(agent_instructions))
+
       let systemContent = agent_instructions.systemContent
+      systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
 
       let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title);
-      content = content.split('[messages]').join(messageText);
-      content = content + '\n\n' + formats.format + '\n\n' + formats.instructions;
+      content = content.split('[messages]').join(messageText).split('[lastMessage]').join(lastMessage);
       // content = content + '\n\n' + JSON.stringify(messagesToConversationString(messages,body.role));
 
       // res.write(content+'\n\n');
 
       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
+      
+      messageRef.add({
+        role: "system",
+        content: systemContent,
+        timestamp: new Date().getTime(),
+      });
+
       messageRef.add({
         role: "user",
         content: content,
@@ -814,23 +829,61 @@ exports.closingAI = onRequest(
       
 
       const categoryRef = db.doc(`categories/${body.categoryId}`);
+      const conversationRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
+      
 
-      const [agent_instructions,categorySnap,formats] = await Promise.all([
+      const [agent_instructions,categorySnap,formats,conversationSnap] = await Promise.all([
         getAgentInstructions(body.instructionType,body.categoryId),
         categoryRef.get(), 
-        getFormats(body.instructionType)
+        getFormats(body.instructionType),
+        conversationRef.get()
       ]);
 
       if (!categorySnap.exists) {
         throw new Error("Category not found");
       }
+      if(!conversationSnap.exists){
+        throw new Error("Conversation not found");
+      }
 
       const categoryData = categorySnap.data();
+      const conversationData = conversationSnap.data();
 
 
       let systemContent = agent_instructions.systemContent
       systemContent = systemContent.split(`[phases]`).join(JSON.stringify(categoryData['phaseList']));
       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
+
+      let content = agent_instructions.content.split('[messages').join(messageText);
+
+      let goalsItems = conversationData['goalsItems'];
+      let goals = ''
+      if(goalsItems.attitude){
+        goals = goals + '- Attitude: An attiude score higher or equal to ' + goalsItems.attitude + '\n\n';
+      }
+      if(goalsItems.free){
+        goals = goals + '- Goal: '+ goalsItems.free+'\n\n';
+      }
+      if(goalsItems.phases?.length>0){
+        
+        let phases = []
+        phases = await getPreviousMessages(body.userId, body.conversationId,'phases');
+        if (!phases || phases.length == 0) {
+          //phases = [{content:`no phases found`}];
+        }
+        else{
+          let lastPhase:any = JSON.parse(phases[phases.length-1].content);
+          goals = goals + '- Phases: \nGoal: The scores of the phases should be higher or equal to the following scores (in order of the phases of the conversation): ' + goalsItems.phases.join(', ') + '\n';
+          goals = goals + 'Actual: ' + lastPhase.element_levels.map((phase:any) => phase.score).join(', ') + '\n\n';
+        }
+        
+        
+        
+      }
+      if(goals == ''){
+        goals = 'No goals set for this conversation';
+      }
+      content = content.split('[goals]').join(goals);
 
       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
 
@@ -843,7 +896,7 @@ exports.closingAI = onRequest(
 
       sendMessages.push({
         role: "user",
-        content: agent_instructions.content.split('[messages').join(messageText),
+        content: content,
       })
 
       const completion = await openai.chat.completions.create({
@@ -854,6 +907,18 @@ exports.closingAI = onRequest(
       });
 
       const completeMessage = completion.choices[0].message.content;
+
+      // await messageRef.add({
+      //   role: "system",
+      //   content: systemContent,
+      //   timestamp: new Date().getTime(),
+      // });
+
+      // await messageRef.add({
+      //   role: "user",
+      //   content: content,
+      //   timestamp: new Date().getTime(),
+      // });
 
       await messageRef.add({
         role: "assistant",
@@ -1070,7 +1135,7 @@ exports.case_prompt = onRequest(
       const completeMessage = completion.choices[0].message.content
       
       let messageRef = db.collection(`users/${body.userId}/case_creations`);
-
+      
       await messageRef.add({
         agent: body.instructionType,
         usage: completion.usage,
@@ -1087,9 +1152,6 @@ exports.case_prompt = onRequest(
     }
   }
 );
-
-
-
 
 exports.goalAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
@@ -1212,8 +1274,12 @@ async function initializeConversation(
 ): Promise<any[]> {
   try {
     const categoryRef = db.doc(`categories/${categoryId}`);
-    const caseRef = db.doc(`cases/${caseId}`);
-
+    let caseRef = db.doc(`cases/${caseId}`);
+    if(data.trainerId){
+      caseRef = db.doc(`cases_trainer/${caseId}`);
+      console.log('trainer case');
+    }
+    console.log('trainerID: ' + data.trainerId);
     const [categorySnap, caseSnap, attitudes, positions, agent_instructions, userData,formats] = await Promise.all([
       categoryRef.get(),                  // Haal category op
       caseRef.get(),                      // Haal case op
@@ -1249,7 +1315,7 @@ async function initializeConversation(
     systemContent = systemContent + "\n\n" + formats.format + '\n\n' + formats.instructions;
 
     if(caseData.casus){
-      systemContent = systemContent + "\nDe casus is als volgt: " + caseData.casus;
+      systemContent = systemContent + "\nDe casus voor de gebruiker is als volgt: " + caseData.casus;
     }
 
     if(caseData.interest_goals){
@@ -1385,7 +1451,7 @@ async function checkUserSubscription(userId: string): Promise<boolean> {
     // Controleer op specifieke abonnementsvoorwaarden
     const validSubscriptions = snapshot.docs.filter((doc) => {
       const data = doc.data();
-      return data.status=='active' && (data.type === "premium" || data.type === "trial"); // Pas dit aan naar jouw logica
+      return data.status=='active' && (data.type === "premium" || data.type === "trial" || data.type === "student" ); // Pas dit aan naar jouw logica
     });
 
     return validSubscriptions.length > 0;

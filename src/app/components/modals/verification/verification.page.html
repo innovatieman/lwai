@@ -1,0 +1,20 @@
+<div header padding20 flex center-ver>
+  <h3 class="title" noMargin>Bevestigen</h3>
+  <span class="spacer"></span>
+  <ion-button (click)="dismiss(false)" fill="clear" color="dark" class="btn_dismiss">
+    <ion-icon name="close"></ion-icon>
+  </ion-button>
+</div>
+<div [innerHtml]="message" weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : '80vh'}"></div>
+
+<div flex center-hor basicPadding *ngIf="buttons.length==1">
+  <span class="spacer"></span>
+  <ion-button *ngFor="let btn of buttons" [color]="btn.color" [innerHTML]="btn.text" (click)="dismiss(btn.value)" [fill]="!btn.fill ? 'solid' : btn.fill"></ion-button>
+</div>
+
+<div flex center-hor basicPadding *ngIf="buttons.length>1">
+  <ng-template fullwidth ngFor let-btn let-last="last" [ngForOf]="buttons">
+    <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="dismiss(btn.value)" [fill]="!btn.fill ? 'solid' : btn.fill"></ion-button>
+    <span *ngIf="!last" class="spacer"></span>
+  </ng-template>
+</div>
