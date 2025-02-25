@@ -12,6 +12,7 @@ export class StarRatingComponent implements OnInit {
   @Input() fontSize: any = 50;
   @Output() ratingChanged = new EventEmitter<number>();
   @Input() starAmount: any = 5;
+  @Input() gridPadding: any = 5;
 
   stars: boolean[] = Array(5).fill(false);
   fullStars: number[] = Array(5).fill(0);

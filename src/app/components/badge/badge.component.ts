@@ -9,6 +9,7 @@ export class BadgeComponent  implements OnInit {
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() class: string = '';
+  @Input() achieved: boolean = false;
   constructor() { }
 
   ngOnInit() {}

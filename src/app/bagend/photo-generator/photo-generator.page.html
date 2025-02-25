@@ -1,0 +1,121 @@
+<app-header page="admin"></app-header>
+<main>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3">
+
+          <ion-card button noPadding borderRadius24 backgroundPrimary (click)="create()">
+            <ion-card-header center>
+              <ion-card-title text-light weight700>Create image</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+
+          <ion-card button noPadding borderRadius24 backgroundTertiary (click)="selectScript.open()">
+            <ion-card-header center>
+              <ion-card-title weight700>Start Script <span *ngIf="countingScript">({{countingScript}} / {{countingScriptMax}})</span> </ion-card-title>
+            </ion-card-header>
+          </ion-card>
+          <ion-select #selectScript id="selectScript" [(ngModel)]="changingType" (ionChange)="startScript()" hidden>
+            <ion-select-option value="gender">Genders</ion-select-option>
+            <ion-select-option value="ethnicity">Ethnicities</ion-select-option>
+            <ion-select-option value="age">Ages</ion-select-option>
+            <ion-select-option value="style">Styles</ion-select-option>
+            <ion-select-option value="occupation">Occupations</ion-select-option>
+          </ion-select>
+
+          <ion-card button noPadding borderRadius24 backgroundSecondary (click)="createWithPrompt()">
+            <ion-card-header center>
+              <ion-card-title text-light weight700>Unique Prompt</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Source</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="source" fullwidth>
+              <ion-item *ngFor="let s of sources" lines="none">
+                <ion-radio [value]="s">{{s}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Gender</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="gender" fullwidth>
+              <ion-item *ngFor="let g of genders" lines="none">
+                <ion-radio [value]="g">{{g}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Age</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="age" fullwidth>
+              <ion-item *ngFor="let a of ages" lines="none">
+                <ion-radio [value]="a">{{a}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Ethnicities</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="ethnicity" fullwidth>
+              <ion-item *ngFor="let e of ethnicitys" lines="none">
+                <ion-radio [value]="e">{{e}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Emotions</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="emotion" fullwidth>
+              <ion-item *ngFor="let e of emotions" lines="none">
+                <ion-radio [value]="e">{{e}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Styles</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="style" fullwidth>
+              <ion-item *ngFor="let s of styles" lines="none">
+                <ion-radio [value]="s">{{s}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+          <ion-card basicPadding borderRadius24>
+            <ion-card-header>
+              <ion-card-title weight700>Occupations</ion-card-title>
+            </ion-card-header>
+            <ion-radio-group [(ngModel)]="occupation" fullwidth>
+              <ion-item *ngFor="let o of occupations" lines="none">
+                <ion-radio [value]="o">{{o}}</ion-radio><br />
+              </ion-item>
+            </ion-radio-group>
+          </ion-card>
+
+      </ion-col>
+
+      <ion-col size="9">
+        <ion-row>
+
+          <ion-col size="2" *ngFor="let image of images | sortBy: 1 : 'timestamp'">
+            <img [src]="image.url" style="box-shadow:0 0 7px rgba(0,0,0,0.4);border-radius:24px;" (click)="enlarge(image)" pointer/>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

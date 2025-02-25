@@ -31,7 +31,7 @@ import { connectFirestoreEmulator, Firestore, getFirestore, initializeFirestore,
 import { ConfirmationModalComponent } from './components/modals/confirmation-modal/confirmation-modal.component';
 import { InfoModalPageModule } from './components/modals/info-modal/info-modal.module';
 import { QuillModule } from 'ngx-quill';
-
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 @NgModule({
   declarations: [AppComponent,MenuPage,ConfirmationModalComponent],
@@ -71,6 +71,9 @@ import { QuillModule } from 'ngx-quill';
       },
       placeholder:'Vul hier je tekst...'
     }),
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production
+    })
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

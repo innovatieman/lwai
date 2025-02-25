@@ -37,7 +37,7 @@ export class MenuPage implements OnInit {
       icon: 'faUser',
       isVisitor:false,
       isAdmin:true,
-      isUser:false
+      isUser:true
     },
     {
       title: 'Register',
@@ -108,7 +108,9 @@ export class MenuPage implements OnInit {
     }
     const path = window.location.pathname;
     this.auth.isAuthenticated().subscribe((auth) => {
-      this.isAuthenticated = auth;
+      if(auth){
+        this.isAuthenticated = true
+      }
     });
 
     this.auth.isAdmin().subscribe((admin) => {

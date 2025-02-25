@@ -61,7 +61,7 @@ export class InputFieldsPage implements OnInit {
     if(!moment(date).isValid()){
       return date
     }
-    return moment(date).format(this.translate.instant('date_format_long'))
+    return moment(date).locale('nl').format(this.translate.instant('date_formats.long'))
   }
 
   doNothing(){
@@ -135,13 +135,13 @@ export class InputFieldsPage implements OnInit {
   save(){
     for (let i=0;i<this.fields.length;i++) {
       if(this.fields[i].required&&!this.fields[i].value){
-        this.toast.show(this.fields[i].title + ' '+ this.translate.instant('modal_input_fields_required_field'),null,'middle')
+        this.toast.show('* '+ this.translate.instant('error_messages.required'),null,'middle')
         return
       }
       if(this.fields[i].pattern && this.fields[i].value){
         let reg = new RegExp(this.fields[i].pattern)
         if(!reg.test(this.fields[i].value)){
-          this.toast.show(this.fields[i].title + ' ' + this.translate.instant('modal_input_fields_invalid_field'),null,'middle')
+          this.toast.show(this.fields[i].title + ' ' + this.translate.instant('error_messages.invalid_input'),null,'middle')
           return
         }
       }

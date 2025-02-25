@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { Auth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { NavService } from '../services/nav.service';
 import { ToastService } from '../services/toast.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { SubscriptionsService } from '../services/subscriptions.service';
+import { FirestoreService } from '../services/firestore.service';
+import { ModalService } from '../services/modal.service';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -20,12 +23,21 @@ export class AuthService {
   conversations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Conversaties als Observable
   userInfo$: BehaviorSubject<any | null> = new BehaviorSubject<any | null>(null);
 
+  subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
+  private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
+  activeCourses: any[] = [];
+
+
   constructor(
     private nav: NavService,
     private toast: ToastService,
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
-    private subscriptionsService: SubscriptionsService
+    private firestoreService: FirestoreService,
+    private functions: AngularFireFunctions,
+    private modalService: ModalService,
+    private auth:Auth
+
   ) {
     this.user$ = this.afAuth.authState;
     this.userRoles$ = this.user$.pipe(
@@ -46,10 +58,10 @@ export class AuthService {
     );
     this.user$.subscribe((user) => {
       if (user) {
-        this.subscriptionsService.loadSubscriptions(user.uid);
+        this.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
       } else {
-        this.subscriptionsService.subscriptions$.next([]); // Leegmaken bij uitloggen
+        this.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
     });
     
@@ -85,10 +97,30 @@ export class AuthService {
     });
   }
   // Login met e-mail en wachtwoord
+  // async login(email: string, password: string): Promise<void> {
+  //   // this.logout()
+  //   try {
+  //     console.log(email,password)
+  //     await this.afAuth.signInWithEmailAndPassword(email, password);
+  //     this.nav.go('start');
+  //   } catch (error) {
+  //     console.error('Login error:', error);
+  //     this.toast.show('Login mislukt');
+  //     throw error;
+  //   }
+  // }
+
   async login(email: string, password: string): Promise<void> {
     try {
-      await this.afAuth.signInWithEmailAndPassword(email, password);
-      this.nav.go('start');
+      const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
+      await userCredential.user?.reload();
+  
+      if (userCredential.user?.emailVerified) {
+        this.nav.go('start');
+      } else {
+        console.log('User is not verified');
+        this.nav.go('wait-verify');
+      }
     } catch (error) {
       console.error('Login error:', error);
       this.toast.show('Login mislukt');
@@ -120,13 +152,33 @@ export class AuthService {
     }
   }
 
+  async loginWithFacebook(): Promise<void> {
+    try {
+      const provider = new FacebookAuthProvider();
+      await this.afAuth.signInWithPopup(provider);
+      this.nav.go('start')
+    } catch (error) {
+      console.error('Facebook login failed:', error);
+      this.toast.show('Login mislukt');
+      throw error;
+    }
+  }
+
+  reloadCredentials(){
+    this.afAuth.currentUser.then((user) => {
+      user?.reload()
+    })
+  }
+
+
   // Registreer een nieuwe gebruiker
   async register(email: string, password: string): Promise<void> {
     try {
       email = email.toLowerCase();
-      password = 'ProbeerAlicia1'
       await this.afAuth.createUserWithEmailAndPassword(email, password);
-      this.nav.go('start')
+
+      this.modalService.showText('Je ontvangt een e-mail om je account te verifiëren.','Registratie gelukt');
+      this.nav.go('wait-verify'); 
       } catch (error) {
         console.error('Register error:', error);
         this.toast.show('Registratie mislukt');
@@ -157,6 +209,20 @@ export class AuthService {
       this.toast.show('Apple Login Mislukt');
     }
   }
+
+  async registerWithFacebook() {
+    const provider = new FacebookAuthProvider();
+    try {
+      const userCredential = await this.afAuth.signInWithPopup(provider);
+      console.log('Facebook Login Succes:', userCredential.user);
+      this.nav.go('start')
+    } catch (error) {
+      console.error('Facebook Login Mislukt:', error);
+      this.toast.show('Facebook Login Mislukt');
+    }
+  }
+
+
   // Uitloggen
   async logout(): Promise<void> {
     try {
@@ -181,12 +247,15 @@ export class AuthService {
 
 
   // Controleer of een gebruiker geauthenticeerd is
-  isAuthenticated(): Observable<boolean> {
-    return this.user$.pipe(
-      map((user) => !!user) // Retourneer true als een gebruiker is ingelogd
-    );
-  }
+  // isAuthenticated(): Observable<boolean> {
+  //   return this.user$.pipe(
+  //     map((user) => !!user) // Retourneer true als een gebruiker is ingelogd
+  //   );
+  // }
 
+  isAuthenticated(): Observable<User | null> {
+    return user(this.auth); // Haalt de huidige gebruiker op uit Firebase
+  }
 
   // Controleer of een gebruiker admin is
   isAdmin(): Observable<boolean> {
@@ -223,4 +292,136 @@ export class AuthService {
   getConversations(): Observable<any[]> {
     return this.conversations$.asObservable();
   }
+
+
+  public loadSubscriptions(userId: string) {
+      // quesry subscriptions where status is active
+      this.firestore
+        .collection(`users/${userId}/subscriptions`, ref => ref.where('status', '==', 'active'))
+        .valueChanges({ idField: 'id' }) // Voeg het ID toe aan elk document
+        .subscribe((subscriptions) => {
+          this.subscriptions$.next(subscriptions); // Update de BehaviorSubject
+          this.subscriptionsLoaded.next(true);
+        });
+    }
+  
+    areSubscriptionsLoaded(): Observable<boolean> {
+      return this.subscriptionsLoaded.asObservable();
+    }
+    // Geef een Observable terug van de abonnementen
+    getSubscriptions(): Observable<any[]> {
+      return this.subscriptions$.asObservable();
+    }
+  
+    // Controleer of er een actief abonnement is
+    hasActiveSubscription(): Observable<boolean> {
+      return this.subscriptions$.pipe(
+        map((subscriptions) =>
+          subscriptions.some((sub:any) => {
+            sub.status === 'active'
+        })
+        )
+      );
+    }
+  
+    hasActive(type:string): Observable<boolean> {
+      return this.subscriptions$.pipe(
+        map((subscriptions) =>
+          subscriptions.some((sub) => sub.status === 'active' && sub.type === type)
+        )
+      );
+    }
+  
+    async upgradeSubscription(type:string,paymentMethod:string,callback:Function){
+      await this.modalService.showConfirmation('Are you sure you want to upgrade your subscription?').then(async (result) => {
+        if(result){
+          await this.functions.httpsCallable('addSubscription')({type:type,days:30,paymentMethod:paymentMethod}).subscribe(async (data:any) => {
+            callback(data)
+          })
+        }
+      })
+    }
+  
+    getActiveCourses(userId: string) {
+      this.activeCourses = [];
+    
+      // Haal de activeCourseIds direct op uit this.userInfo
+      const courseObservables = this.userInfo.activeCourseIds.map((courseId:string) =>
+        this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
+      );
+    
+      // Combineer alle observables
+      combineLatest(courseObservables).subscribe((courses:any) => {
+        const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
+    
+        courses.forEach((course: any) => {
+          let item: any = course.payload.data();
+          if(item){
+            item.id = course.payload.id;
+            if (item.status === 'active' && !uniqueCourses.has(item.id)) {
+              uniqueCourses.set(item.id, item);
+            }
+          }
+        });
+    
+        // Converteer de unieke waarden naar een array
+        this.activeCourses = Array.from(uniqueCourses.values());
+      });
+    }
+
+
+    // getActiveCourses(userId: string) {
+    //   this.activeCourses = [];
+    
+    //   this.subscriptions$.pipe(
+    //     map((subscriptions) =>
+    //       subscriptions
+    //         .filter((sub) => sub.status === 'active' && sub.type === 'student')
+    //         .map((sub) => sub.courseIds)
+    //     ),
+    //     map((courseIds) => courseIds.flat()), // Alle courseIds vlak maken
+    //     map((courseIds) => 
+    //       courseIds.map((courseId) => 
+    //         this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
+    //       )
+    //     ),
+    //     switchMap((courseObservables) => combineLatest(courseObservables)) // Combineer live updates
+    //   ).subscribe((courses) => {
+    //     const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
+    
+    //     courses.forEach((course: any) => {
+    //       let item: any = course.payload.data();
+    //       item.id = course.payload.id;
+    
+    //       if (item.status === 'active' && !uniqueCourses.has(item.id)) {
+    //         uniqueCourses.set(item.id, item);
+    //       }
+    //     });
+    
+    //     // Converteer de unieke waarden naar een array
+    //     this.activeCourses = Array.from(uniqueCourses.values());
+    //   });
+    // }
+  
+    getActiveCourse(courseId:string){
+      return this.activeCourses.find((course) => course.id === courseId)
+    }
+  
+    publicCourses: any[] = [];
+    getPublicCourses(){
+      return this.firestoreService.query('active_courses','public',true).subscribe((courses) => {
+        this.publicCourses = courses.map((course:any) => {
+          return { id: course.payload.doc.id, ...course.payload.doc.data() }
+        })
+        // console.log(this.publicCourses)
+      })
+    }
+  
+    getPublicCourse(courseId:string){
+      return this.publicCourses.find((course) => course.id === courseId)
+    }
+
+
+
+
 }

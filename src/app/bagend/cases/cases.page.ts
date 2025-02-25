@@ -28,10 +28,14 @@ export class CasesPage implements OnInit {
   // newConversation: string = ''
   showBackups:boolean = false
   backupDate: number = 0
+  extraFilters: any = {
+    open_to_user: [true]
+  }
+  searchTerm: string = '';
   constructor(
     public firestore:FirestoreService,
     public icon:IconsService,
-    private modal:ModalService,
+    private modalService:ModalService,
     public backupService:BackupService,
     public helpers:HelpersService,
     public translate:TranslateService,
@@ -44,9 +48,21 @@ export class CasesPage implements OnInit {
 
 
   ngOnInit() {
-    this.loadCases()
+    this.loadCases(()=>{
+      let checkInt = setInterval(() => {
+        if(this.infoService.conversation_types.length){
+          clearInterval(checkInt)
+          for(let i = 0; i < this.cases.length; i++){
+            this.cases[i].conversationTypes = this.infoService.getConversationType('',this.cases[i].types,true)
+          }
+        }
+      }, 200);
+    })
     this.loadCategories()
   }
+
+
+
 
   private loadCases(callback?:Function) {
     this.firestore.get('cases').subscribe((cases) => {
@@ -81,10 +97,10 @@ export class CasesPage implements OnInit {
     this.caseItem = casus
   }
 
-  update(field?:string){
+  update(field?:string,isArray:boolean = false){
     const scrollPosition = window.scrollY;
     if(field){
-      this.firestore.set('cases',this.caseItem.id,this.caseItem[field],field).then(()=>{
+      this.firestore.set('cases',this.caseItem.id,this.caseItem[field],field,isArray).then(()=>{
         setTimeout(() => {
           window.scrollTo(0, scrollPosition);
         }, 100);
@@ -187,7 +203,7 @@ export class CasesPage implements OnInit {
       caseItem.existing = true
     }
 
-    this.modal.showConversationStart({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...caseItem}).then((res:any)=>{
+    this.modalService.showConversationStart({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...caseItem}).then((res:any)=>{
           
       if(res && !res.id){
         delete res.admin
@@ -250,7 +266,7 @@ export class CasesPage implements OnInit {
   // }
 
   deleteCase(){
-    this.modal.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
+    this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
       if(result){
         this.firestore.delete('cases',this.caseItem.id)
         this.caseItem = {}
@@ -261,7 +277,7 @@ export class CasesPage implements OnInit {
 
   getBackups(type:string,agent:string){
     this.backupService.getBackups(type,agent,(backups:any)=>{
-      this.modal.backups(this.backupService.backups,{},'Select a backup to restore',(response:any)=>{
+      this.modalService.backups(this.backupService.backups,{},'Select a backup to restore',(response:any)=>{
         if(response.data){
             console.log(response.data)
             this.cases = response.data.content
@@ -279,7 +295,7 @@ export class CasesPage implements OnInit {
   }
 
   returnBackup(obj:any){
-    this.modal.showConfirmation('Are you sure you want to restore this backup?').then((result:any) => {
+    this.modalService.showConfirmation('Are you sure you want to restore this backup?').then((result:any) => {
       if(result){
         delete obj.id
         this.firestore.create('cases',obj).then(()=>{
@@ -291,4 +307,77 @@ export class CasesPage implements OnInit {
 
   }
 
+  selectTypes(types:string[] = []){
+    console.log(types)
+    // types = ['family','politics']
+    let items:any =[]; 
+    for(let i = 0; i < this.infoService.conversation_types.length; i++){
+      if(this.infoService.conversation_types[i].subjects?.length){
+        items.push(this.infoService.conversation_types[i])
+      }
+    }
+    let obj:any = {
+      list:items,
+      subList:'subjects',
+      title:'Selecteer één of meerdere typen',
+      value:types ? types : [],
+    }
+    this.modalService.selectMany(obj,(result:any)=>{
+      console.log(result)
+      if(result.data){
+        this.caseItem.types = result.data
+        this.update('types',true)
+      }
+    })
+  }
+
+  get currentFilterTypes() {
+    return this.filterTypes();
+  }
+
+
+  filterTypes() {
+    let filter: any = {
+      types: [],
+      subjects: [],
+      subjectTypes: {}
+    };
+  
+    for (let i = 0; i < this.infoService.conversation_types.length; i++) {
+      if (this.infoService.conversation_types[i].selected) {
+        const conversationTypeId = this.infoService.conversation_types[i].id;
+        filter.types.push(conversationTypeId);
+  
+        // Maak een lijst van subjects per conversationType
+        filter.subjectTypes[conversationTypeId] = [];
+  
+        for (let j = 0; j < this.infoService.conversation_types[i].subjects.length; j++) {
+          if (this.infoService.conversation_types[i].subjects[j].selected) {
+            filter.subjects.push(this.infoService.conversation_types[i].subjects[j].id);
+            filter.subjectTypes[conversationTypeId].push(this.infoService.conversation_types[i].subjects[j].id);
+          }
+        }
+      }
+    }
+  
+    return filter;
+  }
+
+  toggleFilter(filter:any,value:any){
+    if(this.extraFilters[filter].indexOf(value) > -1){
+      this.extraFilters[filter].splice(this.extraFilters[filter].indexOf(value),1)
+    }
+    else{
+      this.extraFilters[filter].push(value)
+    }
+  }
+  filterActive(filter:any,value:any){
+    return this.extraFilters[filter].indexOf(value) > -1
+  }
+
+
+  check(event:any){
+    event.preventDefault()
+    event.stopPropagation()
+  }
 }

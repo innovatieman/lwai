@@ -10,11 +10,12 @@ export class FilterKeyPipe implements PipeTransform {
     if(!array||!key){
       return []
     }
+
     if(!value&&value!==0&&value!==false){return array}
+      // console.log(array,key,value)
     let nwArr=[]
     for(let i=0;i<array.length;i++){
-      if(typeof value=='string'|| typeof value=='boolean' || typeof value=='number'){
-        
+      if(typeof value=='string'|| typeof value=='boolean' || typeof value=='number'){        
         if(value=='empty'){
           if(key.indexOf('.')>-1){
             let keys=key.split('.')
@@ -99,7 +100,7 @@ export class FilterKeyPipe implements PipeTransform {
         else if(key.substring(0,1)=='!'){
           if(key.indexOf('.')>-1){
             let keys=key.split('.')
-            if(array[i][keys[0]][keys[1]]!=value){
+            if(array[i][keys[0].substring(1)][keys[1]]!=value){
               nwArr.push(array[i])
             }
           }
@@ -120,20 +121,28 @@ export class FilterKeyPipe implements PipeTransform {
         }
       }
       else{
-        if(value.indexOf('!')==0){
+        if(value.length<1){
+          return array
+        }
+        if(key.substring(0,1)=='!'){
           if(key.indexOf('.')>-1){
             let keys=key.split('.')
-            if(array[i][keys[0]][keys[1]]!=value.substring(1)){
-              nwArr.push(array[i])
-            }
+              if(value.indexOf(array[i][keys[0]][keys[1]])==-1){
+                nwArr.push(array[i])
+              }
+            // if(array[i][keys[0]][keys[1]]!=value.substring(1)){
+            //   nwArr.push(array[i])
+            // }
           }
-          else if(array[i][key]!=value.substring(1)){
+          // else if(array[i][key]!=value.substring(1)){
+          else if(value.indexOf(array[i][key.substring(1)])==-1){
             nwArr.push(array[i])
           }
         }
         else{
 
           if(typeof array[i][key]=='string'|| typeof array[i][key]=='boolean' || typeof array[i][key]=='number'){
+            // console.log(typeof array[i][key],array[i][key])
             if(key.indexOf('.')>-1){
               let keys=key.split('.')
               if(value.indexOf(array[i][keys[0]][keys[1]])>-1){
@@ -141,6 +150,8 @@ export class FilterKeyPipe implements PipeTransform {
               }
             }
             else if(value.indexOf(array[i][key])>-1){
+              // console.log(array[i])
+
               nwArr.push(array[i])
             }
           }
@@ -148,14 +159,14 @@ export class FilterKeyPipe implements PipeTransform {
             if(key.indexOf('.')>-1){
               let keys=key.split('.')
               for(let j=0;j<array[i][keys[0]][keys[1]].length;j++){
-                if(value.indexOf(array[i][keys[0]][keys[1]][j])>-1){
+                if(value.indexOf(array[i][keys[0]][keys[1]][j])>-1 || array[i][keys[0]][keys[1]][j] =='all'){
                   nwArr.push(array[i])
                 }
               }
             }
             else{
               for(let j=0;j<array[i][key].length;j++){
-                if(value.indexOf(array[i][key][j])>-1){
+                if(value.indexOf(array[i][key][j])>-1 || array[i][key][j]=='all'){
                   nwArr.push(array[i])
                 }
               }

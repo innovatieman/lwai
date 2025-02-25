@@ -4,29 +4,49 @@ import * as responder from '../utils/responder'
 
 exports.get_public_info = functions.region('europe-west1').https.onCall((data:any,context:any)=>{
     if(!context.auth){
-        return {error:'Not authorized',code:401}
+      return new responder.Message('Not authorized',401)
     }
     if(!data.type){
         return new responder.Message('No type provided',400)
     }
-
     if(data.type=='public_info'){
         if(data.collection&&data.document,data.field){
-            return fieldIsAuthorized(data.collection,data.document,data.field)
+            return fieldIsAuthorized(data.collection,data.document,data.field,data.subCollection,data.subDoc)
             .then(async (result)=>{
                 if(!result){
                     return new responder.Message('Not authorized',401)
                 }
-                const docRef = admin.firestore().collection(data.collection).doc(data.document)
-                let docData = await docRef.get()
-                if(!docData.exists){
-                    return new responder.Message('Document not found',404)
+                
+                if(data.subCollection&&data.subDoc){
+                    const docRef = admin.firestore().collection(data.collection).doc(data.document).collection(data.subCollection).doc(data.subDoc)
+                    let docData = await docRef.get()
+                    if(!docData.exists){
+                        return new responder.Message('Document not found',404)
+                    }
+                    let doc = docData.data()
+                    if(!doc[data.field]&&data.field!='all'){
+                        return new responder.Message('Field not found',404)
+                    }
+                    if(data.field=='all'){
+                        return new responder.Message(doc)
+                    }
+                    return new responder.Message(doc[data.field])
                 }
-                let doc = docData.data()
-                if(!doc[data.field]){
-                    return new responder.Message('Field not found',404)
+                else{
+                  const docRef = admin.firestore().collection(data.collection).doc(data.document)
+                  let docData = await docRef.get()
+                  if(!docData.exists){
+                      return new responder.Message('Document not found',404)
+                  }
+                  let doc = docData.data()
+                  if(!doc[data.field]&&data.field!='all'){
+                      return new responder.Message('Field not found',404)
+                  }
+                  if(data.field=='all'){
+                      return new responder.Message(doc)
+                  }
+                  return new responder.Message(doc[data.field])
                 }
-                return new responder.Message(doc[data.field])
             })
         }
         else{
@@ -39,18 +59,42 @@ exports.get_public_info = functions.region('europe-west1').https.onCall((data:an
 })
 
 
-async function fieldIsAuthorized(collection:string,doc:string,field:string){
+async function fieldIsAuthorized(collection:string,doc:string,field:string,subCollection?:string,subDoc?:string){
     
+
     const docRef = admin.firestore().collection('public_info').doc(collection)
     const docData = await docRef.get()
     if(!docData.exists){
         return false
     }
     const docFields = docData.data()
-    if(docFields?.documents[doc]?.includes(field)){
+
+    if(subCollection&&subDoc){
+        if(docFields?.subcollections){
+            if(docFields?.subcollections[subCollection]&&docFields?.subcollections[subCollection][subDoc]){
+                if(docFields?.subcollections[subCollection][subDoc]?.includes(field)){
+                    return true
+                }
+                if(docFields?.subcollections[subCollection][subDoc]?.includes('all')){
+                    return true
+                }
+            }
+            if(docFields?.subcollections[subCollection].all){
+                if(docFields?.subcollections[subCollection]['all']?.includes(field)){
+                    return true
+                }
+                if(docFields?.subcollections[subCollection]['all']?.includes('all')){
+                    return true
+                }
+            }
+
+
+        }
+    }
+    else if(docFields?.documents[doc]?.includes(field)){
         return true
     }
-    if(docFields?.documents['all']?.includes(field)){
+    else if(docFields?.documents['all']?.includes(field)){
         return true
     }
     return false

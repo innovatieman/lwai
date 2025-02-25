@@ -1,6 +1,6 @@
 
 <div class="star-rating">
-  <ion-grid>
+  <ion-grid [ngStyle]="{'padding':gridPadding}">
     <ion-row class="stars">
       <ion-col align-center [size]="(12/stars.length)" *ngFor="let star of stars; let i = index" (click)="rate(i + 1)" [class]="starClass(i,rating)" [ngClass]="{'read-only':readOnlyItem,'writable':!readOnlyItem}" [ngStyle]="{'font-size' : fontSize+'px'}">
         <svg viewBox="0 0 576 512" width="100" title="star" [ngStyle]="{'width' : fontSize+'px'}">

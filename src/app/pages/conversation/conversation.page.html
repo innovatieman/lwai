@@ -10,7 +10,7 @@
             <fa-icon [icon]="icon.get('faArrowLeft')" ></fa-icon>
           </ion-button>
         </ion-buttons>      -->
-        <div flex center-ver center-left>
+        <div flex center-ver center-left style="padding: 0px 15px;">
           <img src="assets/icon/logo_full_black_sm.png" style="height: 30px; margin-right: 10px;min-width:136px;">
           <!-- <div style="font-size: 24px;" *ngIf="!conversation.dialog_role">{{'The conversation' | uppercase}}</div>
           <div style="font-size: 24px;" *ngIf="conversation.dialog_role">{{conversation.dialog_role | uppercase}}</div> -->
@@ -114,6 +114,8 @@
           <div [ngStyle]="{'width':media.screenSize=='md' ? '20%' : '50%'}"></div>
           <ion-card class="imageCard" *ngIf="interaction=='chat'&&conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(' + conversation.activeConversation.photo + ')'}" flex center-hor>
           </ion-card>
+          <ion-card class="imageCard" *ngIf="interaction=='chat'&&!conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}" flex center-hor>
+          </ion-card>
         </div>
 
         <div class="leftDetails">
@@ -209,7 +211,7 @@
       
                       <div class="chatUserInfo" *ngIf="message.role === 'user'">
                         <div     *ngIf="conversation.getFeedbackChat(index,'feedbackCipher')" class="userCipher" [ngClass]="{'high':conversation.getFeedbackChat(index,'feedbackCipher')>=8,'low':conversation.getFeedbackChat(index,'feedbackCipher')&&conversation.getFeedbackChat(index,'feedbackCipher')<5}">{{conversation.getFeedbackChat(index,'feedbackCipher')}}</div>
-                        <fa-icon *ngIf="conversation.getFeedbackChat(index,'feedbackCipher')" [icon]="icon.get('faInfoCircle')" pointer class="chatUserIcon" (click)="modal.showText(conversation.getFeedbackChat(index,'feedback'),'Feedback')"></fa-icon>
+                        <fa-icon *ngIf="conversation.getFeedbackChat(index,'feedbackCipher')" [icon]="icon.get('faInfoCircle')" pointer class="chatUserIcon" (click)="showFeedbackModal(index)"></fa-icon>
                       </div>
 
                       <div class="chatUser" *ngIf="message.role === 'user'">
@@ -247,6 +249,11 @@
       
           </ion-row>
         </div>
+          <div *ngIf="analyzing||record.analyzing" class="analyzer">
+            <div class="pulse-loader">
+              Processing...
+            </div>
+          </div>
       
         <div *ngIf="started" class="bottomPart">
           <ion-row noPadding>
@@ -256,20 +263,19 @@
               <ion-card class="inputCard" noMargin>
                 <ion-textarea [disabled]="conversation.activeConversation.closed" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
                   <ion-spinner *ngIf="loadingTextFromAudio" slot="end" name="dots"></ion-spinner>
-                  <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px"
-                    (mousedown)="startRecordingAudio()"
-                    (mouseup)="stopRecordingAudio()"
-                    (mouseleave)="stopRecordingAudio()">
-                   
+                  <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="!record.recording ? startRecording() : stopRecording()">
+                  <!-- <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="!recording ? start() : stop()"> -->
                     <fa-icon slot="icon-only" *ngIf="!record.recording" [icon]="icon.get('faMicrophone')" pointer></fa-icon>
                     <fa-icon slot="icon-only" *ngIf="record.recording" [icon]="icon.get('faStop')" pointer></fa-icon>
+                    <!-- <fa-icon slot="icon-only" *ngIf="!recording" [icon]="icon.get('faMicrophone')" pointer></fa-icon> -->
+                    <!-- <fa-icon slot="icon-only" *ngIf="recording" [icon]="icon.get('faStop')" pointer></fa-icon> -->
                   </ion-button>
-                  <ion-button class="processingBtn" fill="clear" color="secondary" slot="end" *ngIf="analyzing" >
+                  <!-- <ion-button class="processingBtn" fill="clear" color="secondary" slot="end" *ngIf="analyzing||record.analyzing" >
                     <div flex flex-column center-ver center-hor>
                       <ion-spinner></ion-spinner>
                       <span style="font-size:8px;">Processing</span>
                     </div>
-                  </ion-button>
+                  </ion-button> -->
                 </ion-textarea>
               </ion-card>
             </ion-col>
@@ -297,7 +303,8 @@
                 </ion-col>
     
                 <ion-col size="6" noPadding>
-                  <ion-button color="success" class="sendButton" fill="solid" (click)="endConversation()">
+                  <!-- <ion-button color="success" class="sendButton" fill="solid" (click)="endConversation()"> -->
+                  <ion-button color="secondary" fill="clear" (click)="endConversation()">
                     <fa-icon slot="icon-only" [icon]="icon.get('faDoorOpen')" pointer></fa-icon>
                   </ion-button>
                 </ion-col>

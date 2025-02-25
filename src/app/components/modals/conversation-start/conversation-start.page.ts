@@ -87,6 +87,7 @@ export class ConversationStartPage implements OnInit {
   }
 
   async slide(nr:number,back?:boolean,start?:boolean){
+    this.toast.hideTooltip()
     let checkNr = nr-1
     if(back){checkNr = nr +1}
 
@@ -134,9 +135,9 @@ export class ConversationStartPage implements OnInit {
         if(!this.promptChecked&&!this.caseItem.casus&&!this.inputEmpty()&&!this.caseItem.existing){
           this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
           if(!this.caseItem.admin){
-            let text = this.generateReadableText()
-            let output = await this.getPromptOpenAI(text)
-            this.caseItem.casus = output
+            // let text = this.generateReadableText()
+            // let output = await this.getPromptOpenAI(text)
+            // this.caseItem.casus = output
             this.promptChecked = true
           }
           else{
@@ -166,7 +167,7 @@ export class ConversationStartPage implements OnInit {
     if(!this.caseItem.photo){
       this.caseItem.photo = ''
     }
-
+    this.toast.hideTooltip()
     this.modalCtrl.dismiss(this.caseItem)
   }
 
@@ -181,35 +182,68 @@ export class ConversationStartPage implements OnInit {
       **Rol:** ${this.caseItem.role || "Niet ingevuld"}
       _Wie is de gesprekspartner in deze casus en wordt dus gespeeld door de AI-assistent?_
   
-      **Casus / Issue:** ${this.caseItem.description || "Niet ingevuld"}
-      _Beschrijf de casus / issue. Zo gedetailleerd mogelijk._
+      `
+      if(this.caseItem.description){
+        readableText += `**Beschrijving:** ${this.caseItem.description}
+        _Beschrijf de casus / issue. Zo gedetailleerd mogelijk._
   
-      **Functie:** ${this.caseItem.function || "Niet ingevuld"}
-      _Wat is de functie van de persoon en welke rol vervult deze in relatie tot het probleem?_
+        `
+      }
+      if(this.caseItem.user_role){
+        readableText += `Rol Gebruiker: ${this.caseItem.user_role}
+        _Beschrijf vanuit welke rol de gebruiker het gesprek aangaat._
   
-      **Visie:** ${this.caseItem.vision || "Niet ingevuld"}
-      _Hoe kijkt deze persoon tegen het issue/de casus aan?_
+        ` 
+
+      }
+      if(this.caseItem.function){
+        readableText += `**Functie:** ${this.caseItem.function}
+        _Wat is de functie van de persoon en welke rol vervult deze in relatie tot het probleem?_
   
-      **Belangen:** ${this.caseItem.interests || "Niet ingevuld"}
-      _Wat is voor deze persoon belangrijk in relatie tot het probleem? Heeft hij/zij specifieke vragen en/of zorgen?_
+        `
+      }
+      if(this.caseItem.vision){
+        readableText += `**Visie:** ${this.caseItem.vision}
+        _Hoe kijkt deze persoon tegen het issue/de casus aan?_
   
-      **Communicatiestijl:** ${this.caseItem.communicationStyle || "Niet ingevuld"}
-      _Hoe ervaar jij de communicatiestijl van deze persoon?_
+        `
+      }
+      if(this.caseItem.interests){
+        readableText += `**Interesses:** ${this.caseItem.interests}
+        _Wat is voor deze persoon belangrijk in relatie tot het probleem? Heeft deze specifieke vragen en/of zorgen?_
   
-      **Externe factoren:** ${this.caseItem.externalFactors || "Niet ingevuld"}
-      _Zijn er externe factoren die van invloed zijn op de houding van de persoon?_
+        `
+      }
+      if(this.caseItem.communicationStyle){
+        readableText += `**Communicatiestijl:** ${this.caseItem.communicationStyle}
+        _Hoe ervaar jij de communicatiestijl van deze persoon?_
   
-      **Historie:** ${this.caseItem.history || "Niet ingevuld"}
-      _Zijn er andere onderwerpen waar je deze persoon recent over hebt gesproken? Zo ja, waarover en hoe verliepen deze?_
+        `
+      }
+      if(this.caseItem.externalFactors){
+        readableText += `**Externe factoren:** ${this.caseItem.externalFactors}
+        _Zijn er externe factoren die van invloed zijn op de houding van de persoon?_
   
-      **Avatar Details**:
+        `
+      }
+      if(this.caseItem.history){
+        readableText += `**Historie:** ${this.caseItem.history}
+        _Zijn er andere onderwerpen waar je deze persoon recent over hebt gesproken? Zo ja, waarover en hoe verliepen deze?_
   
-      **Houding:** ${this.caseItem.attitude ? this.info.getAttitude(this.caseItem.attitude)?.title : "Niet ingesteld"}
-      _Hoe is de kwaliteit van jouw relatie met deze persoon?_
+        `
+      }
+      if(this.caseItem.attitude){
+        readableText += `**Houding:** ${this.caseItem.attitude}
+        _Hoe is de kwaliteit van jouw relatie met deze persoon?_
   
-      **Standvastigheid:** ${this.caseItem.steadfastness ? `${this.caseItem.steadfastness}%` : "Niet ingesteld"}
-      _Hoe standvastig is deze persoon (0% = Vindt alles wat jij vindt, 100% = Zal nooit iets anders vinden)?_
-    `;
+        `
+      }
+      if(this.caseItem.steadfastness){
+        readableText += `**Standvastigheid:** ${this.caseItem.steadfastness}
+        _Hoe standvastig is deze persoon (0% = Vindt alles wat jij vindt, 100% = Zal nooit iets anders vinden)?_
+  
+        `
+      }
   
     return readableText.trim();
   }
@@ -273,7 +307,7 @@ export class ConversationStartPage implements OnInit {
   }
 
   showStep(step:number){
-    console.log(step)
+    // console.log(step)
     if(this.caseItem.admin){
       return true
     }
@@ -345,10 +379,6 @@ export class ConversationStartPage implements OnInit {
       }
     
     }
-  }
- 
-  showTooltip(event:any,textItem:string){
-    this.toast.showTooltip(event,this.translate.instant(textItem))
   }
 
 }

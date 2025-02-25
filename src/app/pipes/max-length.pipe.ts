@@ -5,9 +5,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class MaxLengthPipe implements PipeTransform {
 
-  transform(value: any, max?:any,ellipses?:boolean): unknown {
-    if(!value||!max){return value};
-    // let nwArr:any[] = JSON.parse(JSON.stringify(value))
+  transform(value: any, max?:any,ellipses?:boolean): any {
+    if(!value||max===undefined||max===null){return value};
     if(typeof value === 'string'){
       if(value.length<=max){return value}
       if(ellipses){
@@ -15,7 +14,8 @@ export class MaxLengthPipe implements PipeTransform {
       }
       return value.substring(0,max)
     }
-    return value.splice(0,max)
+    let nwArr:any[] = JSON.parse(JSON.stringify(value))
+    return nwArr.splice(0,max)
   }
 
 }

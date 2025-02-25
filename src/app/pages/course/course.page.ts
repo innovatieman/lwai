@@ -5,7 +5,6 @@ import { FirestoreService } from 'src/app/services/firestore.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
-import { SubscriptionsService } from 'src/app/services/subscriptions.service';
 
 @Component({
   selector: 'app-course',
@@ -21,7 +20,6 @@ export class CoursePage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     public nav: NavService,
-    private subscriptionService: SubscriptionsService,
     public auth:AuthService,
     private rf:ChangeDetectorRef,
     private firestore:FirestoreService,
@@ -51,14 +49,14 @@ export class CoursePage implements OnInit {
 
   getCourseData(){
     console.log('getting course data')
-    if(!this.subscriptionService.activeCourses?.length){
-      this.subscriptionService.getActiveCourses(this.auth.userInfo.uid)
+    if(!this.auth.activeCourses?.length){
+      this.auth.getActiveCourses(this.auth.userInfo.uid)
       let count = 0
       let checkInterval = setInterval(() => {
-        if(this.subscriptionService.activeCourses?.length){
-          // console.log(this.subscriptionService.activeCourses)
+        if(this.auth.activeCourses?.length){
+          // console.log(this.auth.activeCourses)
           clearInterval(checkInterval)
-          this.courseData = this.subscriptionService.getActiveCourse(this.courseId)
+          this.courseData = this.auth.getActiveCourse(this.courseId)
           if(!this.courseData){
             console.error('Could not find course data')
             this.nav.go('start')
@@ -74,7 +72,7 @@ export class CoursePage implements OnInit {
         }
         count++
         if(count > 20){
-          console.log(this.subscriptionService.activeCourses)
+          console.log(this.auth.activeCourses)
           clearInterval(checkInterval)
           console.error('Could not load course data')
           this.nav.go('start')
@@ -83,7 +81,7 @@ export class CoursePage implements OnInit {
       }, 300);
     }
     else{
-      this.courseData = this.subscriptionService.getActiveCourse(this.courseId)
+      this.courseData = this.auth.getActiveCourse(this.courseId)
       if(!this.courseData){
         console.error('Could not find course data')
         this.nav.go('start')

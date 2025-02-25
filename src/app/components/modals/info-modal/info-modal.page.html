@@ -1,21 +1,33 @@
 
 <div header padding20 flex center-ver>
-  <div class="title" *ngIf="title">
-    <h3 class="subtitle-top" noMargin>{{title}}</h3>
+  <div class="title" *ngIf="options.title">
+    <h3 class="subtitle-top" noMargin>{{options.title}}</h3>
   </div>
   <span class="spacer"></span>
   <ion-button (click)="modalCtrl.dismiss()" fill="clear" color="secondary">
     <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
   </ion-button>
 </div>
-<div *ngIf="!video" [innerHtml]="content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border:solid 1px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : 'calc(100vh - 175px)','margin-bottom': buttons ? '0px' : '30px'}"></div>
-<div *ngIf="video" class="inner-content">
+<div *ngIf="!options.video&&options.content&&!options.image" [innerHtml]="options.content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : 'calc(100vh - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}"></div>
+<div *ngIf="options.video" class="inner-content">
   <div class="video-container">
-    <iframe [src]="content | sanitizeHtml : 'urlResource'" (load)="hideLoader()" frameborder="0" ></iframe>
+    <iframe [src]="options.content | sanitizeHtml : 'urlResource'" (load)="hideLoader()" frameborder="0" ></iframe>
   </div>
 </div>
-<div flex *ngIf="buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':btnsClass==='flex-column'}">
-  <span [ngClass]="{'spacer':!last}" *ngFor="let btn of buttons;let last = last">
-  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':btnsClass==='flex-column'}"></ion-button>
+<div *ngIf="options.image">
+  <img [src]="options.content" style="width:100%;border-radius:24px;" />
+</div>
+<div flex *ngIf="options.buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':options.btnsClass==='flex-column'}">
+  <span [ngClass]="{'spacer':!last}" *ngFor="let btn of options.buttons;let last = last">
+  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':options.btnsClass==='flex-column'}"></ion-button>
   </span>
+</div>
+<div flex center-ver class="feedback" *ngIf="options.feedback&&feedbackGiven===false">
+  <span>Was deze informatie nuttig?</span>
+  <span class="spacer"></span>
+  <fa-icon [icon]="icon.get('faThumbsUp')" (click)="feedback(true)" class="icon"></fa-icon>
+  <fa-icon [icon]="icon.get('faThumbsDown')" (click)="feedback(false)" class="icon"></fa-icon>
+</div>
+<div flex center-ver class="feedback" *ngIf="feedbackGiven">
+  <span >Bedankt voor je feedback!</span>
 </div>

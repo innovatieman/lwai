@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 
@@ -12,13 +13,14 @@ export class UsersPage implements OnInit {
   activeTab: number = 0;
   constructor(
     private firestore:FirestoreService,
-    public helpers:HelpersService
+    public helpers:HelpersService,
+    private functions:AngularFireFunctions
   ) { }
 
   ngOnInit() {
     this.loadUsers()
   }
-
+  
   loadUsers(){
     this.firestore.get('users').subscribe((users) => {
       this.users = users.map((user:any) => {
@@ -47,6 +49,12 @@ export class UsersPage implements OnInit {
     }
 
 
+  }
+
+  confirmEmail(user:any){
+    this.functions.httpsCallable('confirmEmail')({email:user.email}).subscribe((result) => {
+      console.log(result);
+    })
   }
 
 }

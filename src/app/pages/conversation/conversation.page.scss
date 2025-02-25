@@ -13,7 +13,8 @@ ion-header{
 
 .innerChatDiv{
   // max-height: calc(100vh - 532px);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .avatarImage{
@@ -422,14 +423,16 @@ app-loader{
     padding:0;
     // border-radius:0px;
     text-align: left;
+    height: 100%;
     ion-textarea{
       background:rgba(255, 255, 255, 0.2);
       border-radius:10px;
       padding:10px;
       color:var(--color-global);
       font-size: 14px;
-      --padding-top: 0;
+      --padding-top: 5px;
       --padding-bottom: 0;
+      height: 100%;
     }
   }
   fa-icon{
@@ -452,8 +455,8 @@ app-loader{
   
   .sendButton{
     --border-radius: 5px;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
   .detailBtn{
     position: relative;
@@ -670,4 +673,17 @@ video{
       margin-bottom: 0cm;
       // padding-top: 0;
   }
+}
+
+.analyzer{
+  width: 100%;
+  position: absolute;
+  bottom: 110px;
+  left: 0;
+  padding: 5px;
+  text-align: center;
+  font-size: 14px;
+  font-style: italic;
+  z-index: 10;
+  background: var(--background-global);
 }

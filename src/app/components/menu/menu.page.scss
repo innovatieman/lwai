@@ -1,6 +1,6 @@
- ion-content {
-    --background: var(--ion-item-background, var(--ion-background-color, #fff));
-  }
+//  ion-content {
+//     --background: var(--ion-item-background, var(--ion-background-color, #fff));
+//   }
   ion-list-header{
     font-weight: 700;
   }
@@ -136,6 +136,12 @@
   }
   fa-icon{
     width:15px;
+    color: var(--color-global);
+  }
+
+  .namePart{
+    background: white;
+    color:var(--color-global);
   }
 
   .card{
@@ -179,6 +185,7 @@
     // background: rgba(104, 183, 181, 0.2);
     padding-bottom:20px;
     text-align: center;
+    background: white;
   }
   .customMenuItem{
     cursor: pointer;

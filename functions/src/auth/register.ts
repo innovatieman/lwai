@@ -112,5 +112,71 @@ exports.userRemove = functions.region('europe-west1').auth.user().onDelete(
     }
 );
 
+exports.sendVerificationEmail = functions.region('europe-west1').auth.user().onCreate(async (user) => {
+  const email = user.email;
+  const displayName = user.displayName || 'User';
 
+  if (user.emailVerified) {
+    console.log(`Skipping verification email for verified user: ${email}`);
+    return; // Geen verificatiemail sturen als al geverifieerd
+  }
+  
+  const actionCodeSettings = {
+    url: 'https://conversation.alicialabs.com/verify', // Gebruik je eigen domein of localhost
+  };
 
+  // Genereer de verificatielink
+  const link = await admin.auth().generateEmailVerificationLink(email,actionCodeSettings);
+
+  // Haal de oobCode uit de gegenereerde link
+  const urlParams = new URLSearchParams(link.split('?')[1]);
+  const oobCode = urlParams.get('oobCode');
+
+  // Bouw de aangepaste verificatielink
+  const customLink = `https://conversation.alicialabs.com/verify?oobCode=${oobCode}`;
+
+  // Dynamische gegevens voor de template
+  const emailData = {
+    to: email,
+    template: 'verify_email',
+    data: {
+      name: displayName,
+      verificationLink: customLink
+    }
+  };
+
+  // Voeg de e-mail toe aan de Firestore collectie
+  await admin.firestore().collection('emailsToProcess').add(emailData);
+});
+
+exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(async (data, context) => {
+  const email = data.email;
+  const displayName = data.displayName || 'User';
+
+  const actionCodeSettings = {
+    url: 'https://conversation.alicialabs.com/verify', // Gebruik je eigen domein of localhost
+  };
+
+  // Genereer de verificatielink
+  const link = await admin.auth().generateEmailVerificationLink(email,actionCodeSettings);
+
+  // Haal de oobCode uit de gegenereerde link
+  const urlParams = new URLSearchParams(link.split('?')[1]);
+  const oobCode = urlParams.get('oobCode');
+
+  // Bouw de aangepaste verificatielink
+  const customLink = `https://conversation.alicialabs.com/verify?oobCode=${oobCode}`;
+
+  // Dynamische gegevens voor de template
+  const emailData = {
+    to: email,
+    template: 'verify_email',
+    data: {
+      name: displayName,
+      verificationLink: customLink
+    }
+  };
+
+  // Voeg de e-mail toe aan de Firestore collectie
+  await admin.firestore().collection('emailsToProcess').add(emailData);
+});

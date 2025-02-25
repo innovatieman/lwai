@@ -10,6 +10,7 @@ import { EnginePage } from './engine.page';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ComponentsModule } from 'src/app/components/components.module';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { ComponentsModule } from 'src/app/components/components.module';
     EnginePageRoutingModule,
     ComponentsModule,
     FontAwesomeModule,
-    PipesModule
+    PipesModule,
+    QuillModule
   ],
   declarations: [EnginePage]
 })

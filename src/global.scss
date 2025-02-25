@@ -102,6 +102,7 @@ ion-card-title{
     font-size: 1.2em;
 }
 ion-item{
+    --background:white;
     ion-label{
         --color:var(--color-global)!important;
     }
@@ -114,6 +115,9 @@ ion-item{
 }
 .spacer{
     flex: 1 1 auto;
+}
+[font-12]{
+    font-size: 12px;
 }
 [font-14]{
     font-size: 14px;
@@ -131,7 +135,7 @@ ion-item{
     font-size: 20px;
 }
 [font-22]{
-    font-size: 20px;
+    font-size: 22px;
 }
 [font-24]{
     font-size: 24px;
@@ -144,6 +148,9 @@ ion-item{
 }
 [weight500]{
     font-weight: 500!important;
+}
+[weight400]{
+    font-weight: 400!important;
 }
 [left]{
     text-align: left;
@@ -220,6 +227,9 @@ ion-item{
 }
 [align-center]{
     text-align: center;
+}
+[align-top]{
+    align-items: flex-start;
 }
 
 [fullwidth]{
@@ -408,7 +418,22 @@ ion-item{
     background-size: cover;
     background-repeat: no-repeat;
 }
-
+[nobackground]{
+    background: none!important;
+    --background: none!important;
+}
+[backgroundPrimary]{
+    background-color: var(--ion-color-primary);
+    color:var(--ion-color-primary-contrast);
+}
+[backgroundSecondary]{
+    background-color: var(--ion-color-secondary);
+    color:var(--ion-color-secondary-contrast);
+}
+[backgroundTertiary]{
+    background-color: var(--ion-color-tertiary);
+    color:var(--ion-color-tertiary-contrast);
+}
 [listCardTop],.listCardTop{
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
@@ -423,7 +448,15 @@ ion-item{
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
 }
-
+[uppercase]{
+    text-transform: uppercase;
+}
+[noPointerEvents]{
+    pointer-events: none;
+}
+[hidden]{
+    display: none;
+}
 .backupIcon{
     font-size: 30px;
     margin-left:20px;
@@ -470,11 +503,23 @@ video{
   
   ion-textarea{
     border: solid 2px rgba(0, 0, 0, 0.6);
-    padding: 0 10px;
+    padding: 0 10px!important;
     border-radius: 10px;
   
   }
   
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  .pulse-loader {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 //////////////////////////////////////
 /// Modal Styles                   ///
 //////////////////////////////////////
@@ -487,7 +532,17 @@ video{
     width: 80%;
  }
 
-ion-modal.infoModal, ion-modal.show-modal {
+ion-modal.caseModal{
+    --width: 800px;
+    --max-width: 100%;
+}
+
+ion-modal.selectManyModal{
+    --width: 1800px;
+    --max-width: 100%;
+}
+
+ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal {
     --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
     --backdrop-opacity: var(--ion-backdrop-opacity, 0.32)!important;
     --border-radius:24px;
@@ -545,7 +600,13 @@ ion-modal.infoModal, ion-modal.show-modal {
         }
     }
 }
-
+.popover-content{
+    background: white;
+    color:var(--color-global);
+    fa-icon{
+        color:var(--color-global);
+    }
+}
 ion-popover.customMenu {
     --width: 500px;
     --ion-backdrop-color: transparent;
@@ -581,19 +642,21 @@ main{
             color:var(--color-global);
         }
     }
-    ion-card:hover{
-        background: var(--ion-color-primary);
-        color:var(--ion-color-primary-contrast)
-    }
+    // ion-card:hover{
+    //     background: var(--ion-color-primary);
+    //     color:var(--ion-color-primary-contrast)
+    // }
 }
 .buttonBar{
-    position:absolute;
-    top:12px;
+    position:fixed;
+    top:51px;
     right:0;
     width: 100%;
     --background:white;
     color:var(--color-global);
-    border-radius: 16px;
+    max-height: calc(100% - 51px);
+    // border-bottom-left-radius: 16px;
+    // border-bottom-right-radius: 16px;
 }
 .buttonBarMargin{
     margin-top: 70px;
@@ -615,10 +678,10 @@ main{
             color:var(--color-global);
         }
     }
-    ion-card:hover{
-        background: var(--ion-color-primary);
-        color:var(--ion-color-primary-contrast);
-    }
+    // ion-card:hover{
+    //     background: var(--ion-color-primary);
+    //     color:var(--ion-color-primary-contrast);
+    // }
     
     .activeTab, .activeTab:hover{
         background: var(--ion-color-primary);
@@ -744,4 +807,36 @@ main{
     }
   ion-popover {
     --backdrop-opacity: 0 !important; /* Zorgt ervoor dat er geen transparante laag is */
+  }
+
+
+
+
+  .courseImage{
+    width:200px;
+    height: 200px;
+    border-radius: 10px;
+    margin: 0 auto;
+    img{
+        width:100%;
+        height:100%;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    .coursePrice{
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+    }
+  }
+  .courseDetails{
+    width: calc(100% - 200px);
+    padding:0 15px;
+    display:flex;
+    flex-flow: column;
+    .coursePrice{
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+    }
   }

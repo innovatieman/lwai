@@ -13,8 +13,8 @@ export class AppComponent {
     private translate: TranslateService,
     private toggleConsole:ToggleConsoleService,
   ) {
-    // this.setRealViewportHeight();
-    // window.addEventListener('resize', this.setRealViewportHeight);
+    this.setRealViewportHeight();
+    window.addEventListener('resize', this.setRealViewportHeight);
 
     if(!environment.log_on){
       this.toggleConsole.disableConsole();
@@ -25,12 +25,10 @@ export class AppComponent {
   }
 
 
-// setRealViewportHeight() {
-//     const vh = window.innerHeight * 0.01;
-//     console.log(vh);
-//     document.documentElement.style.setProperty('--real-vh', `${vh}px`);
-//     console.log(document.documentElement.style.getPropertyValue('--real-vh'));
-//   }
+setRealViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
   
   // Stel de hoogte in bij het laden van de pagina
   

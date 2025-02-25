@@ -5,7 +5,6 @@ import { NavService } from 'src/app/services/nav.service';
 import { MenuPage } from '../menu/menu.page';
 import { PopoverController } from '@ionic/angular';
 import { AuthService } from 'src/app/auth/auth.service';
-import { SubscriptionsService } from 'src/app/services/subscriptions.service';
 
 @Component({
   selector: 'app-header',
@@ -94,6 +93,23 @@ export class HeaderComponent  implements OnInit {
       icon: 'faUsers',
       url: '/bagend/users',
     },
+    {
+      title: 'Types',
+      icon: 'faHandPointRight',
+      url: '/bagend/types',
+    },
+    {
+      title: "Foto's",
+      icon: 'faCameraRetro',
+      url: '/bagend/photo-generator',
+    },
+    {
+      title: "Token analyse",
+      icon: 'faCoins',
+      url: '/bagend/token-analysis',
+    },
+
+    
     // {
     //   title: 'All Conversations',
     //   icon: 'faComments',
@@ -120,19 +136,20 @@ export class HeaderComponent  implements OnInit {
     public media:MediaService,
     private ref:ChangeDetectorRef,
     private popoverController:PopoverController,
-    private subscriptions:SubscriptionsService
   ) { }
 
   ngOnInit() {
     const path = window.location.pathname;
     this.auth.isAuthenticated().subscribe((auth) => {
-      this.isAuthenticated = auth;
+      if(auth){
+        this.isAuthenticated = true
+      }
     });
 
     this.auth.isAdmin().subscribe((admin) => {
       this.isAdmin = admin;
     });
-    this.subscriptions.hasActive('trainer').subscribe((trainer)=>{
+    this.auth.hasActive('trainer').subscribe((trainer)=>{
       this.isTrainer = trainer
     })
   }
@@ -176,7 +193,6 @@ export class HeaderComponent  implements OnInit {
   }
 
   async trainerMenu(){
-    
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
       componentProps:{
@@ -189,11 +205,7 @@ export class HeaderComponent  implements OnInit {
       reference:'trigger',
     });
     this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
-
     await this.shortMenu.present();
-
-    console.log('adminMenu')
-    
   }
 
   shouldShowPage(page: any): boolean {

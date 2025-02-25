@@ -5,6 +5,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AuthService } from '../auth/auth.service';
 import { FirestoreService } from './firestore.service';
 import { TranslateService } from '@ngx-translate/core';
+import { InfoService } from './info.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,12 +18,22 @@ export class CasesService {
     private fire:AngularFirestore,
     private auth:AuthService,
     private firestore: FirestoreService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private infoService: InfoService
   ) { 
     this.auth.isAdmin().subscribe((admin) => {
       this.isAdmin = admin;
     });
-    this.loadCases()
+    this.loadCases(()=>{
+      let checkInt = setInterval(() => {
+        if(this.infoService.conversation_types.length){
+          clearInterval(checkInt)
+          for(let i = 0; i < this.all.length; i++){
+            this.all[i].conversationTypes = this.infoService.getConversationType('',this.all[i].types,true)
+          }
+        }
+      }, 200);
+    })
   }
 
   get conversations(){
@@ -79,7 +90,7 @@ export class CasesService {
   // }
 
 
-  loadCases() {
+  loadCases(callback?:Function) {
     const currentLang = this.translate.currentLang || 'en-EN';
     // Query voor cases die toegankelijk zijn voor de gebruiker
     this.fire
@@ -118,6 +129,9 @@ export class CasesService {
           title: doc.translation?.title || doc.title,
           content: doc.translation?.content || doc.content,
         }));
+        if (callback) {
+          callback();
+        }
       });
       // setTimeout(() => {
       //   console.log(this.all)
@@ -140,6 +154,7 @@ export class CasesService {
       open_to_admin:true,
       title:'New Case',
       role:'',
+      user_role:'',
       description:'',
       attitude:1,
       steadfastness:50,
@@ -148,6 +163,7 @@ export class CasesService {
         free:'',
         attitude:0,
       },
+      price:0,
       max_time:30,
       minimum_goals:0,
       openingMessage:openingMessage,
@@ -155,6 +171,7 @@ export class CasesService {
       editable_by_user:{
         role:false,
         description:false,
+        user_role:false,
         function:false,
         vision:false,
         interests:false,

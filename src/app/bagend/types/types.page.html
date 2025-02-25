@@ -1,0 +1,52 @@
+
+<app-header page="admin"></app-header>
+<main>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3"></ion-col>
+      <ion-col size="9">
+
+        <ion-card basicPadding *ngFor="let type of infoService.conversation_types | sortBy : -1 : 'order'">
+          <ion-card-header>
+            <ion-card-title flex center-ver>
+              <span>
+                {{type.order}}. {{type[translate.currentLang]}}
+              </span>
+              <div class="spacer"></div>
+              <fa-icon [icon]="icon.get('faPlus')" pointer titleIcon (click)="addSubject(type)"></fa-icon>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content basicPadding>
+            <ion-card borderRadius24 *ngFor="let subject of type.subjects">
+              <ion-card-header>
+                <ion-card-title flex center-ver>
+                  <span>
+                    {{subject[translate.currentLang]}}
+                  </span>
+                  <div class="spacer"></div>
+                  <fa-icon [icon]="icon.get('faTrashAlt')" pointer trash titleIcon (click)="deleteSubject(type,subject)"></fa-icon>
+                  <fa-icon [icon]="icon.get('faPen')" pointer titleIcon (click)="subject.show = !subject.show"></fa-icon>
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content *ngIf="subject.show">
+                <div flex center-ver marginBottom>
+                  <div font-16 weight600 style="margin-right:10px;width:150px;">ID</div>
+                  <ion-input font-16 [disabled]="true" [(ngModel)]="subject.id"></ion-input>
+                </div>
+                <div *ngFor="let lang of subject | keyvalue">
+                  <div flex center-ver *ngIf="lang.key !== 'id'&& lang.key !== 'show'" marginBottom>
+                    <div font-16 weight600 style="margin-right:10px;width:150px;">{{'languages.'+lang.key | translate}}</div>
+                    <ion-input font-16 [(ngModel)]="lang.value" (ionChange)="update(type.id,subject.id,lang.key,lang.value)"></ion-input>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-card>
+
+          </ion-card-content>
+        </ion-card>
+
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

@@ -22,13 +22,12 @@
                 Administrator
               </ion-toggle>
             </ion-item>
-          </ion-card-content>
-          <ion-card-content>
             <ion-item lines="none">
               <ion-toggle color="primary" [(ngModel)]="users[activeTab].isConfirmed" (ionChange)="update('isConfirmed')">
                 Confirmed
               </ion-toggle>
             </ion-item>
+              <ion-button class-="saveButton" color="primary" (click)="confirmEmail(users[activeTab])">Confirm E-mail</ion-button>  
           </ion-card-content>
         </ion-card>
       </ion-col>

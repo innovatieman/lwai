@@ -153,7 +153,7 @@ export class ConversationPage implements OnInit {
     "10": "Perfect"
   }
   showDetailsPhases:boolean = false;
-
+  transcript:string = ''
   constructor(
     private route:ActivatedRoute,
     public nav:NavService,
@@ -174,7 +174,14 @@ export class ConversationPage implements OnInit {
     private selectMenuservice:SelectMenuService,
     public translate:TranslateService,
     private toast:ToastService
-  ) { }
+  ) { 
+
+    // this.record.transcript$.subscribe((text) => {
+    //   // this.transcript += text + ' ';
+    //   this.question = text;
+    //   // console.log(this.transcript);
+    // });
+  }
 
   ngOnInit() {
 
@@ -598,7 +605,6 @@ export class ConversationPage implements OnInit {
       // console.log('checking close')
     }, 200);
 
-    // this.modal.showText(this.conversation.activeConversation.close[0].content,'Evaluatie')
   }
   
   tempRating_realism:number = 0;
@@ -675,38 +681,73 @@ export class ConversationPage implements OnInit {
   maxRecordingTime = 60000; // 1 minuut
   loadingTextFromAudio:boolean = false
 
-  startRecordingAudio() {
-    if (!this.record.recording) {
-      this.record.startRecording('audioToText', (response: any) => {
-        if (response) {
-          this.loadingTextFromAudio = false;
-          this.question = this.question ? this.question + ' ' + response : response;
-          this.rf.detectChanges();
-        }
-      });
 
-      // Stel een timeout in om de opname automatisch te stoppen na 1 minuut
-      this.recordingTimeout = setTimeout(() => {
-        this.stopRecordingAudio();
-      }, this.maxRecordingTime);
-    }
-  }
+  recording:boolean = false
 
-  stopRecordingAudio() {
-    if (this.record.recording) {
-      this.loadingTextFromAudio = true;
-      this.record.stopRecording(() => {
+
+  // startRecordingAudio() {
+  //   console.log('start recording')
+  //   if (!this.record.recording) {
+  //     this.record.startRecording('audioToText', this.conversation.activeConversation.conversationId, (response: any) => {
+  //       if (response) {
+  //         this.loadingTextFromAudio = false;
+  //         this.question = this.question ? this.question + ' ' + response : response;
+  //         this.rf.detectChanges();
+  //       }
+  //     });
+
+  //     // Stel een timeout in om de opname automatisch te stoppen na 1 minuut
+  //     this.recordingTimeout = setTimeout(() => {
+  //       this.stopRecordingAudio();
+  //     }, this.maxRecordingTime);
+  //   }
+  // }
+
+  // stopRecordingAudio() {
+  //   console.log('stop recording')
+  //   if (this.record.recording) {
+  //     this.loadingTextFromAudio = true;
+  //     this.record.stopRecording(() => {
+  //       this.rf.detectChanges();
+  //     });
+
+  //     // Reset de timeout
+  //     if (this.recordingTimeout) {
+  //       clearTimeout(this.recordingTimeout);
+  //     }
+  //   }
+  // }
+
+  voiceSubscription:Subscription = new Subscription()
+  voiceSessionId:string = ''
+  startRecording() {
+    this.record.recording = true;
+    this.transcript = '';
+    this.record.startRecording('audioToText',this.conversation.activeConversation.conversationId,(response:any)=>{
+      if(response){
+        this.loadingTextFromAudio = false;
+        this.question = this.question ? this.question + ' ' + response : response;
         this.rf.detectChanges();
-      });
-
-      // Reset de timeout
-      if (this.recordingTimeout) {
-        clearTimeout(this.recordingTimeout);
       }
-    }
+    })
+    // this.voiceSessionId = this.auth.userInfo.uid+'_'+this.conversation.activeConversation.conversationId+'_'+Date.now()
+    // this.record.startRecording(this.voiceSessionId);
+    // this.voiceSubscription = this.firestore.getDoc('transcriptions',this.voiceSessionId).subscribe((data:any)=>{
+    //   if (data.payload.data()?.transcript?.length) {
+    //     this.question = data.payload.data().transcript[data.payload.data().transcript.length - 1];
+    //   }
+    // });
+
   }
 
-
+  stopRecording() {
+    this.record.recording = false;
+    this.record.stopRecording();
+    // setTimeout(() => {
+    //   this.voiceSubscription.unsubscribe();
+    //   this.firestore.delete('transcriptions',this.voiceSessionId)
+    // }, 10000);
+  }
 
   shortMenu:any
   helpMenu:any = []
@@ -920,4 +961,27 @@ export class ConversationPage implements OnInit {
       
     }, 300);
   }
+
+  showFeedbackModal(index:number){
+    // {content:conversation.getFeedbackChat(index,'feedback'),title:'Feedback',feedback:{type:'feedback',conversationId:conversation.activeConversation.conversationId,caseId:conversation.activeConversation.caseId}}
+
+    console.log(this.conversation.getFeedbackChat(index,'id'))
+
+    this.modal.showInfo(
+      {
+        content:this.conversation.getFeedbackChat(index,'feedback'),
+        title:'Feedback',
+        feedback:{
+          type:'feedback',
+          conversationId:this.conversation.activeConversation.conversationId,
+          caseId:this.conversation.activeConversation.caseId,
+          userId:this.auth.userInfo.uid,
+          feedbackId:this.conversation.getFeedbackChat(index,'id')
+        }
+      }
+    )
+
+
+  }
+
 }

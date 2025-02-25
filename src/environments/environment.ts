@@ -6,7 +6,7 @@ export const environment = {
   production: false,
   useEmulators: false,
   log_on:true,
-
+  verificationUrl:'http://localhost:8100/verify',
 
 
   firebase :{

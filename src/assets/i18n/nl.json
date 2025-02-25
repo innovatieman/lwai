@@ -18,8 +18,11 @@
     },
     "error_messages":{
         "required":"Niet alle verplichte velden zijn ingevuld.",
+        "field_required":"Dit veld mag niet leeg zijn.",
+        "invalid_input":"Niet alle velden zijn corect ingevuld.",
         "no_selection":"Er is geen selectie gemaakt.",
         "no_role":"Er is geen rol ingevuld.",
+        "no_title":"Er is geen titel ingevuld.",
         "no_attitude":"Er is geen houding bepaald.",
         "no_steadfastness":"Er is geen standvastigheid bepaald.",
         "no_input":"Er zijn geen gegevens om te verwerken."
@@ -43,6 +46,7 @@
     "case_options":{
         "editable_role":"Rol/Naam",
         "editable_description":"Beschrijving",
+        "editable_user_role":"Rol van de gebruiker",
         "editable_function":"Functie aanpassen",
         "editable_vision":"Visie",
         "editable_interests":"Belangen",
@@ -62,5 +66,14 @@
         "agents_facts":"Factchecker",
         "agents_background":"Achtergrond informatie",
         "agents_undo":"Ongedaan maken"
+    },
+    "languages":{
+        "nl":"Nederlands",
+        "en":"Engels"
+    },
+    "toast":{
+        "added":"Toegevoegd",
+        "deleted":"Verwijderd",
+        "updated":"Bijgewerkt"
     }
 }

@@ -12,3 +12,111 @@
     top: 10px;
     z-index: 2;
 }
+.cardButton{
+    --border-color:#eaeaea;
+    --color:var(--ion-color-primary);
+    margin-right:15px;
+}
+.cardButton:hover{
+    --border-color:var(--ion-color-primary);
+}
+.cardPrice{
+  margin-left:30px;
+  font-size: 18px;
+  font-weight: 600;
+  color:var(--ion-color-primary);
+}
+.creditButton{
+    --border-color:var(--ion-color-primary);
+    --color:var(--ion-color-primary);
+    margin-right:30px;
+    --padding-start: 10px !important;
+    --padding-end: 10px !important;
+}
+.creditButton:hover{
+    --background:none;
+}
+
+
+ion-searchbar{
+    --box-shadow: none;
+    --background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);
+    padding:0px;
+    --border-radius:24px;
+    // margin-top:4px;
+}
+main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;  // Zorg ervoor dat het main-element de volledige viewport-hoogte heeft
+  }
+  
+  ion-grid.mainGrid {
+    flex: 1;  // Laat het grid zich aanpassen aan de resterende ruimte binnen het scherm
+    overflow: hidden;  // Verberg overbodige scroll buiten de kolommen
+    height:100%;
+  }
+  
+  .selectColumn,
+  .detailColumn {
+    height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
+    overflow-y: auto;  // Activeer verticale scroll wanneer nodig
+    padding-right: 10px;  // Optionele padding voor scrollbalk
+    max-height:calc((var(--vh, 1vh) * 100) - 121px);
+    padding-bottom:20px;
+  }
+
+
+
+  .innerSelectCase{
+    background-color: white;
+    // border-bottom-left-radius:24px;
+    // border-bottom-right-radius:24px;
+    transition: max-height .3s, border-bottom 1s, border-top 1s;
+    overflow: hidden;
+    position: relative;
+  }
+  .innerSelectCaseItem{
+    padding-left: 20px;
+  }
+  .innerSelectMoreToggle{
+    position: absolute;
+    z-index: 3;
+  }
+  .avatarSmall{
+    width: 100px;
+    min-width: 100px;
+    height: 100px;
+    border-radius: 10px!important;
+  }
+  .arrowDiv{
+    background: white;
+    position: absolute;
+    width: calc(100% - 140px);
+    bottom: 10px;
+    left: 125px;
+  }
+  .detailColumn ion-card ion-card-title{
+    color:var(--color-global);
+  }
+  .filterSmall{
+    position: fixed;
+    z-index: 3;
+    top:160px;
+    left:0;
+    width: 100%;
+    max-height:calc(((var(--vh, 1vh) * 100) - 160px));
+    height: calc(((var(--vh, 1vh) * 100) - 160px));
+    overflow: hidden;
+    overflow-y: auto;
+  }
+  .topButton{
+    padding:10px;
+    border-radius: 24px;
+    margin: 10px;
+    box-shadow: none;
+    border:solid 1px #eaeaea;
+  }
+  .topButton:hover{
+    border:solid 1px var(--ion-color-primary);
+  }

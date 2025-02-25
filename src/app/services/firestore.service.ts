@@ -271,6 +271,9 @@ export class FirestoreService {
   getDoc(collection:string,doc:string){
     return this.fire.collection(collection).doc(doc).snapshotChanges()
   }
+  getDocListen(collection:string,doc:string){
+    return this.fire.collection(collection).doc(doc).valueChanges()
+  }
   delete(collection:string,id:string,field?:string){
     return this.fire.doc(collection+'/'+id).delete()
     .then(_=> {

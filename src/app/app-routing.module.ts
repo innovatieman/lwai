@@ -47,13 +47,12 @@ const routes: Routes = [
   {
     path: 'account',
     loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
-    canActivate: [AuthGuard],
+    // canActivate: [AuthGuard],
   },
-  
   {
-    path: 'trainer/cases',
-    loadChildren: () => import('./trainer/trainer-cases/trainer-cases.module').then( m => m.TrainerCasesPageModule),
-    canActivate: [AdminGuard,TrainerGuard],
+    path: 'account/:tab',
+    loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'conversation-start',
@@ -64,12 +63,7 @@ const routes: Routes = [
     loadChildren: () => import('./trainer/trainer-courses/trainer-courses.module').then( m => m.TrainerCoursesPageModule),
     canActivate: [AdminGuard,TrainerGuard],
   },
-  
-  {
-    path: 'trainer/info-items',
-    loadChildren: () => import('./trainer/trainer-info-items/trainer-info-items.module').then( m => m.TrainerInfoItemsPageModule),
-    canActivate: [AdminGuard,TrainerGuard],
-  },
+
   {
     path: 'bagend/engine',
     loadChildren: () => import('./bagend/engine/engine.module').then( m => m.EnginePageModule),
@@ -77,6 +71,11 @@ const routes: Routes = [
   },
   {
     path: 'trainer/users',
+    loadChildren: () => import('./trainer/trainer-users/trainer-users.module').then( m => m.TrainerUsersPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'trainer/users/:course_id',
     loadChildren: () => import('./trainer/trainer-users/trainer-users.module').then( m => m.TrainerUsersPageModule),
     canActivate: [AdminGuard,TrainerGuard],
   },
@@ -90,8 +89,37 @@ const routes: Routes = [
     loadChildren: () => import('./bagend/search-conversations/search-conversations.module').then( m => m.SearchConversationsPageModule),
     canActivate: [AdminGuard],
   },
+  {
+    path: 'enlist/:course_id',
+    loadChildren: () => import('./pages/enlist/enlist.module').then( m => m.EnlistPageModule)
+  },
+  {
+    path: 'verify',
+    loadChildren: () => import('./auth/pages/verify/verify.module').then( m => m.VerifyPageModule)
+  },
+  {
+    path: 'wait-verify',
+    loadChildren: () => import('./auth/pages/wait-verify/wait-verify.module').then( m => m.WaitVerifyPageModule)
+  }, 
+  {
+    path: 'bagend/types',
+    loadChildren: () => import('./bagend/types/types.module').then( m => m.TypesPageModule)
+  },
+  {
+    path: 'bagend/photo-generator',
+    loadChildren: () => import('./bagend/photo-generator/photo-generator.module').then( m => m.PhotoGeneratorPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'bagend/token-analysis',
+    loadChildren: () => import('./bagend/token-analysis/token-analysis.module').then( m => m.TokenAnalysisPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'documents/:document_id',
+    loadChildren: () => import('./auth/pages/documents/documents.module').then( m => m.DocumentsPageModule)
+  },
 
-  // rest of the routes
   {
     path: '**',
     redirectTo: 'start',
@@ -143,6 +171,25 @@ const routes: Routes = [
     path: 'search-conversations',
     loadChildren: () => import('./bagend/search-conversations/search-conversations.module').then( m => m.SearchConversationsPageModule)
   },
+  {
+    path: 'select-many',
+    loadChildren: () => import('./components/modals/select-many/select-many.module').then( m => m.SelectManyPageModule)
+  },
+  {
+    path: 'token-analysis',
+    loadChildren: () => import('./bagend/token-analysis/token-analysis.module').then( m => m.TokenAnalysisPageModule)
+  },
+  {
+    path: 'achievement',
+    loadChildren: () => import('./components/achievement/achievement.module').then( m => m.AchievementPageModule)
+  },
+
+
+
+
+
+
+
 
 
 

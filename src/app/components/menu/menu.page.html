@@ -22,7 +22,7 @@
     </div>
   </ion-list>
 
-  <ion-grid>
+  <ion-grid style="padding:0px 5px">
     <ion-row *ngIf="customMenu&&!listShape">
       <ion-col size="6" *ngFor="let p of appPages; let i = index">
         <ion-card class="customMenuItem" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">

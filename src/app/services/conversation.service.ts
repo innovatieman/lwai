@@ -83,6 +83,7 @@ export class ConversationService implements OnDestroy {
     let conversationObj:any = {
       caseId:caseItem.id,
       timestamp: new Date().getTime(),
+      title:caseItem.title,
       role:caseItem.role,
       attitude:caseItem.attitude,
       conversationType:caseItem.conversation,
@@ -103,8 +104,15 @@ export class ConversationService implements OnDestroy {
       conversationObj.courseId = caseItem.courseId
     }
 
-    await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',conversationObj,(response:any)=>{
+    await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',conversationObj,async (response:any)=>{
       conversationId = response.id
+      let tempCaseItem = JSON.parse(JSON.stringify(caseItem))
+      for(let key in tempCaseItem){
+        if(tempCaseItem[key]==null || tempCaseItem[key]==undefined){
+          delete tempCaseItem[key]
+        }
+      }
+      await this.firestoreService.set(`users/${this.auth.userInfo.uid}/conversations/${conversationId}/caseItem`,'caseItem', tempCaseItem)
       localStorage.setItem('conversation',JSON.stringify({conversationId, ...caseItem}))
       this.loadConversation(conversationId)
     })
@@ -303,7 +311,7 @@ export class ConversationService implements OnDestroy {
 
 
   async openai_chat(obj:any) {
-    console.log(obj)
+    // console.log(obj)
     this.messages.push({role:'user',content:this.message})
     this.attitude = obj.attitude
     this.update.emit(true);
@@ -391,7 +399,7 @@ export class ConversationService implements OnDestroy {
     if(!message){
       return;
     }
-    this.getExtraInfo('facts')
+    // this.getExtraInfo('facts')
 
     this.message = message;
     this.waiting = true;
@@ -652,7 +660,17 @@ export class ConversationService implements OnDestroy {
     if(newIndex<0 || !this.activeConversation.feedback || this.activeConversation.feedback.length<1 || !this.activeConversation.feedback[newIndex]){
       return '';
     }
-    let feedback = JSON.parse(this.activeConversation.feedback[newIndex].content)
+    let feedback:any = {}
+    if(this.activeConversation.feedback[newIndex].content.substring(0,1) != '{'){
+    let feedback:any = {}
+      feedback= this.activeConversation.feedback[newIndex].content.split('```json').join('').split('```').join('')
+    }
+    else{
+      feedback = JSON.parse(this.activeConversation.feedback[newIndex].content)
+    } 
+    if(type=='id'){
+      return this.activeConversation.feedback[newIndex].id
+    }
     return feedback[type];
   }
 
@@ -702,7 +720,23 @@ export class ConversationService implements OnDestroy {
 
   async closeConversation(callback:Function) {
     this.startLoading('close')
+    // this.startLoading('skills')
     // console.log(obj)
+
+    // let objSkills:any = {
+    //   conversationId:this.activeConversation.conversationId,
+    //   userId:this.auth.userInfo.uid,
+    //   instructionType:'skills',
+    //   categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
+    // }
+    // const responseSkills = fetch("https://skillsai-p2qcpa6ahq-ew.a.run.app", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(objSkills),
+    // });
+
     let obj:any = {
       conversationId:this.activeConversation.conversationId,
       userId:this.auth.userInfo.uid,
@@ -716,14 +750,18 @@ export class ConversationService implements OnDestroy {
       },
       body: JSON.stringify(obj),
     });
+
+
     
-    if (!response.ok) {
-      console.error("Request failed:", response.status, response.statusText);
-      return;
-    }
-    if (!response.body) {
-      throw new Error("Response body is null");
-    }
+    
+    // if (!response.ok) {
+    //   console.error("Request failed:", response.status, response.statusText);
+    //   return;
+    // }
+    // if (!response.body) {
+    //   throw new Error("Response body is null");
+    // }
+
     callback()
     
   }

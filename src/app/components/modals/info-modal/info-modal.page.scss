@@ -34,3 +34,14 @@ h3{
     margin-right: 5px;
     font-size: 24px;
 }
+.feedback{
+    border-top: solid 1px var(--ion-color-step-550, #737373);
+    padding: 15px 40px;
+    font-style: italic;
+    color: var(--ion-color-step-550, #737373);
+    fa-icon{
+        font-size: 20px;
+        margin-left:20px;
+        cursor: pointer;
+    }
+}

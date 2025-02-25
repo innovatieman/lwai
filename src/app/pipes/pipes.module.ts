@@ -20,6 +20,8 @@ import { ParseChoicesPipe } from './parse-choices.pipe';
 import { lastestAssistantItemPipe } from './lastest-assistant-item.pipe';
 import { ParseJSONPipe } from './parse-json.pipe';
 import { GroupByPipe } from './group-by.pipe';
+import { SearchManyPipe } from './search-many.pipe';
+import { CaseFilterPipe } from './case-filter.pipe';
 
 
 @NgModule({
@@ -42,7 +44,9 @@ import { GroupByPipe } from './group-by.pipe';
     ParseChoicesPipe,
     lastestAssistantItemPipe,
     ParseJSONPipe,
-    GroupByPipe
+    GroupByPipe,
+    SearchManyPipe,
+    CaseFilterPipe
   ],
   imports: [
     CommonModule
@@ -66,7 +70,10 @@ import { GroupByPipe } from './group-by.pipe';
     ParseChoicesPipe,
     lastestAssistantItemPipe,
     ParseJSONPipe,
-    GroupByPipe],
+    GroupByPipe,
+    SearchManyPipe,
+    CaseFilterPipe
+  ],
   providers:[
     CleanHtmlPipe,
     DecimalPipe,

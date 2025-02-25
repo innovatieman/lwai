@@ -10,6 +10,7 @@ import { EditHtmlPage } from '../components/modals/edit-html/edit-html.page';
 import { SelectItemPage } from '../components/modals/select-item/select-item.page';
 import { VerificationPage } from '../components/modals/verification/verification.page';
 import { RateLearningPage } from '../components/modals/rate-learning/rate-learning.page';
+import { SelectManyPage } from '../components/modals/select-many/select-many.page';
 
 @Injectable({
   providedIn: 'root',
@@ -54,6 +55,7 @@ export class ModalService {
       componentProps: {
         caseItem: caseItem,
       },
+      cssClass: 'caseModal',
     });
 
     await modalItem.present();
@@ -63,18 +65,51 @@ export class ModalService {
   }
 
 
-  public async showText(content:string,title?:string,video?:boolean,buttons?:any[],backdropDismiss?:boolean,callback?:any,btnsClass?:string){
-    if(backdropDismiss==undefined){backdropDismiss = true}
+  public async showText(content:string,title?:string,video?:boolean,buttons?:any[],backdropDismiss?:boolean,callback?:any,btnsClass?:string,extraData?:any,image?:boolean){
+    let options:any = {
+      content:content,
+      title:title,
+      video:video,
+      buttons:buttons,
+      btnsClass:btnsClass,
+      extraData:extraData,
+      image:image
+    }
+    
+    
+    if(backdropDismiss==undefined){options.backdropDismiss = true}
+    this.showInfo(options,callback)
+  }
+  //   const modalItem = await this.modalController.create({
+  //     component:InfoModalPage,
+  //     componentProps:{
+  //       content:content,
+  //       title:title,
+  //       video:video,
+  //       image:image,
+  //       buttons:buttons,
+  //       btnsClass:btnsClass,
+  //       extraData:extraData
+  //     },
+  //     backdropDismiss:backdropDismiss,
+  //     cssClass:'infoModal',
+  //   })
+  //   if(callback){
+  //     modalItem.onWillDismiss().then(data=>{
+  //       callback(data)
+  //     })
+  //   }
+  //   return await modalItem.present()
+  // }
+
+  public async showInfo(options:any,callback?:any){
+    if(options.backdropDismiss==undefined){options.backdropDismiss = true}
     const modalItem = await this.modalController.create({
       component:InfoModalPage,
       componentProps:{
-        content:content,
-        title:title,
-        video:video,
-        buttons:buttons,
-        btnsClass:btnsClass
+        options:options
       },
-      backdropDismiss:backdropDismiss,
+      backdropDismiss:options.backdropDismiss,
       cssClass:'infoModal',
     })
     if(callback){
@@ -192,5 +227,18 @@ export class ModalService {
     return data || false;
   }
 
+  async selectMany(obj:any,callback:Function){
+    const modal = await this.modalController.create({
+      component:SelectManyPage,
+      componentProps:{
+        properties:obj
+      },
+      cssClass:'selectManyModal',
+    })
+    modal.onWillDismiss().then(result=>{
+      callback(result)
+    })
+    return await modal.present()
+  }
 
 }

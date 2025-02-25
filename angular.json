@@ -13,6 +13,22 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "core-js",
+              "canvg",
+              "raf",
+              "rgbcolor",
+              "jspdf",
+              "dompurify",
+              "html2canvas",
+              "quill-delta",
+              "highcharts",
+              "highcharts/highcharts-more",
+              "highcharts/modules/solid-gauge",
+              "moment"
+            ],
+            "serviceWorker": true,
+            "ngswConfigPath": "ngsw-config.json",
             "outputPath": "www",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -35,11 +51,8 @@
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
               },
-              {
-                "glob": "**/*",
-                "input": ".htaccess",
-                "output": ".htaccess"
-              }
+              "src/.htaccess",
+              "src/manifest.webmanifest"
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss","src/theme/fonts.scss","src/theme/global-loginflow.scss","src/quilljs.snow.scss"],
             "scripts": []

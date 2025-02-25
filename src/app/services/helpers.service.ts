@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment'
 import { TranslateService } from '@ngx-translate/core';
+import { MediaService } from './media.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,10 +10,32 @@ export class HelpersService {
   [key : string]: any;
 
   constructor(
-    public translate:TranslateService
+    public translate:TranslateService,
+    private media:MediaService
   ) { }
 
   doNothing(){}
+
+  get cardSize(){
+    const sizes:any = {
+      xs: 12,
+      sm: 12,
+      md: 4,
+      lg: 3,
+      xl: 3
+    }
+    return sizes[this.media.screenSize]
+  }
+  get cardSizeSmall(){
+    const sizes:any = {
+      xs: 12,
+      sm: 12,
+      md: 6,
+      lg: 4,
+      xl: 4
+    }
+    return sizes[this.media.screenSize]
+  }
 
   countWords(text:string){
     if(!text){return 0}
@@ -205,6 +228,42 @@ export class HelpersService {
       }
     }
     return obj;
+  }
+
+  currencyChar(currency:string){
+    if(!currency){return ''}
+    let currencyChar = ''
+    let currencyText:string = currency.split(' ')[0]
+    switch(currencyText){
+      case 'CREDITS':
+        currencyChar = 'credits'
+        break
+      case 'EUR':
+        currencyChar = '€'
+        break
+      case 'USD':
+        currencyChar = '$'
+        break
+      case 'GBP':
+        currencyChar = '£'
+        break
+      case 'AUD':
+        currencyChar = 'A$'
+        break
+      case 'CAD':
+        currencyChar = 'C$'
+        break
+      case 'NZD':
+        currencyChar = 'NZ$'
+        break
+      case 'JPY':
+        currencyChar = '¥'
+        break
+      case 'CNY':
+        currencyChar = '¥'
+        break
+    }
+    return currencyChar
   }
 
   countries:any = [

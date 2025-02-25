@@ -2,7 +2,7 @@ export const environment = {
   production: true,
   useEmulators: false,
   log_on:false,
-
+  verificationUrl:'http://conversation.alicialabs.com/verify',
 
   firebase :{
     apiKey: "AIzaSyDc7k8O277P-27n7igbMnYtu8iiJUEk0TE",

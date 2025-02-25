@@ -19,7 +19,8 @@ import {
   faClone,faCloudDownloadAlt, faImage, faMinusCircle, faPlusCircle, faSquare,faSquareFull,faArrowsAlt,faCheckSquare,
   faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
-  faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown
+  faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
+  faSearch,faThumbsDown
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -44,6 +45,7 @@ export class IconsService {
     faAtom,
     faAward,
     faBan,
+    faBars,
     faBirthdayCake,
     faBolt,
     faBook,
@@ -100,6 +102,7 @@ export class IconsService {
     faFastBackward,
     faFileAlt,
     faFileExcel,
+    faFilter,
     faFistRaised,
     faGavel,
     faGlasses,
@@ -112,6 +115,7 @@ export class IconsService {
     faHandHolding,
     faHandHoldingHeart,
     faHandPointDown,
+    faHandPointRight,
     faHandPointUp,
     faHandsHelping,
     faHandshake,
@@ -156,6 +160,7 @@ export class IconsService {
     faRunning,
     faSave,
     faSchool,
+    faSearch,
     faSeedling,
     faShareAlt,
     faShippingFast,
@@ -181,6 +186,7 @@ export class IconsService {
     faTasks,
     faThermometerHalf,
     faThList,
+    faThumbsDown,
     faThumbsUp,
     faTimes,
     faTimesCircle,

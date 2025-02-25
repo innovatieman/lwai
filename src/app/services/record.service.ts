@@ -7,11 +7,12 @@ import { AuthService } from '../auth/auth.service';
 export class RecordService {
   recording: boolean = false;
   stream: MediaStream | null = null;
+  analyzing: boolean = false;
   constructor(
     private auth:AuthService,
   ) { }
 
-  async startRecording(type:string,callback:Function) {
+  async startRecording(type:string,conversationId:string,callback:Function) {
     if(type === 'audioToText'){
       this.recording = true;
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -25,23 +26,30 @@ export class RecordService {
       mediaRecorder.start();
     
       // Stop de opname na een bepaalde tijd of via een gebruikersactie
-      setTimeout(() => mediaRecorder.stop(), 10000);
+      setTimeout(() => mediaRecorder.stop(), 60000);
     
       mediaRecorder.onstop = () => {
         this.recording = false;
+        this.analyzing = true;
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         // this.playRecording(audioBlob);
-        this.uploadAudio(audioBlob,callback);
+        // console.log('Audio Blob:', audioBlob);
+        // get audio length in seconds
+        // const audioLength = audioBlob.size / 16000;
+
+        this.uploadAudio(audioBlob,conversationId,callback);
       };
     }
   }
 
-  stopRecording(callback:Function) {
+  stopRecording(callback?:Function) {
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop());
     }
     this.recording = false;
-    callback();
+    if(callback){
+      callback();
+    }
   }
 
   playRecording(audioBlob: Blob) {
@@ -50,7 +58,7 @@ export class RecordService {
     audio.play();
   }
 
-  async uploadAudio(audioBlob: Blob,callback:Function) {
+  async uploadAudio(audioBlob: Blob,conversationId:string,callback:Function) {
     // console.log('Uploading audio...');
 
     const fileReader = new FileReader();
@@ -60,9 +68,10 @@ export class RecordService {
 
     const payload = {
       userId: this.auth.userInfo.uid,
+      conversationId: conversationId,
       file: base64data,
     };
-
+    // console.log("Payload:", payload);
     const response = await fetch("https://soundtotextai-p2qcpa6ahq-ew.a.run.app", {
       method: "POST",
       headers: {
@@ -73,6 +82,7 @@ export class RecordService {
 
     const result = await response.json();
     // console.log("Response:", result);
+    this.analyzing = false;
     if(result.transcription){
       callback(result.transcription);
     }

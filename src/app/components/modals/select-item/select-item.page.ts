@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { IconsService } from 'src/app/services/icons.service';
 import * as moment from 'moment'
 import { TranslateService } from '@ngx-translate/core';
@@ -12,19 +12,22 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./select-item.page.scss'],
 })
 export class SelectItemPage implements OnInit {
-  title:string=''
-  text:string=''
-  list:any;
+  @Input() text:string = ''
+  @Input() list:any = []
+  @Input() iconList:boolean = false
+  @Input() title:string = ''
+  @Input() extraData:any
+  // title:string=''
+  // text:string=''
+  // list:any;
   multiple:boolean=false
-  extraData:any
+  // extraData:any
   fields:any = ''
-  iconList:boolean=false
+  // iconList:boolean=false
   search:string=''
   
   constructor(
     public icon:IconsService,
-    public modal:ModalController,
-    private navParams:NavParams,
     public modalController:ModalController,
     public translate:TranslateService,
     private filterSearch:FilterSearchPipe,
@@ -34,15 +37,15 @@ export class SelectItemPage implements OnInit {
   }
 
   ngOnInit() {
-    this.text = this.navParams.get('text')
-    this.list = this.navParams.get('list')
-    this.iconList = this.navParams.get('iconList')
-    this.title = this.navParams.get('title')
-    this.extraData = this.navParams.get('extraData')
+    // this.text = this.navParams.get('text')
+    // this.list = this.navParams.get('list')
+    // this.iconList = this.navParams.get('iconList')
+    // this.title = this.navParams.get('title')
+    // this.extraData = this.navParams.get('extraData')
     if(!this.title){
-      this.title = this.translate.instant('modal_select_item_title')
+      this.title = 'Selecteer'
     }
-    console.log(this.list)
+    // console.log(this.list)
     // console.log(this.extraData)
   }
 

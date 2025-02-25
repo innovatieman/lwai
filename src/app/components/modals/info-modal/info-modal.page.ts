@@ -1,6 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -10,52 +11,63 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./info-modal.page.scss'],
 })
 export class InfoModalPage implements OnInit {
-  title:string='';
-  content:string='';
-  buttons!:any[]
-  video:boolean = false
-  videoLoaded:boolean = false
-  btnsClass:string = ''
   @ViewChild("iframe",{static:false}) iframe!: ElementRef;
+  feedbackGiven:boolean = false
+  // @Input() extraData:any = {
+  //   textBorder:true
+  // }
+  @Input() options:any={
+    title:'',
+    content:'',
+    textBorder:true,
+    video:false,
+    image:false,
+    videoLoaded:false,
+    btnsClass:''
+  };
+  // @Input() title:string='';
+  // @Input() content:string='';
+  // @Input() buttons!:any[]
+  // @Input() video:boolean = false
+  // @Input() image:boolean = false
+  // @Input() videoLoaded:boolean = false
+  // @Input() btnsClass:string = ''
 
   constructor(
     public modalCtrl:ModalController,
-    private navParams:NavParams,
     public icon:IconsService,
     private toast:ToastService,
     public media:MediaService,
     private translate:TranslateService,
+    private firestore:FirestoreService,
   ) { 
 
   }
 
   ngOnInit() {
-    if(!this.videoLoaded&&this.video){
+    if(!this.options.videoLoaded&&this.options.video){
       this.toast.showLoader()
     }
-    if(this.navParams.get('title')){
-      this.title = this.navParams.get('title')
-    }
-    else if(!this.navParams.get('video')){
-      this.title = this.translate.instant('toast_header')
-    }
-    if(this.navParams.get('content')){
-      this.content = this.navParams.get('content')
-    }
-    if(this.navParams.get('video')){
-      this.video = this.navParams.get('video')
-    }
-    if(this.navParams.get('buttons')){
-      this.buttons = this.navParams.get('buttons')
-    }
-    if(this.navParams.get('btnsClass')){
-      this.btnsClass = this.navParams.get('btnsClass')
-    }
+    console.log(this.options)
   }
 
   hideLoader(){
     setTimeout(() => {
       this.toast.hideLoader()
     }, 2000);
+  }
+
+  feedback(value:boolean){
+    console.log(value)
+    let obj:any = JSON.parse(JSON.stringify(this.options.feedback))
+    obj.positive = value
+    for(let key in obj){
+      if(obj[key] === null || obj[key] === undefined){
+        delete obj[key]
+      }
+    } 
+    this.firestore.create('feedback',obj).then(()=>{
+      this.feedbackGiven = true
+    })
   }
 }

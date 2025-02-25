@@ -16,6 +16,20 @@ exports.setRole = functions.region('europe-west1').https.onCall((data,context)=>
 
 })
 
+exports.confirmEmail = functions.region('europe-west1').https.onCall(async(data,context)=>{
+    const user = await admin.firestore().collection('users').doc(context.auth?.uid).get()
+    if(!user.exists){
+        return new responder.Message('Admin not found',404)
+    }
+    const userData = user.data()
+    if(!userData?.isAdmin){
+        return new responder.Message('Not authorized',403)
+    }
+    return admin.auth().getUserByEmail(data.email)
+    .then(user=>{
+        return admin.auth().updateUser(user.uid,{emailVerified:true})
+    })
+})
 
 exports.deleteUser = functions.region('europe-west1').https.onCall((data,context)=>{
     if(context.auth?.token.admin!==true){

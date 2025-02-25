@@ -73,3 +73,6 @@
 .blue{
   @include setColor(#3498db);
 }
+.lightgrey{
+  @include setColor(lightgrey);
+}

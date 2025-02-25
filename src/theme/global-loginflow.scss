@@ -4,7 +4,8 @@
     align-items: center;
     flex-flow: column;
     width: 100%;
-    height: 100%;
+    // height: 100%;
+    padding:20px 0px;
 
     .login_logo{
       margin-bottom: 20px;
@@ -179,7 +180,7 @@
             top:2px;
         }
     }
-    .google-btn{
+    .google-btn,.facebook-btn{
         span{
             top:1px;
         }

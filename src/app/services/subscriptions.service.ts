@@ -23,10 +23,11 @@ export class SubscriptionsService {
     // private nav: NavService,
     // private toast: ToastService,
     // private afAuth: AngularFireAuth,
-    private functions: AngularFireFunctions,
     private firestoreService: FirestoreService,
+    private functions: AngularFireFunctions,
     private modalService: ModalService,
     private firestore: AngularFirestore,
+    private auth: AuthService
   ) { }
 
   public loadSubscriptions(userId: string) {
@@ -77,48 +78,54 @@ export class SubscriptionsService {
     })
   }
 
-  // async activeCourses(){
-  //   // return de array met courseIds van de actieve student abonnementen
-  //   return this.subscriptions$.pipe(
-  //     map((subscriptions) => subscriptions.filter((sub) => sub.status === 'active' && sub.type === 'student').map((sub) => sub.courseIds))
-  //   );
-  // }
-
-  // activeCourses(): Observable<string[]> {
-  //   return this.subscriptions$.pipe(
-  //     map((subscriptions) =>
-  //       subscriptions
-  //         .filter((sub) => sub.status === 'active' && sub.type === 'student')
-  //         .map((sub) => sub.courseIds)
-  //         .flat() // Optioneel: combineer meerdere arrays in één array als `courseIds` een array is
-  //     )
-  //   );
-  // }
-
-  getActiveCourses(userId:string){
-    // return []
-    // console.log(this.areSubscriptionsLoaded())
-    this.activeCourses = []
+  getActiveCourses(userId: string) {
+    this.activeCourses = [];
+  
     this.subscriptions$.pipe(
-      map((subscriptions) => subscriptions.filter((sub) => sub.status === 'active' && sub.type === 'student').map((sub) => sub.courseIds))
+      map((subscriptions) =>
+        subscriptions
+          .filter((sub) => sub.status === 'active' && sub.type === 'student')
+          .map((sub) => sub.courseIds)
+      ),
+      map((courseIds) => courseIds.flat()), // Alle courseIds vlak maken
+      map((courseIds) => 
+        courseIds.map((courseId) => 
+          this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
+        )
+      ),
+      switchMap((courseObservables) => combineLatest(courseObservables)) // Combineer live updates
     ).subscribe((courses) => {
-      let list = courses.flat()
-      list.forEach((courseId) => {
-        // console.log(courseId)
-        this.firestoreService.getSubDoc('users',userId,'courses',courseId).subscribe((course) => {
-          console.log(course.payload.data())
-          let item:any = course.payload.data()
-          item.id = course.payload.id
-          // console.log(item)
-          this.activeCourses.push(item)
-        })
-      })
-
-    })
+      const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
+  
+      courses.forEach((course: any) => {
+        let item: any = course.payload.data();
+        item.id = course.payload.id;
+  
+        if (item.status === 'active' && !uniqueCourses.has(item.id)) {
+          uniqueCourses.set(item.id, item);
+        }
+      });
+  
+      // Converteer de unieke waarden naar een array
+      this.activeCourses = Array.from(uniqueCourses.values());
+    });
   }
 
   getActiveCourse(courseId:string){
     return this.activeCourses.find((course) => course.id === courseId)
   }
 
+  publicCourses: any[] = [];
+  getPublicCourses(){
+    return this.firestoreService.query('active_courses','public',true).subscribe((courses) => {
+      this.publicCourses = courses.map((course:any) => {
+        return { id: course.payload.doc.id, ...course.payload.doc.data() }
+      })
+      console.log(this.publicCourses)
+    })
+  }
+
+  getPublicCourse(courseId:string){
+    return this.publicCourses.find((course) => course.id === courseId)
+  }
 }

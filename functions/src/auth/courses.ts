@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions/v1';
-
+import * as responder from '../utils/responder'
 import admin from '../firebase'
 
-exports.updateCourses = functions.firestore
+exports.updateCourses = functions.runWith({memory:'1GB'}).firestore
   .document('users/{userId}')
   .onWrite(async (change, context) => {
     const userId = context.params.userId;
@@ -11,7 +11,10 @@ exports.updateCourses = functions.firestore
     if(change.after.exists){
 
         let activeCourses = change.after.data().activeCourseIds
-        let oldCourses = change.before.data().activeCourseIds
+        let oldCourses:any = []
+        if(change.before.data()){
+            oldCourses = change.before.data().activeCourseIds
+        }
 
         if(activeCourses && oldCourses){
             let newCourses = activeCourses.filter((course:any) => !oldCourses.includes(course))
@@ -55,3 +58,32 @@ exports.updateCourses = functions.firestore
 
     return null;
   });
+
+exports.enlistCourse = functions.region('europe-west1').https.onCall(async (data,context)=>{
+    if(!context.auth){
+        return new responder.Message('Not signed in',401)
+    }
+    //check if course exists
+    const db = admin.firestore();
+    let courseRef = db.collection('active_courses').doc(data.courseId)
+    let course = await courseRef.get()
+    if(!course.exists){
+        return new responder.Message('Course not found',404)
+    }
+    //check if user is already enrolled
+    let userRef = db.collection(`users`).doc(context.auth.uid)
+    let user = await userRef.get()
+    if(user.exists){
+        let userCourses = user.data().activeCourseIds
+        if(userCourses.includes(data.courseId)){
+            return new responder.Message('Already enrolled',400)
+        }
+    }
+    //enroll user
+    let userCourses = user.data().activeCourseIds || []
+    userCourses.push(data.courseId)
+    userRef.update({
+        activeCourseIds: userCourses
+    })
+    return new responder.Message('Enrolled',200)
+})

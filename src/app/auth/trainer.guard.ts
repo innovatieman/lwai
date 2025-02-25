@@ -9,7 +9,6 @@ import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
 import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { NavService } from '../services/nav.service';
-import { SubscriptionsService } from '../services/subscriptions.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,23 +16,22 @@ import { SubscriptionsService } from '../services/subscriptions.service';
 
 export class TrainerGuard implements CanActivate {
   constructor(
-    private authService: AuthService,
+    private auth: AuthService,
     private nav: NavService,
-    private subscriptionsService: SubscriptionsService
   ) {}
 
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    return this.subscriptionsService.areSubscriptionsLoaded().pipe(
+    return this.auth.areSubscriptionsLoaded().pipe(
       tap((loaded) => {
         if (!loaded) {
           // console.log('Wachten op geladen subscriptions...');
         }
       }),
       filter((loaded) => loaded), // Ga pas verder als subscriptions geladen zijn
-      switchMap(() => this.subscriptionsService.hasActive('trainer')),
+      switchMap(() => this.auth.hasActive('trainer')),
       tap((isTrainer) => {
         if (!isTrainer) {
           this.nav.go('not-authorized');

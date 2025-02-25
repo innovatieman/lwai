@@ -8,7 +8,7 @@
 //   credential: admin.credential.cert(serviceAccount),
 // })
 
-
+process.env.GOOGLE_APPLICATION_CREDENTIALS = './configs/keys/speech-to-text.json';
 // export const db = admin.firestore(); // Exporteer de Firestore database
 // export default admin; // Exporteer de hele `admin`-module als standaard
 
@@ -27,4 +27,8 @@ export * from './maintenance/documents'
 export * from './querys/information'
 export * from './auth/courses'
 export * from './maintenance/ratings'
+export * from './payment/credits'
+export * from './processing/mails'
+export * from './apis/assemblyai'
+export * from './apis/voice2text'
 

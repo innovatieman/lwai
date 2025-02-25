@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Subscription, take } from 'rxjs';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { IonSelect } from '@ionic/angular';
+import { max, Subscription, take } from 'rxjs';
 import { BackupService } from 'src/app/services/backup.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-engine',
@@ -12,16 +15,38 @@ import { ModalService } from 'src/app/services/modal.service';
   styleUrls: ['./engine.page.scss'],
 })
 export class EnginePage implements OnInit {
+  @ViewChild('select_btn_agents') select_btn_agents: any;
   [x: string]: any;
   catSubscription:Subscription | null = null;
   itemSubscription:Subscription | null = null;
   private subCollectionSubs: Subscription[] = [];
   private collectionSubs: Subscription[] = [];
+  configModules={
+    toolbar: {
+      container:[
+        ['bold', 'italic', 'underline'],
+        [{ 'color': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'align': [] }],
+        [{'indent': '-1'}, {'indent': '+1'}],
+        ['link'],
+        ['clean'],
+        ['HTML'],
+      ],
+      clipboard: {
+        matchVisual: false
+      }
+    }
+  }
+  showHtml:boolean=false
 
+  copiedCategory:any = null
   formats:any = []
   attitudes:any = []
   positions:any = []
 
+  editingType:string = 'content'
 
   categories:any = [];
   activeTab: number = 0;
@@ -37,7 +62,10 @@ export class EnginePage implements OnInit {
     'attitudes':'level',
     'positions':'level',
   }
-  
+
+  attitudesItem:any = {title:'Attitudes',id:'attitudes'}
+
+
   settingsItems:any = [
     {title:'Formats',id:'formats'},
     {title:'Attitudes',id:'attitudes'},
@@ -54,6 +82,13 @@ export class EnginePage implements OnInit {
     {title:'Doel checker',id:'goals'},
     {title:'Case Prompter',id:'case_prompter'},
     {title:'Achtergrond',id:'background'},
+    {title:'Vaardigheden',id:'skills'},
+    {title:'Fase maker',id:'phase_creator'},
+  ]
+
+  standaloneAgents:any = [
+    {title:'Vaardigheden',id:'skills'},
+    {title:'Fase maker',id:'phase_creator'},
   ]
 
   firstInputlabels:any = {
@@ -67,23 +102,26 @@ export class EnginePage implements OnInit {
       'goals':'Vraag aan Agent',
       'case_prompter':'Vraag aan Agent',
       'background':'Vraag aan Agent',
+      'skills':'Vraag aan Agent',
+      'phase_creator':'Vraag aan Agent',
     }
   }
   
 
 
   fieldOptions:any = [
-    {field:'title',label:'Title',type:'text',agents:['main']},
-    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
-    {field:'extraInfo',label:'Extra kennis input over de categorie',type:'textarea',agents:['reaction']},
-    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
-    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
-    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:500,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
+    {field:'title',label:'Title',type:'text',agents:['main'],categories:['all']},
+    {field:'general_layer',label:'General Layer knowledge',type:'textarea',agents:['main'],categories:['main']},
+    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
+    {field:'extraInfo',label:'Extra kennis input over de categorie',type:'textarea',agents:['reaction'],categories:['all']},
+    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
+    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
+    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:0,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
   ]
   
   fieldOptionsFormat:any = [
-    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
-    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background']},
+    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills']},
+    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills']},
   ]
   
   fieldOptionsList:any = [
@@ -92,27 +130,32 @@ export class EnginePage implements OnInit {
     {field:'description',label:'Description',type:'textarea',required:true},
   ]
 
-  activeItem:any = {
-
-  } // JSON.parse(JSON.stringify(this.settingsItems[0]));
+  activeItem:any = {} // JSON.parse(JSON.stringify(this.settingsItems[0]));
   activeAgent: any = JSON.parse(JSON.stringify(this.basicContent));
 
   constructor(
     private firestoreService:FirestoreService,
-    private firestore: AngularFirestore,
     public icon:IconsService,
     public backupService:BackupService,
     private modalService:ModalService,
+    private rf:ChangeDetectorRef,
+    private toast:ToastService,
+    private functions:AngularFireFunctions,
   ) { }
 
   ngOnInit() {
-    this.load('categories')
+    this.toast.showLoader('Loading data')
+    this.load('categories',()=>{
+      this.activateItem(this.getCategory('main'))
+      this.toast.hideLoader()
+    })
     this.load('formats')
     this.load('attitudes')
     this.load('positions')
-    setTimeout(() => {
-      this.activateItem(this.settingsItems[0],true)
-    }, 3000);
+    // this.showEditor()
+    // setTimeout(() => {
+    //   this.activateItem(this.getCategory('main'))
+    // }, 3000);
     // this.createItems()
   }
 
@@ -157,9 +200,50 @@ export class EnginePage implements OnInit {
       
   }
 
+  changeEditType(){
+    console.log(this.editingType)
+    if(this.editingType=='format'){
+      this.activateItem({title:'Formats',id:'formats'},true)
+    }
+    else if(this.editingType=='attitudes'){
+      this.activateItem(this.attitudesItem,true)
+    }
+    else{
+      this.activateItem(this.getCategory('main'))
+    }
+  }
 
+  getCategory(categoryId:any){
+    return this.categories.filter((e:any)=>e.id==categoryId)[0]
+  }
 
-  load(type:string){
+  selectCategory(){
+    let listCats:any[] = []
+    // listCats[0] = this.getCategory('main')
+    for(let i=0;i<this.categories.length;i++){
+      if(this.categories[i].id!='main'){
+        listCats.push(this.categories[i])
+      }
+    }
+
+    listCats = listCats.sort((a:any,b:any)=>a.title.localeCompare(b.title))
+    listCats.unshift(this.getCategory('main'))
+
+    this.modalService.selectItem('',listCats,(response:any)=>{
+      if(response.data){
+        console.log(response.data)
+        if(response.data.id!='main' && (this.activeAgent.id=='phase_creator' || this.activeAgent.id=='skills')){
+          this.changeAgent({title:'Basisgegevens',id:'main'})
+          this.activateItem(response.data)
+        }
+        else{
+          this.activateItem(response.data)
+        }
+      } 
+    })
+  }
+
+  load(type:string,callback?:Function){
     if(!type){return}
     this.itemSubscription = this.firestoreService.get(type).pipe(take(1)).subscribe((items:any) => {
       this[type] = items.map((docItem: any) => {
@@ -170,7 +254,20 @@ export class EnginePage implements OnInit {
       if(this.sortByOptions[type]){
         this[type] = this[type].sort((a: any, b: any) => a[this.sortByOptions[type]] - b[this.sortByOptions[type]]);
       }
+      if(callback){
+        callback()
+      }
     });
+  }
+
+  openSelect(event:any,selectId:string){
+    this[selectId].interface = 'popover'
+    this[selectId].open()
+  }
+
+  preventClick(event:any){
+    event.preventDefault()
+    event.stopPropagation()
   }
 
   activateItem(item:any,ownCollection?:boolean){
@@ -207,6 +304,15 @@ export class EnginePage implements OnInit {
   changeAgent(agent:any){
     setTimeout(() => {
       this.activeAgent = agent
+      if(this.activeItem.id=='attitudes'){
+        this.changeEditType()
+      }
+      if(this.activeItem.id!='main' && (agent.id=='phase_creator' || agent.id=='skills')){
+        this.activateItem(this.getCategory('main'))
+      }
+
+      // this.select_btn_agents.value = JSON.parse(JSON.stringify(agent))
+      // console.log(this.select_btn_agents)
     }, 1)
   }
 
@@ -216,7 +322,7 @@ export class EnginePage implements OnInit {
   //   });
   // }
 
-  update(field:string,item?:any){
+  update(field:string,item?:any,html:boolean=false){
     let scrollPosition = window.scrollY;
     if(field){
       if(this.activeItem.id=='formats'){
@@ -237,11 +343,39 @@ export class EnginePage implements OnInit {
       else{
         if(field!='phaseList'){
           if(this.activeAgent.id=='main'){
+            if(html){
+              if(!this.activeItem[field]){
+                this.activeItem[field] = ''
+              }
+              this.activeItem[field] = this.activeItem[field]
+              .split('</ol><p><br></p><p>').join('</ol>')
+              .split('</p><p><br></p><ol>').join('<ol>')
+              .split('</ul><p><br></p><p>').join('</ul>')
+              .split('</p><p><br></p><ul>').join('<ul>')
+              .split('<p><br></p>').join('<br>')
+              .split('</p><br><p>').join('<br><br>')
+              .split('</p><p>').join('<br>')
+              .split('&nbsp;').join(' ')
+            }
             this.firestoreService.set('categories',this.activeItem.id,this.activeItem[field],field).then(()=>{
               this.load('categories')
             })
           }
           else{
+            if(html){
+              if(!this.activeItem[this.activeAgent.id][field]){
+                this.activeItem[this.activeAgent.id][field] = ''
+              }
+              this.activeItem[this.activeAgent.id][field] = this.activeItem[this.activeAgent.id][field]
+              .split('</ol><p><br></p><p>').join('</ol>')
+              .split('</p><p><br></p><ol>').join('<ol>')
+              .split('</ul><p><br></p><p>').join('</ul>')
+              .split('</p><p><br></p><ul>').join('<ul>')
+              .split('<p><br></p>').join('<br>')
+              .split('</p><br><p>').join('<br><br>')
+              .split('</p><p>').join('<br>')
+              .split('&nbsp;').join(' ')
+            }
             this.firestoreService.setSub('categories',this.activeItem.id,'agents',this.activeAgent.id,this.activeItem[this.activeAgent.id][field],field)
           }
         }
@@ -266,6 +400,34 @@ export class EnginePage implements OnInit {
     }
   }
 
+  startEditor(event:any){
+    // this.editor = event
+    this.showEditor()
+  }
+
+
+  showEditor(){
+    this.showHtml = false
+    setTimeout(() => {
+      let elements = document.getElementsByClassName("ql-container")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','height:calc(100% - 40px);border:0;')
+      }
+      elements = document.getElementsByClassName("ql-toolbar")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','border:0;')
+      }
+      setTimeout(() => {
+
+        let htmlBtn:any = document.querySelector('.ql-HTML');
+        htmlBtn.innerHTML = 'HTML'
+        htmlBtn.style.width = '50px'
+        htmlBtn.addEventListener('click', (event:any)=> {
+          this.showHtml = true 
+        });
+      },300)
+    },100)
+  }
 
   addPhase(){
     this.activeItem[this.phaseList.id].push({title:'',description:''})
@@ -284,34 +446,42 @@ export class EnginePage implements OnInit {
     this.update('phaseList')
   }
 
+  newCategory(){
+    this.modalService.inputFields('Nieuwe categorie','Geef de nieuwe categorie een id en titel',[
+      {value:'',title:'ID',type:'text',required:true},
+      {value:'',title:'Titel',type:'text',required:true},
+    ],(response:any)=>{
+      console.log(response)
+      if(response.data){
+        this.toast.showLoader('Creating new category and phases')
+        this.firestoreService.set('categories',response.data[0].value,{title:response.data[1].value,phaseList:[]}).then(()=>{
+          for(let i=0;i<this.agents.length;i++){
+            this.firestoreService.setSub('categories',response.data[0].value,'agents',this.agents[i].id,{
+              content:'',
+              systemContent:'',
+              max_tokens:0,
+              temperature:0,
+              overwrite:0,
+            })
+          }
+          setTimeout(() => {
+            this.load('categories',()=>{
+              this.toast.hideLoader()
+              this.activateItem(this.getCategory(response.data[0].value))
+            })
+          }, 10000);
+        })
+        this.copiedCategory = undefined
+      }
+      else{
+        this.copiedCategory = undefined
+      }
+    })
+  }
 
-  // addItem(){
-  //   this.modalService.showConfirmation('Weet je zeker dat je deze actie wilt uitvoeren?').then((response)=>{
-  //     if(response){
-  //       let newItem = JSON.parse(JSON.stringify(this.newItem))
-  //       delete newItem.visible
-  //       this.firestore.create(this.type,newItem).then(()=>{
-  //         this.newItem = JSON.parse(JSON.stringify(this.newItemOptions[this.type]))
-  //         this.load(this.type)
-  //       })
-  //     }
-  //   })
-    
-  
-  // }
-  
-  // async removeItem(){
-
-  //     const confirmed = await this.modalService.showConfirmation('Weet je zeker dat je deze actie wilt uitvoeren?');
-  //     if (confirmed) {
-  //       this.firestore.delete(this.type,this.items[this.activeTab].id).then(()=>{
-  //         this.load(this.type)
-  //       })
-  //     } else {
-  //       console.log('Actie geannuleerd');
-  //     }
-
-  // }
+  getcategory(id:string){
+    return this.categories.filter((e:any)=>e.id==id)[0]
+  }
 
 
   // getBackups(type:string){
@@ -349,6 +519,14 @@ export class EnginePage implements OnInit {
 
   createBackups(){
 
+    this.backupService.createbackups('category',this.activeItem.id,this.activeItem)
+    for(let i=0;i<this.categories.length;i++){
+      // this.backupService.createbackups(this.activeItem.id,this.agents[i].id,this.activeItem[this.agents[i].id])
+
+      // console.log(this.categories[i])
+    }
+
+
     // for(let i=0;i<this.agents.length;i++){
     //   this.backupService.createbackups(this.activeItem.id,this.agents[i].id,this.activeItem[this.agents[i].id])
     // }
@@ -362,6 +540,17 @@ export class EnginePage implements OnInit {
 
   }
 
-
+  reCreatePhases(item:any){
+    this.modalService.showConfirmation('Are you sure you want to recreate the phases?').then((response:any)=>{
+      if(response){
+        this.toast.showLoader('Recreating phases')
+        this.functions.httpsCallable('createPhases')({categoryData:{id:item.id,title:item.title}}).subscribe((result:any)=>{
+          console.log(result)
+          this.toast.hideLoader()
+          this.loadSubCollections(item.id)
+        })
+      }
+    })
+  }
 
 }

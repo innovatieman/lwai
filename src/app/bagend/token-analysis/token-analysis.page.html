@@ -1,0 +1,153 @@
+<app-header page="admin"></app-header>
+<main>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="3">
+        <ion-card basicPadding>
+          <ion-input type="text" [(ngModel)]="conversationId" placeholder="Voer Conversation ID in"></ion-input>
+          <ion-input type="text" [(ngModel)]="userId" placeholder="Voer User ID in"></ion-input>
+          <ion-button (click)="getConversation()">Get Conversation</ion-button>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="9" *ngIf="tokenList?.length">
+        <h3>Gesprekspartner</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'reaction' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+        <h3>Feedback</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'feedback' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+        <h3>Soufleur</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'choices' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+        <h3>Fact Checker</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'facts' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+        <h3>Achtegrond expert</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'background' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+        <h3>Fase checker</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'phases' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+        <h3>Eindevaluatie</h3>
+        <table>
+          <tr>
+            <th>Input tokens</th>
+            <th>Output tokens</th>
+            <th>Kosten input</th>
+            <th>Kosten output</th>
+            <th>Totale kosten</th>
+            
+          </tr>
+          <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'close' ">
+            <td>{{token.usage.prompt_tokens}}</td>
+            <td>{{token.usage.completion_tokens}}</td>
+            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+          </tr>
+        </table>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+
+</main>
