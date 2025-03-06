@@ -94,6 +94,12 @@
       <ion-card class="videoCard" noMargin fullheight flex center-hor>
         <video class="avatar" id="avatar_video" autoplay playsinline *ngIf="conversation.caseItem.avatarName"></video>
         <img class="avatar" src="assets/img/default_avatar.png" *ngIf="!conversation.caseItem.avatarName">
+        <div basicPadding class="connectingCardMobile" [ngStyle]="{'opacity':conversation.heyGen.streamIsActive || conversation.heyGen.connectionFailed ? 0 : 1}" *ngIf="interaction!='chat'&&conversation.activeConversation?.video_on">
+          <ion-spinner name="bubbles" *ngIf="conversation.heyGen.connecting"></ion-spinner>
+          <span *ngIf="conversation.heyGen.connecting">Connecting</span>
+          <span *ngIf="conversation.heyGen.streamIsActive">Connected</span>
+          <span *ngIf="conversation.heyGen.connectionFailed">Connection failed</span>
+        </div>
       </ion-card>
       </div>
 
@@ -110,8 +116,14 @@
           <video class="avatar" id="avatar_video" autoplay playsinline *ngIf="conversation.caseItem.avatarName"></video>
           <img class="avatar" src="assets/img/default_avatar.png" *ngIf="!conversation.caseItem.avatarName">
         </ion-card>
-        <div flex center-ver fullwidth style="padding:5px;height:300px;max-height:30%;">
-          <div [ngStyle]="{'width':media.screenSize=='md' ? '20%' : '50%'}"></div>
+        <ion-card basicPadding class="connectingCard" [ngStyle]="{'opacity':conversation.heyGen.streamIsActive ? 0 : 1}" *ngIf="interaction!='chat'&&conversation.activeConversation?.video_on">
+          <ion-spinner name="bubbles" *ngIf="conversation.heyGen.connecting"></ion-spinner>
+          <span *ngIf="conversation.heyGen.connecting">Connecting</span>
+          <span *ngIf="conversation.heyGen.streamIsActive">Connected</span>
+          <!-- <span *ngIf="!conversation.heyGen.streamIsActive&&!conversation.heyGen.connecting">Connection Failed</span> -->
+        </ion-card>
+        <div flex center-ver fullwidth style="padding:5px;height:300px;max-height:30%;" *ngIf="interaction=='chat'||!conversation.activeConversation?.video_on">
+          <div [ngStyle]="{'width':media.screenSize=='md' ? '20%' : '50%'}" *ngIf="!conversation.caseItem.avatarName"></div>
           <ion-card class="imageCard" *ngIf="interaction=='chat'&&conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(' + conversation.activeConversation.photo + ')'}" flex center-hor>
           </ion-card>
           <ion-card class="imageCard" *ngIf="interaction=='chat'&&!conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}" flex center-hor>
@@ -171,7 +183,7 @@
             </ion-card-header>
           </ion-card> -->
 
-          <ion-card class="cipherCard" basicPadding *ngIf="cases.isAdmin">
+          <!-- <ion-card class="cipherCard" basicPadding *ngIf="cases.isAdmin">
             <ion-card-title class="chartTitle">Kosten</ion-card-title>
             <ul>
               <li>Prompt cost: ${{(conversation.usedTokens.prompt_tokens * 0.0025 / 1000) | number : '1.2-2'}}</li>
@@ -179,7 +191,7 @@
               <li>Total cost: ${{((conversation.usedTokens.prompt_tokens * 0.0025 / 1000) + (conversation.usedTokens.completion_tokens * 0.01 / 1000)) | number : '1.2-2'}}</li>
 
             </ul>
-          </ion-card>
+          </ion-card> -->
 
         </div>
       </ion-col>
@@ -190,7 +202,7 @@
           <ion-row center noPadding class="mainCardMobile" [ngStyle]="{'padding':media.smallDevice? '0px' : '24px 16px 0 0','background':media.smallDevice? 'white' : 'none'}">
             
             
-            <ion-col [size]="12" autoScroll id="innerChatDiv" noPadding *ngIf="interaction!='video'" [ngStyle]="{'height':interaction=='combination' ? 'calc(100% - 200px)' : 'calc(100%)'}">
+            <ion-col [size]="12" autoScroll id="innerChatDiv" noPadding *ngIf="interaction!='video'" [ngStyle]="{'height':interaction=='combination' ? 'calc(100%)' : 'calc(100%)'}">
               <ion-card class="chatCard" noMargin [ngStyle]="{'border-width':media.smallDevice? '0px' : '1px'}">
 
                 <ion-card-content noPadding>
@@ -214,8 +226,10 @@
                         <fa-icon *ngIf="conversation.getFeedbackChat(index,'feedbackCipher')" [icon]="icon.get('faInfoCircle')" pointer class="chatUserIcon" (click)="showFeedbackModal(index)"></fa-icon>
                       </div>
 
-                      <div class="chatUser" *ngIf="message.role === 'user'">
-                        <div>{{message.content}}</div>
+                      <div style="text-align:right" fullwidth *ngIf="message.role === 'user'">
+                        <div class="chatUser" >
+                          <div>{{message.content}}</div>
+                        </div>
                       </div>
       
                     </div>
@@ -227,12 +241,14 @@
                       <div class="chatAssistentInfo"></div>
 
                     </div>
-      
-                    <div class="chatItem user" *ngIf="conversation.latestUserItem(conversation.messages)!=conversation.tempTextUser&&conversation.tempTextUser">
-                      <div class="chatUser">
-                        <div>{{conversation.tempTextUser}}</div>
+                    
+                    <div style="text-align:right" fullwidth *ngIf="conversation.latestUserItem(conversation.messages)!=conversation.tempTextUser&&conversation.tempTextUser">
+                      <div class="chatItem user">
+                        <div class="chatUser">
+                          <div>{{conversation.tempTextUser}}</div>
+                        </div>
+                        <div class="chatUserInfo"></div>
                       </div>
-                      <div class="chatUserInfo"></div>
                     </div>
       
                     <div class="chatItem assistant" *ngIf="conversation.waiting&&!conversation.messageTemp.content">
@@ -249,11 +265,14 @@
       
           </ion-row>
         </div>
-          <div *ngIf="analyzing||record.analyzing" class="analyzer">
-            <div class="pulse-loader">
-              Processing...
-            </div>
+        <div class="analyzer" *ngIf="analyzing||record.analyzing">
+          <div class="pulse-loader" *ngIf="analyzing">
+            Analyzing...
           </div>
+          <div class="pulse-loader" *ngIf="record.analyzing">
+            Processing sound to text
+          </div>
+        </div>
       
         <div *ngIf="started" class="bottomPart">
           <ion-row noPadding>

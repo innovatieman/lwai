@@ -72,7 +72,8 @@ exports.addSubscription = functions.region('europe-west1').https.onCall(async (d
 
 })
 
-exports.updateActiveSubscriptions = functions.firestore
+exports.updateActiveSubscription = functions.region('europe-west1')
+  .firestore
   .document('users/{userId}/subscriptions/{subscriptionId}')
   .onWrite(async (change, context) => {
     const userId = context.params.userId;

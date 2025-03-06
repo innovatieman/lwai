@@ -21,7 +21,7 @@
               <span>{{getItem(item.id).title}}</span>
             </ion-card-title>
           </ion-card-header>
-        </ion-card>
+        </ion-card> 
       </ion-col>
 
       <ion-col [size]="media.smallDevice ? 12 : 8">
@@ -31,10 +31,10 @@
               <span>{{currentLoadedItem.title}}</span>
             </ion-card-title>
           </ion-card-header>
-          <ion-card-content>
-            <div [innerHTML]="currentLoadedItem.intro" weight600 font-16 marginBottom></div>
-            <div *ngIf="currentLoadedItem.photo&&!currentLoadedItem.conversation">
-              <img [src]="currentLoadedItem.photo" alt="" borderRadius24>
+          <ion-card-content *ngIf="courseData.itemIds[currentIndex].type=='infoItem'">
+            <div [innerHTML]="currentLoadedItem.description" weight600 font-16 marginBottom></div>
+            <div *ngIf="currentLoadedItem.photo&&!currentLoadedItem.conversation" style="height:400px;" marginBottom>
+              <img [src]="currentLoadedItem.photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
             </div>
             <div *ngIf="currentLoadedItem.type=='video'">
               <video controls>
@@ -43,8 +43,9 @@
               </video>
             </div>
             <div *ngIf="currentLoadedItem.type=='text'">
-              <div [innerHTML]="currentLoadedItem.content"></div>
+              <div [innerHTML]="currentLoadedItem.content" class="textContainer"></div>
             </div>
+
             <div *ngIf="courseData.itemIds[currentIndex].type=='case'">
               <ion-row>
                 <ion-col size="5">
@@ -76,6 +77,65 @@
               <ion-button *ngIf="!currentLoadedItem.finished" (click)="finish()" color="secondary" class="saveButton">Klaar</ion-button>
             </div>
           </ion-card-content>
+
+          <ion-card-content *ngIf="courseData.itemIds[currentIndex].type=='practice'">
+            <div [innerHTML]="currentLoadedItem.intro" weight600 font-16 marginBottom></div>
+            <ion-row marginBottom>
+              <ion-col size="6" *ngFor="let caseId of courseData.itemIds[currentIndex].caseIds">
+                <ion-card noPadding pointer borderRadius16 fullheight>
+                  <ion-card-content noPadding fullHeight>
+                      <div backgroundImage class="avatarImage" *ngIf="getItem(caseId.id).photo" [ngStyle]="{'background-image': 'url(' + getItem(caseId.id).photo + ')'}"></div>
+                      <div backgroundImage class="avatarImage" *ngIf="!getItem(caseId.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                      <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                          <ion-card-header >
+                              <ion-card-title font-18 weight600>{{getItem(caseId.id).title}}</ion-card-title>
+                              <ion-card-subtitle align-left>{{getItem(caseId.id).description | maxLength : 80 : true}}</ion-card-subtitle>
+                          </ion-card-header>
+                      </div>
+                      <div center>
+                        <ion-button color="primary" fill="outline" class="saveButton" (click)="startConversation(getItem(caseId.id))" *ngIf="!getConversation(courseData.trainerId,courseId,getItem(caseId.id).id)">Start gesprek</ion-button>
+                        <ion-button color="secondary" fill="outline" class="saveButton" (click)="continueConversation(getConversation(courseData.trainerId,courseId,getItem(caseId.id).id))" *ngIf="getConversation(courseData.trainerId,courseId,getItem(caseId.id).id)&&!getConversation(courseData.trainerId,courseId,getItem(caseId.id).id).closed">Ga verder met het gesprek</ion-button>
+                        <ion-button color="success" fill="outline" class="saveButton" (click)="continueConversation(getConversation(courseData.trainerId,courseId,getItem(caseId.id).id))" *ngIf="getConversation(courseData.trainerId,courseId,getItem(caseId.id).id)?.closed">Gesprek is afgerond</ion-button>
+                        <ion-button color="warning" fill="outline" class="saveButton" style="margin-left:20px;--padding-start:24px!important;--padding-end:24px!important" (click)="startConversation(getItem(caseId.id),true)" *ngIf="getConversation(courseData.trainerId,courseId,getItem(caseId.id).id)?.closed">
+                          <fa-icon font-22 [icon]="icon.get('faRedoAlt')"></fa-icon>
+                        </ion-button>
+                      </div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+            <!-- <div *ngIf="courseData.itemIds[currentIndex].type=='case'">
+              <ion-row>
+                <ion-col size="5">
+                  <ion-card noPadding style="height:300px;">
+                      <ion-card-content noPadding style="height:200px;">
+                        <div backgroundImage class="avatarImage" *ngIf="currentLoadedItem.photo" [ngStyle]="{'background-image': 'url(' + currentLoadedItem.photo + ')'}"></div>
+                        <div backgroundImage class="avatarImage" *ngIf="!currentLoadedItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                      </ion-card-content>
+                        <ion-card-header center flex style="height:100px;">
+                            <ion-card-title font-18 weight600>{{currentLoadedItem.title}}</ion-card-title>
+                        </ion-card-header>
+                  </ion-card>
+                </ion-col>
+                <ion-col size="7">
+                  <ion-button color="primary" (click)="startConversation(currentLoadedItem)" *ngIf="!getConversation(courseData.trainerId,courseId,currentLoadedItem.id)">Start gesprek</ion-button>
+                  <ion-button color="secondary" (click)="continueConversation(getConversation(courseData.trainerId,courseId,currentLoadedItem.id))" *ngIf="getConversation(courseData.trainerId,courseId,currentLoadedItem.id)&&!getConversation(courseData.trainerId,courseId,currentLoadedItem.id).closed">Ga verder met het gesprek</ion-button>
+                  <ion-button color="success" (click)="continueConversation(getConversation(courseData.trainerId,courseId,currentLoadedItem.id))" *ngIf="getConversation(courseData.trainerId,courseId,currentLoadedItem.id)?.closed">Gesprek is afgerond</ion-button>
+                </ion-col>
+              </ion-row>
+            </div> -->
+
+
+            <div flex center-ver fullwidth>
+              <ion-button *ngIf="currentIndex!=0" (click)="gotoItem(currentIndex-1)" color="primary" class="saveButton">Terug</ion-button>
+              <span class="spacer"></span>
+              <ion-button *ngIf="currentLoadedItem.finished &&currentIndex!=courseData?.itemIds?.length-1" (click)="next()" color="primary" class="saveButton">Volgende</ion-button>
+              <ion-button *ngIf="!currentLoadedItem.finished" (click)="finish()" color="secondary" class="saveButton">Klaar</ion-button>
+              <ion-button *ngIf="currentLoadedItem.finished &&currentIndex==courseData?.itemIds?.length-1" (click)="closeCourse()" color="dark" class="saveButton">Afsluiten</ion-button>
+
+            </div>
+          </ion-card-content>
+
         </ion-card>
       </ion-col>
     </ion-row>

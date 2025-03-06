@@ -539,8 +539,8 @@ video{
 }
 
 .totalScreen{
-  width: 100%;
-  height: 100%;
+  width: 0%;
+  height: 0%;
   position: absolute;
   z-index: 5;
 }
@@ -685,5 +685,55 @@ video{
   font-size: 14px;
   font-style: italic;
   z-index: 10;
-  background: var(--background-global);
+  // background: var(--background-global);
+}
+
+.connectingCard{
+  position: absolute;
+  z-index: 10;
+  top: 15px;
+  width: calc(100% - 30px);
+  height: 300px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+  transition: all 1s;
+  ion-spinner{
+    color: var(--color-global);
+    width: 30px;
+    height: 30px;
+  }
+  span{
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 20px;
+  }
+}
+
+.connectingCardMobile{
+  position: absolute;
+  z-index: 10;
+  top: 15px;
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+  transition: all 1s;
+  ion-spinner{
+    color: var(--color-global);
+    width: 30px;
+    height: 30px;
+  }
+  span{
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 20px;
+  }
 }

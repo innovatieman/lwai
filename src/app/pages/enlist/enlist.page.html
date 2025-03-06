@@ -17,7 +17,7 @@
         
 
         <!-- Courses -->
-        <ion-card noMargin basicPadding *ngIf="courseData?.id" flex>
+        <ion-card style="margin:10px 0px;" basicPadding *ngIf="courseData?.id" flex>
           <div class="courseImage">
             <img [src]="courseData.photo" alt="">
           </div>
@@ -40,26 +40,27 @@
         </ion-card>
         <div *ngIf="courseData?.id" class="reOrderList">
           
-          <h3>({{courseData.module_type=='practice' ? 'Oefeningen' : 'Programma'}})</h3>
+          <h3>Programma</h3>
 
             <ion-item *ngFor="let item of courseData.itemIds;let item_index=index" class="subItem" lines="none">
                 <ion-thumbnail slot="start">
-                  <img [src]="getItem(item.id).photo" />
+                  <img [src]="getItem(item.id).photo" *ngIf="getItem(item.id).photo&&getItem(item.id).type!='video'" />
+                  <img src="assets/img/alicia_background.webp" *ngIf="!getItem(item.id).photo&&getItem(item.id).type!='video'" />
+                  <img src="assets/img/default_video_image.webp" *ngIf="getItem(item.id).type=='video'" />
                 </ion-thumbnail>
                 <div>
-                  <ion-card-title>{{item_index+1}}. {{getItem(item.id).title}}</ion-card-title>
+                  <ion-card-title>{{item_index+1}}. {{getItem(item.id).title}} <span *ngIf="item.type=='practice'&&item.caseIds?.length">({{item.caseIds.length}})</span></ion-card-title>
                   <ion-card-subtitle>{{getItem(item.id).user_info | maxLength : 150 : true}}</ion-card-subtitle>
                 </div>
-                <ion-button slot="end" fill="clear" (click)="modalService.showText(getItem(item.id).user_info,getItem(item.id).title,false,[],true,null,'',{textBorder:false})">
+                <ion-button *ngIf="getItem(item.id).description" slot="end" fill="clear" (click)="modalService.showText(getItem(item.id).description,getItem(item.id).title,false,[],true,null,'',{textBorder:false})">
                   <fa-icon [icon]="icon.get('faInfoCircle')" font-18 ></fa-icon>
                 </ion-button>
             </ion-item>
           
 
-          <ion-grid *ngIf="courseData?.id && courseData.module_type=='practice'">
+          <!-- <ion-grid *ngIf="courseData?.id && courseData.module_type=='practice'">
             <ion-row>
               <ion-col size="4" *ngFor="let item of courseData.itemIds;let item_index=index;let first=first;let last=last">
-                  <!-- <ion-card  basicPadding font16 weight700 reorder  flex center-ver> -->
                     <ion-card noPadding pointer fullheight>
                       <ion-card-content noPadding fullHeight>
                           <div backgroundImage class="avatarImage" *ngIf="getItem(item.id).photo" [ngStyle]="{'background-image': 'url(' + getItem(item.id).photo + ')'}"></div>
@@ -72,7 +73,7 @@
                           </div>
                           <div flex>
                             <div class="spacer"></div>
-                            <ion-button slot="end" fill="clear" (click)="modalService.showText(getItem(item.id).user_info,getItem(item.id).title,false,[],true,null,'',{textBorder:false})">
+                            <ion-button slot="end" fill="clear" (click)="modalService.showText(getItem(item.id).description,getItem(item.id).title,false,[],true,null,'',{textBorder:false})">
                               <fa-icon [icon]="icon.get('faInfoCircle')" font-18 ></fa-icon>
                             </ion-button>
                           </div>
@@ -81,7 +82,7 @@
 
               </ion-col>
             </ion-row>
-          </ion-grid>
+          </ion-grid> -->
           
         </div>
 
@@ -92,12 +93,13 @@
           
           <ion-card basicPadding fullwidth>
             <ion-card-header center>
-              <span text-secondary font-24 weight700 *ngIf="courseData.currency!='CREDITS'">{{helpers.currencyChar(courseData.currency)}} {{courseData.price | number : '1.2-2'}} </span>
-              <span text-secondary font-24 weight700 *ngIf="courseData.currency=='CREDITS'">{{courseData.price | number : '1.0-0'}} credits</span>
+              <span text-secondary font-24 weight700>{{helpers.currencyChar(courseData.currency)}} {{courseData.price | number : '1.2-2'}} </span>
+              <!-- <span text-secondary font-24 weight700 *ngIf="courseData.currency=='CREDITS'">{{courseData.price | number : '1.0-0'}} credits</span> -->
             </ion-card-header>
             <ion-card-content>
-              <ion-button class="saveButton" expand="block" color="primary" (click)="enlist()" *ngIf="courseData.currency!='CREDITS'||!auth.userInfo?.credits||auth.userInfo.credits<courseData.price" marginBottom>Nu kopen</ion-button>
-              <ion-button class="saveButton" expand="block" color="primary" (click)="enlist()" *ngIf="courseData.currency=='CREDITS'&&auth.userInfo?.credits>=courseData.price" marginBottom>Aan de slag</ion-button>
+              <ion-button class="saveButton" expand="block" color="primary" (click)="buy(product)" *ngIf="courseData.price!=0" marginBottom>Nu kopen</ion-button>
+              <ion-button class="saveButton" expand="block" color="primary" (click)="enlist()" *ngIf="courseData.price==0" marginBottom>Aan de slag</ion-button>
+              <!-- <ion-button class="saveButton" expand="block" color="primary" (click)="enlist()" *ngIf="courseData.currency=='CREDITS'&&auth.userInfo?.credits>=courseData.price" marginBottom>Aan de slag</ion-button> -->
               <ion-button expand="block" fill="clear" color="medium" (click)="showCode=!showCode">Ik heb een toegangscode</ion-button>
               <ion-item borderMedium borderRadius16 lines="none" class="noPadding" *ngIf="showCode">
                 <ion-label position="stacked">Toegangscode</ion-label>

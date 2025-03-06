@@ -94,23 +94,24 @@ export class InfoService {
       }
     });
 
-    setTimeout(() => {
-      console.log(this.conversation_types)
-    }, 2000);
+    // setTimeout(() => {
+    //   console.log(this.conversation_types)
+    // }, 2000);
   }
 
   async loadPublicInfo(collection:string,document:string,field:string,subCollection?:string,subDocument?:string,callback?:Function){
     let info = ''
-    await this.functions.httpsCallable('get_public_info')({type:'public_info',collection:collection,document:document,field:field,subCollection:subCollection,subDoc:subDocument})
+    let getPublicSubscription = await this.functions.httpsCallable('get_public_info')({type:'public_info',collection:collection,document:document,field:field,subCollection:subCollection,subDoc:subDocument})
     .subscribe((result:any) => {
-      console.log(result)
       if(result.result){
         info = result.result
       }
       if(callback) {
         callback(info)
+        getPublicSubscription.unsubscribe()
         return
       }
+      getPublicSubscription.unsubscribe()
       return info
     })
     // .forEach((result:any) => {

@@ -42,13 +42,14 @@ export class AccountPage implements OnInit {
   payments: any;
   products: any;
   customers: any;
+  subscriptionsStripe: any;
   db: any;
   menuItems:any=[
     // {title:'Mijn gegevens',tab:'account',icon:'faPen'},
     // {title:'Mijn profiel',tab:'profile',icon:'faSlidersH'},
     // {title:'Mijn cursussen',tab:'courses',icon:'faGraduationCap'},
     {title:'Mijn gesprekken',tab:'conversations',icon:'faComments'},
-    {title:'Mijn prestaties',tab:'progress',icon:'faAward'},
+    // {title:'Mijn prestaties',tab:'progress',icon:'faAward'},
     {title:'Mijn abonnementen',tab:'subscriptions',icon:'faStar'},
     // {title:'Betaalinstellingen',tab:'payment',icon:'faCreditCard'},
     {title:'Credits',tab:'credits',icon:'faCoins'},
@@ -81,6 +82,7 @@ export class AccountPage implements OnInit {
     let interval = setInterval(()=>{
       this.account = JSON.parse(JSON.stringify(this.auth.userInfo))
       if(this.account.email){
+        console.log(this.auth.skills)
         clearInterval(interval)
       }
       countInterval++
@@ -115,6 +117,7 @@ export class AccountPage implements OnInit {
     //   customersCollection: "customers",
     // })
     this.fetchProducts()
+    this.fetchSubscriptionsStripe()
 
     this.setupProgressCircles()
     // this.collectStripeProducts()
@@ -163,7 +166,7 @@ export class AccountPage implements OnInit {
   }
 
   async fetchProducts() {
-    this.firestoreService.get('products').subscribe((products:any)=>{
+    this.firestoreService.query('products','metadata.type','credits').subscribe((products:any)=>{
       this.products = products.map((product:any)=>{
         let item = {
           id: product.payload.doc.id,
@@ -182,14 +185,9 @@ export class AccountPage implements OnInit {
       })
       console.log(this.products)
     })
-    // this.products = await getProducts(this.payments.productsCollection, {
-    //   includePrices: true,
-    //   activeOnly: true,
-    // });
-    // console.log(this.products)
   }
 
-    async buy(item:any){
+  async buy(item:any){
       const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
@@ -200,6 +198,9 @@ export class AccountPage implements OnInit {
       price: item.prices[0].id,
       success_url: window.location.origin + '/account/credits',
       cancel_url: window.location.origin + '/account/credits',
+      metadata:{
+        userId:user.uid
+      }
     };
     if (item.prices[0].type=='one_time') {
       checkoutSessionData['mode'] = 'payment';
@@ -250,6 +251,27 @@ export class AccountPage implements OnInit {
   }
 
 
+  async fetchSubscriptionsStripe() {
+    this.firestoreService.query('products','metadata.type','subscription').subscribe((products:any)=>{
+      this.subscriptionsStripe = products.map((product:any)=>{
+        let item = {
+          id: product.payload.doc.id,
+          ...product.payload.doc.data()
+        }
+        //get subcollection prices
+        this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+          item.prices = prices.map((price:any)=>{
+            return {
+              id: price.payload.doc.id,
+              ...price.payload.doc.data()
+            }
+          })
+        })
+        return item
+      })
+      console.log(this.subscriptionsStripe)
+    })
+  }
 
   updateAccount(){
     this.firestoreService.set('users',this.auth.userInfo.uid,this.account.displayName,'displayName').then(()=>{

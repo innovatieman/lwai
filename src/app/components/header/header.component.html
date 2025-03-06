@@ -30,8 +30,8 @@
         
         <ion-buttons slot="end" flex center-ver >
           <ion-button *ngIf="!noMenuList" [color]="auth.userInfo.credits ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="nav.go('account/credits')">
-            <span *ngIf="auth.userInfo.credits">{{auth.userInfo.credits}} <span *ngIf="!media.smallDevice">credits</span></span>
-            <span *ngIf="!auth.userInfo.credits">0 <span *ngIf="!media.smallDevice">credits</span></span>
+            <span *ngIf="auth.credits.total">{{auth.credits.total}} <span *ngIf="!media.smallDevice">credits</span></span>
+            <span *ngIf="!auth.credits.total">0 <span *ngIf="!media.smallDevice">credits</span></span>
           </ion-button>
           <ion-button color="primary" (click)="showshortMenu($event)" size="large" *ngIf="!noMenuList">
             <ion-icon name="person-circle" noMargin slot="end" style="font-size: 24px;"></ion-icon>

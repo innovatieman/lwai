@@ -21,6 +21,17 @@ export class MenuPage implements OnInit {
   @Input() listShape:boolean = false
   public selectedIndex = 0;
   @Input() pages:any 
+  accountPages:any [] = [
+    {
+      title: 'Mijn Account',
+      url: '/account',
+      icon: 'faUser',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:true
+    },
+  ]
+
   appPages:any = [
    
     {

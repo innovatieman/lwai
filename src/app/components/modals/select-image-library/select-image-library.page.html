@@ -1,0 +1,93 @@
+<ion-header>
+  <ion-toolbar style="padding-left:20px">
+    <h3>Selecteer</h3>
+    <ion-buttons slot="end">
+      <ion-button size="large" (click)="modalController.dismiss()" >
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar style="padding:0 10px;">
+    <!-- <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" [placeholder]="translate.instant('search')"></ion-searchbar> -->
+    <ion-row *ngIf="!hideFilters">
+      <ion-col [size]="12/5">
+        <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('gender')">
+          <fa-icon *ngIf="filter['gender'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'gender')"></fa-icon>
+          Gender 
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col [size]="12/5">
+        <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('age')">
+          <fa-icon *ngIf="filter['age'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'age')"></fa-icon>
+          Age 
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col [size]="12/5">
+        <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('occupation')">
+          <fa-icon *ngIf="filter['occupation'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'occupation')"></fa-icon>
+          Occupation 
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col [size]="12/5">
+        <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('ethnicity')">
+          <fa-icon *ngIf="filter['ethnicity'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'ethnicity')"></fa-icon>
+          Ethnicity
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col [size]="12/5">
+        <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('emotion')">
+          <fa-icon *ngIf="filter['emotion'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'emotion')"></fa-icon>
+          Emotion 
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <!-- <ion-button fill="outline" color="medium" (click)="selectFilter('age')">
+      Age 
+      <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+    </ion-button>
+
+    <ion-button fill="outline" color="medium" (click)="selectFilter('occupation')">
+      Occupation 
+      <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+    </ion-button>
+
+    <ion-button fill="outline" color="medium" (click)="selectFilter('ethnicity')">
+      Ethnicity 
+      <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+    </ion-button>
+
+    <ion-button fill="outline" color="medium" (click)="selectFilter('emotion')">
+      Emotion 
+      <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
+    </ion-button> -->
+
+    
+  </ion-toolbar>
+</ion-header>
+<div class="inner-content">
+  <ion-grid>
+    <ion-row *ngIf="images.length > 0">
+      <ion-col size="2" *ngFor="let image of filterImagesByAllFilterKeys() | maxLength : end : false : start">
+        <img [src]="image.url" style="box-shadow:0 0 7px rgba(0,0,0,0.4);border-radius:24px;transition:all .3s" [ngStyle]="{'outline': selectedImage?.id == image.id ? 'solid 7px var(--ion-color-primary)' : 'solid 0px'}" (click)="selectedImage?.id == image.id ? selectedImage = null : selectedImage = image" (dblclick)="modalController.dismiss(image)" pointer/>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+
+</div>
+
+<div class="footer">
+  <ion-button (click)="modalController.dismiss()" class="saveButton" fill="solid" color="dark">{{'buttons.cancel' | translate}}</ion-button>
+  <div class="spacer"></div>
+  <ion-button fill="clear" [disabled]="start==0" color="secondary" (click)="start= start - maxItems;end=end-maxItems"><fa-icon font-24 [icon]="icon.get('faChevronLeft')"></fa-icon></ion-button>
+  <div class="spacer"></div>
+  <ion-button fill="clear" [disabled]="end>=images.length" (click)="start= start + maxItems;end=end+maxItems" color="secondary"><fa-icon font-24 [icon]="icon.get('faChevronRight')"></fa-icon></ion-button>
+  <div class="spacer"></div>
+  <ion-button (click)="modalController.dismiss(selectedImage)" class="saveButton" [disabled]="!selectedImage" fill="solid" color="primary">Opslaan</ion-button>
+</div>  

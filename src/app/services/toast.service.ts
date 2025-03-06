@@ -33,7 +33,7 @@ export class ToastService {
       message: message,
       duration: duration,
       position: position,
-      color:'secondary',
+      color:'primary',
     });
     toast.present();
   }

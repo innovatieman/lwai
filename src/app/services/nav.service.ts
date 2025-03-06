@@ -16,7 +16,7 @@ export class NavService {
       this.navController.navigateBack(page);
     }
     else{
-      this.navController.navigateForward(page);
+      this.navController.navigateForward(page, {animated: false});
     }
 
   }

@@ -13,6 +13,7 @@ import * as moment from 'moment';
 import { ActivatedRoute } from '@angular/router';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ToastService } from 'src/app/services/toast.service';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-enlist',
@@ -25,9 +26,11 @@ export class EnlistPage implements OnInit {
   courseLoaded: boolean = false;
   showCode:boolean = false
   code:string = ''
+  product:any = {}
 
   constructor(
-    public firestore:FirestoreService,
+    public firestoreService:FirestoreService,
+    private firestore: AngularFirestore,
     public icon:IconsService,
     public modalService:ModalService,
     public helpers:HelpersService,
@@ -53,7 +56,9 @@ export class EnlistPage implements OnInit {
       }
       this.auth.userInfo$.subscribe(userInfo => {
         if (userInfo) {
-          this.getCourseData();
+          this.getCourseData(()=>{
+            this.fetchProduct(this.courseData.stripeProductId)
+          });
 
         }
       });
@@ -62,7 +67,24 @@ export class EnlistPage implements OnInit {
     })
   }
   
-  getCourseData(){
+  async fetchProduct(stripeProductId:string){
+    this.firestoreService.getDoc('products',stripeProductId).subscribe((products:any)=>{
+      this.product = products.payload.data()
+      this.product.id = products.payload.id
+      this.firestoreService.get('products/'+this.product.id+'/prices').subscribe((prices:any)=>{
+        this.product.prices = prices.map((price:any)=>{
+          return {
+            id: price.payload.doc.id,
+            ...price.payload.doc.data()
+          }
+        })
+      })
+      console.log(this.product)
+    })
+  }
+
+
+  getCourseData(callback:Function){
     console.log('getting course data')
     if(!this.auth.publicCourses?.length){
       this.auth.getPublicCourses()
@@ -83,6 +105,7 @@ export class EnlistPage implements OnInit {
           this.loadAllItems(() => {
             // this.loadCurrentItem()
           })
+          callback()
         }
         count++
         if(count > 20){
@@ -109,6 +132,7 @@ export class EnlistPage implements OnInit {
       this.loadAllItems(() => {
         // this.loadCurrentItem()
       })
+      callback()
     }
   }
 
@@ -133,7 +157,7 @@ export class EnlistPage implements OnInit {
         collection = collection + '_trainer'
       }
 
-      this.firestore.getDoc(collection,e.id).subscribe((data:any) => {
+      this.firestoreService.getDoc(collection,e.id).subscribe((data:any) => {
         if(data?.payload?.data()){
           // console.log(data.payload.data())
           if(data?.payload?.data()){
@@ -178,6 +202,52 @@ export class EnlistPage implements OnInit {
       }
     })
   }
+
+  async buy(item:any){
+    const user = await this.auth.userInfo;
+  if (!user) {
+    console.error("User not authenticated");
+    return;
+  }
+  this.toast.showLoader('Bezig met verwerking')
+  let checkoutSessionData:any = {
+    price: item.prices[0].id,
+    success_url: window.location.href,
+    cancel_url: window.location.href,
+  };
+  // if (item.prices[0].type=='one_time') {
+    checkoutSessionData['mode'] = 'payment';
+  // }
+  // else{
+    // checkoutSessionData['mode'] = 'subscription';
+  // }
+
+  try {
+    // ✅ Firestore Collection Reference met compat API
+    const checkoutSessionRef = this.firestore.collection(`customers/${user.uid}/checkout_sessions`);
+
+    // ✅ Document toevoegen aan Firestore en document ID ophalen
+    const docRef = await checkoutSessionRef.add(checkoutSessionData);
+
+    this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`,docRef.id).subscribe((value:any)=>{
+      // console.log(value)
+      setTimeout(() => {
+        this.toast.hideLoader()
+      }, 2000);
+      if(value.url){
+        window.location.assign(value.url);
+      }
+      else if(value.error){
+        console.error("Stripe error:", value.error);
+      }
+    })
+
+
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+  }
+}
+
 
   enlistWithCode(){
     console.log('enlisting with code')

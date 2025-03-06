@@ -1,3 +1,14 @@
 .currentItem{
     border:solid 1px var(--ion-color-primary)
 }
+.avatarImage{
+    height: 200px;
+    width:100%;
+}
+
+.textContainer{
+    font-size: 16px;
+    p{
+        font-size:16px!important;
+    }
+}

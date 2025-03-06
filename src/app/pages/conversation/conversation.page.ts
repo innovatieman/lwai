@@ -189,6 +189,11 @@ export class ConversationPage implements OnInit {
       // console.log(active)
       this.activeStream = active
       this.rf.detectChanges()
+      if(!active){
+        setTimeout(() => {
+          this.toggleVideo(true)
+        }, 1000);
+      }
     })
 
     this.conversation.updateAchievements.subscribe((newGoal:any)=>{
@@ -554,23 +559,37 @@ export class ConversationPage implements OnInit {
 
   showEvaluation(firstTime?:boolean){
     let countTries = 0
-
+    // console.log('show evaluation')
     let closeInterval = setInterval(() => {
       countTries++
-      if(countTries>50){
+      if(countTries>300){
         // console.log('clearing interval')
         clearInterval(closeInterval)
-
+        this.toast.show('Er is iets misgegaan bij het afsluiten van het gesprek. Probeer het later nog eens.')
+        this.nav.go('start')
+        return
       }
-      if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
-        // console.log('closing')
+      // console.log(this.conversation?.activeConversation?.close,this.conversation?.activeConversation?.skills)
+      // if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
+        if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0] && this.conversation?.activeConversation?.skills&&this.conversation?.activeConversation?.skills[0]){
+        console.log('closing')
         this.conversation.closing = false
 
         clearInterval(closeInterval)
-        this.modal.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
+        console.log(this.conversation.activeConversation.skills[0])
+
+        let skills = JSON.parse(this.conversation.activeConversation.skills[0].content)
+        console.log(skills)
+
+        this.modal.showEvaluation({closing:this.conversation.activeConversation.close[0].content,skills:this.conversation.activeConversation.skills[0].content,title: 'Afsluiting',buttons:[{text:'Gelezen',value:true,color:'secondary'}],firstTime:firstTime,conversation_level:this.conversation.activeConversation.level},async ()=>{
+
+          
+          
+        
+          // this.modal.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
           if(firstTime || !this.conversation.activeConversation.rating?.step1Filled){
 
-            this.modal.showRating('Evaluatie','',{type:'conversationId',value:this.conversation.activeConversation.conversationId},[
+            await this.modal.showRating('Evaluatie','',{type:'conversationId',value:this.conversation.activeConversation.conversationId},[
       
               {question:'Wat vond je het meest nuttig aan dit gesprek?',value:'',type:'radio',other:'',
                 options:[
@@ -590,6 +609,10 @@ export class ConversationPage implements OnInit {
                 this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', response.conversationId, {rating2:this.conversation.activeConversation.rating2})
               }
             })
+
+            if(firstTime){
+              localStorage.setItem('showNewScore','true')
+            }
 
             if(this.conversation.activeConversation.courseId){
               this.nav.go('course/'+this.conversation.activeConversation.courseId)
@@ -634,9 +657,9 @@ export class ConversationPage implements OnInit {
   }
 
 
-  toggleVideo(){
+  toggleVideo(off?:boolean){
     console.log(this.interaction)
-    if(this.interaction=='combination'){
+    if(this.interaction=='combination' || off){
       this.conversation.heyGen.disconnect('avatar_video')
       this.firestore.updateSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId,{video_on:false})
       let tempConversation = JSON.parse(localStorage.getItem('conversation')||'{}')
@@ -725,9 +748,15 @@ export class ConversationPage implements OnInit {
     this.transcript = '';
     this.record.startRecording('audioToText',this.conversation.activeConversation.conversationId,(response:any)=>{
       if(response){
-        this.loadingTextFromAudio = false;
-        this.question = this.question ? this.question + ' ' + response : response;
-        this.rf.detectChanges();
+        if(response=='error'){
+          this.toast.show('Er is iets misgegaan bij het omzetten van spraak naar tekst. Probeer het later nog eens.')
+        }
+        else{
+          this.loadingTextFromAudio = false;
+          this.question = this.question ? this.question + ' ' + response : response;
+          this.record.analyzing = false;
+          this.rf.detectChanges();
+        }
       }
     })
     // this.voiceSessionId = this.auth.userInfo.uid+'_'+this.conversation.activeConversation.conversationId+'_'+Date.now()
@@ -742,6 +771,7 @@ export class ConversationPage implements OnInit {
 
   stopRecording() {
     this.record.recording = false;
+    this.record.analyzing = true;
     this.record.stopRecording();
     // setTimeout(() => {
     //   this.voiceSubscription.unsubscribe();

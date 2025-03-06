@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ModalController, NavParams } from '@ionic/angular';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
 import { IconsService } from 'src/app/services/icons.service';
 import { ToastService } from 'src/app/services/toast.service';
 import * as moment from 'moment'
@@ -16,17 +16,16 @@ import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-m
   styleUrls: ['./input-fields.page.scss'],
 })
 export class InputFieldsPage implements OnInit {
-  title:string=''
-  text:string=''
-  fields:any[]= [];
-  extraData:any
+  @Input() title:string=''
+  @Input() text:string=''
+  @Input() fields:any[]= [];
+  @Input() extraData:any
 
   constructor(
     public icons:IconsService,
-    public modal:ModalController,
-    private navParams:NavParams,
+    // public modal:ModalController,
     private toast:ToastService,
-    private modalController:ModalController,
+    public modalController:ModalController,
     private rf:ChangeDetectorRef,
     private translate:TranslateService,
     public helpers:HelpersService,
@@ -36,11 +35,7 @@ export class InputFieldsPage implements OnInit {
   }
 
   ngOnInit() {
-    this.title = this.navParams.get('title')
-    this.text = this.navParams.get('text')
-    this.fields = this.navParams.get('fields')
-    this.extraData = this.navParams.get('extraData')
-    // console.log(this.fields)
+
   }
 
   dateSelected($event:any){
@@ -83,18 +78,18 @@ export class InputFieldsPage implements OnInit {
   }
 
   async deleteItem(){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:ConfirmationModalComponent,
       componentProps:{
         message:this.translate.instant('confirmation_questions_delete'),
       },
     })
-    modal.onWillDismiss().then((data:any)=>{
+    modalItem.onWillDismiss().then((data:any)=>{
       if(data?.confirmed){
-        this.modal.dismiss('delete')
+        this.modalController.dismiss('delete')
       }
     })
-    return await modal.present()
+    return await modalItem.present()
   }
 
 
@@ -108,7 +103,7 @@ export class InputFieldsPage implements OnInit {
     else{
       list= Object.keys(options)
     }
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:SelectItemPage,
       componentProps:{
         list:list,
@@ -117,7 +112,7 @@ export class InputFieldsPage implements OnInit {
       },
       cssClass:'listModal',
     })
-    modal.onWillDismiss().then(result=>{
+    modalItem.onWillDismiss().then(result=>{
       if(result.data){
         // console.log(result.data)
         if(result.data.valueOnly){
@@ -129,7 +124,7 @@ export class InputFieldsPage implements OnInit {
         this.rf.detectChanges()
       }
     })
-    return await modal.present()
+    return await modalItem.present()
   }
 
   save(){
@@ -146,7 +141,7 @@ export class InputFieldsPage implements OnInit {
         }
       }
     }
-    this.modal.dismiss(this.fields)
+    this.modalController.dismiss(this.fields)
     
   }
 
@@ -159,17 +154,17 @@ export class InputFieldsPage implements OnInit {
   }
 
   public async editHtmlItem(data:any,callback:Function){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:EditHtmlPage,
       componentProps:{
         data:data,
       },
       cssClass:'editHtmlModal',
     })
-    modal.onWillDismiss().then(data=>{
+    modalItem.onWillDismiss().then(data=>{
       callback(data)
     })
-    return await modal.present()
+    return await modalItem.present()
     // return await modal.present
   }
 

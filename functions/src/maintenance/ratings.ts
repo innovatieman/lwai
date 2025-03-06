@@ -1,7 +1,8 @@
 import * as functions from 'firebase-functions/v1';
 import admin from '../firebase'
 
-exports.createRatingDocument = functions.firestore
+exports.createRatingDocuments = functions.region('europe-west1')
+  .firestore
   .document("users/{userId}/conversations/{conversationId}")
   .onUpdate(async (change, context) => {
     const { userId, conversationId } = context.params;

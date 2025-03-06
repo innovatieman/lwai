@@ -12,5 +12,10 @@ export const config = {
     client_email: process.env.GOOGLE_SPEECH_CLIENT_EMAIL || '',
     private_key: process.env.GOOGLE_SPEECH_PRIVATE_KEY || '',
 
+  },
+  stripe:{
+    test_secret_key: process.env.STRIPE_TEST_SECRET_KEY || '',
+    test_secret_webhook: process.env.STRIPE_TEST_SECRET_WEBHOOK || '',
+    test_secret_webhook_subscriptions: process.env.STRIPE_TEST_SECRET_WEBHOOK_SUBSCRIPTIONS || '',
   }
 };

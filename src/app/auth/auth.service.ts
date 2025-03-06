@@ -12,6 +12,7 @@ import { FirestoreService } from '../services/firestore.service';
 import { ModalService } from '../services/modal.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { environment } from 'src/environments/environment';
+import { InfoService } from '../services/info.service';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,10 @@ export class AuthService {
   private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
   activeCourses: any[] = [];
 
+  skills:any = {impact:{score:0,prevScore:0},flow:{score:0,prevScore:0},logic:{score:0,prevScore:0}}
+  credits:any = {total:0}
+
+  skillsLevels:any = [0,100,300,700,1500]
 
   constructor(
     private nav: NavService,
@@ -36,7 +41,8 @@ export class AuthService {
     private firestoreService: FirestoreService,
     private functions: AngularFireFunctions,
     private modalService: ModalService,
-    private auth:Auth
+    private auth:Auth,
+    private infoService:InfoService,
 
   ) {
     this.user$ = this.afAuth.authState;
@@ -60,6 +66,8 @@ export class AuthService {
       if (user) {
         this.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
+        this.getCredits(user.uid)
+        this.getSkills(user.uid)
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
@@ -82,6 +90,39 @@ export class AuthService {
   //     }
   //   })
   // }
+
+  async getCredits(uid:string){
+    this.firestoreService.getSubDoc('users',uid,'credits','credits').subscribe((data:any)=>{
+      this.credits = data.payload.data()
+    })
+  }
+
+  async getSkills(uid:string){
+    this.firestoreService.getSubDoc('users',uid,'skills','skills').subscribe((data:any)=>{
+      this.skills = data.payload.data()
+    })
+  }
+
+  skillsLevel(score:number){
+    for(let i=4;i>=0;i--){
+      if(score>=this.skillsLevels[i]){
+        return i+1
+      }
+    }
+    return 1
+  }
+  
+  get userLevel(){
+    return this.skillsLevel((this.skills.impact.score + this.skills.flow.score + this.skills.logic.score) / 3)
+  }
+  
+  getUserLevelScorePercentage(score:number){
+    let level = this.skillsLevel(score)
+    let nextLevel = this.skillsLevels[level]
+    let prevLevel = this.skillsLevels[level-1]
+    return (score-prevLevel)/(nextLevel-prevLevel)*100
+
+  }
 
   async getUserInfo() {
     this.user$.subscribe(user => {
@@ -344,28 +385,32 @@ export class AuthService {
   
     getActiveCourses(userId: string) {
       this.activeCourses = [];
-    
+      this.firestoreService.querySub('users', userId, 'courses','status','active').subscribe((courses) => {
+        this.activeCourses = courses.map((course: any) => {
+          return { id: course.payload.doc.id, ...course.payload.doc.data() }
+        })
       // Haal de activeCourseIds direct op uit this.userInfo
-      const courseObservables = this.userInfo.activeCourseIds.map((courseId:string) =>
-        this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
-      );
+      // const courseObservables = this.userInfo.activeCourseIds.map((courseId:string) =>
+      //   this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
+      // );
     
       // Combineer alle observables
-      combineLatest(courseObservables).subscribe((courses:any) => {
-        const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
+      // combineLatest(courseObservables).subscribe((courses:any) => {
+      //   const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
     
-        courses.forEach((course: any) => {
-          let item: any = course.payload.data();
-          if(item){
-            item.id = course.payload.id;
-            if (item.status === 'active' && !uniqueCourses.has(item.id)) {
-              uniqueCourses.set(item.id, item);
-            }
-          }
-        });
+      //   courses.forEach((course: any) => {
+      //     let item: any = course.payload.data();
+      //     if(item){
+      //       item.id = course.payload.id;
+      //       if (item.status === 'active' && !uniqueCourses.has(item.id)) {
+      //         uniqueCourses.set(item.id, item);
+      //       }
+      //     }
+      //   });
     
-        // Converteer de unieke waarden naar een array
-        this.activeCourses = Array.from(uniqueCourses.values());
+      //   // Converteer de unieke waarden naar een array
+      //   this.activeCourses = Array.from(uniqueCourses.values());
+      // });
       });
     }
 
@@ -409,10 +454,18 @@ export class AuthService {
   
     publicCourses: any[] = [];
     getPublicCourses(){
-      return this.firestoreService.query('active_courses','public',true).subscribe((courses) => {
+      return this.firestoreService.queryDouble('active_courses','public',true,'==','status','active','==').subscribe((courses) => {
         this.publicCourses = courses.map((course:any) => {
           return { id: course.payload.doc.id, ...course.payload.doc.data() }
         })
+        let checkInt = setInterval(() => {
+          if(this.infoService.conversation_types.length){
+            clearInterval(checkInt)
+            for(let i = 0; i < this.publicCourses.length; i++){
+              this.publicCourses[i].conversationTypes = this.infoService.getConversationType('',this.publicCourses[i].types,true)
+            }
+          }
+        }, 200);
         // console.log(this.publicCourses)
       })
     }

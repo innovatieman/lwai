@@ -1,0 +1,63 @@
+
+<div header padding20 flex center-ver>
+  <div class="title" *ngIf="options.title">
+    <h3 class="subtitle-top" noMargin>{{options.title}}</h3>
+  </div>
+  <span class="spacer"></span>
+  <ion-button (click)="modalCtrl.dismiss()" fill="clear" color="secondary">
+    <fa-icon [icon]="icon.get('faTimes')" font-24 slot="icon-only"></fa-icon>
+  </ion-button>
+</div>
+<div style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : 'calc(100vh - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}">
+  <div *ngIf="options.closing" [innerHtml]="options.closing | sanitizeHtml" weight400 ></div>
+
+  <div singleLine></div>
+
+  <ion-grid *ngIf="options.skills&&options?.firstTime">
+    <ion-row *ngIf="options.skills">
+      <ion-col size="4">
+        <div class="skillBonus impact">+{{skillScore['impact'].score - skillScore['impact'].prevScore}}</div>
+        <div font-20 weight700 center>
+          <div>Impact</div>
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="skillBonus impact">+{{skillScore['flow'].score - skillScore['flow'].prevScore}}</div>
+        <div font-20 weight700 center>
+          <div>Flow</div>
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="skillBonus impact">+{{skillScore['logic'].score - skillScore['logic'].prevScore}}</div>
+        <div font-20 weight700 center>
+          <div>Logic</div>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+    <div *ngIf="options.skills&&options?.firstTime">
+    <div marginBottom [innerHtml]="options.skills.summary | sanitizeHtml" weight400></div>
+    <div weight600>Impact</div>
+    <div marginBottom [innerHtml]="options.skills.evaluation.Impact.feedback | sanitizeHtml" weight400></div>
+    <div weight600>Flow</div>
+    <div marginBottom [innerHtml]="options.skills.evaluation.Flow.feedback | sanitizeHtml" weight400></div>
+    <div weight600>Logic</div>
+    <div [innerHtml]="options.skills.evaluation.Logic.feedback | sanitizeHtml" weight400></div>
+  </div>
+
+</div>
+
+<div flex *ngIf="options.buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':options.btnsClass==='flex-column'}">
+  <span [ngClass]="{'spacer':!last}" *ngFor="let btn of options.buttons;let last = last">
+  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':options.btnsClass==='flex-column'}"></ion-button>
+  </span>
+</div>
+<div flex center-ver class="feedback" *ngIf="options.feedback&&feedbackGiven===false">
+  <span>Was deze informatie nuttig?</span>
+  <span class="spacer"></span>
+  <fa-icon [icon]="icon.get('faThumbsUp')" (click)="feedback(true)" class="icon"></fa-icon>
+  <fa-icon [icon]="icon.get('faThumbsDown')" (click)="feedback(false)" class="icon"></fa-icon>
+</div>
+<div flex center-ver class="feedback" *ngIf="feedbackGiven">
+  <span >Bedankt voor je feedback!</span>
+</div>

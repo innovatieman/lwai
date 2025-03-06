@@ -2,9 +2,11 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/auth/auth.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
+import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-course',
@@ -25,6 +27,8 @@ export class CoursePage implements OnInit {
     private firestore:FirestoreService,
     private modalService:ModalService,
     public media:MediaService,
+    public icon:IconsService,
+    private toast:ToastService
   ) { }
 
   ngOnInit() {
@@ -105,38 +109,22 @@ export class CoursePage implements OnInit {
   allItems:any = []
 
   async loadAllItems(callback:Function){
-    console.log('loading all items')
-    this.allItems = []
-    //iterate async through all itemIds in courseData
-    let count = 0
-    this.courseData.itemIds.forEach((e:any) => {
 
-      let collection = 'cases'
-      if(e.type == 'infoItem'){
-        collection = 'infoItems'
-      }
-      if(this.courseData.trainerId){
-        collection = collection + '_trainer'
-      }
-
-      this.firestore.getDoc(collection,e.id).subscribe((data:any) => {
-        if(data?.payload?.data()){
-          // console.log(data.payload.data())
-          if(data?.payload?.data()){
-            let item:any = data.payload.data()
-            item.id = data.payload.id
-            this.allItems.push(item)
-          }
-          count++
-          if(count == this.courseData.itemIds.length){
-            // console.log(this.allItems)
-            callback()
-          }
-        }
+    this.firestore.getSubSub('users',this.auth.userInfo.uid,'courses',this.courseData.id,'items').subscribe((items:any) => {
+      console.log(items)
+      this.allItems = items.map((token:any) => {
+        return { id: token.payload.doc.id, ...token.payload.doc.data() }
       })
+      callback()
     })
 
-    // this.courseData.itemIds.forEach(async (e:any) => {
+
+    // console.log('loading all items')
+    // this.allItems = []
+    // //iterate async through all itemIds in courseData
+    // let count = 0
+    // this.courseData.itemIds.forEach((e:any) => {
+
     //   let collection = 'cases'
     //   if(e.type == 'infoItem'){
     //     collection = 'infoItems'
@@ -144,19 +132,45 @@ export class CoursePage implements OnInit {
     //   if(this.courseData.trainerId){
     //     collection = collection + '_trainer'
     //   }
-    //   await this.firestore.getDoc(collection,e.id).subscribe((data:any) => {
-    //     console.log(data.payload.data())
+
+    //   this.firestore.getDoc(collection,e.id).subscribe((data:any) => {
     //     if(data?.payload?.data()){
-    //       this.allItems.push(data.payload.data())
+    //       // console.log(data.payload.data())
+    //       if(data?.payload?.data()){
+    //         let item:any = data.payload.data()
+    //         item.id = data.payload.id
+    //         this.allItems.push(item)
+    //       }
+    //       count++
+    //       if(count == this.courseData.itemIds.length){
+    //         // console.log(this.allItems)
+    //         callback()
+    //       }
     //     }
     //   })
     // })
+
+    // // this.courseData.itemIds.forEach(async (e:any) => {
+    // //   let collection = 'cases'
+    // //   if(e.type == 'infoItem'){
+    // //     collection = 'infoItems'
+    // //   }
+    // //   if(this.courseData.trainerId){
+    // //     collection = collection + '_trainer'
+    // //   }
+    // //   await this.firestore.getDoc(collection,e.id).subscribe((data:any) => {
+    // //     console.log(data.payload.data())
+    // //     if(data?.payload?.data()){
+    // //       this.allItems.push(data.payload.data())
+    // //     }
+    // //   })
+    // // })
     
 
 
 
 
-    callback()
+    // callback()
   }
 
   loadCurrentItem(){
@@ -257,37 +271,73 @@ export class CoursePage implements OnInit {
 
 
 
-  startConversation(caseItem:any){
-    caseItem.courseId = this.courseData.id
-    this.modalService.showConversationStart(caseItem).then((res)=>{
-      console.log(res)
-      if(res){
-        localStorage.setItem('activatedCase',caseItem.id)
-        localStorage.setItem('personalCase',JSON.stringify(caseItem))
-        this.nav.go('conversation/'+caseItem.conversation+'/'+caseItem.id)
-      }
-    })
-  }
-
-    getConversation(trainerId:string,courseId:string,caseId:string):any{
-      let conversation:any = null
-      this.conversations$.forEach((e:any) => {
-        for(let i = 0; i < e.length; i++){
-          if(e[i].trainerId == trainerId && e[i].courseId == courseId && e[i].caseId == caseId){
-            conversation = e[i]
-          }
+  async startConversation(caseItem:any,restart:boolean = false){
+    if(restart){
+      await this.modalService.showConfirmation('Are you sure you want to restart this conversation?').then(async (res)=>{
+        if(res){
+          await this.deleteConversation(caseItem.id)
+          caseItem.courseId = this.courseData.id
+          this.modalService.showConversationStart(caseItem).then((res)=>{
+            console.log(res)
+            if(res){
+              localStorage.setItem('activatedCase',caseItem.id)
+              localStorage.setItem('personalCase',JSON.stringify(caseItem))
+              this.nav.go('conversation/'+caseItem.conversation+'/'+caseItem.id)
+            }
+          })
         }
       })
-      return conversation
     }
+    else{
+      caseItem.courseId = this.courseData.id
+      this.modalService.showConversationStart(caseItem).then((res)=>{
+        console.log(res)
+        if(res){
+          localStorage.setItem('activatedCase',caseItem.id)
+          localStorage.setItem('personalCase',JSON.stringify(caseItem))
+          this.nav.go('conversation/'+caseItem.conversation+'/'+caseItem.id)
+        }
+      })
+    }
+  }
 
-    continueConversation(conversation:any){
-      localStorage.setItem('continueConversation',"true")
-      localStorage.setItem('conversation',JSON.stringify(conversation))
-      this.nav.go('conversation/'+conversation.conversationType+'/'+conversation.caseId)
-    }
+  getConversation(trainerId:string,courseId:string,caseId:string):any{
+    let conversation:any = null
+    this.conversations$.forEach((e:any) => {
+      for(let i = 0; i < e.length; i++){
+        if(e[i].trainerId == trainerId && e[i].courseId == courseId && e[i].caseId == caseId){
 
-    showMenu(event:Event){
-      console.log(event)
+          conversation = e[i]
+          
+        }
+      }
+    })
+    return conversation
+  }
+
+  async deleteConversation(caseId:any){
+    let conversation = this.getConversation(this.auth.userInfo.uid,this.courseData.id,caseId)
+    if(conversation){
+      this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',conversation.conversationId)
     }
+  }
+
+  continueConversation(conversation:any){
+    localStorage.setItem('continueConversation',"true")
+    localStorage.setItem('conversation',JSON.stringify(conversation))
+    this.nav.go('conversation/'+conversation.conversationType+'/'+conversation.caseId)
+  }
+
+  showMenu(event:Event){
+    console.log(event)
+  }
+
+  closeCourse(){
+    this.toast.showLoader()
+    this.firestore.updateSub('users',this.auth.userInfo.uid,'courses',this.courseData.id,{status:'finished'})
+    setTimeout(() => {
+      this.nav.go('start')
+      this.toast.hideLoader()
+    }, 2000);
+  }
 }

@@ -2,7 +2,8 @@ import * as functions from 'firebase-functions/v1';
 import * as responder from '../utils/responder'
 import admin from '../firebase'
 
-exports.updateCourses = functions.runWith({memory:'1GB'}).firestore
+exports.updateCourse = functions.region('europe-west1')
+  .runWith({memory:'1GB'}).firestore
   .document('users/{userId}')
   .onWrite(async (change, context) => {
     const userId = context.params.userId;

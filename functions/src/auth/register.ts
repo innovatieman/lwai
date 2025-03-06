@@ -52,10 +52,22 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
 
           const credits = {
             total: 5,
-            used: 0,
-            remaining: 5,
-            source: "registration",
             lastUpdated: admin.firestore.Timestamp.now(),
+          };
+
+          const skills = {
+            impact: {
+              score: 0,
+              prevScore:0
+            },
+            flow: {
+              score: 0,
+              prevScore:0
+            },
+            logic: {
+              score: 0,
+              prevScore:0
+            }
           };
 
           try {
@@ -75,7 +87,14 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
               .collection("users")
               .doc(user.uid)
               .collection("credits")
-              .add(credits);
+              .doc('credits').set(credits);
+
+            admin.firestore()
+              .collection("users")
+              .doc(user.uid)
+              .collection("skills")
+              .doc('skills').set(skills);
+
           } catch (error) {
           //   console.error("Error creating free subscription:", error);
           }

@@ -82,146 +82,20 @@
           </ion-card-content>
         </ion-card>
 
-        <ion-card basicPadding *ngIf="activeTab=='progress'">
-          <ion-card-header>
-            <ion-card-title>Mijn prestaties</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-row>
-              
-              <ion-col size="4">
-                <circle-progress #progressCircle1
-                    [percent]="45"
-                    [radius]="60"
-                    [showSubtitle]="true"
-                    [subtitle]="'Level'"
-                    [subtitleFontSize]="'12'"
-                    [titleFontSize]="'36'"
-                    [titleFontWeight]="'700'"
-                    [showUnits]="false"
-                    [unitsColor]="'rgba(0,0,255,0.2)'"
-                    [units]="'Level'"
-                    [title]="'2'"
-                    [unitsFontSize]="'12'"
-                    [outerStrokeWidth]="14"
-                    [innerStrokeWidth]="4"
-                    [outerStrokeColor]="'var(--ion-color-secondary)'"
-                    [innerStrokeColor]="'rgba(0,0,255,0.2)'"
-                    [animation]="true"
-                    [outerStrokeGradient]="true"
-                    [outerStrokeGradientStopColor]="'var(--ion-color-danger)'"
-                    [animateSubtitle]="true"
-                    [responsive]="true"
-                  ></circle-progress>
-                  <div font-24 weight700 center>
-                    <div>Impact</div>
-                  </div>
-              </ion-col>
-              <ion-col size="4">
-                <circle-progress #progressCircle2
-                    [percent]="65"
-                    [radius]="60"
-                    [showSubtitle]="true"
-                    [subtitle]="'Level'"
-                    [subtitleFontSize]="'12'"
-                    [titleFontSize]="'36'"
-                    [titleFontWeight]="'700'"
-                    [showUnits]="false"
-                    [unitsColor]="'var(--ion-color-primary)'"
-                    [units]="'2'"
-                    [title]="'2'"
-                    [unitsFontSize]="'24'"
-                    [outerStrokeWidth]="14"
-                    [innerStrokeWidth]="4"
-                    [outerStrokeColor]="'var(--ion-color-secondary)'"
-                    [innerStrokeColor]="'rgba(0,0,255,0.2)'"
-                    [animation]="true"
-                    [outerStrokeGradient]="true"
-                    [outerStrokeGradientStopColor]="'var(--ion-color-warning)'"
-                    [animateSubtitle]="true"
-                    [responsive]="true"
-                  ></circle-progress>
-                  <div font-24 weight700 center>
-                    <div>Flow</div>
-                  </div>
-              </ion-col>
-              <ion-col size="4">
-                <circle-progress #progressCircle3 
-                    [percent]="80"
-                    [radius]="60"
-                    [showSubtitle]="true"
-                    [subtitle]="'Level'"
-                    [subtitleFontSize]="'12'"
-                    [titleFontSize]="'36'"
-                    [titleFontWeight]="'700'"
-                    [showUnits]="false"
-                    [unitsColor]="'var(--ion-color-primary)'"
-                    [units]="'2'"
-                    [title]="'1'"
-                    [unitsFontSize]="'24'"
-                    [outerStrokeWidth]="14"
-                    [innerStrokeWidth]="4"
-                    [outerStrokeColor]="'var(--ion-color-secondary)'"
-                    [innerStrokeColor]="'rgba(0,0,255,0.2)'"
-                    [animation]="true"
-                    [outerStrokeGradient]="true"
-                    [outerStrokeGradientStopColor]="'var(--ion-color-primary)'"
-                    [animateSubtitle]="true"
-                    [responsive]="true"
-                  ></circle-progress>
-                  <div font-24 weight700 center>
-                    <div>Logic</div>
-                  </div>
-              </ion-col>
-            </ion-row>
-            <div singleLine marginBottom></div>
-            <ion-row>
-              <!-- <ion-col size="12" marginBottom>
-                <div font-18 weight700>
-                  <div>Mijn badges</div>
-                </div>
-              </ion-col> -->
-              <ion-col noPadding size="12" flex align-top center-hor style="margin-bottom: 50px;">
-                <app-achievement [class]="'creative'" [achieved]="true" achievement_icon="faPlay" title="Starter" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <app-achievement [class]="'success'" [achieved]="true" achievement_icon="faGraduationCap" title="Student" text="Je hebt wat geleerd!"></app-achievement>
-                <app-achievement [class]="'success'" achievement_icon="faCogs" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <app-achievement [class]="'dark'" [achieved]="true" achievement_icon="faSearch" title="Detective" text="Je bent je eerste factcheck uitgevoerd"></app-achievement>
-                <app-achievement [class]="'light'" [achieved]="true" achievement_icon="faSitemap" title="Dirigent" text="Je bent 50 punten gestegen in je Logic."></app-achievement>
-                <app-achievement [class]="'success'" achievement_icon="faMicrophone" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <!-- <app-achievement [class]="'success'" achievement_icon="faCogs" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement> -->
-              </ion-col>
-              <ion-col noPadding size="12" flex align-top center-hor style="margin-bottom: 50px;">
-                <app-achievement [class]="'creative'" [achieved]="false" achievement_icon="faPlus" title="Starter" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <app-achievement [class]="'success'" [achieved]="false" achievement_icon="faSchool" title="Student" text="Je hebt wat geleerd!"></app-achievement>
-                <app-achievement [class]="'success'" achievement_icon="faCogs" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <app-achievement [class]="'dark'" [achieved]="false" achievement_icon="faUser" title="Detective" text="Je bent je eerste factcheck uitgevoerd"></app-achievement>
-                <app-achievement [class]="'light'" [achieved]="false" achievement_icon="faSitemap" title="Dirigent" text="Je bent 50 punten gestegen in je Logic."></app-achievement>
-                <app-achievement [class]="'success'" achievement_icon="faMicrophone" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <!-- <app-achievement [class]="'success'" achievement_icon="faCogs" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement> -->
-              </ion-col>
-              <ion-col noPadding size="12" flex align-top center-hor style="margin-bottom: 50px;">
-                <app-achievement [class]="'creative'" [achieved]="false" achievement_icon="faPlay" title="Starter" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <app-achievement [class]="'success'" [achieved]="false" achievement_icon="faSchool" title="Student" text="Je hebt wat geleerd!"></app-achievement>
-                <app-achievement [class]="'success'" achievement_icon="faCogs" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <app-achievement [class]="'dark'" [achieved]="false" achievement_icon="faUser" title="Detective" text="Je bent je eerste factcheck uitgevoerd"></app-achievement>
-                <app-achievement [class]="'light'" [achieved]="false" achievement_icon="faSitemap" title="Dirigent" text="Je bent 50 punten gestegen in je Logic."></app-achievement>
-                <app-achievement [class]="'success'" achievement_icon="faMicrophone" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
-                <!-- <app-achievement [class]="'success'" achievement_icon="faCogs" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement> -->
-              </ion-col>
-              <!-- <ion-col size="2">
-                <app-badge title="Gesprek" [achieved]="true" subtitle="First time" class="yellow"></app-badge>
-              </ion-col> -->
-              
-            </ion-row>
-          </ion-card-content>
-        </ion-card>
-
         <ion-card basicPadding *ngIf="activeTab=='subscriptions'">
           <ion-card-header>
             <ion-card-title>Mijn abonnement</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div>
+            <ion-row>
+              <ion-col size="4" *ngFor="let product of subscriptionsStripe">
+                <ion-button class="saveButton" (click)="buy(product)">
+                    {{product.name}}
+                </ion-button>
+              </ion-col>
+                
+            </ion-row>
+            <!-- <div>
               <span class="subTag" *ngIf="auth.hasActive('basic') | async">
                 Basis
               </span>
@@ -234,11 +108,11 @@
               <span class="subTag" *ngIf="auth.hasActive('trainer') | async">
                 Trainer
               </span>
-            </div>
-            <div>
+            </div> -->
+            <!-- <div>
               <ion-button expand="block" *ngIf="!(auth.hasActive('premium') | async)" (click)="upgrade('premium','iDEAL')">Upgrade Premium</ion-button>
               <ion-button expand="block" *ngIf="!(auth.hasActive('trainer') | async)" (click)="upgrade('trainer','iDEAL')">Upgrade Trainer</ion-button>
-            </div>
+            </div> -->
             <ion-list>
               <ion-item *ngFor="let subscription of subscriptions$ | async ">
                 <ion-label>
@@ -275,8 +149,8 @@
             </ion-row> -->
             <ion-row>
               <div font-18 weight700>
-                <div *ngIf="auth.userInfo.credits">Actueel aantal Credits: {{auth.userInfo.credits}}</div>
-                <div *ngIf="!auth.userInfo.credits">Op dit moment heb je geen credits (meer)</div>
+                <div *ngIf="auth.credits.total">Actueel aantal Credits: {{auth.credits.total}}</div>
+                <div *ngIf="!auth.credits.total">Op dit moment heb je geen credits (meer)</div>
               </div>
             </ion-row>
             <ion-row>

@@ -43,7 +43,7 @@ export class ConversationService implements OnDestroy {
 
   private conversationSub!: Subscription;
   private subCollectionSubs: Subscription[] = [];
-  private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases','close','tokens','goals','background'];
+  private subCollections = ['messages', 'feedback', 'facts','choices','loading','phases','close','tokens','goals','background','skills'];
 
   constructor(
     public levels:LevelsService,
@@ -65,7 +65,7 @@ export class ConversationService implements OnDestroy {
   }
 
   async startConversation(caseItem:any){
-    console.log(caseItem)
+    // console.log(caseItem)
     this.caseItem = caseItem
     this.caseItem.conversationType = caseItem.conversation
     // userId, conversationId, categoryId, caseId, instructionType, attitude
@@ -171,8 +171,8 @@ export class ConversationService implements OnDestroy {
     if(avatarName&&video_on&&!this.activeConversation.closed){
       this.activateVideoScreen.emit(true)
       
+      this.loadReady = true;
       this.heyGen.initializeAvatar(avatarName,'avatar_video',()=>{
-        this.loadReady = true;
         if(this.latestAssistantItem(this.activeConversation.messages) && !this.isLoading('reaction')){
           // console.log('speak')
           this.heyGen.speakText(this.cleanReactionPipe.transform(this.latestAssistantItem(this.activeConversation.messages)));
@@ -720,22 +720,22 @@ export class ConversationService implements OnDestroy {
 
   async closeConversation(callback:Function) {
     this.startLoading('close')
-    // this.startLoading('skills')
+    this.startLoading('skills')
     // console.log(obj)
 
-    // let objSkills:any = {
-    //   conversationId:this.activeConversation.conversationId,
-    //   userId:this.auth.userInfo.uid,
-    //   instructionType:'skills',
-    //   categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
-    // }
-    // const responseSkills = fetch("https://skillsai-p2qcpa6ahq-ew.a.run.app", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(objSkills),
-    // });
+    let objSkills:any = {
+      conversationId:this.activeConversation.conversationId,
+      userId:this.auth.userInfo.uid,
+      instructionType:'skills',
+      categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
+    }
+    const responseSkills = fetch("https://skillsai-p2qcpa6ahq-ew.a.run.app", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(objSkills),
+    });
 
     let obj:any = {
       conversationId:this.activeConversation.conversationId,

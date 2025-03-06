@@ -10,6 +10,7 @@ import { TrainerCoursesPage } from './trainer-courses.page';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { ComponentsModule } from 'src/app/components/components.module';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { ComponentsModule } from 'src/app/components/components.module';
     TrainerCoursesPageRoutingModule,
     ComponentsModule,
     PipesModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    QuillModule,
   ],
   declarations: [TrainerCoursesPage]
 })

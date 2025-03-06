@@ -5,28 +5,63 @@
 </main> -->
 
 <main [ngClass]="{'backupGrid':showBackups}">
-    <ion-toolbar class="buttonBar">
-        <!-- <ion-title *ngIf="showBackups">Backup {{helpers.showLocalDate(backupDate,translate.instant('date_formats.longDateTime'),0,true)}}</ion-title> -->
+    <!-- <ion-toolbar class="buttonBar">
         <ion-searchbar [(ngModel)]="searchTerm" placeholder="Zoeken"></ion-searchbar>
         
         <ion-buttons slot="end">
-        <!-- <ion-select #selectNew id="selectNew" [(ngModel)]="newConversation" (ionChange)="add()">
-            <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
-        </ion-select> -->
 
         <ion-button fill="outline" color="secondary" class="saveButton" (click)="openAdd()" *ngIf="backupService.activebackups!='cases'">Nieuw</ion-button>
         <ion-button fill="outline" color="secondary" class="saveButton" (click)="getBackups('cases','cases')" *ngIf="backupService.activebackups!='cases'">Laad Backups</ion-button>
         <ion-button fill="outline" color="secondary" class="saveButton" (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'">Verberg Backup</ion-button>
         <ion-button fill="outline" color="secondary" class="saveButton" (click)="firestore.backup('cases','cases',cases)" *ngIf="backupService.activebackups!='cases'">Maak Backup</ion-button>
         </ion-buttons>
-    </ion-toolbar>
-    <div class="buttonBarMargin"></div>
+    </ion-toolbar> -->
+    <!-- <div class="buttonBarMargin"></div> -->
     <ion-grid class="mainGrid">
         <ion-row style="height:calc(100% - 75px)">
 
             <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
 
-                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom>
+                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+                    <ion-item lines="none" button (click)="openAdd()" class="itemButton" *ngIf="!caseItem?.id">
+                      <div font-20 weight700>Nieuwe casus</div>
+                      <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="getBackups('cases','cases')" class="itemButton" *ngIf="!caseItem?.id">
+                        <div font-20 weight700>Laad backups</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faCloudUploadAlt')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="firestore.backup('cases','cases',cases)" *ngIf="backupService.activebackups!='cases'&&!caseItem?.id" class="itemButton">
+                        <div font-20 weight700>Maak backups</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faCloudDownloadAlt')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="returnBackup(caseItem)" *ngIf="showBackups&&caseItem?.id" class="itemButton">
+                        <div font-20 weight700 text-warning>Restore casus</div>
+                        <fa-icon font-24 slot="end" text-warning [icon]="icon.get('faRedoAlt')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'&&!caseItem?.id" class="itemButton">
+                        <div font-20 weight700>Verberg backups</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faTimes')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="caseItem = {}" class="itemButton" *ngIf="caseItem?.id">
+                      <div font-20 weight700>Terug</div>
+                      <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="editCase(caseItem?.id,true)" class="itemButton" *ngIf="caseItem?.id">
+                      <div font-20 weight700>Bewerk uitgebreid</div>
+                      <fa-icon font-24 slot="end" [icon]="icon.get('faPen')"></fa-icon>
+                    </ion-item>
+                    <ion-item lines="none" button (click)="deleteCase()" class="itemButton" *ngIf="caseItem?.id">
+                      <div font-20 weight700 text-danger>Verwijder casus</div>
+                      <fa-icon font-24 slot="end" text-danger [icon]="icon.get('faTrashAlt')"></fa-icon>
+                    </ion-item>
+                  </div>
+
+                  <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!caseItem?.id">
+                    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Zoeken"></ion-searchbar>
+                </div>
+
+                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!caseItem?.id">
                     <div *ngFor="let type of infoService.conversation_types">
                         <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="type.selected = !type.selected">
                             <ion-checkbox slot="start" [(ngModel)]="type.selected" noPointerEvents></ion-checkbox>
@@ -41,7 +76,7 @@
                     </div>
                 </div>
 
-                <div style="background:white;padding:10px 0px;border-radius:16px">
+                <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!caseItem?.id">
                     <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('open_to_user',true)">
                         <ion-checkbox slot="start" [checked]="filterActive('open_to_user',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>Open voor Users</ion-label>
@@ -63,6 +98,7 @@
                                 <ion-card-content noPadding fullHeight>
                                     <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
                                     <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                                    <div *ngIf="caseItem.avatarName" class="videoAvatarBadge">Video</div>
                                     <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                                         <ion-card-header>
                                             <ion-card-title font-18 weight600>{{caseItem.title}}</ion-card-title>
@@ -72,8 +108,8 @@
                                     <div center flex center-ver center-hor>
                                         <ion-button class="saveButton creditButton" fill="outline" size="small">
                                             <div>
-                                                <div>{{caseItem.credits}}</div>
-                                                <div font-12 text-medium>Credits</div>
+                                                <div>{{caseItem.level}}</div>
+                                                <div font-12 text-medium>Level</div>
                                             </div>
                                         </ion-button>
                                         <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="selectCasus(caseItem)">Edit case</ion-button>
@@ -103,23 +139,13 @@
                         </ion-col>
                     </ion-row>
                 </div>
+
                 <ion-card basicPadding *ngIf="caseItem?.id">
                     <ion-card-header>
                         <ion-card-title flex center-ver>
                             <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
                             <span class="spacer"></span>
-                            <ion-button *ngIf="!showBackups" fill="clear" color="secondary" (click)="editCase(caseItem,true)">
-                                <fa-icon style="font-size:30px;" [icon]="icon.get('faPen')"></fa-icon>
-                            </ion-button>
-                            <ion-button *ngIf="!showBackups" fill="clear" (click)="deleteCase()">
-                                <fa-icon style="font-size:30px;" [icon]="icon.get('faTrashAlt')" trash></fa-icon>
-                            </ion-button>
-                            <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="showBackups" (click)="returnBackup(caseItem)">
-                                <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
-                            </ion-button>
-                            <ion-button fill="clear" class="backupIcon" (click)="caseItem = {}">
-                                <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
-                            </ion-button>
+
                         </ion-card-title>
                     </ion-card-header>
                     <ion-card-content>
@@ -131,13 +157,6 @@
                                         <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
                                     </ion-select>
                                 </ion-item>
-
-                                <!-- <ion-item lines="none" listCard>
-                                    <ion-label position="stacked">Thema</ion-label>
-                                    <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.theme" (ionChange)="update('theme')">
-                                        <ion-select-option *ngFor="let theme of infoService.themes" [value]="theme.id">{{theme.id}}</ion-select-option>
-                                    </ion-select>
-                                </ion-item> -->
 
                                 <ion-item lines="none" listCard (click)="selectTypes(caseItem.types)" class="ionItemTypes">
                                     <ion-label position="stacked">Typen</ion-label>
@@ -152,29 +171,43 @@
                                     <ion-label position="stacked">Rol</ion-label>
                                     <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
                                 </ion-item>
-                                <ion-item lines="none" listCard>
+                                <!-- <ion-item lines="none" listCard (click)="selectStreamingAvatar()">
                                     <ion-label position="stacked">Avatar ID</ion-label>
                                     <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.avatarName" (ionChange)="update('avatarName')"></ion-input>
-                                </ion-item>
+                                </ion-item> -->
                                 
                             </ion-col>
                             <ion-col [size]="media.smallDevice ? 12 : 4">
-                                <ion-card class="caseAvatar">
+                                <ion-card pointer class="caseAvatar" (click)="selectAvatar($event)">
                                     <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
                                     </ion-card-content>
-                                    <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
+                                    <!-- <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
                                         <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
-                                    </ion-card-content>
+                                    </ion-card-content> -->
+                                    <div fullwidth center-ver center-hor class="btnImgChange">
+                                        <ion-button fill="solid" color="light" class="saveButton" noPointerEvents>
+                                            <span text-dark>
+                                                <fa-icon [icon]="icon.get('faImage')"></fa-icon>
+                                                Foto
+                                            </span>
+                                        </ion-button>
+                                        <ion-button fill="solid" color="light" class="saveButton" (click)="selectStreamingAvatar($event)">
+                                            <span text-dark>
+                                                <fa-icon [icon]="icon.get('faVideo')"></fa-icon>
+                                                Video
+                                            </span>
+                                        </ion-button>
+                                    </div>
                                 </ion-card>
                             </ion-col>
                         </ion-row>
                         <ion-row>
-                            <ion-col size="12">
+                            <!-- <ion-col size="12">
                                 <ion-item lines="none" listCard>
                                     <ion-label position="stacked">Foto URL</ion-label>
                                     <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.photo" (ionChange)="update('photo')"></ion-input>
                                 </ion-item>
-                            </ion-col>
+                            </ion-col> -->
                             <ion-col size="6">
                                 <ion-item [disabled]="showBackups" lines="none" listCard>
                                     <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
@@ -183,8 +216,8 @@
                                 </ion-item>
                                 
                                 <ion-item lines="none" listCard>
-                                    <ion-label position="stacked">Prijs in credits</ion-label>
-                                    <ion-input type="number" [min]="0" [max]="200" [disabled]="showBackups" [(ngModel)]="caseItem.credits" (ionChange)="update('credits')"></ion-input>
+                                    <ion-label position="stacked">Level</ion-label>
+                                    <ion-input type="number" [min]="1" [max]="5" [disabled]="showBackups" [(ngModel)]="caseItem.level" (ionChange)="update('level')"></ion-input>
                                 </ion-item>
 
                             </ion-col>

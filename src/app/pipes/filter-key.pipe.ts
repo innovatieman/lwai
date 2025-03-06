@@ -165,6 +165,7 @@ export class FilterKeyPipe implements PipeTransform {
               }
             }
             else{
+              console.log(array,i,key)
               for(let j=0;j<array[i][key].length;j++){
                 if(value.indexOf(array[i][key][j])>-1 || array[i][key][j]=='all'){
                   nwArr.push(array[i])

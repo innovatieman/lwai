@@ -2,72 +2,116 @@ import * as functions from 'firebase-functions/v1';
 import admin from '../firebase'
 import * as responder from '../utils/responder'
 
-exports.deleteConversationSubCollections = functions.firestore
-  .document('users/{userId}/conversations/{conversationId}')
-  .onDelete(async (snap:any, context:any) => {
-    const docPath = snap.ref.path;
-
-    // console.log(`Begin recursive deletion of ${docPath}`);
-
-    await deleteSubcollections(docPath);
-
-    // console.log(`Recursive deletion of ${docPath} completed`);
-  });
+exports.deleteConversationSubCollection = functions.region('europe-west1')
+.firestore
+.document('users/{userId}/conversations/{conversationId}')
+.onDelete(async (snap:any, context:any) => {
+  const docPath = snap.ref.path;
+  await deleteSubcollections(docPath);
+});
 
 
-  exports.activeCoursesCreatItems = functions.firestore
-  .document('active_courses/{courseId}')
-  .onCreate(async (change:any, context:any) => {
-    let course = change.data()
-    if(course?.itemIds?.length > 0){
-      course.itemIds.forEach((item:any) => {
-        if(item.type=='case'){
-          if(course.trainerId){
-            let trainerRef = admin.firestore().collection('cases_trainer').doc(item.id)
-            trainerRef.get().then(doc => {
-              if(doc.exists){
-                let caseData = doc.data()
-                caseData.id = doc.id
-                admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
-              }
-            })
-          }
-          else{
-            let userRef = admin.firestore().collection('cases').doc(item.id)
-            userRef.get().then(doc => {
-              if(doc.exists){
-                let caseData = doc.data()
-                caseData.id = doc.id
-                admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
-              }
-            })
-          }
+exports.activeCoursesCreateItem = functions.region('europe-west1')
+.firestore
+.document('active_courses/{courseId}')
+.onCreate(async (change:any, context:any) => {
+  let course = change.data()
+  if(course?.itemIds?.length > 0){
+    course.itemIds.forEach((item:any) => {
+      if(item.type=='practice'){
+        if(course.trainerId){
+          let trainerRef = admin.firestore().collection('cases_trainer').doc(item.id)
+          trainerRef.get().then(doc => {
+            if(doc.exists){
+              let caseData = doc.data()
+              caseData.id = doc.id
+              admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
+            }
+          })
         }
-        else if(item.type=='infoItem'){
-          if(course.trainerId){
-            let trainerRef = admin.firestore().collection('infoItems_trainer').doc(item.id)
-            trainerRef.get().then(doc => {
-              if(doc.exists){
-                let caseData = doc.data()
-                caseData.id = doc.id
-                admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
-              }
-            })
-          }
-          else{
-            let userRef = admin.firestore().collection('infoItems').doc(item.id)
-            userRef.get().then(doc => {
-              if(doc.exists){
-                let caseData = doc.data()
-                caseData.id = doc.id
-                admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
-              }
-            })
-          }
+        else{
+          let userRef = admin.firestore().collection('cases').doc(item.id)
+          userRef.get().then(doc => {
+            if(doc.exists){
+              let caseData = doc.data()
+              caseData.id = doc.id
+              admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
+            }
+          })
         }
-      })
-    }
-  });
+        if(item.caseIds){
+          item.caseIds.forEach((caseId:any) => {
+            if(course.trainerId){
+              let trainerRef = admin.firestore().collection('cases_trainer').doc(caseId.id)
+              trainerRef.get().then(doc => {
+                if(doc.exists){
+                  let caseData = doc.data()
+                  caseData.id = doc.id
+                  admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(caseId.id).set(caseData)
+                }
+              })
+            }
+            else{
+              let userRef = admin.firestore().collection('cases').doc(caseId.id)
+              userRef.get().then(doc => {
+                if(doc.exists){
+                  let caseData = doc.data()
+                  caseData.id = doc.id
+                  admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(caseId.id).set(caseData)
+                }
+              })
+            }
+          })
+        }
+      }
+
+      else if(item.type=='case'){
+        if(course.trainerId){
+          let trainerRef = admin.firestore().collection('cases_trainer').doc(item.id)
+          trainerRef.get().then(doc => {
+            if(doc.exists){
+              let caseData = doc.data()
+              caseData.id = doc.id
+              admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
+            }
+          })
+        }
+        else{
+          let userRef = admin.firestore().collection('cases').doc(item.id)
+          userRef.get().then(doc => {
+            if(doc.exists){
+              let caseData = doc.data()
+              caseData.id = doc.id
+              admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
+            }
+          })
+        }
+      }
+      else if(item.type=='infoItem'){
+        if(course.trainerId){
+          let trainerRef = admin.firestore().collection('infoItems_trainer').doc(item.id)
+          trainerRef.get().then(doc => {
+            if(doc.exists){
+              let caseData = doc.data()
+              caseData.id = doc.id
+              admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
+            }
+          })
+        }
+        else{
+          let userRef = admin.firestore().collection('infoItems').doc(item.id)
+          userRef.get().then(doc => {
+            if(doc.exists){
+              let caseData = doc.data()
+              caseData.id = doc.id
+              admin.firestore().collection('active_courses').doc(context.params.courseId).collection('items').doc(item.id).set(caseData)
+            }
+          })
+        }
+      }
+    })
+  }
+});
 
 async function deleteSubcollections(docPath:any) {
   const subcollections = await admin.firestore().doc(docPath).listCollections();
@@ -102,7 +146,8 @@ exports.cancelActiveCourse = functions.region('europe-west1').https.onCall((data
     
 })
 
-exports.moveCancelledCourses = functions.pubsub.schedule('0 4 * * 6') // Elke zaterdag om 04:00 uur
+exports.moveCancelledCourse = functions.region('europe-west1')
+  .pubsub.schedule('0 4 * * 6') // Elke zaterdag om 04:00 uur
   .timeZone('Europe/Amsterdam')
   .onRun(async (context) => {
     const activeCoursesRef = admin.firestore().collection('active_courses');

@@ -22,6 +22,15 @@
     </div>
   </ion-list>
 
+  <ion-list id="inbox-list" *ngIf="!customMenu && !media.smallDevice">
+    <div *ngFor="let p of accountPages; let i = index">
+      <ion-item (click)="popoverController.dismiss()" pointer [ngClass]="p.class" (click)="nav.go(p.url)" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
+        <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
+        <ion-label>{{ trl(p.title) }}</ion-label>
+      </ion-item> 
+    </div>
+  </ion-list>
+
   <ion-grid style="padding:0px 5px">
     <ion-row *ngIf="customMenu&&!listShape">
       <ion-col size="6" *ngFor="let p of appPages; let i = index">

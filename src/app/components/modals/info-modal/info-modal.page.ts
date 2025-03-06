@@ -13,9 +13,6 @@ import { ToastService } from 'src/app/services/toast.service';
 export class InfoModalPage implements OnInit {
   @ViewChild("iframe",{static:false}) iframe!: ElementRef;
   feedbackGiven:boolean = false
-  // @Input() extraData:any = {
-  //   textBorder:true
-  // }
   @Input() options:any={
     title:'',
     content:'',
@@ -25,13 +22,7 @@ export class InfoModalPage implements OnInit {
     videoLoaded:false,
     btnsClass:''
   };
-  // @Input() title:string='';
-  // @Input() content:string='';
-  // @Input() buttons!:any[]
-  // @Input() video:boolean = false
-  // @Input() image:boolean = false
-  // @Input() videoLoaded:boolean = false
-  // @Input() btnsClass:string = ''
+
 
   constructor(
     public modalCtrl:ModalController,
@@ -48,7 +39,7 @@ export class InfoModalPage implements OnInit {
     if(!this.options.videoLoaded&&this.options.video){
       this.toast.showLoader()
     }
-    console.log(this.options)
+    // console.log(this.options)
   }
 
   hideLoader(){
@@ -58,7 +49,7 @@ export class InfoModalPage implements OnInit {
   }
 
   feedback(value:boolean){
-    console.log(value)
+    // console.log(value)
     let obj:any = JSON.parse(JSON.stringify(this.options.feedback))
     obj.positive = value
     for(let key in obj){

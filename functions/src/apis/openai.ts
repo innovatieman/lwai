@@ -35,136 +35,7 @@ const creditsCost:any = {
   skills: 3,
 }
 
-
-// exports.chatAIOld = onRequest( 
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-
-//       if((!body.userId) || (!body.conversationId) || (!body.categoryId) || (!body.caseId) || (!body.instructionType) || (!body.attitude) || (!body.prompt && !body.conversationId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         // 3. Initialiseer nieuw gesprek als er geen berichten zijn
-//         // console.log('initialize conversation')
-//         messages = await initializeConversation(body.categoryId, body.caseId, body.attitude, body.instructionType, body.userId,body);
-//         for(let i = 0; i < messages.length; i++){
-//           db.doc(`users/${body.userId}/conversations/${body.conversationId}/messages/${i}`).set(messages[i]);
-//         }
-//       }
-//       else{
-//         // console.log('messages found: ' + messages.length)
-//         let messageRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/messages/${messages.length}`);
-//         await messageRef.set({
-//           role: "user",
-//           content: body.prompt,
-//           timestamp: new Date().getTime(),
-//         });
-//         messages.push({ role: "user", content: body.prompt });
-//       }
-
-//       // res.write('messages - ' +JSON.stringify(messages));
-//       // res.end();
-//       // return
-      
-//       // 4. Voeg prompt toe aan berichten
-
-//       // Bereken prompt_tokens
-//       const encoding = encoding_for_model(openAiModal);
-//       const promptTokens = messages.reduce((total, msg) => {
-//         const tokens = encoding.encode(msg.content);
-//         return total + tokens.length;
-//       }, 0);
-
-//       const [agent_instructions] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId), 
-//       ]);
-
-//       // 5. Start streaming OpenAI-antwoord
-//       const stream = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: messages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//         stream: true,
-//       });
-      
-
-//       let completeMessage = '';
-//       let completionTokens = 0;
-
-//       for await (const chunk of stream) {
-//         const payload = chunk.choices[0]?.delta?.content;
-//         if (payload) {
-//           res.write(payload);
-//           completeMessage = completeMessage + payload;
-
-//           // Tel tokens in de huidige chunk
-//           const tokens = encoding.encode(payload);
-//           completionTokens += tokens.length;
-//         }
-//       }
-//       res.end();
-
-//       const totalTokens = promptTokens + completionTokens;
-//       encoding.free();
-
-//       // console.log('messages id found: ' + messages.length)
-//       let message_id = messages.length;
-//       let messageRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/messages/${message_id}`);
-//       await messageRef.set({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       let loadRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await loadRef.doc(body.instructionType).set({
-//         loading: false,
-//       });
-      
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: {
-//           prompt_tokens: promptTokens,
-//           completion_tokens: completionTokens,
-//           total_tokens: totalTokens,
-//           credits: creditsCost['reaction'],
-//         },
-//         timestamp: new Date().getTime(),
-//       });
-
-//       await updateCredits(body.userId, creditsCost['reaction']);
-
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
+// firebase deploy --only functions:chatAI,functions.choicesAI,functions.factsAI,functions.backgroundAI,functions.phasesAI,functions.feedbackAI,functions.closingAI,functions.promptChecker,functions.casePrompt,functions.goal,functions.soundToText,functions.skillsAI
 
 exports.chatAI = onRequest( 
   { cors: config.allowed_cors, region: "europe-west1" },
@@ -259,143 +130,6 @@ exports.chatAI = onRequest(
     }
   }
 );
-
-// exports.choicesAIOld = onRequest(
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.role) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages:any = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         return res.status(400).send("No previous messages found");
-//       }
-
-//       // let messageText = '';
-//       // for(let i = 0; i < messages.length; i++){
-//       //   messageText = messageText + '\n\n' + messages[i].role + 'prompt: ' + cleanReactionMessage(messages[i].content) + '\n\n';
-//       // }
-//       let messageText = JSON.stringify(messages);
-//       let lastMessage =  cleanReactionMessage(messages[messages.length-1].content);
-
-
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-
-//       const [agent_instructions, categorySnap,formats] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId), 
-//         categoryRef.get(), 
-//         getFormats(body.instructionType)
-//       ]);
-
-//     if (!categorySnap.exists) {
-//       throw new Error("Category not found");
-//     }
-
-//       const categoryData = categorySnap.data();
-
-//       // console.log('agent_instructions: ' + body.instructionType + ' /// ' + JSON.stringify(agent_instructions))
-
-//       let systemContent = agent_instructions.systemContent
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-//       let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title);
-//       content = content.split('[messages]').join(messageText).split('[lastMessage]').join(lastMessage);
-//       // content = content + '\n\n' + JSON.stringify(messagesToConversationString(messages,body.role));
-
-//       // res.write(content+'\n\n');
-
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-      
-//       messageRef.add({
-//         role: "system",
-//         content: systemContent,
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef.add({
-//         role: "user",
-//         content: content,
-//         timestamp: new Date().getTime(),
-//       });
-
-//       let sendMessages:any[] = []
-
-//       if(body.allMessages){
-//         sendMessages = messages;
-//       }
-//       else{
-//         sendMessages.push({
-//           role: "system",
-//           content: systemContent,
-//         })
-
-//         sendMessages.push({
-//           role: "user",
-//           content: content,
-//         })
-//       }
-
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
-
-//       const completeMessage = completion.choices[0].message.content;
-
-//       // 6. Sla het antwoord op in de database
-//       await messageRef.add({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       })
-
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: completion.usage,
-//         timestamp: new Date().getTime(),
-//         credits: creditsCost['choices'],
-//       });
-
-//       await updateCredits(body.userId, creditsCost['choices']);
-//       // 7. Retourneer het complete antwoord
-//       res.status(200).send('ready');
-//       //res.write(payload);
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
 
 exports.choicesAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
@@ -546,149 +280,6 @@ exports.choicesAI = onRequest(
   }
 );
 
-// exports.factsAIOld = onRequest(
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.role) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       // let messages = []
-//       // messages = await getPreviousMessages(body.userId, body.conversationId,'facts');
-//       // if (!messages) {
-//       //   messages = [{content:'no facts found'}];
-//       // }
-
-//       // let messageText = '';
-//       // for(let i = 0; i < messages.length; i++){
-//       //   messageText = messageText + messages[i].content + '\n\n';
-//       // }
-
-//       let messages:any = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         messages = [{content:'No other messages found'}];
-//       }
-
-//       let messageText = '';
-//       // messageText = messages[0].role +': ' + messages[0].content
-//       // for last 4 messages add the content
-//       for(let i = 1; i < messages.length; i++){
-//         if(i > messages.length-5){
-//           messageText = messageText + messages[i].role +': ' + messages[i].content + '\n\n';
-//         }
-//       }
-//         // messages = JSON.stringify(messages);
-          
-//       let previousFacts:any = []
-//       previousFacts = await getPreviousMessages(body.userId, body.conversationId,'facts');
-//       if (!previousFacts) {
-//         previousFacts = [{content:'No other facts found'}];
-//       }
-//       previousFacts = JSON.stringify(messages);
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-
-//       const [agent_instructions, categorySnap,formats] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId), 
-//         categoryRef.get(), 
-//         getFormats(body.instructionType)
-//       ]);
-
-//       if (!categorySnap.exists) {
-//         throw new Error("Category not found");
-//       }
-
-//       const categoryData = categorySnap.data();
-
-//       let systemContent = agent_instructions.systemContent
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-      
-//       let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       content = content.split('[facts]').join(previousFacts);
-//       content = content.split('[messages]').join(messageText);
-
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-
-//       // messageRef.add({
-//       //   role: "system",
-//       //   content: systemContent,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       // messageRef.add({
-//       //   role: "user",
-//       //   content: content,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       let sendMessages:any[] = [
-//         {role: "system", content: systemContent},
-//         {role: "user", content: content},
-//       ]
-
-
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
-
-//       const completeMessage = completion.choices[0].message.content;
-
-//       // 6. Sla het antwoord op in de database
-//       // let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-
-//       await messageRef.add({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       })
-
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: completion.usage,
-//         timestamp: new Date().getTime(),
-//         credits: creditsCost['facts'],
-//       });
-
-//       await updateCredits(body.userId, creditsCost['facts']);
-//       // 7. Retourneer het complete antwoord
-//       res.status(200).send('ready');
-//       //res.write(payload);
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
-
 exports.factsAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
@@ -809,124 +400,6 @@ exports.factsAI = onRequest(
     }
   }
 );
-
-// exports.backgroundAIOld = onRequest(
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.role) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages:any = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         messages = [{content:'No other messages found'}];
-//       }
-
-//       messages = JSON.stringify(messages);
-//       // for(let i = 0; i < messages.length; i++){
-//       //   messageText = messageText + messages[i].content + '\n\n';
-//       // }
-
-//       let previousBackground:any = []
-//       previousBackground = await getPreviousMessages(body.userId, body.conversationId,'background');
-//       if (!previousBackground) {
-//         previousBackground = [{content:'No other background found'}];
-//       }
-//       previousBackground = JSON.stringify(messages);
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-
-//       const [agent_instructions, categorySnap,formats] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId), 
-//         categoryRef.get(), 
-//         getFormats(body.instructionType)
-//       ]);
-
-//       if (!categorySnap.exists) {
-//         throw new Error("Category not found");
-//       }
-
-//       const categoryData = categorySnap.data();
-
-//       let systemContent = agent_instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-      
-//       let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       content = content.split('[background]').join(previousBackground).split('[messages]').join(messages);
-
-//       let sendMessages:any[] = []
-
-//       sendMessages.push({
-//         role: "system",
-//         content: systemContent,
-//       })
-
-//       sendMessages.push({
-//         role: "user",
-//         content: content,
-//       })
-
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
-
-//       const completeMessage = completion.choices[0].message.content;
-
-//       // 6. Sla het antwoord op in de database
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-
-//       await messageRef.add({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       })
-
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: completion.usage,
-//         timestamp: new Date().getTime(),
-//         credits: creditsCost['background'],
-//       });
-
-//       await updateCredits(body.userId, creditsCost['background']);
-//       // 7. Retourneer het complete antwoord
-//       res.status(200).send('ready');
-//       //res.write(payload);
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
 
 exports.backgroundAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
@@ -1059,139 +532,6 @@ exports.backgroundAI = onRequest(
   }
 );
 
-// exports.phasesAIOld = onRequest(
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.role) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         messages = [{content:`no ${body.instructionType} found`}];
-//       }
-
-//       let messageText = '';
-//       for(let i = 1; i < messages.length; i++){
-//         messageText = messageText + messages[i].role + ': ' + cleanReactionMessage(messages[i].content) + '\n\n';
-//       }
-
-//       let feedback = []
-//       feedback = await getPreviousMessages(body.userId, body.conversationId,body.instructionType);
-//       if (!feedback) {
-//         feedback = [{content:`no ${body.instructionType} found`}];
-//       }
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-
-//       const [agent_instructions, categorySnap,formats] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId), 
-//         categoryRef.get(), 
-//         getFormats(body.instructionType)
-//       ]);
-
-//       if (!categorySnap.exists) {
-//         throw new Error("Category not found");
-//       }
-
-//       const categoryData = categorySnap.data();
-
-
-//       let systemContent = agent_instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       systemContent = systemContent.split(`[phases]`).join(JSON.stringify(categoryData['phaseList']));
-//       systemContent = systemContent.split(`[feedback]`).join(JSON.stringify(feedback));
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-
-//       // await messageRef.add({
-//       //   role: "system",
-//       //   content: systemContent,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       let sendMessages:any[] = []
-
-//       sendMessages.push({
-//         role: "system",
-//         content: systemContent,
-//       })
-
-//       let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       content = content.split(`[messages]`).join(messageText);
-
-
-//       sendMessages.push({
-//         role: "user",
-//         content: content,
-//       })
-
-//       // await messageRef.add({
-//       //   role: "user",
-//       //   content: content,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
-
-//       const completeMessage = completion.choices[0].message.content;
-
-//       await messageRef.add({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       })
-
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: completion.usage,
-//         timestamp: new Date().getTime(),
-//         credits: creditsCost['phases'],
-//       });
-
-//       await updateCredits(body.userId, creditsCost['phases']);
-
-//       // 7. Retourneer het complete antwoord
-//       res.status(200).send('ready');
-//       //res.write(payload);
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
-
 exports.phasesAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
@@ -1315,144 +655,6 @@ exports.phasesAI = onRequest(
     }
   }
 );
-
-// exports.feedbackAIOld = onRequest(
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.role) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         messages = [{content:`no ${body.instructionType} found`}];
-//       }
-
-//       let messageText = '';
-//       for(let i = 1; i < messages.length; i++){
-//         if(i == messages.length-1 && messages[i].role == 'assistant'){
-//           //do nothing
-//         }
-//         else if(messages[i].role == 'assistant'){
-//           messageText = messageText + messages[i].role + ': ' + cleanReactionMessage(messages[i].content) + '\n\n';
-//         }
-//         else{
-//           messageText = messageText + messages[i].role + ': ' + messages[i].content + '\n\n';
-//         }
-//       }
-//       // let feedback = []
-//       // feedback = await getPreviousMessages(body.userId, body.conversationId,body.instructionType);
-//       // if (!feedback) {
-//       //   feedback = [{content:`no ${body.instructionType} found`}];
-//       // }
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-
-//       const [agent_instructions, categorySnap,formats] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId), 
-//         categoryRef.get(), 
-//         getFormats(body.instructionType)
-//       ]);
-
-//       if (!categorySnap.exists) {
-//         throw new Error("Category not found");
-//       }
-
-//       const categoryData = categorySnap.data();
-
-
-//       let systemContent = agent_instructions.systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       systemContent = systemContent.split(`[${body.instructionType}]`).join(JSON.stringify(categoryData[body.instructionType]));
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-
-//       // await messageRef.add({
-//       //   role: "system",
-//       //   content: systemContent,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       let sendMessages:any[] = []
-
-//       sendMessages.push({
-//         role: "system",
-//         content: systemContent,
-//       })
-
-//       let content = agent_instructions.content.split("[role]").join(body.role).split("[category]").join(categoryData.title)
-//       content = content.split(`[messages]`).join(messageText);
-
-//       // await messageRef.add({
-//       //   role: "user",
-//       //   content: content,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       sendMessages.push({
-//         role: "user",
-//         content: content,
-//       })
-
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
-
-//       const completeMessage = completion.choices[0].message.content;
-
-//       await messageRef.add({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       })
-
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: completion.usage,
-//         timestamp: new Date().getTime(),
-//         credits: creditsCost['feedback'],
-//       });
-
-//       await updateCredits(body.userId, creditsCost['feedback']);
-
-//       // 7. Retourneer het complete antwoord
-//       res.status(200).send('ready');
-//       //res.write(payload);
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
 
 exports.feedbackAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
@@ -1589,170 +791,6 @@ exports.feedbackAI = onRequest(
   }
 );
 
-// exports.closingAIOld = onRequest(
-//   { cors: config.allowed_cors, region: "europe-west1" },
-//   async (req: any, res: any) => {
-//     res.setHeader("Content-Type", "text/event-stream");
-//     res.setHeader("Cache-Control", "no-cache");
-//     res.setHeader("Connection", "keep-alive");
-
-
-//     try {
-//       const body = req.body;
-//       if((!body.userId) || (!body.conversationId) || (!body.instructionType) || (!body.categoryId)){
-//         console.log("Missing required parameters in request body");
-//         res.status(400).send("Missing required parameters in request body");
-//         return;
-//       }
-
-//       // 1. Controleer abonnement
-//       const hasValidSubscription = await checkUserSubscription(body.userId);
-//       if (!hasValidSubscription) {
-//         res.status(403).send("User does not have a valid subscription");
-//         return;
-//       }
-
-//       // 2. Haal eerdere berichten op (indien aanwezig)
-//       let messages = []
-//       messages = await getPreviousMessages(body.userId, body.conversationId);
-//       if (!messages) {
-//         messages = [{content:`no ${body.instructionType} found`}];
-//       }
-
-//       let messageText = JSON.stringify(messages);
-      
-
-//       const categoryRef = db.doc(`categories/${body.categoryId}`);
-//       const conversationRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
-      
-
-//       const [agent_instructions,categorySnap,formats,conversationSnap] = await Promise.all([
-//         getAgentInstructions(body.instructionType,body.categoryId),
-//         categoryRef.get(), 
-//         getFormats(body.instructionType),
-//         conversationRef.get()
-//       ]);
-
-//       if (!categorySnap.exists) {
-//         throw new Error("Category not found");
-//       }
-//       if(!conversationSnap.exists){
-//         throw new Error("Conversation not found");
-//       }
-
-//       const categoryData = categorySnap.data();
-//       const conversationData = conversationSnap.data();
-
-
-//       let systemContent = agent_instructions.systemContent
-//       systemContent = systemContent.split(`[phases]`).join(JSON.stringify(categoryData['phaseList']));
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-//       let content = agent_instructions.content.split('[messages').join(messageText);
-
-//       let goalsItems = conversationData['goalsItems'];
-//       let goals = ''
-//       if(goalsItems.attitude){
-//         goals = goals + '- Attitude: An attiude score higher or equal to ' + goalsItems.attitude + '\n\n';
-//       }
-//       if(goalsItems.free){
-//         goals = goals + '- Goal: '+ goalsItems.free+'\n\n';
-//       }
-//       if(goalsItems.phases?.length>0){
-        
-//         let phases = []
-//         phases = await getPreviousMessages(body.userId, body.conversationId,'phases');
-//         if (!phases || phases.length == 0) {
-//           //phases = [{content:`no phases found`}];
-//         }
-//         else{
-//           let lastPhase:any = JSON.parse(phases[phases.length-1].content);
-//           goals = goals + '- Phases: \nGoal: The scores of the phases should be higher or equal to the following scores (in order of the phases of the conversation): ' + goalsItems.phases.join(', ') + '\n';
-//           goals = goals + 'Actual: ' + lastPhase.element_levels.map((phase:any) => phase.score).join(', ') + '\n\n';
-//         }
-        
-        
-        
-//       }
-//       if(goals == ''){
-//         goals = 'No goals set for this conversation';
-//       }
-//       content = content.split('[goals]').join(goals);
-
-//       let messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/${body.instructionType}`);
-
-//       let sendMessages:any[] = []
-
-//       sendMessages.push({
-//         role: "system",
-//         content: systemContent,
-//       })
-
-//       sendMessages.push({
-//         role: "user",
-//         content: content,
-//       })
-
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
-
-//       const completeMessage = completion.choices[0].message.content;
-
-//       // await messageRef.add({
-//       //   role: "system",
-//       //   content: systemContent,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       // await messageRef.add({
-//       //   role: "user",
-//       //   content: content,
-//       //   timestamp: new Date().getTime(),
-//       // });
-
-//       await messageRef.add({
-//         role: "assistant",
-//         content: completeMessage.split('```json').join('').split('```').join(''),
-//         timestamp: new Date().getTime(),
-//       });
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/loading`);
-
-//       await messageRef.doc(body.instructionType).set({
-//         loading: false,
-//       })
-
-//       messageRef = db.collection(`users/${body.userId}/conversations/`);
-
-//       await messageRef.doc(body.conversationId).update({
-//         closed: new Date().getTime(),
-//       })
-
-//       let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
-//       await tokensRef.add({
-//         agent: body.instructionType,
-//         usage: completion.usage,
-//         timestamp: new Date().getTime(),
-//         credits: creditsCost['closing'],
-//       });
-
-//       await updateCredits(body.userId, creditsCost['closing']);
-
-//       // 7. Retourneer het complete antwoord
-//       res.status(200).send('ready');
-//       //res.write(payload);
-        
-//     } catch (error) {
-//       console.error("Error tijdens streaming:", error);
-//       res.status(500).send("Error tijdens streaming");
-//     }
-//   }
-// );
-
 exports.closingAI = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
   async (req: any, res: any) => {
@@ -1860,6 +898,14 @@ exports.closingAI = onRequest(
       await addToConversation(body.userId,body.conversationId,'assistant',completeMessage,'close');
 
       ////////////////////////////////////////////////////////////////////
+      // Close conversation
+      ////////////////////////////////////////////////////////////////////
+      let closeRef:any = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
+      await closeRef.update({
+        closed: new Date().getTime(),
+      })
+
+      ////////////////////////////////////////////////////////////////////
       // Stop loading
       ////////////////////////////////////////////////////////////////////
       await stopLoading(body);
@@ -1867,7 +913,7 @@ exports.closingAI = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Add token usage
       ////////////////////////////////////////////////////////////////////
-      await addTokenUsages(body,completion.usage,null,'close');
+      await addTokenUsages(body,completion.usage,null,'closing');
 
       ////////////////////////////////////////////////////////////////////
       // Update credits
@@ -1966,7 +1012,7 @@ exports.skillsAI = onRequest(
       // Set system content
       ////////////////////////////////////////////////////////////////////
       let systemContent = setSystemContent(agent_instructions,formats);
-      let goals = goalsText(conversationData);
+      let goals = goalsText(conversationData,true);
       systemContent = systemContent.split(`[goal]`).join(goals);
       systemContent = systemContent.split(`[phases]`).join("<pre>" + JSON.stringify(categoryData['phaseList']) + "</pre>");
       systemContent = systemContent.split(`['phases_scores']`).join(lastPhaseScores);
@@ -1975,6 +1021,7 @@ exports.skillsAI = onRequest(
       // Set user content
       ////////////////////////////////////////////////////////////////////
       let content = agent_instructions.content.split('[messages').join(messageText);
+      content = content.split(`[goal]`).join(goals);
 
       ////////////////////////////////////////////////////////////////////
       // Set messages
@@ -2026,19 +1073,24 @@ exports.skillsAI = onRequest(
 );
 
 exports.soundToTextAI = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb' },
+  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', timeoutSeconds: 120, },
 
   async (req:any, res:any) => {
     try {
-
+      console.log("Received request");
+      console.log(JSON.stringify(req.body));
       ////////////////////////////////////////////////////////////////////
       // Check required parameters
       ////////////////////////////////////////////////////////////////////
       const body = req.body;
       if((!body.userId) || (!body.conversationId) || (!body.file)){
+        console.log("Missing required parameters in request body");
         res.status(400).send("Missing required parameters in request body");
         return;
       }
+
+      console.log("Received file size:", body.file.length);
+      console.log("File format:", body.file.slice(0, 20)); // Log eerste 20 bytes om header te checken
 
       ////////////////////////////////////////////////////////////////////
       // Check subscription
@@ -2064,6 +1116,7 @@ exports.soundToTextAI = onRequest(
       const soundLength = fileSizeInBytes / 16000;
       const creditsCosts = Math.ceil(soundLength / 30);
 
+      console.log("Sound length:", soundLength, "Credits costs:", creditsCosts);
       ////////////////////////////////////////////////////////////////////
       // Stream OpenAI => Whisper
       ////////////////////////////////////////////////////////////////////
@@ -2081,7 +1134,7 @@ exports.soundToTextAI = onRequest(
       ////////////////////////////////////////////////////////////////////
       const  tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
       await tokensRef.add({
-        agent: 'sountToText',
+        agent: 'soundToText',
         usage: {seconds: soundLength},
         credits: creditsCosts,
         timestamp: new Date().getTime(),
@@ -2510,56 +1563,57 @@ If the image does not meet these requirements, please create the image again.
 );
 
 
-exports.categoryCreatePhases = functions.firestore
-  .document('categories/{categoryId}')
-  .onCreate(async (change:any, context:any) => {
-    const categoryData = change.data();
+// exports.categoryCreatePhases = functions.region('europe-west1')
+//   .firestore
+//   .document('categories/{categoryId}')
+//   .onCreate(async (change:any, context:any) => {
+//     const categoryData = change.data();
 
-    if(!categoryData.phaseList || categoryData.phaseList.length <2){
+//     if(!categoryData.phaseList || categoryData.phaseList.length <2){
 
-      const [agent_instructions,formats] = await Promise.all([
-        getAgentInstructions('phase_creator','main'), 
-        getFormats('phase_creator')
-      ]);
-
-
-      let systemContent = agent_instructions.systemContent
-      systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-      let sendMessages:any[] = []
-
-      sendMessages.push({
-        role: "system",
-        content: systemContent,
-      })
-
-      let content = agent_instructions.content.split("[category]").join(categoryData.title)
-
-      sendMessages.push({
-        role: "user",
-        content: content,
-      })
+//       const [agent_instructions,formats] = await Promise.all([
+//         getAgentInstructions('phase_creator','main'), 
+//         getFormats('phase_creator')
+//       ]);
 
 
-      const completion = await openai.chat.completions.create({
-        model: openAiModal,
-        messages: sendMessages,
-        temperature: agent_instructions.temperature,
-        max_tokens: agent_instructions.max_tokens,
-      });
+//       let systemContent = agent_instructions.systemContent
+//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
 
-      const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
+//       let sendMessages:any[] = []
+
+//       sendMessages.push({
+//         role: "system",
+//         content: systemContent,
+//       })
+
+//       let content = agent_instructions.content.split("[category]").join(categoryData.title)
+
+//       sendMessages.push({
+//         role: "user",
+//         content: content,
+//       })
+
+
+//       const completion = await openai.chat.completions.create({
+//         model: openAiModal,
+//         messages: sendMessages,
+//         temperature: agent_instructions.temperature,
+//         max_tokens: agent_instructions.max_tokens,
+//       });
+
+//       const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
       
-      console.log('completeMessage: ' + completeMessage);
+//       console.log('completeMessage: ' + completeMessage);
 
-      const parsedMessage = JSON.parse(completeMessage);
+//       const parsedMessage = JSON.parse(completeMessage);
 
-      await db.collection('categories').doc(context.params.categoryId).update({
-        phaseList: Array.isArray(parsedMessage) ? parsedMessage : []
-      });
+//       await db.collection('categories').doc(context.params.categoryId).update({
+//         phaseList: Array.isArray(parsedMessage) ? parsedMessage : []
+//       });
 
-    }
-  });
+//     }
+//   });
 
 
 exports.createPhases = functions.region('europe-west1').https.onCall(async (data: any, context: any) => {
@@ -3030,14 +2084,14 @@ async function getPreviousMessages(userId: string, conversationId: string, subCo
 
 async function updateCredits(userId: string, credits: number): Promise<void> {
   try {
-    const userRef = db.collection("users").doc(userId);
-    const userdata = await userRef.get();
-    if (!userdata.exists) {
+    const creditsRef = db.collection("users").doc(userId).collection("credits").doc("credits");
+    const creditsdata = await creditsRef.get();
+    if (!creditsdata.exists) {
       throw new Error("User not found");
     }
-    const user = userdata.data();
-    const newCredits = user.credits - credits;
-    await userRef.update({ credits: newCredits });
+    const creditsTotal = creditsdata.data();
+    const newCredits = creditsTotal.total - credits;
+    await creditsRef.update({ total: newCredits });
     return;
   }
   catch (error) {
@@ -3314,7 +2368,7 @@ function setSystemContent(agent_instructions:any,formats:any){
   return systemContent;
 }
 
-function goalsText(conversationData:any){
+function goalsText(conversationData:any,noSpecifics?:boolean){
   let goals:string = ''
   if(conversationData.goalsItems?.free){
     if(goals == ''){
@@ -3336,7 +2390,13 @@ function goalsText(conversationData:any){
   }
 
   if(goals==''){
-    goals = 'Het normale doel van hoort bij [category]'
+    if(noSpecifics){
+      goals = 'Geen specifieke doelen gesteld door de gebruiker'
+    }
+    else{
+      goals = 'Het normale doel van hoort bij [category]'
+    }
   }
+  
   return goals;
 }

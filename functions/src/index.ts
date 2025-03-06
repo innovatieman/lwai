@@ -31,4 +31,8 @@ export * from './payment/credits'
 export * from './processing/mails'
 export * from './apis/assemblyai'
 export * from './apis/voice2text'
+export * from './payment/courses'
+export * from './storage/images'
+export * from './storage/videos'
+export * from './payment/subscriptions'
 

@@ -45,13 +45,11 @@ export class ConversationStartPage implements OnInit {
   ) { }
 
   ngOnInit() {
-
     if(this.caseItem){
       if(this.caseItem.goals){
         this.caseItem.goalsItems = JSON.parse(JSON.stringify(this.caseItem.goals))
         delete this.caseItem.goals
       }
-      console.log(this.caseItem)
       if(!this.caseItem.editable_by_user.agents){
         this.caseItem.editable_by_user.agents = {
           choices:true,

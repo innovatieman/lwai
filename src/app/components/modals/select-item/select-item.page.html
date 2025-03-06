@@ -41,12 +41,12 @@
           </div>
           <div  style="margin-bottom:15px;" *ngIf="extraData&&extraData.object&&extraData.multiple">
             <ion-item button (click)="selectAll()">
-              <ion-checkbox [ngModel]="allSelected" disabled (click)="preventBubble($event);selectAll()" style="margin-right: 10px;"></ion-checkbox>
-              <ion-label color="medium">{{'modal_select_item_select_all' | translate}}</ion-label>
+              <ion-checkbox [ngModel]="allSelected" disabled (click)="preventBubble($event);selectAll()" style="margin-right: 10px;max-width:30px"></ion-checkbox>
+              <ion-label color="medium">{{'Select all' | translate}}</ion-label>
               <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
             </ion-item>
             <ion-item *ngFor="let listItem of list | filterSearch : search : false : ['name']" button (click)="listItem.selected=!listItem.selected">
-              <ion-checkbox [(ngModel)]="listItem.selected" (click)="preventBubble($event)" style="margin-right: 10px;"></ion-checkbox>
+              <ion-checkbox [(ngModel)]="listItem.selected" (click)="preventBubble($event)" style="margin-right: 10px;max-width:30px"></ion-checkbox>
               <ion-label *ngIf="listItem[extraData.field]" color="medium">{{listItem[extraData.field]}}</ion-label>
               <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
             </ion-item>
@@ -56,12 +56,12 @@
 
       </div>
     
-      <div flex center-hor paddingBasic style="position: absolute;box-shadow: 0px 0px 4px rgba(0,0,0,0.2);bottom:0;left:0;width:100%;background-color: white;z-index: 2">
-        <ion-button color="secondary" (click)="modalController.dismiss()" >
+      <div flex center-hor paddingBasic style="padding:10px;position: absolute;box-shadow: 0px 0px 4px rgba(0,0,0,0.2);bottom:0;left:0;width:100%;background-color: white;z-index: 2">
+        <ion-button color="secondary" fill="outline" class="saveButton" (click)="modalController.dismiss()" >
           {{'buttons.cancel' | translate}}
         </ion-button>
         <span class="spacer"></span>
-        <ion-button color="tertiary" *ngIf="extraData?.multiple" (click)="okMultiple()">
+        <ion-button color="tertiary"  class="saveButton" *ngIf="extraData?.multiple" (click)="okMultiple()">
           {{'buttons.ok' | translate}}
         </ion-button>
       </div>

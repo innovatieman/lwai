@@ -11,6 +11,8 @@ import { SelectItemPage } from '../components/modals/select-item/select-item.pag
 import { VerificationPage } from '../components/modals/verification/verification.page';
 import { RateLearningPage } from '../components/modals/rate-learning/rate-learning.page';
 import { SelectManyPage } from '../components/modals/select-many/select-many.page';
+import { EvaluationPage } from '../components/modals/evaluation/evaluation.page';
+import { SelectImageLibraryPage } from '../components/modals/select-image-library/select-image-library.page';
 
 @Injectable({
   providedIn: 'root',
@@ -49,6 +51,7 @@ export class ModalService {
   }
 
   async showConversationStart(caseItem: any): Promise<boolean> {
+    console.log(caseItem);
     const modalItem = await this.modalController.create({
       component: ConversationStartPage,
       backdropDismiss: false,
@@ -80,27 +83,6 @@ export class ModalService {
     if(backdropDismiss==undefined){options.backdropDismiss = true}
     this.showInfo(options,callback)
   }
-  //   const modalItem = await this.modalController.create({
-  //     component:InfoModalPage,
-  //     componentProps:{
-  //       content:content,
-  //       title:title,
-  //       video:video,
-  //       image:image,
-  //       buttons:buttons,
-  //       btnsClass:btnsClass,
-  //       extraData:extraData
-  //     },
-  //     backdropDismiss:backdropDismiss,
-  //     cssClass:'infoModal',
-  //   })
-  //   if(callback){
-  //     modalItem.onWillDismiss().then(data=>{
-  //       callback(data)
-  //     })
-  //   }
-  //   return await modalItem.present()
-  // }
 
   public async showInfo(options:any,callback?:any){
     if(options.backdropDismiss==undefined){options.backdropDismiss = true}
@@ -111,6 +93,24 @@ export class ModalService {
       },
       backdropDismiss:options.backdropDismiss,
       cssClass:'infoModal',
+    })
+    if(callback){
+      modalItem.onWillDismiss().then(data=>{
+        callback(data)
+      })
+    }
+    return await modalItem.present()
+  }
+
+  public async showEvaluation(options:any,callback?:any){
+    if(options.backdropDismiss==undefined){options.backdropDismiss = true}
+    const modalItem = await this.modalController.create({
+      component:EvaluationPage,
+      componentProps:{
+        options:options
+      },
+      backdropDismiss:options.backdropDismiss,
+      cssClass:'evaluationModal',
     })
     if(callback){
       modalItem.onWillDismiss().then(data=>{
@@ -160,7 +160,7 @@ export class ModalService {
   } 
 
   public async inputFields(title:string,text:string,fields:any[],callback:Function,extraData?:any){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:InputFieldsPage,
       componentProps:{
         text:text,
@@ -170,29 +170,29 @@ export class ModalService {
       },
       cssClass:'infoModal',
     })
-    modal.onWillDismiss().then(result=>{
+    modalItem.onWillDismiss().then(result=>{
       callback(result)
     })
-    return await modal.present()
+    return await modalItem.present()
   }
 
   public async editHtmlItem(data:any,callback:Function){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:EditHtmlPage,
       componentProps:{
         data:data,
       },
       cssClass:'editHtmlModal',
     })
-    modal.onWillDismiss().then(data=>{
+    modalItem.onWillDismiss().then(data=>{
       callback(data)
     })
-    return await modal.present()
-    // return await modal.present
+    return await modalItem.present()
+    // return await modalItem.present
   }
 
   public async selectItem(text:string,list:any[],callback:Function,iconList?:any[],title?:string,extraData?:any){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:SelectItemPage,
       componentProps:{
         text:text,
@@ -203,10 +203,10 @@ export class ModalService {
       },
       cssClass:'listModal',
     })
-    modal.onWillDismiss().then(result=>{
+    modalItem.onWillDismiss().then(result=>{
       callback(result)
     })
-    return await modal.present()
+    return await modalItem.present()
   }
 
   async showRating(title:string,content:string,id:any,rating: any): Promise<boolean> {
@@ -228,17 +228,31 @@ export class ModalService {
   }
 
   async selectMany(obj:any,callback:Function){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:SelectManyPage,
       componentProps:{
         properties:obj
       },
       cssClass:'selectManyModal',
     })
-    modal.onWillDismiss().then(result=>{
+    modalItem.onWillDismiss().then(result=>{
       callback(result)
     })
-    return await modal.present()
+    return await modalItem.present()
+  }
+
+  async selectImageLibrary(obj:any,callback:Function){
+    const modalItem = await this.modalController.create({
+      component:SelectImageLibraryPage,
+      componentProps:{
+        properties:obj
+      },
+      cssClass:'selectManyModal',
+    })
+    modalItem.onWillDismiss().then(result=>{
+      callback(result)
+    })
+    return await modalItem.present()
   }
 
 }

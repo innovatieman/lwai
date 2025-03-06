@@ -123,30 +123,13 @@ export class CasesPage implements OnInit {
   shortMenu:any
   async openAdd(){
     
-    this.shortMenu = await this.popoverController.create({
-      component: MenuPage,
-      componentProps:{
-        customMenu:true,
-        pages:this.categoriesList
-      },
-      cssClass: 'customMenu',
-      event: event,
-      translucent: false,
-    });
-    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
-
-    await this.shortMenu.present()
-    await this.shortMenu.onWillDismiss();
-
-
-    if(this.selectMenuservice.selectedItem){
-      console.log(this.categoryInfo(this.selectMenuservice.selectedItem.id))
-      let casus = this.casesService.defaultCase(this.selectMenuservice.selectedItem.id,this.categoryInfo(this.selectMenuservice.selectedItem.id).openingMessage)
+    await this.modalService.selectItem('',this.categoriesList,(result:any)=>{
+      if(result.data){
+        let casus = this.casesService.defaultCase(result.data.id,this.categoryInfo(result.data.id).openingMessage)
         
         this.editCase(casus)
-        
-    }
-    
+      }
+    })
   }
 
   editCase(caseItem:any,existing:boolean = false){
@@ -240,30 +223,6 @@ export class CasesPage implements OnInit {
     this.selectMenuservice.selectedItem = undefined
   }
 
-
-  // add(){
-  //   if(this.newConversation){
-  //     let casus =
-  //       {
-  //         conversation:this.newConversation,
-  //         open_to_user:false,
-  //         open_to_public:false,
-  //         open_to_admin:true,
-  //         title:'New Case',
-  //         role:'',
-  //         description:'',
-  //         attitude:1
-  //       }
-  //     this.newConversation = ''
-      
-  //     this.modal.showConversationStart({admin:true,...casus}).then((res:any)=>{
-
-  //         console.log(res)
-  //       })
-        
-        
-  //   }
-  // }
 
   deleteCase(){
     this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
@@ -380,4 +339,43 @@ export class CasesPage implements OnInit {
     event.preventDefault()
     event.stopPropagation()
   }
+
+  async selectAvatar(event:Event){
+    this.media.selectAvatar(event,(res:any)=>{
+      console.log(res)
+      if(res?.status==200&&res?.result.url){
+        this.caseItem.photo = res.result.url
+        this.caseItem.avatarName = ''
+        this.update('photo')
+        this.update('avatarName')
+      }
+      else if(res=='delete'){
+        this.caseItem.photo = ''
+        this.caseItem.avatarName = ''
+        this.update('photo')
+        this.update('avatarName')
+      }
+      else if(res.type=='library'){
+        this.caseItem.photo = res.url
+        this.caseItem.avatarName = ''
+        this.update('photo')
+        this.update('avatarName')
+      }
+    })
+  }
+
+  selectStreamingAvatar(event:Event){
+    event.preventDefault()
+    event.stopPropagation()
+    this.modalService.selectImageLibrary({type:'streamingAvatar'},(res:any)=>{
+      console.log(res)
+      if(res.data){
+        this.caseItem.photo = res.data.url
+        this.caseItem.avatarName = res.data.avatarId
+        this.update('photo')
+        this.update('avatarName')
+      }
+    })
+  }
+
 }

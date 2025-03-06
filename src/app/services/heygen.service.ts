@@ -13,10 +13,14 @@ export class HeyGenApiService {
   private sessionId: string = '';
   public streamingAvatar: any;
   streamIsActive:boolean = false;
+  connecting:boolean = false;
+  connectionFailed:boolean = false;
   constructor() {}
 
   async initializeAvatar(avatarName: string,video_id:string,callback?:Function) {
     console.log('initializeAvatar');
+    this.connecting = true;
+    this.streamIsActive = false;
     try {
       // Vraag token aan via Firebase Function
       const tokenResponse = await axios.get(this.token_url);
@@ -26,6 +30,9 @@ export class HeyGenApiService {
 
       this.streamingAvatar.on(StreamingEvents.STREAM_READY, (event: any) => {
         console.log('Stream ready', event);
+        this.streamIsActive = true;
+        this.connecting = false;
+        this.sessionId = event.detail.sessionId;
         const videoElement = document.getElementById(video_id) as HTMLVideoElement;
         videoElement.srcObject = event.detail;
         const streamInterval = setInterval(() => {
@@ -47,6 +54,13 @@ export class HeyGenApiService {
       
     } catch (error) {
       console.error('Error initializing avatar:', error);
+      this.streamIsActive = false;
+      this.connecting = false;
+      this.connectionFailed=true
+      setTimeout(() => {
+        this.connectionFailed = false;
+      }, 1000);
+      this.active.emit(false);
     }
   }
 
@@ -66,6 +80,7 @@ export class HeyGenApiService {
     stream.addEventListener('inactive', () => {
       // console.log('MediaStream became inactive.');
       // this.streamIsActive = false;
+      this.streamIsActive = false;
       this.active.emit(false);
       // console.log(this.streamIsActive)
       // Voer hier je logica uit als de stream inactief wordt
@@ -87,6 +102,7 @@ export class HeyGenApiService {
   async disconnect(video_id:string) {
     if (this.streamingAvatar) {
       await this.streamingAvatar.stopAvatar({ stopSessionRequest: { sessionId: this.sessionId } });
+      this.streamIsActive = false;
       const videoElement = document.getElementById(video_id) as HTMLVideoElement;
       if(videoElement){
         videoElement.srcObject = null;

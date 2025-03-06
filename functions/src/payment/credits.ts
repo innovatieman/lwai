@@ -60,21 +60,16 @@ exports.creditsBought = functions.region('europe-west1').firestore
     let payment = snap.data();
     if(payment.status == 'succeeded' && payment.description !== 'Subscription creation' && payment.items?.length > 0 && payment.items[0].price){
         await admin.firestore().collection('processed_payments').doc(context.params.paymentId).set({processed: true});
-        const user = await admin.firestore().collection('users').doc(context.params.userId).get();
-        let userData = user.data();
-        let currentCredits = 0;
-        if(userData?.credits){
-            currentCredits = userData.credits;
-        }
 
         const product = await admin.firestore().collection('products').doc(payment.items[0].price.product).get();
         const productData = product.data();
 
-        console.log('Product data', JSON.stringify(productData));
-
-        await admin.firestore().collection('users').doc(context.params.userId).update({
-            credits: currentCredits + parseInt(productData.metadata.credits)
-        });
+        if(productData.metadata.credits){
+            await addCreditsToUser(context.params.userId, productData);
+        }
+        else if(productData.metadata.type=='course'){
+            await addCourseToUser(context.params.userId, payment.items[0].price.product);
+        }
     }
     
   });
@@ -90,19 +85,60 @@ exports.creditsBought = functions.region('europe-west1').firestore
             return;
         }
         await admin.firestore().collection('processed_payments').doc(context.params.paymentId).set({processed: true});
-        const user = await admin.firestore().collection('users').doc(context.params.userId).get();
-        let userData = user.data();
-        let currentCredits = 0;
-        if(userData?.credits){
-            currentCredits = userData.credits;
-        }
 
         const product = await admin.firestore().collection('products').doc(payment.items[0].price.product).get();
         const productData = product.data();
+        
+        if(productData.metadata.credits){
+            await addCreditsToUser(context.params.userId, productData);
+        }
+        else if(productData.metadata.type=='course'){
+            await addCourseToUser(context.params.userId, payment.items[0].price.product);
+        }
 
-        await admin.firestore().collection('users').doc(context.params.userId).update({
-            credits: currentCredits + parseInt(productData.metadata.credits)
-        });
     }
     
   });
+
+
+  async function addCourseToUser(userId:string, productId:string){
+    const courses = await admin.firestore().collection('active_courses').where('stripeProductId', '==', productId).get();
+    if(courses.empty){
+        return;
+    }
+    const course = courses.docs[0];
+    const courseId = course.id;
+
+    if(!course.exists){
+        return;
+    }
+    const courseData = course.data();
+    if(!courseData){
+        return;
+    }
+    const courseItems = await admin.firestore().collection('active_courses').doc(courseId).collection('items').get();
+
+    let courseItemsData:any = [];
+    courseItems.forEach((item:any)=>{
+        courseItemsData.push(item.data());
+    });
+
+    await admin.firestore().collection('users').doc(userId).collection('courses').doc(courseId).set(courseData);
+    for(let i=0; i<courseItemsData.length; i++){
+        await admin.firestore().collection('users').doc(userId).collection('courses').doc(courseId).collection('items').doc(courseItemsData[i].id).set(courseItemsData[i]);
+    }
+
+  }
+
+  async function addCreditsToUser(userId:string,productData:any){
+    const userCredits = await admin.firestore().collection('users').doc(userId).collection('credits').doc('credits').get();
+    let creditsData = userCredits.data();
+    let currentCredits = 0;
+    if(creditsData?.total){
+        currentCredits = creditsData.total;
+    }
+    
+    await admin.firestore().collection('users').doc(userId).collection('credits').doc('credits').update({
+        total: currentCredits + parseInt(productData.metadata.credits)
+    });
+  }

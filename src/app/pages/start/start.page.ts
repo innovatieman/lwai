@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { theme } from 'highcharts';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -19,6 +20,10 @@ import { NavService } from 'src/app/services/nav.service';
 })
 export class StartPage implements OnInit {
   @HostListener('window:resize', ['$event'])
+  @ViewChild('progressCircle1',{static:false}) progressCircle1: any;
+  @ViewChild('progressCircle2',{static:false}) progressCircle2: any;
+  @ViewChild('progressCircle3',{static:false}) progressCircle3: any;
+  [x:string]:any
   onResize(){
     this.media.setScreenSize()
     this.rf.detectChanges()
@@ -32,6 +37,16 @@ export class StartPage implements OnInit {
   }
   searchTerm: string = '';
   showFilterSmall: boolean = false;
+  levels: any = [
+    {nr:1},
+    {nr:2},
+    {nr:3},
+    {nr:4},
+    {nr:5}
+  ];
+  showFlags: boolean = false;
+  showFilter: boolean = false;
+  showFilterLevel: boolean = false;
   constructor(
     public nav:NavService,
     public cases:CasesService,
@@ -43,18 +58,56 @@ export class StartPage implements OnInit {
     private rf:ChangeDetectorRef,
     private firestore:FirestoreService,
     public helper:HelpersService,
-    public translate:TranslateService
+    public translate:TranslateService,
+    private route: ActivatedRoute,
   ) { }
 
   ngOnInit() {
+    this.route.params.subscribe(params => {
+      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'courses')){
+        this.showAll = params['tab']
+      }
+      else{
+        this.showAll = ''
+      }
+    });
+
     this.conversations$ = this.auth.getConversations();
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
         this.auth.getActiveCourses(this.auth.userInfo.uid)
         this.auth.getPublicCourses()
+        this.levels[this.auth.userLevel-1].selected = true
       }
     });
+    this.setupProgressCircles()
     // this.sendTestMail()
+  }
+
+  setupProgressCircles(){
+    let count = 0
+    let check:any = {}
+    for(let i = 0; i<4;i++){
+      check[i] = setInterval(()=>{
+        count++
+        if(count>500){
+          clearInterval(check[i])
+        }
+        if( this['progressCircle'+i]?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
+          clearInterval(check[i])
+          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-50px');
+          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-50px');
+
+          setTimeout(() => {
+            const tspanElements:any = document.querySelectorAll('tspan');
+            tspanElements.forEach((tspan:any, index:number) => {
+                tspan.setAttribute('y', 125); // Verhoog met 10
+            });            
+          }, 500);
+
+        }
+      }, 20);
+    }
   }
 
   selectCategory(category:any){
@@ -216,9 +269,15 @@ export class StartPage implements OnInit {
   get currentFilterTypes() {
     return this.filterTypes();
   }
+  get currentFilterLevels() {
+    return this.filterLevels();
+  }
 
   get filterIsEmpty() {
     return this.currentFilterTypes.types.length === 0 && this.currentFilterTypes.subjects.length === 0;
+  }
+  get filterIsEmptyLevel() {
+    return this.currentFilterLevels.length === 0;
   }
 
   clearFilter(){
@@ -229,6 +288,13 @@ export class StartPage implements OnInit {
       }
     }
   }
+
+  clearFiltersLevel(){
+    for(let i = 0; i < this.levels.length; i++){
+      this.levels[i].selected = false
+    }
+  }
+
   filterTypes() {
     let filter: any = {
       types: [],
@@ -268,6 +334,15 @@ export class StartPage implements OnInit {
     return this.extraFilters[filter].indexOf(value) > -1
   }
 
+  filterLevels(){
+    let levels:any = []
+    for(let i = 0; i < this.levels.length; i++){
+      if(this.levels[i].selected){
+        levels.push(this.levels[i].nr)
+      }
+    }
+    return levels
+  }
 
   check(event:any){
     event.preventDefault()

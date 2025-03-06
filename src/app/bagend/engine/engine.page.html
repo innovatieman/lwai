@@ -223,7 +223,7 @@
                     <ion-label position="stacked" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</ion-label>
                     <quill-editor *ngIf="!showHtml" [(ngModel)]="activeItem[activeAgent.id][field.field]" [modules]="configModules" (onEditorCreated)="startEditor($event)" (onBlur)="update(field.field,null,true)"></quill-editor>
 
-                    <ion-toolbar *ngIf="showHtml" style="padding-left:10px;">
+                    <ion-toolbar *ngIf="showHtml" style="padding-left:0px;--background: none">
                       <ion-buttons slot="start">
                         <ion-button (click)="showEditor()">
                           <fa-icon [icon]="icon.get('faArrowLeft')" style="margin-right:15px;" slot="start">keyboard_arrow_left</fa-icon>
@@ -236,9 +236,6 @@
                       <div slot="label" *ngIf="!firstInputlabels[field.field]">{{field.label}}</div>
                       <div slot="label" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</div>
                     </ion-textarea>
-                    <!-- <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups(activeAgent)" (click)="getBackup(activeItem[activeAgent.id].id,field.field)">
-                      <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
-                    </ion-button> -->
                   </ion-item>
                   
                 </div>
@@ -324,7 +321,7 @@
                       </ion-input>
                     </ion-item>
                     <ion-item listCard listCardBottom lines="none">
-                      <ion-textarea labelPlacement="floating" [(ngModel)]="phase.description" (ionChange)="update('phaseList')">
+                      <ion-textarea labelPlacement="floating" [autoGrow]="true" [(ngModel)]="phase.description" (ionChange)="update('phaseList')">
                         <div slot="label">Description</div>
                       </ion-textarea>
                     </ion-item>

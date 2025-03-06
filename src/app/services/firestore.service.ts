@@ -219,6 +219,10 @@ export class FirestoreService {
     return this.fire.collection(collection,ref => ref.where(where,operator,key)).snapshotChanges()
   }
 
+  queryDouble(collection:string,where:string,key:any,operator:any='==',where2:string,key2:any,operator2:any='=='){
+    return this.fire.collection(collection,ref => ref.where(where,operator,key).where(where2,operator2,key2)).snapshotChanges()
+  }
+
   queryGet(collection:string,where:string,key:any,operator?:any,limit?:number,orderBy?:boolean){
     if(!operator){
       operator='=='

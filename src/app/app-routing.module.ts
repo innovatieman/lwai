@@ -18,6 +18,11 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'start/:tab',
+    loadChildren: () => import('./pages/start/start.module').then( m => m.StartPageModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'register',
     loadChildren: () => import('./auth/pages/register/register.module').then( m => m.RegisterPageModule)
   },
@@ -60,6 +65,11 @@ const routes: Routes = [
   },
   {
     path: 'trainer/courses',
+    loadChildren: () => import('./trainer/trainer-courses/trainer-courses.module').then( m => m.TrainerCoursesPageModule),
+    canActivate: [AdminGuard,TrainerGuard],
+  },
+  {
+    path: 'trainer/courses/:tab',
     loadChildren: () => import('./trainer/trainer-courses/trainer-courses.module').then( m => m.TrainerCoursesPageModule),
     canActivate: [AdminGuard,TrainerGuard],
   },
@@ -182,6 +192,14 @@ const routes: Routes = [
   {
     path: 'achievement',
     loadChildren: () => import('./components/achievement/achievement.module').then( m => m.AchievementPageModule)
+  },
+  {
+    path: 'evaluation',
+    loadChildren: () => import('./components/modals/evaluation/evaluation.module').then( m => m.EvaluationPageModule)
+  },
+  {
+    path: 'select-image-library',
+    loadChildren: () => import('./components/modals/select-image-library/select-image-library.module').then( m => m.SelectImageLibraryPageModule)
   },
 
 
