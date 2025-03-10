@@ -4,6 +4,7 @@ import { ToggleConsoleService } from './services/toggle-console.service';
 import { environment } from 'src/environments/environment';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { ToastController } from '@ionic/angular';
+import { NavService } from './services/nav.service';
 
 @Component({
   selector: 'app-root',
@@ -15,17 +16,18 @@ export class AppComponent {
     private translate: TranslateService,
     private toggleConsole:ToggleConsoleService,
     private swUpdate: SwUpdate,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private nav:NavService
   ) {
     this.setRealViewportHeight();
     window.addEventListener('resize', this.setRealViewportHeight);
 
     if(!environment.log_on){
-      this.toggleConsole.disableConsole();
+      // this.toggleConsole.disableConsole();
     }
 
-    this.translate.setDefaultLang('nl');
-    this.translate.use('nl');
+    this.nav.setLang()
+
     this.listenForUpdates();
   }
 

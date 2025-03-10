@@ -108,7 +108,7 @@ export class MenuPage implements OnInit {
     public router:Router,
     public popoverController:PopoverController,
     public nav:NavService,
-    private translate:TranslateService,
+    public translateService:TranslateService,
     public media:MediaService,
     private selectMenuservice:SelectMenuService,
   ) { }
@@ -171,7 +171,7 @@ export class MenuPage implements OnInit {
   }
 
   trl(text:string){
-    return this.translate.instant(text)
+    return this.translateService.instant(text)
   }
 
   dismissPopover(value:any){
@@ -179,4 +179,41 @@ export class MenuPage implements OnInit {
     this.popoverController.dismiss(value)
   }
 
+  async editLang(){
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      list.push({
+        value:lang,
+        title:this.translateService.instant('languages.'+lang),
+        icon:'faGlobeEurope'
+      })
+    })
+    await this.showshortMenu(event,list,((response:any)=>{
+      if(response.value&&response.value!=localStorage.getItem('lang')){
+        this.nav.setLang(response.value)
+        this.selectMenuservice.selectedItem = undefined
+        // location.reload()
+      }
+    }))
+   
+  }
+
+  shortMenu:any
+  async showshortMenu(event:any,list:any[],callback:Function){
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        pages:list,
+        listShape:true,
+        customMenu:true,
+      },
+      cssClass: 'shortMenu',
+      event: event,
+      translucent: false,
+      reference:'trigger',
+    });
+    await this.shortMenu.present();
+    await this.shortMenu.onDidDismiss()
+    callback(this.selectMenuservice.selectedItem)
+  }
 }

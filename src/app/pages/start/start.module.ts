@@ -13,6 +13,8 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgCircleProgressModule } from 'ng-circle-progress';
 import { AchievementPageModule } from 'src/app/components/achievement/achievement.module';
+import { AchievementHorizontalPageModule } from 'src/app/components/achievement-horizontal/achievement-horizontal.module';
+import { TranslateModule } from '@ngx-translate/core';
 @NgModule({
   imports: [
     CommonModule,
@@ -23,6 +25,7 @@ import { AchievementPageModule } from 'src/app/components/achievement/achievemen
     PipesModule,
     FontAwesomeModule,
     AchievementPageModule,
+    AchievementHorizontalPageModule,
     NgCircleProgressModule.forRoot({
           "backgroundStrokeWidth": 36,
           "space": 6,
@@ -35,7 +38,8 @@ import { AchievementPageModule } from 'src/app/components/achievement/achievemen
           "subtitleFontSize": "71",
           "animationDuration": 200,
           // "responsive":true
-        }),
+    }),
+    TranslateModule.forChild()
   ],
   declarations: [StartPage],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

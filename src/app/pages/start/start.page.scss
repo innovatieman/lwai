@@ -43,6 +43,7 @@ ion-searchbar{
     --background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);
     padding:0px;
     --border-radius:24px;
+    --color: black;
     // margin-top:4px;
 }
 main {
@@ -102,14 +103,26 @@ main {
   .filterSmall{
     position: fixed;
     z-index: 3;
-    top:160px;
+    top:110px;
     left:0;
     width: 100%;
-    max-height:calc(((var(--vh, 1vh) * 100) - 160px));
-    height: calc(((var(--vh, 1vh) * 100) - 160px));
+    max-height:calc(((var(--vh, 1vh) * 100) - 110px));
+    height: calc(((var(--vh, 1vh) * 100) - 110px));
     overflow: hidden;
     overflow-y: auto;
+    background-color: white;
   }
+  .filterSmallTitle{
+    position: fixed;
+    z-index: 3;
+    top:60px;
+    left:0;
+    width: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+  }
+
   .topButton{
     padding:10px;
     border-radius: 24px;
@@ -146,14 +159,20 @@ main {
       color:white;
     }
   }
+  ion-card-title{
+    color: white;
+  }
 }
-.notActiveAitem{
+.notActiveItem{
   background-color: white;
   ion-item{
     --background-hover: none;
   }
+  ion-card-title{
+    color: var(--ion-color-primary);
+  }
 }
-.notActiveAitem:hover{
+.notActiveItem:hover{
   background: var(--background-global);
   ion-item{
     --background: var(--background-global);
@@ -161,4 +180,10 @@ main {
 }
 svg{
   margin: -50px 0px;
+}
+
+.flagsMobileDiv{
+  transform: rotate(-90deg);
+  height: calc(68vw);
+  // margin-top: calc(-55vw);// -100px;
 }

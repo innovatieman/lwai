@@ -1,0 +1,94 @@
+
+.wrap{
+    position: relative;
+    padding:0 15px;
+}
+.pole{
+    background: grey;
+    background-image: linear-gradient(to right,rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.1) 60%, rgba(0, 0, 0, 0.2) 70%, rgba(0, 0, 0, 0.4));
+    width:15px;
+    height:150px;
+    
+}
+.poleWrap{
+    position: absolute;
+    top:15px;
+    left:5px;
+    height:120px;
+    width:35px;
+    z-index: 2;
+    background: var(--accent-color);
+    background-image:linear-gradient(to right,#fff6,#fff3 30%,#ffffff1a 40%,#0000001a 60%,#0003 70%,#0006);
+}
+.flag{
+    --col-gap: 2rem;
+    --barH: 1rem;
+    --roleH: 2rem;
+    --flapH: 2rem;
+    position: absolute;
+    top:15px;
+    left:40px;
+    width:250px;
+    height:120px;
+    background: var(--accent-color);
+    background-image: linear-gradient(to right,rgba(0, 0, 0, .6) var(--roleH), rgba(0, 0, 0, .4) calc(var(--roleH) + .5rem), rgba(0, 0, 0, 0) calc(var(--roleH) + .5rem + 5rem));
+    clip-path: polygon(
+        0 calc(var(--col-gap) / -2 - 5px), /* Linksboven */
+        100% calc(var(--col-gap) / -2 - 5px), /* Rechtsboven */
+        calc(100% - var(--flapH)) 50%, /* Punt aan de rechterkant */
+        100% calc(100% + var(--col-gap) / 2 + 5px), /* Rechtsonder */
+        0 calc(100% + var(--col-gap) / 2 + 5px) /* Linksonder */
+    );
+    display: flex;
+
+}
+.flag.notAchieved{
+    width:120px;
+}
+
+.innerFlag{
+    width:calc(100% - 30px);
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    color: white;
+    text-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.5);
+    .icon{
+        font-size: 3rem;
+        margin-right:20px;
+    }
+    .title{
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    .descr {
+        font-size: 0.9rem;
+    }
+}
+
+.dark{
+    --accent-color:#0B374D;
+}
+.light{
+    --accent-color:#1286A8;
+}
+.creative{
+    --accent-color:#D2B53B;
+}
+.success{
+    --accent-color:#2E8B57;
+}
+.danger{
+    --accent-color:#AC2A1A;
+}
+.warning{
+    --accent-color:#DA611E;
+}
+
+.notAchieved{
+    --accent-color:#8B8B8B;
+    opacity: 0.3;
+}
+.poleWrap.notAchieved{
+    opacity: 1;
+}

@@ -20,7 +20,7 @@ import {
   faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
-  faSearch,faThumbsDown
+  faSearch,faThumbsDown,faExternalLinkAlt
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -95,6 +95,7 @@ export class IconsService {
     faEnvelope,
     faExclamation,
     faExclamationTriangle,
+    faExternalLinkAlt,
     faEuroSign,
     faExchangeAlt,
     faExpandAlt,

@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions/v1';
 import admin from '../firebase'
 import * as moment from 'moment'
-
+import * as responder from '../utils/responder'
 
 exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
     (user:any,context:any)=>{
@@ -199,3 +199,22 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   // Voeg de e-mail toe aan de Firestore collectie
   await admin.firestore().collection('emailsToProcess').add(emailData);
 });
+
+exports.editUserName = functions.region('europe-west1').https.onCall(async (data,context)=>{
+  const displayName = data.displayName
+  const uid = context.auth?.uid
+
+  if(!uid){
+    return new responder.Message('Not authorized', 500);
+  }
+
+  await admin.auth().updateUser(uid,{
+    displayName:displayName
+  })
+
+  await admin.firestore().collection('users').doc(uid).update({
+    displayName:displayName
+  })
+  
+  return new responder.Message('Success', 200);
+})

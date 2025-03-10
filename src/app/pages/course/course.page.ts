@@ -53,7 +53,7 @@ export class CoursePage implements OnInit {
 
   getCourseData(){
     console.log('getting course data')
-    if(!this.auth.activeCourses?.length){
+    if(!this.auth.allCourses?.length){
       this.auth.getActiveCourses(this.auth.userInfo.uid)
       let count = 0
       let checkInterval = setInterval(() => {

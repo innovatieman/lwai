@@ -1,0 +1,221 @@
+<app-header [page]="'admin'"></app-header>
+
+<main>
+  <ion-grid class="mainGrid">
+    <ion-row style="height:calc(100% - 75px)">
+
+      <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+          <ion-item lines="none" button (click)="tutorial={}" class="itemButton" *ngIf="tutorial?.id">
+            <div font-20 weight700>Terug</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
+          </ion-item>
+          <ion-item lines="none" button (click)="add()" class="itemButton" *ngIf="!tutorial?.id">
+            <div font-20 weight700>Nieuwe tutorial</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
+          </ion-item>
+          <ion-item lines="none" button (click)="copy()" class="itemButton" *ngIf="tutorial?.id">
+            <div font-20 weight700>Kopieer tutorial</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
+          </ion-item>
+        </div>
+      </ion-col>
+
+
+      <ion-col [size]="media.smallDevice ? 12 : 9" class="selectColumn">
+        <div *ngIf="tutorial.id">
+
+          <ion-card basicPadding [ngClass]="{'borderSuccess' : tutorial.active,'borderWarning' : !tutorial.active}">
+            <ion-card-header>
+                <ion-card-title flex center-ver>
+                  <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="tutorial.title"></ion-input>
+                  <span class="spacer"></span>
+                  <span style="text-transform:none;color:rgba(0,0,0,0.2);margin-right:20px">({{tutorial.id}})</span>
+                  <ion-toggle color="primary" [(ngModel)]="tutorial.active" (ionChange)="update('active')">
+                    Actief
+                  </ion-toggle>
+                </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-row>
+                    <ion-col [size]="6">
+                      <ion-item lines="none" listCard marginBottom>
+                        <ion-label style="font-weight:700;font-size:22px" position="stacked">Page</ion-label>
+                        <ion-input [(ngModel)]="tutorial.page" (ionChange)="update('page')"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col [size]="6">
+
+                      <ion-item lines="none" listCard marginBottom>
+                        <ion-label style="font-weight:700;font-size:22px" position="stacked">Trigger</ion-label>
+                        <ion-input [(ngModel)]="tutorial.trigger" (ionChange)="update('trigger')"></ion-input>
+                      </ion-item>
+                    </ion-col>
+
+                    <ion-col [size]="6">
+                      <ion-item lines="none" listCard marginBottom>
+                        <ion-toggle color="primary" [(ngModel)]="tutorial.desktop" (ionChange)="update('desktop')">
+                            Voor desktop
+                        </ion-toggle>
+                      </ion-item>
+                    </ion-col>
+
+                    <ion-col [size]="6">
+                      <ion-item lines="none" listCard marginBottom>
+                        <ion-toggle color="primary" [(ngModel)]="tutorial.mobile" (ionChange)="update('mobile')">
+                            Voor mobiel
+                        </ion-toggle>
+                      </ion-item>
+                    </ion-col>
+
+                    <ion-col [size]="12">
+                      <ion-card basicPadding borderShadow>
+                        <ion-card-header >
+                            <ion-card-title flex center-ver fullwidth>
+                              <span font-24 weight700>Steps ({{tutorial.steps.length}})</span>
+                              <div class="spacer"></div>
+                              <fa-icon pointer titleIcon (click)="addStep()" font-24 [icon]="icon.get('faPlus')"></fa-icon>
+                              <fa-icon pointer titleIcon (click)="showSteps = !showSteps" font-24 [icon]="showSteps ? icon.get('faChevronUp') : icon.get('faChevronDown')" style="transition:all 0.3s"></fa-icon>
+                            </ion-card-title>
+                        </ion-card-header>
+                        <ion-card-content [ngStyle]="{'max-height': showSteps ? 'calc(100vh - 550px)' : '0px',overflow:'auto','padding': showSteps ? '20px' : '0px'}" style="transition:all 0.3s">
+                          <ion-card basicPadding borderSecondary1 *ngFor="let step of tutorial.steps;let i = index;let first = first;let last = last">
+                            <ion-card-header>
+                              <ion-card-title style="font-weight:700;font-size:22px" flex center-ver>
+                                <span>Step {{i+1}} <span *ngIf="step.title">- {{step.title}}</span></span>
+                                <div class="spacer"></div>
+                                <fa-icon pointer titleIcon (click)="moveStep(i,-1)" *ngIf="!first" font-24 [icon]="icon.get('faArrowUp')"></fa-icon>
+                                <fa-icon pointer titleIcon (click)="moveStep(i,1)" *ngIf="!last" font-24 [icon]="icon.get('faArrowDown')"></fa-icon>
+                                <fa-icon pointer titleIcon (click)="copyStep(i)" font-24 [icon]="icon.get('faCopy')"></fa-icon>
+                                <fa-icon pointer titleIcon (click)="deleteStep(i)" trash font-24 [icon]="icon.get('faTrashAlt')"></fa-icon>
+                              </ion-card-title>
+                              <!-- <ion-card-subtitle>{{step.page}}</ion-card-subtitle> -->
+                            </ion-card-header>
+                            <ion-card-content>
+                              
+                              <ion-item lines="none" listCard marginBottom>
+                                <ion-label style="font-weight:700;font-size:22px" position="stacked">Locatie</ion-label>
+                                <ion-label position="stacked">Koppeling met element</ion-label>
+                                <ion-input placeholder="Geen koppeling" [(ngModel)]="step.attachTo.element" (ionChange)="update('steps',true)"></ion-input>
+                                <ion-label *ngIf="step.attachTo.element" position="stacked">Waar t.b.v. element</ion-label>
+                                <ion-select *ngIf="step.attachTo.element"  interface="popover" [(ngModel)]="step.attachTo.on" (ionChange)="update('steps')">
+                                  <ion-select-option *ngFor="let option of attachToOnOptions" [value]="option">{{option}}</ion-select-option>
+                               </ion-select>
+                               <ion-toggle *ngIf="step.attachTo.element" slot="end" color="primary" [(ngModel)]="step.ScrollTo" (ionChange)="update('steps')">
+                                ScrollTo element
+                              </ion-toggle>
+                              </ion-item>
+
+                              <ion-item lines="none" listCard marginBottom>
+                                <ion-label style="font-weight:700;font-size:22px" position="stacked">Title</ion-label>
+                                <ion-input [(ngModel)]="step.title" (ionChange)="update('steps',true)"></ion-input>
+                              </ion-item>
+
+
+
+                              <div *ngIf="!step.video && !step.photo" relative marginBottom [ngStyle]="{'height': '200px'}" class="uploadedImage">
+                                <div class="ImageUploadButton">
+                                  <ion-button class="saveButton" fill="solid" color="light" (click)="upload(i)">
+                                    <fa-icon style="margin-right:10px;" [icon]="icon.get('faImage')" font-20></fa-icon>
+                                    Upload afbeelding
+                                  </ion-button>
+                                  <ion-button class="saveButton" fill="solid" color="light" (click)="uploadVideo(i)">
+                                    <fa-icon style="margin-right:10px;" [icon]="icon.get('faImage')" font-20></fa-icon>
+                                    <span *ngIf="!media.percentageUploadingVideo||media.percentageUploadingVideo==100">Upload video</span>
+                                    <span flex center-ver *ngIf="media.percentageUploadingVideo&&media.percentageUploadingVideo!=100">
+                                      <span>Uploading video ({{media.percentageUploadingVideo}}%)</span>
+                                      <ion-spinner color="dark" titleIcon></ion-spinner> 
+                                    </span>
+                                  </ion-button>
+                                </div>
+                              </div> 
+
+                              <div *ngIf="step.photo" relative marginBottom [ngStyle]="{'height': '400px'}" class="uploadedImage">
+                                <img *ngIf="step.photo" [src]="step.photo">
+                                <div class="ImageUploadButton">
+                                  <ion-button class="saveButton" fill="solid" color="light" (click)="upload(i)">
+                                    <fa-icon style="margin-right:10px;" [icon]="icon.get('faImage')" font-20></fa-icon>
+                                    Upload afbeelding
+                                  </ion-button>
+                                </div>
+                                <fa-icon [icon]="icon.get('faTrashAlt')" class="ImageDeleteButton" font-24 (click)="step.photo = '';update('photo')"></fa-icon>
+                              </div> 
+          
+                              <div *ngIf="step.video" relative marginBottom [ngStyle]="{'height':'500px'}" class="uploadedImage">
+                                <video style="width:100%;height:500px;" [controls]="true" [src]="media.videoUrl(step.video)"></video>
+                                <div class="ImageUploadButton">
+                                  <ion-button class="saveButton" fill="solid" color="light" (click)="uploadVideo(i)">
+                                    <fa-icon style="margin-right:10px;" [icon]="icon.get('faImage')" font-20></fa-icon>
+                                    <span *ngIf="!media.percentageUploadingVideo||media.percentageUploadingVideo==100">Upload video</span>
+                                    <span flex center-ver *ngIf="media.percentageUploadingVideo&&media.percentageUploadingVideo!=100">
+                                      <span>Uploading video ({{media.percentageUploadingVideo}}%)</span>
+                                      <ion-spinner color="dark" titleIcon></ion-spinner> 
+                                    </span>
+                                  </ion-button>
+                                </div>
+                                <fa-icon [icon]="icon.get('faTrashAlt')" class="ImageDeleteButton" font-24 (click)="step.video = '';update('video')"></fa-icon>
+                              </div> 
+
+
+
+                              <div fullwidth basicPadding listCard pointer (click)="editHtml(step.text,i)">
+                                <h3 style="font-weight:700;font-size:16px">Content</h3>
+                                <div [innerHTML]="step.text | sanitizeHtml"></div>
+                              </div>
+                              <!-- <ion-item lines="none" listCard>
+                                <ion-label position="stacked">Type</ion-label>
+                                <ion-select interface="popover" [(ngModel)]="step.type" (ionChange)="updateStep(i,'type')">
+                                    <ion-select-option *ngFor="let type of types" [value]="type.id">{{type.title}}</ion-select-option>
+                                </ion-select>
+                              </ion-item>
+                              <ion-item lines="none" listCard>
+                                <ion-label position="stacked">Image</ion-label>
+                                <ion-input [(ngModel)]="step.image" (ionChange)="updateStep(i,'image')"></ion-input>
+                              </ion-item>
+                              <ion-item lines="none" listCard>
+                                <ion-label position="stacked">Video</ion-label>
+                                <ion-input [(ngModel)]="step.video" (ionChange)="updateStep(i,'video')"></ion-input>
+                              </ion-item>
+                              <ion-item lines="none" listCard>
+                                <ion-label position="stacked">Link</ion-label>
+                                <ion-input [(ngModel)]="step.link" (ionChange)="updateStep(i,'link')"></ion-input>
+                              </ion-item>
+                              <ion-item lines="none" listCard>
+                                <ion-label position="stacked">Link text</ion-label>
+                                <ion-input [(ngModel)]="step.linkText" (ionChange)="updateStep(i,'linkText')"></ion-input>
+                              </ion-item> -->
+                            </ion-card-content>
+
+                          </ion-card>
+                        </ion-card-content>
+                      </ion-card>
+
+
+                    
+                    </ion-col>
+                  </ion-row>
+                </ion-card-content>
+            </ion-card>
+
+        </div>
+        
+        <div *ngIf="!tutorial.id">
+          <ion-card borderRadius24 [ngClass]="{'borderSuccess' : tutorial.active,'borderWarning' : !tutorial.active}" *ngFor="let tutorial of tutorialService.allTutorials" cardItem basicPadding pointer (click)="select(tutorial)">
+            <ion-card-header>
+              <ion-card-title>{{tutorial.title}}</ion-card-title>
+              <ion-card-subtitle>{{tutorial.page}} - {{tutorial.trigger}}</ion-card-subtitle>
+            </ion-card-header>         
+          </ion-card>
+
+
+
+
+
+        </div>
+        
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>
+

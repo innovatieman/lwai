@@ -11,6 +11,7 @@ import { InfoService } from 'src/app/services/info.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
+import { tutorialService } from 'src/app/services/tutorial.service';
 
 
 @Component({
@@ -23,6 +24,11 @@ export class StartPage implements OnInit {
   @ViewChild('progressCircle1',{static:false}) progressCircle1: any;
   @ViewChild('progressCircle2',{static:false}) progressCircle2: any;
   @ViewChild('progressCircle3',{static:false}) progressCircle3: any;
+
+  @ViewChild('progressCircle1Mobile',{static:false}) progressCircle1Mobile: any;
+  @ViewChild('progressCircle2Mobile',{static:false}) progressCircle2Mobile: any;
+  @ViewChild('progressCircle3Mobile',{static:false}) progressCircle3Mobile: any;
+
   [x:string]:any
   onResize(){
     this.media.setScreenSize()
@@ -46,7 +52,7 @@ export class StartPage implements OnInit {
   ];
   showFlags: boolean = false;
   showFilter: boolean = false;
-  showFilterLevel: boolean = false;
+  showFilterLevel: boolean = true;
   constructor(
     public nav:NavService,
     public cases:CasesService,
@@ -60,16 +66,20 @@ export class StartPage implements OnInit {
     public helper:HelpersService,
     public translate:TranslateService,
     private route: ActivatedRoute,
+    private tutorial:tutorialService
   ) { }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'courses')){
+      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'modules')){
         this.showAll = params['tab']
       }
       else{
         this.showAll = ''
       }
+      setTimeout(() => {
+        this.tutorial.triggerTutorial(location.pathname.substring(1),'onload')
+      }, 1000);
     });
 
     this.conversations$ = this.auth.getConversations();
@@ -84,6 +94,10 @@ export class StartPage implements OnInit {
     // this.sendTestMail()
   }
 
+  ngAfterViewInit(){
+    
+  }
+
   setupProgressCircles(){
     let count = 0
     let check:any = {}
@@ -95,17 +109,32 @@ export class StartPage implements OnInit {
         }
         if( this['progressCircle'+i]?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
           clearInterval(check[i])
-          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-50px');
-          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-50px');
+          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-45px');
+          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-45px');
 
           setTimeout(() => {
             const tspanElements:any = document.querySelectorAll('tspan');
             tspanElements.forEach((tspan:any, index:number) => {
-                tspan.setAttribute('y', 125); // Verhoog met 10
+                tspan.setAttribute('y', 115); // Verhoog met 10
             });            
           }, 500);
 
         }
+
+        if( this['progressCircle'+i+'Mobile']?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
+          clearInterval(check[i])
+          this['progressCircle'+i+'Mobile']?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-80px');
+          this['progressCircle'+i+'Mobile']?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-80px');
+
+          setTimeout(() => {
+            const tspanElements:any = document.querySelectorAll('tspan');
+            tspanElements.forEach((tspan:any, index:number) => {
+                tspan.setAttribute('y', 200); // Verhoog met 10
+            });            
+          }, 500);
+
+        }
+
       }, 20);
     }
   }

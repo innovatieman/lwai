@@ -1,4 +1,5 @@
-import { NgModule, isDevMode } from '@angular/core';
+import { NgModule, isDevMode, LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
@@ -32,6 +33,12 @@ import { ConfirmationModalComponent } from './components/modals/confirmation-mod
 import { InfoModalPageModule } from './components/modals/info-modal/info-modal.module';
 import { QuillModule } from 'ngx-quill';
 import { ServiceWorkerModule } from '@angular/service-worker';
+
+import localeNl from '@angular/common/locales/nl';
+import localeEnUs from '@angular/common/locales/en';
+registerLocaleData(localeNl, 'nl');
+registerLocaleData(localeEnUs, 'en-US');
+
 
 @NgModule({
   declarations: [AppComponent,MenuPage,ConfirmationModalComponent],
@@ -77,6 +84,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: LOCALE_ID, useValue: 'nl' },
     { provide: REGION, useValue: 'europe-west1' },
     { provide: USE_AUTH_EMULATOR, useValue: environment.useEmulators ? ['http://127.0.0.1', 9099] : undefined },
     { provide: USE_FIRESTORE_EMULATOR, useValue: environment.useEmulators ? ['localhost', 8080] : undefined },

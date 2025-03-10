@@ -47,7 +47,7 @@
                       <div font-20 weight700>Terug</div>
                       <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="editCase(caseItem?.id,true)" class="itemButton" *ngIf="caseItem?.id">
+                    <ion-item lines="none" button (click)="editCase(caseItem,true)" class="itemButton" *ngIf="caseItem?.id">
                       <div font-20 weight700>Bewerk uitgebreid</div>
                       <fa-icon font-24 slot="end" [icon]="icon.get('faPen')"></fa-icon>
                     </ion-item>
@@ -145,7 +145,7 @@
                         <ion-card-title flex center-ver>
                             <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
                             <span class="spacer"></span>
-
+                            <span text-light>({{caseItem.id}})</span>
                         </ion-card-title>
                     </ion-card-header>
                     <ion-card-content>
@@ -216,8 +216,15 @@
                                 </ion-item>
                                 
                                 <ion-item lines="none" listCard>
-                                    <ion-label position="stacked">Level</ion-label>
-                                    <ion-input type="number" [min]="1" [max]="5" [disabled]="showBackups" [(ngModel)]="caseItem.level" (ionChange)="update('level')"></ion-input>
+                                    <!-- <ion-label position="stacked">Level</ion-label> -->
+                                    <ion-label>
+                                        Level 
+                                        <span titleIcon *ngIf="caseItem.level">{{caseItem.level}}</span>
+                                        <span titleIcon *ngIf="!caseItem.level">nog niet berekend</span>
+                                    </ion-label>
+                                    <ion-note slot="end" *ngIf="caseItem.analyzing_level" class="pulse-loader">Analyzing level...</ion-note>
+                                    <fa-icon pointer slot="end" *ngIf="caseItem.level_explanation" [icon]="icon.get('faInfoCircle')" (click)="modalService.showText(caseItem.level_explanation,'Verklaring Level')"></fa-icon>
+                                    <!-- <ion-input [disabled]="true" type="number" [min]="1" [max]="5" [(ngModel)]="caseItem.level"></ion-input> -->
                                 </ion-item>
 
                             </ion-col>

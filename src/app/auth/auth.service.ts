@@ -20,13 +20,15 @@ import { InfoService } from '../services/info.service';
 export class AuthService {
   user$: Observable<firebase.User | null>;
   userRoles$: Observable<{ isAdmin: boolean, isConfirmed:boolean } | null>;
+  customer:any = {}
   userInfo:any = {}
   conversations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Conversaties als Observable
   userInfo$: BehaviorSubject<any | null> = new BehaviorSubject<any | null>(null);
-
+  courses$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Cursussen als Observable
   subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
   private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
   activeCourses: any[] = [];
+  allCourses: any[] = [];
 
   skills:any = {impact:{score:0,prevScore:0},flow:{score:0,prevScore:0},logic:{score:0,prevScore:0}}
   credits:any = {total:0}
@@ -66,8 +68,10 @@ export class AuthService {
       if (user) {
         this.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
+        this.loadCourses(user.uid);
         this.getCredits(user.uid)
         this.getSkills(user.uid)
+        this.getCustomer(user.uid)
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
@@ -100,6 +104,18 @@ export class AuthService {
   async getSkills(uid:string){
     this.firestoreService.getSubDoc('users',uid,'skills','skills').subscribe((data:any)=>{
       this.skills = data.payload.data()
+    })
+  }
+
+  async getCustomer(uid:string){
+    this.firestoreService.getDoc('customers',uid).subscribe((data:any)=>{
+      if(data?.payload?.data()){
+        this.customer = data.payload.data()
+      }
+      else{
+        this.customer = {}
+      }
+      // console.log(this.customer)
     })
   }
 
@@ -330,8 +346,21 @@ export class AuthService {
       });
   }
 
+  private loadCourses(userId: string) {
+    this.firestore
+      .collection(`users/${userId}/courses`)
+      .valueChanges({ idField: 'courseId' }) // Voeg het ID toe aan elk document
+      .subscribe((courses) => {
+        this.courses$.next(courses); // Update de BehaviorSubject
+      });
+  }
+
   getConversations(): Observable<any[]> {
     return this.conversations$.asObservable();
+  }
+
+  getCourses(): Observable<any[]> {
+    return this.courses$.asObservable();
   }
 
 
@@ -383,6 +412,15 @@ export class AuthService {
       })
     }
   
+    getAllMyCourses(userId: string){
+      this.allCourses = [];
+      this.firestoreService.getSub('users', userId, 'courses').subscribe((courses) => {
+        this.allCourses = courses.map((course: any) => {
+          return { id: course.payload.doc.id, ...course.payload.doc.data() }
+        })
+      });
+    }
+
     getActiveCourses(userId: string) {
       this.activeCourses = [];
       this.firestoreService.querySub('users', userId, 'courses','status','active').subscribe((courses) => {
@@ -449,7 +487,8 @@ export class AuthService {
     // }
   
     getActiveCourse(courseId:string){
-      return this.activeCourses.find((course) => course.id === courseId)
+      return this.allCourses.find((course) => course.id === courseId)
+      // return this.activeCourses.find((course) => course.id === courseId)
     }
   
     publicCourses: any[] = [];

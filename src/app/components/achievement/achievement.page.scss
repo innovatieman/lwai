@@ -1,5 +1,3 @@
-// @import url("https://pro.fontawesome.com/releases/v6.0.0-beta1/css/all.css");
-// @import url("https://fonts.googleapis.com/css2?family=Jura:wght@500;600;900&display=swap");
 
 *,
 *::before,
@@ -9,40 +7,15 @@
   box-sizing: border-box;
 }
 
-// body {
-//   --color: rgba(30, 30, 30);
-//   --bgColor: rgba(245, 245, 245);
-//   min-height: 100vh;
-
-//   display: grid;
-//   align-content: center;
-//   gap: 2rem;
-//   padding: 2rem;
-
-//   font-family: "Jura", sans-serif;
-//   color: var(--color);
-//   background: var(--bgColor);
-// }
-
-h1 {
-  text-align: center;
-}
-
 ul {
   --col-gap: 2rem;
   --barH: 1rem;
   --roleH: 2rem;
   --flapH: 2rem;
-
   width: min(60rem, 90%);
-//   margin-inline: auto;
-
   display: flex;
   flex-wrap: wrap;
-
   gap: var(--col-gap);
-//   padding-inline: calc(var(--col-gap) / 2);
-
   justify-content: center;
   align-items: flex-start;
   list-style: none;
@@ -162,3 +135,27 @@ ul li .descr {
     --accent-color:#8B8B8B;
     opacity: 0.3;
 }
+
+
+
+////////////////////
+/// mobile
+////////////////////
+
+// ul{
+//   --col-gap: 2rem;
+//   --barH: 1rem;
+//   --roleH: 2rem;
+//   --flapH: 2rem;
+//   width: min(60rem, 90%);
+//   display: flex
+// ;
+//   flex-wrap: wrap;
+//   gap: var(--col-gap);
+//   justify-content: flex-start;
+//   align-items: center;
+//   list-style: none;
+//   transform: rotate(-90deg);
+//   margin-left: 60px;
+//   margin-bottom: -110px;
+// }

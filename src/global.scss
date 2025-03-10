@@ -140,6 +140,9 @@ ion-item{
 [font-24]{
     font-size: 24px;
 }
+[font-28]{
+    font-size: 28px;
+}
 [weight700]{
     font-weight: 700!important;
 }
@@ -370,6 +373,9 @@ ion-item{
 [borderSecondary]{
     border: solid 2px var(--ion-color-secondary);
 }
+[borderSecondary1]{
+    border: solid 1px var(--ion-color-secondary);
+}
 [borderTertiary]{
     border: solid 2px var(--ion-color-tertiary);
 }
@@ -382,13 +388,13 @@ ion-item{
 [borderMedium]{
     border: solid 2px var(--ion-color-medium);
 }
-[borderDanger]{
+[borderDanger],.borderDanger{
     border: solid 2px var(--ion-color-danger);
 }
-[borderSuccess]{
+[borderSuccess],.borderSuccess{
     border: solid 2px var(--ion-color-success);
 }
-[borderWarning]{
+[borderWarning],.borderWarning{
     border: solid 2px var(--ion-color-warning);
 }
 [borderRadius5]{
@@ -402,6 +408,9 @@ ion-item{
 }
 [borderRadius24]{
     border-radius: 24px;
+}
+[borderShadow]{
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3)!important;
 }
 
 [singleLine]{
@@ -919,4 +928,78 @@ main{
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.tutorialPop{
+    border-radius:24px!important;
+    width:100%!important;
+    max-width: 600px!important;
+    .shepherd-header{
+        padding:0;
+        border-top-left-radius: 24px!important;
+        border-top-right-radius: 24px!important;
+        background: white !important;
+    }
+    .shepherd-title{
+        margin:.75rem .75rem 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-global);
+    }
+    .shepherd-cancel-icon{
+        color: var(--color-global)!important;
+        font-size: 36px;
+        top: -5px;
+        position: relative;
+    }
+    .shepherd-text{
+        padding:0;
+        .inner-content{
+            padding: 15px;
+            padding-bottom:30px;
+            background: white;
+        }
+    }
+    .inner-photo{
+        img{
+            width: 100%;
+            height: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+    }
+    .inner-video{
+        video{
+            width: 100%;
+            height: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+    }
+    .shepherd-content{
+        border-radius:24px!important;
+    }
+    .shepherd-button{
+        padding-left: 32px!important;
+        padding-right: 32px!important;
+        min-height: 52px!important;
+        text-transform: none;
+        font-weight: 600;
+        letter-spacing: normal;
+        font-size: 16px;
+        border-radius: 38px!important;
+    }
+}
+
+.uploadedImage{
+    width: 100%;
+    height: 200px;
+    border-radius: 24px;
+    background:var(--background-global);
+    overflow: hidden;
+    img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 }

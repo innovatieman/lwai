@@ -4,35 +4,6 @@
   <ion-grid>
     <ion-row>
       <ion-col class="selectColumn" size="3">
-        <!-- <ion-card basicPadding>
-          <ion-card-header>
-            <ion-card-title flex center-ver>
-              <span font-18>Edit Options</span>
-              <span class="spacer"></span>
-            </ion-card-title>
-          </ion-card-header>
-        </ion-card> -->
-        <!-- <ion-button (click)="createBackups()">Create Backup</ion-button> -->
-        <!-- <div singleLine></div> -->
-
-        <!-- <ion-card basicPadding pointer font16 weight700 *ngFor="let item of settingsItems;let i = index" [ngClass]="{'activeTab':activeItem?.id==item.id}" (click)="activateItem(item,true)">
-          <span style="width:30px;display:inline-block;text-align:center">
-            <fa-icon [icon]="icon.get('faCogs')"></fa-icon>
-          </span>
-          <span *ngIf="item.level">{{item.level}}. </span> 
-          <span *ngIf="item.title">{{item.title | capitalize}}</span>
-          <span *ngIf="!item.title">{{item.id | capitalize}}</span>
-        </ion-card>
-        -->
-        <!-- <ion-card noPadding noMargin noBackground>
-          <ion-card-header>
-            <ion-card-title flex center-ver>
-              <span font-18 weight600>{{'Gespreks categorieën' | uppercase}}</span>
-              <span class="spacer"></span>
-              <fa-icon [icon]="icon.get('faPlus')" font-24 pointer (click)="newCategory()"></fa-icon>
-            </ion-card-title>
-          </ion-card-header>
-        </ion-card> -->
         <ion-row>
           <ion-col size="12">
             <ion-button class="saveButton" (click)="createBackups()">Backup {{activeItem.title}}</ion-button>
@@ -72,7 +43,11 @@
         </ion-card>
 
         <div *ngIf="activeItem.id!='attitudes'" singleLine></div>
-        <div *ngIf="activeItem.id!='attitudes'" weight500 style="padding: 0 15px;">Agent</div>
+        <div *ngIf="activeItem.id!='attitudes'" weight500 style="padding: 0 15px;" flex center-ver>
+          <span>Agent</span>
+          <span class="spacer"></span>
+          <fa-icon [icon]="icon.get('faPlus')" font-20 pointer (click)="addAgent()"></fa-icon>
+        </div>
         <ion-card *ngIf="activeItem.id!='attitudes'" marginBottom basicPadding pointer class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
           <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
           <ion-select [placeholder]="activeAgent.id=='main' ? 'Basisgegevens' : 'Select Agent'" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="''" [expandedIcon]="''" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>

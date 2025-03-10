@@ -35,7 +35,7 @@ export class CasesPage implements OnInit {
   constructor(
     public firestore:FirestoreService,
     public icon:IconsService,
-    private modalService:ModalService,
+    public modalService:ModalService,
     public backupService:BackupService,
     public helpers:HelpersService,
     public translate:TranslateService,
@@ -67,6 +67,10 @@ export class CasesPage implements OnInit {
   private loadCases(callback?:Function) {
     this.firestore.get('cases').subscribe((cases) => {
       this.cases = cases.map((casus:any) => {
+        if(this.caseItem.id === 
+          casus.payload.doc.id){
+          this.caseItem = { id: casus.payload.doc.id, ...casus.payload.doc.data() }
+        }
         return { id: casus.payload.doc.id, ...casus.payload.doc.data() }
       })
       if(callback) callback()

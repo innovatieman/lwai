@@ -62,7 +62,7 @@
   </div>
 
 
-  <div class="actionButtons" *ngIf="!customMenu">
+  <div class="actionButtons" *ngIf="!customMenu" style="padding-bottom:0">
 
     <div fullwidth >
       <ion-button color="primary" *ngIf="!isAuthenticated" (click)="nav.go('register');popoverController.dismiss()">
@@ -78,11 +78,11 @@
       {{'menu.logout' | translate}}
     </ion-button>
 
-    <!-- <div>
-      <ion-button *ngFor="let lang of store.get('languageList')" (click)="nav.setLang(lang);popoverController.dismiss()" fill="clear">
-        <img style="width: 30px;position: relative;top: 4px;margin-right: 10px;" [src]="'assets/img/'+lang+'.png'">
+    <div>
+      <ion-button (click)="editLang()" fill="clear">
+        <span>{{'languages.language' | translate}}: {{'languages.'+translateService.currentLang | translate}}</span>
       </ion-button>
-    </div> -->
+    </div>
   </div>
   
   <!-- <ion-accordion-group *ngIf="isAuthenticated&&isAdmin">

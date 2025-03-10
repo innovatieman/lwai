@@ -52,10 +52,14 @@ const routes: Routes = [
   {
     path: 'account',
     loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
-    // canActivate: [AuthGuard],
   },
   {
     path: 'account/:tab',
+    loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'account/:tab/:status',
     loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
     canActivate: [AuthGuard],
   },
@@ -131,6 +135,13 @@ const routes: Routes = [
   },
 
   {
+    path: 'bagend/tutorials',
+    loadChildren: () => import('./bagend/tutorials/tutorials.module').then( m => m.TutorialsPageModule),
+    canActivate: [AdminGuard],
+
+  },
+
+  {
     path: '**',
     redirectTo: 'start',
     pathMatch: 'full'
@@ -201,6 +212,11 @@ const routes: Routes = [
     path: 'select-image-library',
     loadChildren: () => import('./components/modals/select-image-library/select-image-library.module').then( m => m.SelectImageLibraryPageModule)
   },
+  {
+    path: 'achievement-horizontal',
+    loadChildren: () => import('./components/achievement-horizontal/achievement-horizontal.module').then( m => m.AchievementHorizontalPageModule)
+  },
+
 
 
 

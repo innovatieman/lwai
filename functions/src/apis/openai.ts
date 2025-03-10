@@ -1615,6 +1615,130 @@ If the image does not meet these requirements, please create the image again.
 //     }
 //   });
 
+exports.analyzeCaseLevel = functions.region('europe-west1')
+  .runWith({memory:'1GB'}).firestore
+  .document('cases/{caseId}')
+  .onWrite(async (change, context) => {
+    const caseId = context.params.caseId;
+    const db = admin.firestore();
+    let caseDataNew:any = {}
+    let caseDataOld:any = {}
+    if(change.before.exists){
+      caseDataOld = change.before.data();
+    }
+    if(change.after.exists){
+      caseDataNew = change.after.data();
+
+      // if case_analyzed is minder dan 10 seconden geleden, dan niet analyseren
+      if(caseDataNew.case_analyzed && caseDataNew.case_analyzed > Date.now() - 10000){
+        return null;
+      }
+
+      const categoryRef = db.collection('categories').doc(caseDataNew.conversation);
+      const categorySnap = await categoryRef.get();
+      if (!categorySnap.exists) {
+        throw new Error("Category not found");
+      }
+      const categoryData = categorySnap.data();
+
+      if(
+        caseDataNew.role !== caseDataOld.role ||
+        caseDataNew.casus !== caseDataOld.casus ||
+        caseDataNew.attitude !== caseDataOld.attitude ||
+        caseDataNew.steadfastness !== caseDataOld.steadfastness ||
+        caseDataNew.conversation !== caseDataOld.conversation ||
+        caseDataNew.goalsItems !== caseDataOld.goalsItems
+      ){
+        await db.collection('cases').doc(caseId).update({
+          analyzing_level: true
+        });
+
+        let caseText:string = '';
+
+        if(caseDataNew.role){
+          caseText = caseText + 'Welke Rol moet de AI aannemen?\n' + caseDataNew.role + '\n\n';
+        }
+
+        caseText = caseText + 'Welk gesprekstype / gesprekstechniek betreft het?\n' + categoryData.title + '\n\n';
+
+        caseText = caseText + 'Welke fases/elementen zijn van belang in dit gesprekstype?\n';
+        for(let i=0;i<categoryData.phaseList.length;i++){
+          caseText = caseText + 'Fase/element '+ (i+1) + ':\nTitel: ' + categoryData.phaseList[i].title + '\nOmschrijving :'+ categoryData.phaseList[i].description + '\n\n';
+        }
+
+
+        if(caseDataNew.casus){
+          caseText = caseText + 'Beschrijf de casus:\n' + caseDataNew.casus + '\n\n';
+        }
+        if(caseDataNew.attitude){
+          caseText = caseText + 'Met welke begin attitude start de AI?\nScore: ' + caseDataNew.attitude + '\n\n';
+        }
+        else{
+          caseText = caseText + 'Met welke begin attitude start de AI?\nScore '+ '1' + '\n\n';
+        }
+        if(caseDataNew.steadfastness){
+          caseText = caseText + 'Hoe standvastig is de AI?\nScore: ' + caseDataNew.steadfastness + '\n\n';
+        }
+        else{
+          caseText = caseText + 'Hoe standvastig is de AI?\nScore: '+ '1' + '\n\n';
+        }
+
+        if(caseDataNew.goalsItems.attitude){
+          caseText = caseText + 'Tot welke attitudescore moeten de AI veranderd worden in het gesprek?\n' + caseDataNew.goalsItems.attitude + '\n\n';
+        }
+        if(caseDataNew.goalsItems.phases?.length){
+          caseText = caseText + 'Welke percentage moeten de fases worden vervuld?\n' 
+          for(let i=0;i<caseDataNew.goalsItems.phases.length;i++){
+            caseText = caseText + categoryData.phaseList[i].title + ': ' + caseDataNew.goalsItems.phases[i] + '\n';
+          }
+        }
+        if(caseDataNew.goalsItems.free){
+          caseText = caseText + 'Welke doelen moeten worden bereikt?\n' + caseDataNew.goalsItems.free + '\n\n';
+        }
+
+        const [agent_instructions,formats] = await Promise.all([
+          getAgentInstructions('levels','main'), 
+          getFormats('levels')
+        ]);
+
+
+        let systemContent = agent_instructions.systemContent
+        systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
+
+        let sendMessages:any[] = [
+          {role: "system",content: systemContent},
+          {role: "user",content: agent_instructions.content.split('[case_data]').join(caseText)},
+        ]
+
+
+        const completion = await openai.chat.completions.create({
+          model: openAiModal,
+          messages: sendMessages,
+          temperature: agent_instructions.temperature,
+          max_tokens: agent_instructions.max_tokens,
+        });
+
+        const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
+
+        await db.collection('cases').doc(caseId).update({
+          level: JSON.parse(completeMessage).level,
+          level_explanation: JSON.parse(completeMessage).description,
+          analyzing_level: false,
+          case_analyzed: Date.now(),
+        });
+
+        return null;
+
+      }
+    }
+
+    
+
+
+    return null;
+});
+
+
 
 exports.createPhases = functions.region('europe-west1').https.onCall(async (data: any, context: any) => {
   const categoryData = data.categoryData
@@ -1659,8 +1783,6 @@ exports.createPhases = functions.region('europe-west1').https.onCall(async (data
   });
 
   const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
-  
-  console.log('completeMessage: ' + completeMessage);
 
   const parsedMessage = JSON.parse(completeMessage);
 
@@ -1669,6 +1791,59 @@ exports.createPhases = functions.region('europe-west1').https.onCall(async (data
   });
 
   return new responder.Message('Phases created',200)
+  
+});
+
+
+exports.createPhasesOnCreate = functions.region('europe-west1')
+.runWith({memory:'1GB'}).firestore
+.document('categories/{categoryId}')
+.onCreate(async (change, context) => {
+
+
+
+  const categoryData = change.data();
+
+  const [agent_instructions,formats] = await Promise.all([
+    getAgentInstructions('phase_creator','main'), 
+    getFormats('phase_creator')
+  ]);
+
+
+  let systemContent = agent_instructions.systemContent
+  systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
+
+  let sendMessages:any[] = []
+
+  sendMessages.push({
+    role: "system",
+    content: systemContent,
+  })
+
+  let content = agent_instructions.content.split("[category]").join(categoryData.title)
+
+  sendMessages.push({
+    role: "user",
+    content: content,
+  })
+
+
+  const completion = await openai.chat.completions.create({
+    model: openAiModal,
+    messages: sendMessages,
+    temperature: agent_instructions.temperature,
+    max_tokens: agent_instructions.max_tokens,
+  });
+
+  const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
+  
+  const parsedMessage = JSON.parse(completeMessage);
+
+  await db.collection('categories').doc(categoryData.id).update({
+    phaseList: Array.isArray(parsedMessage) ? parsedMessage : []
+  });
+
+  return null;
   
 });
 

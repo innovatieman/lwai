@@ -170,6 +170,9 @@ export class InfoService {
 
 
   getAttitude(level:number){
+    if(level==undefined){
+      return this.attitudes[0]
+    }
     let attitude = this.attitudes.find((attitude:any) => attitude.level === level)
     if(attitude){
       return attitude

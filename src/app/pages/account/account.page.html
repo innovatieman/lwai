@@ -2,37 +2,60 @@
 <main>
   <ion-grid>
     <ion-row>
-      <ion-col size="3" class="selectColumn">
-        <ion-card basicPadding pointer font16 weight700 tab flex center-ver *ngFor="let item of menuItems" [ngClass]="{'activeTab':activeTab==item.tab}" (click)="changeTab(item.tab)">
-          <div center listIcon>
-            <fa-icon [icon]="icon.get(item.icon)" ></fa-icon>
+      <ion-col [size]="media.screenSize=='xs' ? 2 : 3" class="selectColumn" style="padding-top:15px;">
+        <div *ngIf="media.screenSize=='xs'">
+          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" *ngFor="let item of menuItems" [ngClass]="{'activeTab':activeTab==item.tab}" (click)="changeTab(item.tab)">
+              <fa-icon [icon]="icon.get(item.icon)" ></fa-icon>
+          </ion-card>
+
+          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" *ngIf="auth.customer?.stripeId" (click)="openStripeDashboard()">
+              <fa-icon [icon]="icon.get('faCreditCard')" ></fa-icon>
+          </ion-card>
+
+        </div>
+
+        <div *ngIf="media.screenSize!='xs'">
+          <div *ngFor="let item of menuItems" style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab==item.tab,'notActiveItem':activeTab!=item.tab}">
+  
+            <ion-item lines="none" button (click)="changeTab(item.tab)" class="itemButton" [detail]="false">
+              <div font-20 weight700 >{{item.title}}</div>
+              <fa-icon font-24 [slot]="'end'" [icon]="icon.get(item.icon)"></fa-icon>
+            </ion-item>
+  
           </div>
-          <span>{{item.title}}</span>
-        </ion-card>
+  
+          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.customer?.stripeId">
+  
+            <ion-item lines="none" button (click)="openStripeDashboard()" class="itemButton" [detail]="false">
+              <div font-20 weight700>Betalingen</div>
+              <fa-icon font-18 slot="end" style="color:rgba(0,0,0,0.3)" [icon]="icon.get('faExternalLinkAlt')"></fa-icon>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faCreditCard')"></fa-icon>
+            </ion-item>
+  
+          </div>
+
+        </div>
+
+
 
       </ion-col>
 
-      <ion-col size="9" class="detailColumn" center-left>
-        <ion-card basicPadding *ngIf="activeTab=='account'">
+      <ion-col [size]="media.screenSize=='xs' ? 10 : 9" class="detailColumn" center-left>
+        <ion-card basicPadding *ngIf="activeTab=='basics'">
           <ion-row>
-            <ion-col size="6">
+            <ion-col size="12">
               <ion-card-header>
                 <ion-card-title>Mijn gegevens</ion-card-title>
               </ion-card-header>
               <ion-card-content>
                 <ion-list>
-                  <ion-item lines="none" class="fieldItem">
-                    <ion-label position="stacked">Naam</ion-label>
-                    <ion-input placeholder="Naam" type="text" [(ngModel)]="account.displayName"></ion-input>
+                  <ion-label position="stacked" style="margin-left:15px">Naam</ion-label>
+                  <ion-item lines="none" class="fieldItem" style="--padding-start:0;">
+                    <ion-input class="saveButton" borderRadius24 placeholder="Naam" type="text" [(ngModel)]="account.displayName"></ion-input>
                   </ion-item>
                 </ion-list>
-                <ion-button class="saveButton" [disabled]="!account.displayName" (click)="updateAccount()">Opslaan</ion-button>
+                <ion-button class="saveButton" [disabled]="!account.displayName || account.displayName == this.auth.userInfo.displayName" (click)="updateAccount()">Opslaan</ion-button>
               </ion-card-content>
-            </ion-col>
-            <ion-col size="6">
-              <ion-card flex center>
-                <fa-icon [icon]="icon.get('faUser')" avatarIcon></fa-icon>
-              </ion-card>
             </ion-col>
           </ion-row>
         </ion-card>
@@ -62,22 +85,29 @@
             <ion-card-title>Mijn cursussen</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            Hier komt het overzicht van de cursussen die iemand volgt
+            <ion-card basicPadding listCard borderSecondary borderRadius16 pointer *ngFor="let course of courses$ | async | sortBy : 1 : 'startdate' | filterKey : 'status' : 'finished'" flex center-ver fullwidth (click)="nav.go('course/'+course.courseId)">
+              <ion-card-title>{{ course.title }}</ion-card-title>
+              <span class="spacer"></span>
+              <fa-icon [icon]="icon.get('faTrashAlt')" trash noteIcon (click)="deleteCourse($event,course)"></fa-icon>
+            </ion-card>
           </ion-card-content>
         </ion-card>
 
         <ion-card basicPadding *ngIf="activeTab=='conversations'">
           <ion-card-header>
-            <ion-card-title>Mijn gesprekken</ion-card-title>
+            <ion-card-title>Mijn cases</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <ion-card basicPadding listCard pointer *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp'" flex center-ver fullwidth (click)="openConversation(conversation)">
+            <ion-card basicPadding listCard borderSecondary borderRadius16 pointer [ngStyle]="{'display' : media.screenSize=='xs' ? 'block' : 'flex'}" *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp' | filterKey : 'closed' : 'notEmpty'"  center-ver fullwidth (click)="openConversation(conversation)">
               <ion-card-title>{{ conversation.role }}</ion-card-title>
               <span class="spacer"></span>
-              <ion-note>{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
-              <fa-icon [icon]="icon.get('faPlay')" iconContinue noteIcon *ngIf="!conversation.closed" ></fa-icon>
-              <fa-icon [icon]="icon.get('faCheckCircle')" iconClosed noteIcon *ngIf="conversation.closed" ></fa-icon>
-              <fa-icon [icon]="icon.get('faTrashAlt')" trash noteIcon (click)="deleteConversation($event,conversation)"></fa-icon>
+              <ion-note *ngIf="media.screenSize!='xs'">{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
+              <fa-icon *ngIf="media.screenSize!='xs'" [icon]="icon.get('faTrashAlt')" trash noteIcon (click)="deleteConversation($event,conversation)"></fa-icon>
+              <div *ngIf="media.screenSize=='xs'" flex center-ver>
+                <ion-note>{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
+                <div class="spacer"></div>
+                <fa-icon [icon]="icon.get('faTrashAlt')" trash noteIcon (click)="deleteConversation($event,conversation)"></fa-icon>
+              </div>
             </ion-card>
           </ion-card-content>
         </ion-card>
@@ -140,24 +170,28 @@
             <ion-card-title>Credits</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <!-- <ion-row marginBottom>
-              <ion-col size="3" *ngFor="let credits of creditsOptions">
-                <ion-button class="saveButton"(click)="buyCredits(credits.amount)">
-                    Koop {{credits.title}}
-                </ion-button>
-              </ion-col>
-            </ion-row> -->
             <ion-row>
-              <div font-18 weight700>
-                <div *ngIf="auth.credits.total">Actueel aantal Credits: {{auth.credits.total}}</div>
-                <div *ngIf="!auth.credits.total">Op dit moment heb je geen credits (meer)</div>
-              </div>
+              <ion-card basicPadding listCard borderSecondary borderRadius16 pointer basicMargin>
+                <ion-card-title *ngIf="auth.credits.total">Actueel aantal Credits: {{auth.credits.total}}</ion-card-title>
+                <ion-card-title *ngIf="!auth.credits.total">Op dit moment heb je geen credits (meer)</ion-card-title>
+              </ion-card>
+
             </ion-row>
             <ion-row>
-              <ion-col size="4" *ngFor="let product of products">
-                <ion-button class="saveButton" (click)="buy(product)">
-                    {{product.name}}
-                </ion-button>
+              <ion-col [size]="helper.cardSizeSmall" *ngFor="let product of products | sortBy : -1 : 'credits'">
+                <ion-card basicPadding pointer flex center-ver center-hor class="creditsCard" (click)="buy(product)" *ngIf="product.prices?.length">
+                  <div center>
+                    <div font-24 weight700 marginBottom text-dark>
+                      {{product.credits}} credits
+                    </div>
+                    <div font-20 weight600 marginBottom>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</div>
+                    <ion-button class="saveButton" >
+                        Koop nu
+                    </ion-button>
+                   
+                  </div>
+                </ion-card>
+                
               </ion-col>
                 
             </ion-row>

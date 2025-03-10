@@ -103,6 +103,11 @@ export class HeaderComponent  implements OnInit {
       url: '/bagend/photo-generator',
     },
     {
+      title: "Tutorials",
+      icon: 'faUserGraduate',
+      url: '/bagend/tutorials',
+    },
+    {
       title: "Token analyse",
       icon: 'faCoins',
       url: '/bagend/token-analysis',

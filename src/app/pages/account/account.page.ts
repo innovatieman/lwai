@@ -15,6 +15,7 @@ import { getStripePayments, getProducts} from "@invertase/firestore-stripe-payme
 import { environment } from 'src/environments/environment';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { addDoc, collection, onSnapshot } from 'firebase/firestore';
+import { MediaService } from 'src/app/services/media.service';
 
 
 @Component({
@@ -23,32 +24,33 @@ import { addDoc, collection, onSnapshot } from 'firebase/firestore';
   styleUrls: ['./account.page.scss'],
 })
 export class AccountPage implements OnInit {
-  @ViewChild('progressCircle1',{static:false}) progressCircle1: any;
-  @ViewChild('progressCircle2',{static:false}) progressCircle2: any;
-  @ViewChild('progressCircle3',{static:false}) progressCircle3: any;
-  activeTab = 'conversations';
+  // @ViewChild('progressCircle1',{static:false}) progressCircle1: any;
+  // @ViewChild('progressCircle2',{static:false}) progressCircle2: any;
+  // @ViewChild('progressCircle3',{static:false}) progressCircle3: any;
+  activeTab = 'basics';
   [x:string]:any
   account:any = {}
   subscriptions$: any;
   hasActiveSubscription: boolean = false;
   conversations$: any;
+  courses$: any;
   activeSubscriptionTypes: any; 
-  creditsOptions:any = [
-    {title:'10 credits',amount:10},
-    {title:'20 credits',amount:20},
-    {title:'50 credits',amount:50},
-    {title:'100 credits',amount:100},
-  ]
+  // creditsOptions:any = [
+  //   {title:'10 credits',amount:10},
+  //   {title:'20 credits',amount:20},
+  //   {title:'50 credits',amount:50},
+  //   {title:'100 credits',amount:100},
+  // ]
   payments: any;
   products: any;
   customers: any;
   subscriptionsStripe: any;
   db: any;
   menuItems:any=[
-    // {title:'Mijn gegevens',tab:'account',icon:'faPen'},
+    {title:'Mijn gegevens',tab:'basics',icon:'faUser'},
     // {title:'Mijn profiel',tab:'profile',icon:'faSlidersH'},
-    // {title:'Mijn cursussen',tab:'courses',icon:'faGraduationCap'},
-    {title:'Mijn gesprekken',tab:'conversations',icon:'faComments'},
+    {title:'Mijn afgeronde cases',tab:'conversations',icon:'faComments'},
+    {title:'Mijn afgeronde modules',tab:'courses',icon:'faGraduationCap'},
     // {title:'Mijn prestaties',tab:'progress',icon:'faAward'},
     {title:'Mijn abonnementen',tab:'subscriptions',icon:'faStar'},
     // {title:'Betaalinstellingen',tab:'payment',icon:'faCreditCard'},
@@ -69,7 +71,8 @@ export class AccountPage implements OnInit {
     private modalService:ModalService,
     public infoService:InfoService,
     private functions:AngularFireFunctions,
-    private route:ActivatedRoute
+    private route:ActivatedRoute,
+    public media:MediaService
   ) { }
 
   ngOnInit() {
@@ -77,12 +80,21 @@ export class AccountPage implements OnInit {
       if(params['tab']){
         this.activeTab = params['tab']
       }
+      if(params['status']){
+        if(params['status']=='success'){
+          this.modalService.showText('Betaling geslaagd. Eventuele credits zie je zo verschijnen','Gelukt')
+        }
+        else if(params['status']=='error'){
+          this.toast.show('Er is iets misgegaan',4000,'middle')
+        }
+        this.nav.go('account/'+ this.activeTab)
+      }
+        
     })
     let countInterval = 0
     let interval = setInterval(()=>{
       this.account = JSON.parse(JSON.stringify(this.auth.userInfo))
       if(this.account.email){
-        console.log(this.auth.skills)
         clearInterval(interval)
       }
       countInterval++
@@ -94,6 +106,7 @@ export class AccountPage implements OnInit {
     this.db = this.firestore.firestore;
     this.subscriptions$ = this.auth.getSubscriptions();
     this.conversations$ = this.auth.getConversations();
+    this.courses$ = this.auth.getCourses()
 
     // Controleren op actieve abonnementen
     this.auth.hasActiveSubscription().subscribe((active) => {
@@ -119,35 +132,36 @@ export class AccountPage implements OnInit {
     this.fetchProducts()
     this.fetchSubscriptionsStripe()
 
-    this.setupProgressCircles()
+    // this.setupProgressCircles()
     // this.collectStripeProducts()
   }
 
-  setupProgressCircles(){
-    let count = 0
-    let check:any = {}
-    for(let i = 0; i<4;i++){
-      check[i] = setInterval(()=>{
-        count++
-        if(count>500){
-          clearInterval(check[i])
-        }
-        if( this['progressCircle'+i]?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
-          clearInterval(check[i])
-          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-50px');
-          this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-50px');
 
-          setTimeout(() => {
-            const tspanElements:any = document.querySelectorAll('tspan');
-            tspanElements.forEach((tspan:any, index:number) => {
-                tspan.setAttribute('y', 125); // Verhoog met 10
-            });            
-          }, 500);
+  // setupProgressCircles(){
+  //   let count = 0
+  //   let check:any = {}
+  //   for(let i = 0; i<4;i++){
+  //     check[i] = setInterval(()=>{
+  //       count++
+  //       if(count>500){
+  //         clearInterval(check[i])
+  //       }
+  //       if( this['progressCircle'+i]?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
+  //         clearInterval(check[i])
+  //         this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-50px');
+  //         this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-50px');
 
-        }
-      }, 20);
-    }
-  }
+  //         setTimeout(() => {
+  //           const tspanElements:any = document.querySelectorAll('tspan');
+  //           tspanElements.forEach((tspan:any, index:number) => {
+  //               tspan.setAttribute('y', 125); // Verhoog met 10
+  //           });            
+  //         }, 500);
+
+  //       }
+  //     }, 20);
+  //   }
+  // }
 
   async collectStripeProducts() {
     // const app = getApp();
@@ -170,6 +184,7 @@ export class AccountPage implements OnInit {
       this.products = products.map((product:any)=>{
         let item = {
           id: product.payload.doc.id,
+          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
           ...product.payload.doc.data()
         }
         //get subcollection prices
@@ -188,16 +203,20 @@ export class AccountPage implements OnInit {
   }
 
   async buy(item:any){
-      const user = await this.auth.userInfo;
+    const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
       return;
     }
     this.toast.showLoader('Bezig met verwerking')
+    if(item.credits){
+      localStorage.setItem('buying Credits',item.credits)
+      localStorage.setItem('oldCredits',this.auth.credits.total)
+    }
     let checkoutSessionData:any = {
       price: item.prices[0].id,
-      success_url: window.location.origin + '/account/credits',
-      cancel_url: window.location.origin + '/account/credits',
+      success_url: window.location.origin + (item.metadata?.type=='subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
+      cancel_url: window.location.origin + (item.metadata?.type=='subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
       metadata:{
         userId:user.uid
       }
@@ -220,7 +239,10 @@ export class AccountPage implements OnInit {
 
       this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`,docRef.id).subscribe((value:any)=>{
         // console.log(value)
-        this.toast.hideLoader()
+        setTimeout(() => {
+          this.toast.hideLoader()
+        }, 2000);
+
         if(value.url){
           window.location.assign(value.url);
         }
@@ -274,9 +296,19 @@ export class AccountPage implements OnInit {
   }
 
   updateAccount(){
-    this.firestoreService.set('users',this.auth.userInfo.uid,this.account.displayName,'displayName').then(()=>{
-      this.toast.show('Account gegevens bijgewerkt')
-    })
+    if(this.account.displayName){
+      this.toast.showLoader('Bezig met opslaan')
+      this.functions.httpsCallable('editUserName')({displayName:this.account.displayName}).subscribe((response:any)=>{
+        if(response.status==200){
+          this.toast.show('Gegevens opgeslagen',3000,'bottom')
+        }
+        else{
+          this.toast.show('Er is iets misgegaan',3000)
+        }
+        this.toast.hideLoader()
+      })
+    }
+
   }
   updatePreference(){
     
@@ -313,6 +345,20 @@ export class AccountPage implements OnInit {
     })
   }
 
+  deleteCourse(event:any,course:any){
+    event.stopPropagation()
+    console.log(course)
+    this.modalService.showConfirmation('Weet je zeker dat je deze module wilt verwijderen?').then((response)=>{
+      if(response){
+        this.firestoreService.deleteSub('users',this.auth.userInfo.uid, 'courses',course.courseId).then(()=>{
+          this.toast.show('Module verwijderd')
+        })
+      }
+    })
+
+  }
+
+
   buyCredits(amount:number){
     this.toast.showLoader('Bezig met verwerking')
     this.functions.httpsCallable('buyCredits')({amount:amount}).subscribe((response:any)=>{
@@ -322,4 +368,7 @@ export class AccountPage implements OnInit {
     })
   }
 
+  openStripeDashboard(){
+    this.nav.goto(this.auth.customer.stripeLink,true)
+  }
 }

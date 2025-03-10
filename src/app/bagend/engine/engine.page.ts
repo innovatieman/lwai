@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { IonSelect } from '@ionic/angular';
-import { max, Subscription, take } from 'rxjs';
+import { first, max, Subscription, take } from 'rxjs';
 import { BackupService } from 'src/app/services/backup.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
@@ -72,24 +72,27 @@ export class EnginePage implements OnInit {
     {title:'Positions',id:'positions'},
   ]
 
-  agents:any = [
-    {title:'Gesprekspartner',id:'reaction'},
-    {title:'Feedbackgever',id:'feedback'},
-    {title:'Fase bewaker',id:'phases'},
-    {title:'Soufleur',id:'choices'},
-    {title:'Feiten noemer',id:'facts'},
-    {title:'Eindevaluatie',id:'close'},
-    {title:'Doel checker',id:'goals'},
-    {title:'Case Prompter',id:'case_prompter'},
-    {title:'Achtergrond',id:'background'},
-    {title:'Vaardigheden',id:'skills'},
-    {title:'Fase maker',id:'phase_creator'},
-  ]
-
-  standaloneAgents:any = [
-    {title:'Vaardigheden',id:'skills'},
-    {title:'Fase maker',id:'phase_creator'},
-  ]
+  agents:any = []
+  // []
+  //   {title:'Gesprekspartner',id:'reaction'},
+  //   {title:'Feedbackgever',id:'feedback'},
+  //   {title:'Fase bewaker',id:'phases'},
+  //   {title:'Soufleur',id:'choices'},
+  //   {title:'Feiten noemer',id:'facts'},
+  //   {title:'Eindevaluatie',id:'close'},
+  //   {title:'Doel checker',id:'goals'},
+  //   {title:'Case Prompter',id:'case_prompter'},
+  //   {title:'Achtergrond',id:'background'},
+  //   {title:'Vaardigheden',id:'skills'},
+  //   {title:'Fase maker',id:'phase_creator'},
+  //   {title:'Level bepaler',id:'levels'},
+  // ]
+  
+  // standaloneAgents:any = [
+  //   {title:'Vaardigheden',id:'skills'},
+  //   {title:'Fase maker',id:'phase_creator'},
+  //   {title:'Level bepaler',id:'levels'},
+  // ]
 
   firstInputlabels:any = {
     content:{
@@ -104,6 +107,7 @@ export class EnginePage implements OnInit {
       'background':'Vraag aan Agent',
       'skills':'Vraag aan Agent',
       'phase_creator':'Vraag aan Agent',
+      'levels':'Vraag aan Agent',
     }
   }
   
@@ -112,16 +116,16 @@ export class EnginePage implements OnInit {
   fieldOptions:any = [
     {field:'title',label:'Title',type:'text',agents:['main'],categories:['all']},
     {field:'general_layer',label:'General Layer knowledge',type:'textarea',agents:['main'],categories:['main']},
-    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
+    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
     {field:'extraInfo',label:'Extra kennis input over de categorie',type:'textarea',agents:['reaction'],categories:['all']},
-    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
-    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
-    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:0,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills'],categories:['all']},
+    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
+    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
+    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:0,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
   ]
   
   fieldOptionsFormat:any = [
-    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills']},
-    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills']},
+    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels']},
+    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels']},
   ]
   
   fieldOptionsList:any = [
@@ -143,20 +147,31 @@ export class EnginePage implements OnInit {
     private functions:AngularFireFunctions,
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.getAgents() 
     this.toast.showLoader('Loading data')
     this.load('categories',()=>{
       this.activateItem(this.getCategory('main'))
       this.toast.hideLoader()
     })
     this.load('formats')
-    this.load('attitudes')
+    this.load('attitudes',()=>{
+      console.log(this.attitudes)
+    })
     this.load('positions')
     // this.showEditor()
     // setTimeout(() => {
     //   this.activateItem(this.getCategory('main'))
     // }, 3000);
     // this.createItems()
+  }
+
+  async getAgents(){
+    this.firestoreService.getSub('categories','main','agents').pipe(first()).subscribe((items:any) => {
+      this.agents = items.map((docItem: any) => {
+        return { id: docItem.payload.doc.id, ...docItem.payload.doc.data() };
+      });
+    });
   }
 
   loadSubCollections(category_id: string): void {
@@ -232,7 +247,7 @@ export class EnginePage implements OnInit {
     this.modalService.selectItem('',listCats,(response:any)=>{
       if(response.data){
         console.log(response.data)
-        if(response.data.id!='main' && (this.activeAgent.id=='phase_creator' || this.activeAgent.id=='skills')){
+        if(response.data.id!='main' && (this.activeAgent.id=='phase_creator' || this.activeAgent.id=='skills' || this.activeAgent.id=='levels')){
           this.changeAgent({title:'Basisgegevens',id:'main'})
           this.activateItem(response.data)
         }
@@ -552,5 +567,46 @@ export class EnginePage implements OnInit {
       }
     })
   }
+
+  addAgent(){
+    this.modalService.inputFields('Nieuwe agent','Geef de nieuwe agent een id en titel',[
+      {value:'',title:'ID',type:'text',required:true},
+      {value:'',title:'Titel',type:'text',required:true},
+    ],(response:any)=>{
+      console.log(response)
+      if(response.data){
+        this.toast.showLoader('Creating new agent')
+        let agent = response.data[0].value
+        for(let i=0;i<this.categories.length;i++){
+          this.firestoreService.setSub('categories',this.categories[i].id,'agents',agent,{
+            content:'',
+            systemContent:'',
+            max_tokens:1500,
+            temperature:0.3,
+            overwrite:0,
+            title:response.data[1].value,
+            firstInputlabel:'Vraag aan Agent',
+          })
+        }
+        this.load('categories',()=>{
+          this.toast.hideLoader()
+          this.activateItem(this.getCategory('main'))
+        })
+        // this.firestoreService.set('formats',agent,{format:'',instructions:''}).then(()=>{
+        //   this.load('formats')
+        // })
+      }
+    })
+  }
+
+  // addFields(){
+  //   for(let i=0;i<this.agents.length;i++){
+  //     this.firestoreService.updateSub('categories','main','agents',this.agents[i].id,{title:this.agents[i].title})
+  //       this.firestoreService.updateSub('categories','main','agents',this.agents[i].id,{firstInputlabel:this.firstInputlabels.content[this.agents[i].id]})
+        
+  //   }
+  // }
+
+
 
 }
