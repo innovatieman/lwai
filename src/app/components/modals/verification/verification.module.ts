@@ -8,6 +8,7 @@ import { VerificationPageRoutingModule } from './verification-routing.module';
 
 import { VerificationPage } from './verification.page';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     FormsModule,
     IonicModule,
     VerificationPageRoutingModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    TranslateModule.forChild()
   ],
   declarations: [VerificationPage]
 })

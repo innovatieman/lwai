@@ -3,12 +3,16 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/auth/auth.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { Router } from '@angular/router';
-import { PopoverController } from '@ionic/angular';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { NavService } from 'src/app/services/nav.service';
 import { TranslateService } from '@ngx-translate/core';
 import { UserService } from 'src/app/services/user.service';
 import { MediaService } from 'src/app/services/media.service';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
+import { InputFieldsPage } from '../modals/input-fields/input-fields.page';
+import { FirestoreService } from 'src/app/services/firestore.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.page.html',
@@ -31,17 +35,17 @@ export class MenuPage implements OnInit {
       isUser:true
     },
   ]
-
+  versionNumber = environment.version
   appPages:any = [
    
-    {
-      title: 'Start',
-      url: '/start',
-      icon: 'faHome',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:true
-    },
+    // {
+    //   title: 'Start',
+    //   url: '/start',
+    //   icon: 'faHome',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:true
+    // },
     {
       title: 'Mijn Account',
       url: '/account',
@@ -111,6 +115,9 @@ export class MenuPage implements OnInit {
     public translateService:TranslateService,
     public media:MediaService,
     private selectMenuservice:SelectMenuService,
+    private modalController:ModalController,
+    private firestore:FirestoreService,
+    private toast:ToastService,
   ) { }
 
   ngOnInit() {
@@ -215,5 +222,64 @@ export class MenuPage implements OnInit {
     await this.shortMenu.present();
     await this.shortMenu.onDidDismiss()
     callback(this.selectMenuservice.selectedItem)
+  }
+
+  async openFeedback(){
+    let fields = [
+      {
+        title:this.translateService.instant('menu.feedback_type'),
+        type:'select',
+        required:true,
+        value:'feedback',
+        optionKeys:[
+          {value:'feedback',title:this.translateService.instant('menu.feedback')},
+          {value:'question',title:this.translateService.instant('menu.feedback_question')},
+          {value:'remark',title:this.translateService.instant('menu.feedback_remark')},
+        ]
+      },
+      {
+        title:this.translateService.instant('menu.feedback_subject'),
+        type:'text',
+        required:true,
+        value:'',
+      },
+      {
+        title:this.translateService.instant('menu.feedback_message'),
+        type:'textarea',
+        // placeholder:this.translateService.instant('feedback'),
+        required:true,
+        value:'',
+      }
+    ]
+
+      const modalItem = await this.modalController.create({
+        component:InputFieldsPage,
+        componentProps:{
+          text:this.translateService.instant('menu.feedback_text'),
+          fields:fields,
+          title:this.translateService.instant('menu.feedback'),
+          extraData:{}
+        },
+        cssClass:'infoModal',
+      })
+      modalItem.onWillDismiss().then(result=>{
+        if(result.data){
+          this.firestore.create('user_messages',{
+            type:result.data[0].value,
+            subject:result.data[1].value,
+            message:result.data[2].value,
+            user:this.auth.userInfo.uid,
+            displayName:this.auth.userInfo.displayName,
+            email:this.auth.userInfo.email,
+            date:new Date(),
+            timestamp:new Date().getTime(),
+            read:false,
+            archived:false,
+            url:window.location.href
+          })
+          this.toast.show(this.translateService.instant('menu.feedback_sent'))
+        }
+      })
+      return await modalItem.present()
   }
 }

@@ -1,0 +1,298 @@
+video{
+    width: 100%;
+    // height: 600px;
+    object-fit: cover;
+    border-radius: 24px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+}
+
+.selectCaseItem{
+    ion-checkbox{
+        --size:24px;
+    }
+}
+.innerSelectCaseItem{
+    padding-left: 20px;
+}
+
+.typeItem{
+    padding: 5px 10px;
+    border-radius: 16px;
+    background-color: var(--ion-color-primary);
+    color:var(--ion-color-primary-contrast);
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0px;
+    font-weight: 500;;
+}
+
+.fieldItem{
+    border-radius:5px;
+    padding:15px 0px;
+    // margin-bottom:20px;
+    --padding-start: 10px;
+    .select{
+        background: var(--background-light);
+        min-height:16px;
+        border:solid 1px rgba(0, 0, 0, 0.1);
+        --padding-start:10px;
+        --padding-end:10px;
+        --padding-top:7px;
+        --padding-bottom:7px;
+        color:#5C6F84;
+        width: 100%;
+        height: 100%;
+        border-radius: 32px;
+        padding: 0px 30px;
+        line-height: 40px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        ion-thumbnail,fa-icon{
+            margin-right: 10px;
+        }
+        .text{
+            font-size: 16px;
+            font-weight: 600;
+        }
+    }
+}
+
+.overlappingVideo{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: Black;
+    font-size: 64px;
+    font-weight: 600;
+    text-align: center;
+    // box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+}
+
+.codeInput{
+    --item-border: 1px solid var(--color-global);
+    --item-border-radius:16px;
+    --item-border-bottom: 1px solid var(--color-global);
+    --item-border-bottom-has-value: 1px solid var(--color-global);
+    --item-border-has-value: 1px solid var(--color-global);
+    --item-font-weight: 500;
+    font-size: 24px;
+    /* padding: 0; */
+    --item-spacing: 10px;
+    --item-height: 70px;
+}
+.selectItem{
+    display:inline-block;
+    border:solid 1px var(--color-global);
+    font-weight: 500;
+    border-radius:16px;
+    font-size: 18px;
+    padding:8px 15px;
+    margin:10px;
+    cursor: pointer;
+    text-align: center;
+}
+
+
+
+
+
+
+
+.avatarImage{
+    height: 200px;
+    width:100%;
+}
+.continueCaseText{
+    font-size: 0.75em;
+    margin-bottom:10px;
+}
+[removeIcon]{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 2;
+}
+.cardButton{
+    --border-color:#eaeaea;
+    --color:var(--ion-color-primary);
+    margin-right:15px;
+}
+.cardButton:hover{
+    --border-color:var(--ion-color-primary);
+}
+.cardPrice{
+  margin-left:30px;
+  font-size: 18px;
+  font-weight: 600;
+  color:var(--ion-color-primary);
+}
+.creditButton{
+    --border-color:black;//var(--ion-color-primary);
+    --color:var(--ion-color-primary);
+    margin-right:20px;
+    margin-left:10px;
+    --padding-start: 10px !important;
+    --padding-end: 10px !important;
+}
+.creditButton:hover{
+    --background:none;
+}
+
+
+ion-searchbar{
+    --box-shadow: none;
+    --background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);
+    padding:0px;
+    --border-radius:24px;
+    --color: black;
+    // margin-top:4px;
+}
+main {
+    display: flex;
+    flex-direction: column;
+    height:calc(var(--vh) * 100);
+    // height: 100vh;  // Zorg ervoor dat het main-element de volledige viewport-hoogte heeft
+  }
+  
+  ion-grid.mainGrid {
+    flex: 1;  // Laat het grid zich aanpassen aan de resterende ruimte binnen het scherm
+    overflow: hidden;  // Verberg overbodige scroll buiten de kolommen
+    height:100%;
+  }
+  
+  .selectColumn,
+  .detailColumn {
+    height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
+    overflow-y: auto;  // Activeer verticale scroll wanneer nodig
+    padding-right: 10px;  // Optionele padding voor scrollbalk
+    max-height:calc(var(--vh, 1vh) * 100 - 75px);
+    padding-bottom:20px;
+  }
+
+
+
+  .innerSelectCase{
+    background-color: white;
+    // border-bottom-left-radius:24px;
+    // border-bottom-right-radius:24px;
+    transition: max-height .3s, border-bottom 1s, border-top 1s;
+    overflow: hidden;
+    position: relative;
+  }
+  .innerSelectCaseItem{
+    padding-left: 20px;
+  }
+  .innerSelectMoreToggle{
+    position: absolute;
+    z-index: 3;
+  }
+  .avatarSmall{
+    width: 100px;
+    min-width: 100px;
+    height: 100px;
+    border-radius: 10px!important;
+  }
+  .arrowDiv{
+    background: white;
+    position: absolute;
+    width: calc(100% - 140px);
+    bottom: 10px;
+    left: 125px;
+  }
+  .detailColumn ion-card ion-card-title{
+    color:var(--color-global);
+  }
+  .filterSmall{
+    position: fixed;
+    z-index: 3;
+    top:110px;
+    left:0;
+    width: 100%;
+    max-height:calc(((var(--vh, 1vh) * 100) - 110px));
+    height: calc(((var(--vh, 1vh) * 100) - 110px));
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+  }
+  .filterSmallTitle{
+    position: fixed;
+    z-index: 3;
+    top:60px;
+    left:0;
+    width: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+  }
+
+  .topButton{
+    padding:10px;
+    border-radius: 24px;
+    margin: 10px;
+    box-shadow: none;
+    border:solid 1px #eaeaea;
+  }
+  .topButton:hover{
+    border:solid 1px var(--ion-color-primary);
+  }
+  .videoAvatarBadge{
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    z-index: 2;
+    background-color: var(--ion-color-light);
+    color: var(--ion-color-light-contrast);
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.activeItem{
+  background-color: var(--ion-color-primary);
+  ion-item{
+    --background:none;
+    --color: white;
+    div{
+      --color: white;
+    }
+    fa-icon{
+      color:white;
+    }
+  }
+  ion-card-title{
+    color: white;
+  }
+}
+.notActiveItem{
+  background-color: white;
+  ion-item{
+    --background-hover: none;
+  }
+  ion-card-title{
+    color: var(--ion-color-primary);
+  }
+}
+.notActiveItem:hover{
+  background: var(--background-global);
+  ion-item{
+    --background: var(--background-global);
+  }
+}
+svg{
+  margin: -50px 0px;
+}
+
+.skipSuggestion{
+    font-size: 32px;
+    font-weight: 600;
+}

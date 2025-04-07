@@ -282,7 +282,7 @@ export class CoursePage implements OnInit {
             if(res){
               localStorage.setItem('activatedCase',caseItem.id)
               localStorage.setItem('personalCase',JSON.stringify(caseItem))
-              this.nav.go('conversation/'+caseItem.conversation+'/'+caseItem.id)
+              this.nav.go('conversation/'+caseItem.id)
             }
           })
         }
@@ -295,7 +295,7 @@ export class CoursePage implements OnInit {
         if(res){
           localStorage.setItem('activatedCase',caseItem.id)
           localStorage.setItem('personalCase',JSON.stringify(caseItem))
-          this.nav.go('conversation/'+caseItem.conversation+'/'+caseItem.id)
+          this.nav.go('conversation/'+caseItem.id)
         }
       })
     }
@@ -325,7 +325,7 @@ export class CoursePage implements OnInit {
   continueConversation(conversation:any){
     localStorage.setItem('continueConversation',"true")
     localStorage.setItem('conversation',JSON.stringify(conversation))
-    this.nav.go('conversation/'+conversation.conversationType+'/'+conversation.caseId)
+    this.nav.go('conversation/'+conversation.caseId)
   }
 
   showMenu(event:Event){

@@ -1,10 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { AuthService } from 'src/app/auth/auth.service';
+import { ExportService } from 'src/app/services/export.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
+import { MenuPage } from '../../menu/menu.page';
+import { SelectMenuService } from 'src/app/services/select-menu.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-evaluation',
@@ -13,7 +17,7 @@ import { MediaService } from 'src/app/services/media.service';
 })
 export class EvaluationPage implements OnInit {
   feedbackGiven:boolean = false
-
+  vh:number = 0;
     @Input() options:any={
       title:'',
       content:'',
@@ -28,7 +32,11 @@ export class EvaluationPage implements OnInit {
     private firestore:FirestoreService,
     public media:MediaService,
     private auth:AuthService,
-    public helper:HelpersService
+    public helper:HelpersService,
+    private exportService:ExportService,
+    private popoverController:PopoverController,
+    private selectMenuservice:SelectMenuService,
+    private translate:TranslateService
   ) { }
 
   ngOnInit() {
@@ -38,6 +46,25 @@ export class EvaluationPage implements OnInit {
     if(this.options.firstTime){
       this.calculateSkillsScore() 
     }
+    console.log('options',this.options)
+    if(this.options.exportPdf=='conversation'){
+      this.options.buttons.unshift({
+        // text:'Exporteer als PDF',
+        value:'pdf',
+        icon:'faPrint',
+        color:'primary',
+        fill:'solid',
+        click:()=>{
+          this.exportPdf()
+        }
+      })
+    }
+  }
+
+  ngAfterViewInit() {
+    this.vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${this.vh}px`);
+    
   }
 
   feedback(value:boolean){
@@ -52,7 +79,56 @@ export class EvaluationPage implements OnInit {
       this.feedbackGiven = true
     })
   }
+  shortMenu: any;
+  async exportPdf(){
 
+    let options:any[] = [
+      {
+        title:this.translate.instant('buttons.export_pdf'),
+        icon:'faGlobe',
+        id:'exportAll',
+      },
+      // {
+      //   title:'Exporteer alleen het gesprek',
+      //   icon:'faComments',
+      //   id:'exportConversation',
+      // },
+      // {
+      //   title:'Exporteer alleen de eindevaluatie',
+      //   icon:'faGraduationCap',
+      //   id:'exportFeedback',
+      // },
+    ]
+
+     this.shortMenu = await this.popoverController.create({
+          component: MenuPage,
+          componentProps:{
+            customMenu:true,
+            pages:options,
+            listShape:true
+          },
+          cssClass: 'customMenu',
+          event: event,
+          translucent: false,
+        });
+        this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+    
+        await this.shortMenu.present()
+        await this.shortMenu.onWillDismiss();
+    
+    
+        if(this.selectMenuservice.selectedItem){
+          if(this.selectMenuservice.selectedItem.id == 'exportAll'){
+            this.exportService.caseToPdf(this.options.conversation)
+          }
+          else{
+            this.exportService.caseToPdf(this.options.conversation)
+          }
+        }
+
+
+
+  }
 
   performanceBonus:any = {
     1:-10,
@@ -90,13 +166,25 @@ export class EvaluationPage implements OnInit {
   }
 
   skillScoreDef(skill:string){
-    let score = 20
+    let score = 10
     let difficultyMultiplier = 1
-    if(this.auth.skillsLevel(this.auth.skills[skill].score)<this.options.conversation_level){
+    const userLevel = this.auth.skillsLevel(this.auth.skills[skill].score)
+    const conversationLevel = this.options.conversation_level
+
+    if(userLevel == conversationLevel){
+      difficultyMultiplier = 1
+    }
+    else if(conversationLevel - userLevel == 1){
       difficultyMultiplier = 1.5
     }
-    else if(this.auth.skillsLevel(this.auth.skills[skill].score)>this.options.conversation_level){
+    else if(conversationLevel - userLevel == -1){
       difficultyMultiplier = 0.5
+    }
+    else if(conversationLevel - userLevel >= 2){
+      difficultyMultiplier = 2
+    }
+    else if(conversationLevel - userLevel <= -2){
+      difficultyMultiplier = 0
     }
 
     this.skillScore[skill].prevScore = this.auth.skills[skill].score
@@ -105,12 +193,14 @@ export class EvaluationPage implements OnInit {
     if(this.options.skills?.goal_bonus){
       goalBonus = this.options.skills.goal_bonus
     }
-    console.log('performanceBonus',performanceBonus)
-    console.log('difficultyMultiplier',difficultyMultiplier)
-    console.log('goalBonus',goalBonus)
+    // console.log('performanceBonus',performanceBonus)
+    // console.log('difficultyMultiplier',difficultyMultiplier)
+    // console.log('goalBonus',goalBonus)
     score += performanceBonus
     score *= difficultyMultiplier
     score += goalBonus
     return score
   }
+
+  
 }

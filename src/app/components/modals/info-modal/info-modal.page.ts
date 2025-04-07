@@ -20,7 +20,8 @@ export class InfoModalPage implements OnInit {
     video:false,
     image:false,
     videoLoaded:false,
-    btnsClass:''
+    btnsClass:'',
+    buttons:null
   };
 
 

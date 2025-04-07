@@ -11,7 +11,10 @@
         </ion-row>
 
         <div singleLine></div>
-        <div weight500 style="padding: 0 15px;">Type</div>
+        <div weight500 style="padding: 0 15px;">Type
+          <fa-icon titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer *ngIf="editingType=='attitudes'" (click)="translateAttitudes()"></fa-icon>
+
+        </div>
         <ion-card  basicPadding noBackground font-16 noPadding noMargin>
           <ion-radio-group  [(ngModel)]="editingType" (ionChange)="changeEditType()">
             <div flex center-ver>
@@ -35,7 +38,8 @@
         <div *ngIf="activeItem.id!='attitudes'" weight500 style="padding: 0 15px;" flex center-ver>
           <span>Gesprekstechniek</span>
           <span class="spacer"></span>
-          <fa-icon [icon]="icon.get('faPlus')" font-20 pointer (click)="newCategory()"></fa-icon>
+          <fa-icon titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer (click)="translateCategory()"></fa-icon>
+          <fa-icon titleIcon [icon]="icon.get('faPlus')" font-20 pointer (click)="newCategory()"></fa-icon>
         </div>
         <ion-card *ngIf="activeItem.id!='attitudes'" marginBottom weight600  basicPadding pointer class="agent specialAgent" style="padding:10px 15px 10px 30px;color:var(--ion-color-primary)" flex center-ver (click)="selectCategory()">
           <fa-icon [icon]="icon.get('faList')" font-20 style="margin-right:20px;;"></fa-icon>  
@@ -46,7 +50,8 @@
         <div *ngIf="activeItem.id!='attitudes'" weight500 style="padding: 0 15px;" flex center-ver>
           <span>Agent</span>
           <span class="spacer"></span>
-          <fa-icon [icon]="icon.get('faPlus')" font-20 pointer (click)="addAgent()"></fa-icon>
+          <fa-icon [icon]="icon.get('faGlobeEurope')" *ngIf="activeAgent.id=='phaseList'&&activeItem.id!='main'" font-20 pointer (click)="translatePhases()"></fa-icon>
+          <fa-icon [icon]="icon.get('faPlus')" titleIcon font-20 pointer (click)="addAgent()"></fa-icon>
         </div>
         <ion-card *ngIf="activeItem.id!='attitudes'" marginBottom basicPadding pointer class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
           <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
@@ -196,7 +201,7 @@
                   <ion-item listCard lines="none" *ngIf="field.type=='textarea' && activeItem[activeAgent.id]">
                     <ion-label position="stacked" *ngIf="!firstInputlabels[field.field]">{{field.label}}</ion-label>
                     <ion-label position="stacked" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</ion-label>
-                    <quill-editor *ngIf="!showHtml" [(ngModel)]="activeItem[activeAgent.id][field.field]" [modules]="configModules" (onEditorCreated)="startEditor($event)" (onBlur)="update(field.field,null,true)"></quill-editor>
+                    <quill-editor *ngIf="!showHtml&&!field.notHtml" [(ngModel)]="activeItem[activeAgent.id][field.field]" [modules]="configModules" (onEditorCreated)="startEditor($event)" (onBlur)="update(field.field,null,true)"></quill-editor>
 
                     <ion-toolbar *ngIf="showHtml" style="padding-left:0px;--background: none">
                       <ion-buttons slot="start">
@@ -207,7 +212,7 @@
                       </ion-buttons>
                     </ion-toolbar>
 
-                    <ion-textarea *ngIf="showHtml" rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field,null,true)">
+                    <ion-textarea *ngIf="showHtml||field.notHtml" rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field,null,true)">
                       <div slot="label" *ngIf="!firstInputlabels[field.field]">{{field.label}}</div>
                       <div slot="label" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</div>
                     </ion-textarea>
@@ -276,18 +281,18 @@
               <ion-card-content *ngIf="activeAgent.id=='phaseList'&&activeItem.id!='formats'&&activeItem.id!='attitudes'&&activeItem.id!='positions'">
                   <ion-card-title basicPadding weight700 flex fullwidth center-ver>
                     {{phaseList.title}}
-                  <span class="spacer"></span>
-                  <!-- <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(items[activeTab].id,'phases')">
-                    <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
-                  </ion-button> -->
-                  <fa-icon [icon]="icon.get('faUndoAlt')" titleIcon style="font-size:30px;color:var(--ion-color-warning)" (click)="reCreatePhases(activeItem)"></fa-icon>
-                  <fa-icon [icon]="icon.get('faPlus')" titleIcon style="font-size:30px" (click)="addPhase()"></fa-icon>
+                    <span class="spacer"></span>
+                    <!-- <ion-button fill="clear" color="warning" class="backupIcon" *ngIf="backupService.showBackups('categories')" (click)="getBackup(items[activeTab].id,'phases')">
+                      <fa-icon [icon]="icon.get('faUndoAlt')" slot="icon-only"></fa-icon>
+                    </ion-button> -->
+                    <fa-icon [icon]="icon.get('faUndoAlt')" titleIcon style="font-size:30px;color:var(--ion-color-warning)" (click)="reCreatePhases(activeItem)"></fa-icon>
+                    <fa-icon [icon]="icon.get('faPlus')" titleIcon style="font-size:30px" (click)="addPhase()"></fa-icon>
                   </ion-card-title>
-                  <ion-card class="fieldItem" basicPadding *ngFor="let phase of activeItem.phaseList;let phase_index = index">
+                  <ion-card class="fieldItem" basicPadding *ngFor="let phase of activeItem.phaseList;let phase_index = index;let first = first;let last = last">
                     <ion-item listCard listCardTop lines="none">
                       <ion-input font-16 weight600 placeholder="Phase title" [(ngModel)]="phase.title" (ionChange)="update('phaseList')"></ion-input>
-                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" (click)="movePhase(phase_index,-1)"></fa-icon>
-                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')" (click)="movePhase(phase_index,1)"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" *ngIf="!first" (click)="movePhase(phase_index,-1)"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')"  *ngIf="!last" (click)="movePhase(phase_index,1)"></fa-icon>
                       <fa-icon slot="end" pointer [icon]="icon.get('faTrashAlt')" trash (click)="removePhase(phase_index)"></fa-icon>
                     </ion-item>
                     <ion-item listCard listCardCenter lines="none" class="shortItem">
@@ -301,6 +306,31 @@
                       </ion-textarea>
                     </ion-item>
                   </ion-card>
+                  <div singleLine></div>
+                  <ion-card-title basicPadding weight700 flex fullwidth center-ver marginTop>
+                    Explanation
+                    <span class="spacer"></span>
+                    <fa-icon [icon]="icon.get('faPlus')" titleIcon style="font-size:30px" (click)="addPhase('phaseExplanation')"></fa-icon>
+                  </ion-card-title>
+                  <ion-card class="fieldItem" basicPadding *ngFor="let phase of activeItem.phaseExplanation;let phase_index = index;let first = first;let last = last">
+                    <ion-item listCard listCardTop lines="none">
+                      <ion-input font-16 weight600 placeholder="Phase title" [(ngModel)]="phase.title" (ionChange)="update('phaseExplanation')"></ion-input>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" *ngIf="!first" (click)="movePhase(phase_index,-1,'phaseExplanation')"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')" *ngIf="!last" (click)="movePhase(phase_index,1,'phaseExplanation')"></fa-icon>
+                      <fa-icon slot="end" pointer [icon]="icon.get('faTrashAlt')" trash (click)="removePhase(phase_index,'phaseExplanation')"></fa-icon>
+                    </ion-item>
+                    <ion-item listCard listCardCenter lines="none" class="shortItem">
+                      <ion-label position="stacked">Short title</ion-label>
+                      <ion-input type="text" [(ngModel)]="phase.short" (ionChange)="update('phaseExplanation')">
+                      </ion-input>
+                    </ion-item>
+                    <ion-item listCard listCardBottom lines="none">
+                      <ion-textarea labelPlacement="floating" [autoGrow]="true" [(ngModel)]="phase.explanation" (ionChange)="update('phaseExplanation')">
+                        <div slot="label">Explanation</div>
+                      </ion-textarea>
+                    </ion-item>
+                  </ion-card>
+                
 
 
               </ion-card-content>

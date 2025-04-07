@@ -20,7 +20,25 @@ export class InputFieldsPage implements OnInit {
   @Input() text:string=''
   @Input() fields:any[]= [];
   @Input() extraData:any
-
+  @Input() data:any
+  configModules={
+    toolbar: {
+      container:[
+        ['bold', 'italic', 'underline'],
+        [{ 'color': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'align': [] }],
+        ['link'],
+        ['clean'],
+        ['HTML'],
+      ],
+      clipboard: {
+        matchVisual: false
+      }
+    }
+  }
+  showHtml:boolean=false
   constructor(
     public icons:IconsService,
     // public modal:ModalController,
@@ -140,6 +158,16 @@ export class InputFieldsPage implements OnInit {
           return
         }
       }
+      if(this.fields[i].type=='html'){
+        this.fields[i].value = this.fields[i].value
+          .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+      }
     }
     this.modalController.dismiss(this.fields)
     
@@ -167,5 +195,39 @@ export class InputFieldsPage implements OnInit {
     return await modalItem.present()
     // return await modal.present
   }
+
+  showEditor(){
+    this.showHtml = false
+    setTimeout(() => {
+      let elements = document.getElementsByClassName("ql-container")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','height:calc(100% - 42px);border:0;')
+      }
+      elements = document.getElementsByClassName("ql-toolbar")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','border:0;')
+      }
+      setTimeout(() => {
+
+        let htmlBtn:any = document.querySelector('.ql-HTML');
+        htmlBtn.innerHTML = 'HTML'
+        htmlBtn.style.width = '50px'
+        htmlBtn.addEventListener('click', (event:any)=> {
+          this.data.value = this.data.value
+          .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
+
+          this.showHtml = true 
+        });
+      },300)
+    },100)
+  }
+
 
 }

@@ -15,14 +15,22 @@
               <ion-card-title weight700>Start Script <span *ngIf="countingScript">({{countingScript}} / {{countingScriptMax}})</span> </ion-card-title>
             </ion-card-header>
           </ion-card>
-          <ion-select #selectScript id="selectScript" [(ngModel)]="changingType" (ionChange)="startScript()" hidden>
+          <ion-select #selectScript id="selectScript" [(ngModel)]="changingType" (ionChange)="startScript(true)" hidden>
             <ion-select-option value="gender">Genders</ion-select-option>
             <ion-select-option value="ethnicity">Ethnicities</ion-select-option>
             <ion-select-option value="age">Ages</ion-select-option>
-            <ion-select-option value="style">Styles</ion-select-option>
             <ion-select-option value="occupation">Occupations</ion-select-option>
+            <ion-select-option value="emotion">Emotions</ion-select-option>
+            <ion-select-option value="style">Styles</ion-select-option>
           </ion-select>
 
+          <ion-card button noPadding borderRadius24 backgroundTertiary (click)="startFullScript()">
+            <ion-card-header center>
+              <ion-card-title weight700>Start Full Script <span *ngIf="counter">({{counter}} / {{maxCounter}})</span> </ion-card-title>
+            </ion-card-header>
+          </ion-card>
+
+          
           <ion-card button noPadding borderRadius24 backgroundSecondary (click)="createWithPrompt()">
             <ion-card-header center>
               <ion-card-title text-light weight700>Unique Prompt</ion-card-title>
@@ -31,7 +39,7 @@
 
           <ion-card basicPadding borderRadius24>
             <ion-card-header>
-              <ion-card-title weight700>Source</ion-card-title>
+              <ion-card-title (click)="sorting()" weight700>Source</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="source" fullwidth>
               <ion-item *ngFor="let s of sources" lines="none">
@@ -110,10 +118,10 @@
 
       <ion-col size="9">
         <ion-row>
-
-          <ion-col size="2" *ngFor="let image of images | sortBy: 1 : 'timestamp'">
+          {{images.length}} Foto's
+          <!-- <ion-col size="2" *ngFor="let image of images | sortBy: 1 : 'timestamp'">
             <img [src]="image.url" style="box-shadow:0 0 7px rgba(0,0,0,0.4);border-radius:24px;" (click)="enlarge(image)" pointer/>
-          </ion-col>
+          </ion-col> -->
         </ion-row>
       </ion-col>
     </ion-row>

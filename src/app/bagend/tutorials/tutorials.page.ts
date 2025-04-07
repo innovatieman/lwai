@@ -5,6 +5,7 @@ import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { NavService } from 'src/app/services/nav.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { tutorialService } from 'src/app/services/tutorial.service';
 
@@ -27,6 +28,7 @@ export class TutorialsPage implements OnInit {
     public tutorialService:tutorialService,
     private toast:ToastService,
     private modalService:ModalService,
+    private nav:NavService
   ) { }
 
   ngOnInit() {
@@ -59,6 +61,7 @@ export class TutorialsPage implements OnInit {
     if(!step){
       step = JSON.parse(JSON.stringify(this.tutorialService.defaultStep))
     }
+    this.tutorial.steps.push(step)
     this.update('steps')
   }
   update(field:string,arrayOnPurpose:boolean = false){
@@ -125,6 +128,45 @@ export class TutorialsPage implements OnInit {
     let step = JSON.parse(JSON.stringify(this.tutorial.steps[step_index]))
     this.tutorial.steps.splice(step_index,0,step)
     this.update('steps')
+  }
+
+  async startTranslation(tutorial?:any){
+    let id = ''
+    if(!tutorial?.id){
+      if(!this.tutorial.id){
+        this.toast.show('Selecteer een casus')
+        return
+      }
+      id = this.tutorial.id
+    }
+    else{
+      id = tutorial.id
+    }
+    console.log(tutorial)
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      list.push({
+        value:lang,
+        title:this.translate.instant('languages.'+lang),
+        icon:'faGlobeEurope'
+      })
+    })
+    this.modalService.inputFields('Selecteer de originele taal','',[{
+      type:'select',
+      placeholder:'Selecteer de originele taal',
+      value:this.translate.currentLang,
+      optionKeys:list
+    }],(result:any)=>{
+      console.log(result)
+      if(result.data){
+        this.firestore.update('tutorials',id!,{original_language:result.data[0].value,translate:false})
+        setTimeout(() => {
+          this.firestore.update('tutorials',id!,{original_language:result.data[0].value,translate:true})
+        }, 1000);
+        this.toast.show('Translation started')
+      }
+    })
+     
   }
 
 }

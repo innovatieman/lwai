@@ -21,7 +21,7 @@ export class HeaderComponent  implements OnInit {
   @Input() back:boolean = false
   @Input() button:string = ''
   @Output() buttonResponse = new EventEmitter()
-
+  isVerified: boolean = false;
   @HostListener('window:resize', ['$event'])
   onResize(){
     this.media.setScreenSize()
@@ -40,18 +40,10 @@ export class HeaderComponent  implements OnInit {
       title:'Start',
       isVisitor:false,
       isAdmin:true,
-      isUser:true,
+      isUser:false,
       isTrainer:true,
     },
-    // {
-    //   url:'account',
-    //   page:'account',
-    //   title:'Account',
-    //   isVisitor:false,
-    //   isAdmin:true,
-    //   isUser:true,
-    //   isTrainer:false,
-    // },
+
     {
       url:'trainer/courses',
       // action:'trainerMenu',
@@ -87,11 +79,11 @@ export class HeaderComponent  implements OnInit {
       icon: 'faSuitcase',
       url: '/bagend/cases',
     },
-    {
-      title: 'Users',
-      icon: 'faUsers',
-      url: '/bagend/users',
-    },
+    // {
+    //   title: 'Users',
+    //   icon: 'faUsers',
+    //   url: '/bagend/users',
+    // },
     {
       title: 'Types',
       icon: 'faHandPointRight',
@@ -111,6 +103,16 @@ export class HeaderComponent  implements OnInit {
       title: "Token analyse",
       icon: 'faCoins',
       url: '/bagend/token-analysis',
+    },
+    {
+      title: "User messages",
+      icon: 'faComments',
+      url: '/bagend/user-messages',
+    },
+    {
+      title: "Social media",
+      icon: 'faShareAlt',
+      url: '/bagend/socials',
     },
 
     
@@ -147,6 +149,11 @@ export class HeaderComponent  implements OnInit {
     this.auth.isAuthenticated().subscribe((auth) => {
       if(auth){
         this.isAuthenticated = true
+      }
+    });
+    this.auth.isVerified().subscribe((auth) => {
+      if(auth){
+        this.isVerified = true
       }
     });
 
@@ -232,6 +239,16 @@ export class HeaderComponent  implements OnInit {
     return false;
   }
 
+  get countShowPages(){
+   let count = 0
+   this.menuItems.forEach((item:any)=>{
+     if(this.shouldShowPage(item)){
+       count++
+     }
+   }
+   )
+   return count
+  }
   buttonClick(event:Event){
     this.buttonResponse.emit(event)
   }

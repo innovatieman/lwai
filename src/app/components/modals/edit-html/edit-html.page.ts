@@ -60,6 +60,16 @@ export class EditHtmlPage implements OnInit {
         htmlBtn.innerHTML = 'HTML'
         htmlBtn.style.width = '50px'
         htmlBtn.addEventListener('click', (event:any)=> {
+          this.data.value = this.data.value
+          .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
+
           this.showHtml = true 
         });
       },300)
@@ -75,6 +85,7 @@ export class EditHtmlPage implements OnInit {
     .split('<p><br></p>').join('<br>')
     .split('</p><br><p>').join('<br><br>')
     .split('</p><p>').join('<br>')
+    .split('&nbsp;').join(' ')
 
     this.modal.dismiss(this.data)
   }

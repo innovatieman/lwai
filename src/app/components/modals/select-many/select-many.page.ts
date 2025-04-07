@@ -15,6 +15,7 @@ export class SelectManyPage implements OnInit {
   search:string = ''
   localItems:any[] = []
   localItemsOriginal:any[] = []
+  vh:number = 0
   constructor(
     public modalController: ModalController,
     public translate:TranslateService,
@@ -39,6 +40,12 @@ export class SelectManyPage implements OnInit {
     }
     this.localItemsOriginal = JSON.parse(JSON.stringify(this.localItems))
     console.log(this.localItems)
+  }
+
+  ngAfterViewInit() {
+    this.vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${this.vh}px`);
+    
   }
 
   dismiss(obj?:any) {

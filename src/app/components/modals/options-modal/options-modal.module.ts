@@ -9,6 +9,7 @@ import { OptionsModalPageRoutingModule } from './options-modal-routing.module';
 import { OptionsModalPage } from './options-modal.page';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     IonicModule,
     OptionsModalPageRoutingModule,
     FontAwesomeModule,
-    PipesModule
+    PipesModule,
+    TranslateModule.forChild()
   ],
   declarations: [OptionsModalPage]
 })

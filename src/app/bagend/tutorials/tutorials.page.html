@@ -35,6 +35,7 @@
                   <ion-toggle color="primary" [(ngModel)]="tutorial.active" (ionChange)="update('active')">
                     Actief
                   </ion-toggle>
+                  <fa-icon pointer titleIcon font-24 [icon]="icon.get('faGlobe')" (click)="startTranslation()"></fa-icon>
                 </ion-card-title>
             </ion-card-header>
             <ion-card-content>
@@ -159,32 +160,40 @@
 
 
 
-                              <div fullwidth basicPadding listCard pointer (click)="editHtml(step.text,i)">
+                              <div fullwidth basicPadding listCard pointer marginBottom (click)="editHtml(step.text,i)">
                                 <h3 style="font-weight:700;font-size:16px">Content</h3>
                                 <div [innerHTML]="step.text | sanitizeHtml"></div>
                               </div>
-                              <!-- <ion-item lines="none" listCard>
-                                <ion-label position="stacked">Type</ion-label>
-                                <ion-select interface="popover" [(ngModel)]="step.type" (ionChange)="updateStep(i,'type')">
-                                    <ion-select-option *ngFor="let type of types" [value]="type.id">{{type.title}}</ion-select-option>
-                                </ion-select>
-                              </ion-item>
-                              <ion-item lines="none" listCard>
-                                <ion-label position="stacked">Image</ion-label>
-                                <ion-input [(ngModel)]="step.image" (ionChange)="updateStep(i,'image')"></ion-input>
-                              </ion-item>
-                              <ion-item lines="none" listCard>
-                                <ion-label position="stacked">Video</ion-label>
-                                <ion-input [(ngModel)]="step.video" (ionChange)="updateStep(i,'video')"></ion-input>
-                              </ion-item>
-                              <ion-item lines="none" listCard>
-                                <ion-label position="stacked">Link</ion-label>
-                                <ion-input [(ngModel)]="step.link" (ionChange)="updateStep(i,'link')"></ion-input>
-                              </ion-item>
-                              <ion-item lines="none" listCard>
-                                <ion-label position="stacked">Link text</ion-label>
-                                <ion-input [(ngModel)]="step.linkText" (ionChange)="updateStep(i,'linkText')"></ion-input>
-                              </ion-item> -->
+
+                              <div>
+                                <ion-row>
+                                  <ion-col [size]="media.smallDevice ? 12 : 6" *ngFor="let button of tutorialService.allButtons">
+                                    <ion-item lines="none" listCard >
+                                      <ion-toggle color="primary" [(ngModel)]="step.buttons[button.id]" (ionChange)="update('steps')">
+                                        {{button.text}}
+                                      </ion-toggle>
+                                    </ion-item>
+
+                                  </ion-col>
+                                  <ion-col [size]="media.smallDevice ? 12 : 6">
+                                    <ion-item lines="none" listCard >
+                                      <ion-toggle color="primary" [(ngModel)]="step.cancelIcon.enabled" (ionChange)="update('steps')">
+                                        Cancel kruisje zichtbaar
+                                      </ion-toggle>
+                                    </ion-item>
+
+                                  </ion-col>
+                                </ion-row>
+                                <ion-row>
+                                  <ion-col [size]="12">
+                                    <ion-item lines="none" listCard marginBottom>
+                                      <ion-label style="font-weight:700;font-size:22px" position="stacked">actie na klik op volgende</ion-label>
+                                      <ion-input [(ngModel)]="step.onhide" (ionChange)="update('steps',true)"></ion-input>
+                                    </ion-item>
+                                  </ion-col>
+                                </ion-row>
+                              </div>
+                              
                             </ion-card-content>
 
                           </ion-card>

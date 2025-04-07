@@ -80,6 +80,9 @@ import { CaseFilterPipe } from './case-filter.pipe';
     FilterKeyPipe,
     FilterSearchPipe,
     SortByPipe,
-    CleanReactionPipe]
+    CleanReactionPipe,
+    CaseFilterPipe,
+    FilterSearchPipe
+  ]
 })
 export class PipesModule { }

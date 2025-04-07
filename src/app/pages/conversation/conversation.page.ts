@@ -21,6 +21,8 @@ import { MenuPage } from 'src/app/components/menu/menu.page';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from 'src/app/services/toast.service';
+import { tutorialService } from 'src/app/services/tutorial.service';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 // import { HeyGenApiService } from 'src/app/services/heygen.service';
 
 highchartsMore(Highcharts);
@@ -134,6 +136,7 @@ export class ConversationPage implements OnInit {
     this.chart = chart;
   };
   showDetails:boolean = false;
+  showGoals:boolean = false;
   conversationTitle:string = ''
   case_id:string = ''
   question:string = ''
@@ -154,6 +157,7 @@ export class ConversationPage implements OnInit {
   }
   showDetailsPhases:boolean = false;
   transcript:string = ''
+  rating_comment:string = ''
   constructor(
     private route:ActivatedRoute,
     public nav:NavService,
@@ -162,7 +166,7 @@ export class ConversationPage implements OnInit {
     private zone: NgZone,
     private rf:ChangeDetectorRef,
     public icon:IconsService,
-    public modal:ModalService,
+    public modalService:ModalService,
     public info:InfoService,
     public helpers:HelpersService,
     public media:MediaService,
@@ -173,7 +177,10 @@ export class ConversationPage implements OnInit {
     private popoverController:PopoverController,
     private selectMenuservice:SelectMenuService,
     public translate:TranslateService,
-    private toast:ToastService
+    private toast:ToastService,
+    private tutorial:tutorialService,
+    private functions: AngularFireFunctions,
+    
   ) { 
 
     // this.record.transcript$.subscribe((text) => {
@@ -200,9 +207,16 @@ export class ConversationPage implements OnInit {
       this.completeGoal()
     })
 
+    this.tutorial.action.subscribe((action:any)=>{
+      let actions = action.split('.')
+      if(actions[0]=='conversation'){
+        this[actions[1]]()
+      }
+    })
+
     this.route.params.subscribe(params=>{
 
-      if(!params['conversation']||!params['case']){
+      if(!params['case']){
         this.nav.go('start')
         return
       }
@@ -214,7 +228,7 @@ export class ConversationPage implements OnInit {
             this.rf.detectChanges();
           }
         }, 300);
-
+        
         if(this.conversation.activeConversation.video_on){
           this.interaction = 'combination'
         }
@@ -223,7 +237,9 @@ export class ConversationPage implements OnInit {
         }
       })
 
-      this.conversationTitle = params['conversation']
+      this.rf.detectChanges()
+      
+      // this.conversationTitle = params['conversation']
       this.case_id = params['case']
 
       if(localStorage.getItem('activatedCase')==params['case']){
@@ -256,7 +272,8 @@ export class ConversationPage implements OnInit {
   }
 
   ngAfterViewInit() {
-    
+    this.rating_comment = ''
+
   }
 
   px2Nr(px:string){
@@ -386,8 +403,30 @@ export class ConversationPage implements OnInit {
     }
   }
     
-
-
+  noCredits(event?:any){
+    if(event){
+      event.detail.target.blur()
+    }
+    this.modalService.showInfo({
+      title:this.translate.instant('credits.no_credits'),
+      content:this.translate.instant('credits.no_credits_conversation'),
+      buttons:[
+        {text:this.translate.instant('buttons.back'),value:'',color:'secondary',fill:'outline'},
+        {text:this.translate.instant('credits.buy_credits'),value:'credits',color:'primary',fill:'solid'},
+      ]
+    },(response:any)=>{
+      console.log(response)
+      if(response.data=='credits'){
+        this.toggleVideo(true)
+        this.nav.go('account/credits')
+      }
+    })
+  }
+  
+  doNothing(){
+    // console.log('do nothing')
+    return
+  }
 
   ionViewDidEnter(){
     if(localStorage.getItem('continueConversation')){
@@ -408,6 +447,15 @@ export class ConversationPage implements OnInit {
       }
     }
   }
+
+  sendQuestion(){
+    this.conversation.tempTextUser=this.question;
+    this.question='';
+    setTimeout(() => {
+      this.conversation.addMessage(this.conversation.tempTextUser)
+    }, 100);
+  }
+
 
   selectOption(option:string){
     this.zone.run(() => {
@@ -447,6 +495,8 @@ export class ConversationPage implements OnInit {
     //   console.log(this.conversation) 
     //   console.log(this.interaction)
     // }, 1000);
+
+
   }
 
   get savedConversation(){
@@ -476,13 +526,13 @@ export class ConversationPage implements OnInit {
       }
     }
     this.toast.hideLoader()
-    this.modal.showText(text,title)
+    this.modalService.showText(text,title)
   }
 
   showChoices(){
     let options:any = this.conversation.latestAssistantItem(this.conversation.activeConversation.choices)
     options = this.conversation.parseChoicesToJSON(options)
-    this.modal.options(options,'Help','Hier zijn enkele mogelijke reacties om je op weg te helpen',null,true,(response:any)=>{
+    this.modalService.options(options,this.translate.instant('conversation.help'),this.translate.instant('conversation.choices_text'),null,true,(response:any)=>{
       if(response.data){
         this.selectOption(response.data)
       }
@@ -495,7 +545,7 @@ export class ConversationPage implements OnInit {
     text = text + '<b>Score user:</b> ' + obj.score_user + '<br>'
     text = text + '<b>Score '+this.conversation.caseItem.role+':</b> ' + obj.score_assistant + '<br><br>'
     text = text + obj.feedback
-    this.modal.showText(text,obj.title)
+    this.modalService.showText(text,obj.title)
 
   }
 
@@ -512,24 +562,29 @@ export class ConversationPage implements OnInit {
     }
 
 
-    this.modal.showVerification(
-      'Afsluiten',
-      'Wil je het gesprek helemaal beëindigen en hier feedback op krijgen?<br> Of wil je later verder gaan?',
+    this.modalService.showVerification(
+      this.translate.instant('buttons.close'),
+      this.translate.instant('conversation.close_text'),
       [
         {
-          text:'Annuleren',
+          text:this.translate.instant('buttons.continue_now'),
           value:false,
-          color:'dark'
+          color:'dark',
+          fill:'outline'
         },
         {
-        text:'Later verder gaan',
+        text:this.translate.instant('buttons.continue_later'),
         value:'pause',
-        color:'warning'
+        color:'warning',
+        fill:'outline'
       },
       {
-        text:'Afsluiten',
+        text:this.translate.instant('buttons.end'),
         value:'end',
-        color:'success'
+        color:'success',
+        fill:'solid',
+        full:true
+
       }]
     ).then(response=>{
       
@@ -554,8 +609,46 @@ export class ConversationPage implements OnInit {
 
   showLatestFact(){
     this.conversation.getExtraInfo('facts')
-    this.modal.showText(JSON.parse(this.conversation.latestAssistantItem(this.conversation.activeConversation.facts)).new_fact,'Feitje')
+    this.modalService.showText(JSON.parse(this.conversation.latestAssistantItem(this.conversation.activeConversation.facts)).new_fact,'Feitje')
   }
+
+  // async showRating(){
+  //   await this.modalService.showRating('Evaluatie','',{type:'conversationId',value:this.conversation.activeConversation.conversationId},[
+              
+  //     {question:'Hoe waarschijnlijk is het dat je deze app aanbeveelt bij vrienden of bekenden?',value:0,type:'stars',starAmount:10},
+  //     {question:'Wat vond je het meest nuttig aan dit gesprek?',value:'',type:'radio',other:'',
+  //       options:[
+  //         {value:'secure',text:'Ik voel me zekerder in gesprekken door de oefening.'},
+  //         {value:'communicate',text:'Ik heb geleerd hoe ik effectiever kan communiceren.'},
+  //         {value:'feedback',text:'De feedback was specifiek en direct toepasbaar'},
+  //         {value:'swot',text:'Ik heb mijn sterke en zwakke punten beter leren kennen.'},
+  //         {value:'nothing',text:'Ik heb helaas niets nieuws geleerd.'},
+  //         {value:'other',text:'Anders, namelijk:'},
+  //     ]},
+  //     {question:'Wat zou je in het volgende gesprek willen leren?',value:'',type:'text'},
+
+    
+  //   ])
+  //   .then((response:any)=>{
+  //     console.log(response)
+  //     if(response&&response.conversationId){
+  //       this.conversation.activeConversation.rating2 = response.rating
+  //       this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', response.conversationId, {rating2:this.conversation.activeConversation.rating2})
+  //       let obj = {
+  //         useful:response.rating[1].value,
+  //         futureLearnings:response.rating[2].value,
+  //         caseId:this.conversation.activeConversation.caseId,
+  //         nps:response.rating[0].value,
+  //         realism:this.conversation.activeConversation.rating2.step1Filled?this.conversation.activeConversation.rating2.realism:0,
+  //         addition:this.conversation.activeConversation.rating2.step1Filled?this.conversation.activeConversation.rating2.comment:'',
+  //       }
+  //       this.functions.httpsCallable('processLearnings')({learnings:obj}).subscribe(()=>{})
+  //       // this.firestore.createSub('users', this.auth.userInfo.uid, 'learnings', {useful:this.conversation.activeConversation.rating2})
+        
+  //     }
+  //   })
+  // }
+
 
   showEvaluation(firstTime?:boolean){
     let countTries = 0
@@ -565,32 +658,34 @@ export class ConversationPage implements OnInit {
       if(countTries>300){
         // console.log('clearing interval')
         clearInterval(closeInterval)
-        this.toast.show('Er is iets misgegaan bij het afsluiten van het gesprek. Probeer het later nog eens.')
+        this.toast.show(this.translate.instant('conversation.end_error'))
         this.nav.go('start')
         return
       }
       // console.log(this.conversation?.activeConversation?.close,this.conversation?.activeConversation?.skills)
       // if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
-        if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0] && this.conversation?.activeConversation?.skills&&this.conversation?.activeConversation?.skills[0]){
-        console.log('closing')
+        if(this.conversationHasBeenAnalyzed()){
+        // if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0] && this.conversation?.activeConversation?.skills&&this.conversation?.activeConversation?.skills[0]){
+        // console.log('closing')
         this.conversation.closing = false
 
         clearInterval(closeInterval)
-        console.log(this.conversation.activeConversation.skills[0])
+        // console.log(this.conversation.activeConversation.skills[0])
 
         let skills = JSON.parse(this.conversation.activeConversation.skills[0].content)
         console.log(skills)
 
-        this.modal.showEvaluation({closing:this.conversation.activeConversation.close[0].content,skills:this.conversation.activeConversation.skills[0].content,title: 'Afsluiting',buttons:[{text:'Gelezen',value:true,color:'secondary'}],firstTime:firstTime,conversation_level:this.conversation.activeConversation.level},async ()=>{
+        this.modalService.showEvaluation({closing:this.conversation.activeConversation.close[0].content,skills:this.conversation.activeConversation.skills[0].content,title: 'Afsluiting',buttons:[{text:'Gelezen',value:true,color:'secondary'}],firstTime:firstTime,conversation_level:this.conversation.activeConversation.level,conversation:this.conversation.activeConversation,exportPdf:'conversation'},async ()=>{
 
           
           
         
-          // this.modal.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
+          // this.modalService.showText(this.conversation.activeConversation.close[0].content, 'Afsluiting',false,[{text:'Gelezen',value:true,color:'secondary'}],false,()=>{
           if(firstTime || !this.conversation.activeConversation.rating?.step1Filled){
 
-            await this.modal.showRating('Evaluatie','',{type:'conversationId',value:this.conversation.activeConversation.conversationId},[
-      
+            await this.modalService.showRating('Evaluatie','',{type:'conversationId',value:this.conversation.activeConversation.conversationId},[
+              
+              {question:'Hoe waarschijnlijk is het dat je deze app aanbeveelt bij vrienden of bekenden?',value:0,type:'stars',starAmount:10},
               {question:'Wat vond je het meest nuttig aan dit gesprek?',value:'',type:'radio',other:'',
                 options:[
                   {value:'secure',text:'Ik voel me zekerder in gesprekken door de oefening.'},
@@ -600,26 +695,42 @@ export class ConversationPage implements OnInit {
                   {value:'nothing',text:'Ik heb helaas niets nieuws geleerd.'},
                   {value:'other',text:'Anders, namelijk:'},
               ]},
-              {question:'Hoe waarschijnlijk is het dat je deze app aanbeveelt bij vrienden of bekenden?',value:0,type:'stars',starAmount:10},
+              {question:'Wat zou je in het volgende gesprek willen leren?',value:'',type:'text'},
+
             
             ])
             .then((response:any)=>{
               if(response&&response.conversationId){
                 this.conversation.activeConversation.rating2 = response.rating
                 this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', response.conversationId, {rating2:this.conversation.activeConversation.rating2})
+                let obj = {
+                  useful:response.rating[1].value,
+                  futureLearnings:response.rating[2].value,
+                  caseId:this.conversation.activeConversation.caseId,
+                  nps:response.rating[0].value,
+                  realism:this.conversation.activeConversation.rating2.step1Filled?this.conversation.activeConversation.rating2.realism:0,
+                  addition:this.conversation.activeConversation.rating2.step1Filled?this.conversation.activeConversation.rating2.comment:'',
+                }
+                this.functions.httpsCallable('processLearnings')({learnings:obj}).subscribe(()=>{})
+                // this.firestore.createSub('users', this.auth.userInfo.uid, 'learnings', {useful:this.conversation.activeConversation.rating2})
+                
               }
             })
 
-            if(firstTime){
-              localStorage.setItem('showNewScore','true')
-            }
+            
 
             if(this.conversation.activeConversation.courseId){
               this.nav.go('course/'+this.conversation.activeConversation.courseId)
               return
             }
             else{
-              this.nav.go('start')
+              if(firstTime){
+                // localStorage.setItem('showNewScore','true')
+                this.nav.go('start/score')
+              }
+              else{
+                this.nav.go('start')
+              }
             }
             
           }
@@ -630,6 +741,10 @@ export class ConversationPage implements OnInit {
 
   }
   
+  conversationHasBeenAnalyzed(){
+    return (this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0] && this.conversation?.activeConversation?.skills&&this.conversation?.activeConversation?.skills[0])
+  }
+
   tempRating_realism:number = 0;
   updatingStars:boolean = false
   onRatingChanged(rating: number,field:string): void {
@@ -637,6 +752,7 @@ export class ConversationPage implements OnInit {
       this.conversation.activeConversation.rating = {}
     }
     this.conversation.activeConversation.rating[field] = rating;
+    this.conversation.activeConversation.rating.comment = this.rating_comment
     this['tempRating_'+field] = rating
     this.updatingStars = true
     this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', this.conversation.activeConversation.conversationId, {rating:this.conversation.activeConversation.rating})
@@ -650,6 +766,8 @@ export class ConversationPage implements OnInit {
       this.conversation.activeConversation.rating = {}
     }
     this.conversation.activeConversation.rating['step'+step+'Filled'] = true;
+    this.conversation.activeConversation.rating.comment = this.rating_comment
+
     this.firestore.updateSub('users', this.auth.userInfo.uid, 'conversations', this.conversation.activeConversation.conversationId, {rating:this.conversation.activeConversation.rating})
     if(step==1){
       this.showEvaluation(true)
@@ -743,13 +861,15 @@ export class ConversationPage implements OnInit {
 
   voiceSubscription:Subscription = new Subscription()
   voiceSessionId:string = ''
-  startRecording() {
+  startRecording(event:Event) {
+    event.preventDefault();
+    event.stopPropagation();
     this.record.recording = true;
     this.transcript = '';
     this.record.startRecording('audioToText',this.conversation.activeConversation.conversationId,(response:any)=>{
       if(response){
         if(response=='error'){
-          this.toast.show('Er is iets misgegaan bij het omzetten van spraak naar tekst. Probeer het later nog eens.')
+          this.toast.show(this.translate.instant('conversation.sound_error'))
         }
         else{
           this.loadingTextFromAudio = false;
@@ -769,7 +889,9 @@ export class ConversationPage implements OnInit {
 
   }
 
-  stopRecording() {
+  stopRecording(event:Event) {
+    event.preventDefault();
+    event.stopPropagation();
     this.record.recording = false;
     this.record.analyzing = true;
     this.record.stopRecording();
@@ -788,7 +910,7 @@ export class ConversationPage implements OnInit {
     //   id:'phases',
     // },
     {
-      title:'Bekijk de eindevaluatie',
+      title:this.translate.instant('conversation.menu_evaluation'),
       icon:'faUserGraduate',
       id:'showEvaluation',
     },
@@ -803,51 +925,64 @@ export class ConversationPage implements OnInit {
     let menuList:any = []//JSON.parse(JSON.stringify(this.helpMenu))
     if(this.conversation.activeConversation.agentsSettings.choices){
       menuList.push({
-        title:'Geef me wat suggesties om te zeggen',
+        title:this.translate.instant('conversation.menu_choices'),
         icon:'faList',
         id:'choices',
       })
     }
     if(this.conversation.activeConversation.agentsSettings.facts){
       menuList.push({
-        title:'Check de genoemde feiten voor me',
+        title:this.translate.instant('conversation.menu_facts'),
         icon:'faUserGraduate',
         id:'factschecker',
       })
     }
     if(this.conversation.activeConversation.agentsSettings.background){
       menuList.push({
-        title:'Geef me wat achtergrond informatie',
+        title:this.translate.instant('conversation.menu_background'),
         icon:'faInfoCircle',
         id:'background',
       })
     }
-
-
-
     if(this.media.smallDevice){
       menuList.splice(1,0,{
-        title:'Hoe staat het met het gesprek?',
+        title:this.translate.instant('conversation.menu_level'),
         icon:'faSlidersH',
         id:'phases',
+      })
+      menuList.push({
+        title:this.translate.instant('conversation.menu_goal'),
+        icon:'faBullseye',
+        id:'goals',
       })
     }
     if(this.conversation.activeConversation.closed){
       menuList = JSON.parse(JSON.stringify(this.helpMenuClosed))
       if(this.media.smallDevice){
         menuList.push({
-          title:'Hoe zijn de gespreksfases gegaan?',
+          title:this.translate.instant('conversation.menu_phases'),
           icon:'faSlidersH',
           id:'phases',
+        })
+        menuList.push({
+          title:this.translate.instant('conversation.menu_goal'),
+          icon:'faBullseye',
+          id:'goals',
         })
       }
 
     }
 
     menuList.push({
-      title:'Exporteer het gesprek naar PDF',
+      title:this.translate.instant('buttons.export_pdf'),
       icon:'faPrint',
       id:'export2Pdf',
+    })
+
+    menuList.push({
+      title:this.translate.instant('menu.feedback_title'),
+      icon:'faComment',
+      id:'user_feedback',
     })
 
     this.shortMenu = await this.popoverController.create({
@@ -875,6 +1010,9 @@ export class ConversationPage implements OnInit {
       else if(this.selectMenuservice.selectedItem.id=='phases'){
         this.showDetails = true
       }
+      else if(this.selectMenuservice.selectedItem.id=='goals'){
+        this.showGoals = true
+      }
       else if(this.selectMenuservice.selectedItem.id=='factschecker'){
         this.checkFacts()
       }
@@ -898,6 +1036,9 @@ export class ConversationPage implements OnInit {
       }
       else if(this.selectMenuservice.selectedItem.id=='export2Pdf'){
         this.conversation.export2Pdf()
+      }
+      else if(this.selectMenuservice.selectedItem.id=='user_feedback'){
+        this.openFeedback()
       }
       this.selectMenuservice.selectedItem = null
     }
@@ -932,7 +1073,8 @@ export class ConversationPage implements OnInit {
         count++
         // console.log('nog bezig')
         if(count>150){
-          this.toast.show('Er is iets misgegaan bij het ophalen van de achtergrond informatie. Probeer het later nog eens.')
+          this.toast.show(this.translate.instant('conversation.background_error'))
+          clearInterval(interval)
         }
         if(!this.conversation.isLoading('background')){
           if(!this.conversation.isLoading('facts') && !this.conversation.isLoading('choices')){
@@ -940,7 +1082,7 @@ export class ConversationPage implements OnInit {
           }
           clearInterval(interval)
           let background:any = JSON.parse(this.conversation.latestAssistantItem(this.conversation.activeConversation.background))
-          this.modal.showText(background.background,'Achtergrond informatie')
+          this.modalService.showText(background.background,'Achtergrond informatie')
         }
       }, 200);
       
@@ -955,7 +1097,8 @@ export class ConversationPage implements OnInit {
       let interval = setInterval(() => {
         count++
         if(count>150){
-          this.toast.show('Er is iets misgegaan bij het ophalen van de achtergrond informatie. Probeer het later nog eens.')
+          this.toast.show(this.translate.instant('conversation.facts_error'))
+          clearInterval(interval)
         }
         if(!this.conversation.isLoading('facts')){
           if(!this.conversation.isLoading('background') && !this.conversation.isLoading('choices')){
@@ -963,7 +1106,7 @@ export class ConversationPage implements OnInit {
           }
           clearInterval(interval)
           let fact:any = JSON.parse(this.conversation.latestAssistantItem(this.conversation.activeConversation.facts))
-          this.modal.showText(fact.new_fact,'Feiten check')
+          this.modalService.showText(fact.new_fact,'Feiten check')
         }
       }, 200);
       
@@ -978,7 +1121,8 @@ export class ConversationPage implements OnInit {
       let interval = setInterval(() => {
         count++
         if(count>150){
-          this.toast.show('Er is iets misgegaan bij het ophalen van de mogelijke opties. Probeer het later nog eens.')
+          this.toast.show(this.translate.instant('conversation.choices_error'))
+          clearInterval(interval)
         }
         if(!this.conversation.isLoading('choices')){
           if(!this.conversation.isLoading('background') && !this.conversation.isLoading('facts')){
@@ -997,10 +1141,10 @@ export class ConversationPage implements OnInit {
 
     console.log(this.conversation.getFeedbackChat(index,'id'))
 
-    this.modal.showInfo(
+    this.modalService.showInfo(
       {
         content:this.conversation.getFeedbackChat(index,'feedback'),
-        title:'Feedback',
+        title:this.translate.instant('feedback.title'),
         feedback:{
           type:'feedback',
           conversationId:this.conversation.activeConversation.conversationId,
@@ -1014,4 +1158,54 @@ export class ConversationPage implements OnInit {
 
   }
 
+
+  async openFeedback(){
+      let fields = [
+        {
+          title:this.translate.instant('menu.feedback_type'),
+          type:'select',
+          required:true,
+          value:'feedback',
+          optionKeys:[
+            {value:'feedback',title:this.translate.instant('menu.feedback')},
+            {value:'question',title:this.translate.instant('menu.feedback_question')},
+            {value:'remark',title:this.translate.instant('menu.feedback_remark')},
+          ]
+        },
+        {
+          title:this.translate.instant('menu.feedback_subject'),
+          type:'text',
+          required:true,
+          value:'',
+        },
+        {
+          title:this.translate.instant('menu.feedback_message'),
+          type:'textarea',
+          required:true,
+          value:'',
+        }
+      ]
+
+      this.modalService.inputFields(this.translate.instant('menu.feedback'),this.translate.instant('menu.feedback_text'),fields,(result:any)=>{
+
+          if(result.data){
+            this.firestore.create('user_messages',{
+              type:result.data[0].value,
+              subject:result.data[1].value,
+              message:result.data[2].value,
+              user:this.auth.userInfo.uid,
+              displayName:this.auth.userInfo.displayName,
+              email:this.auth.userInfo.email,
+              date:new Date(),
+              timestamp:new Date().getTime(),
+              read:false,
+              archived:false,
+              caseId:this.conversation.activeConversation.caseId,
+              conversationId:this.conversation.activeConversation.conversationId,
+              url:window.location.href
+            })
+            this.toast.show(this.translate.instant('menu.feedback_sent'))
+          }
+        })
+    }
 }

@@ -1,6 +1,8 @@
+
 .inner-content{
     background-color: white;
     padding:20px;
+    // max-height:calc(var(--vh) * 100);
 }
 ion-checkbox{
     --size:24px;
@@ -23,3 +25,14 @@ ion-card{
     border-top: solid 1px #e0e0e0;
     background-color: white;
 }
+
+// .manyList{
+//     max-height:calc(calc(var(--vh) * 80) - 200px);
+//     overflow-y:auto;
+// }
+
+// @media only screen and (max-width:450px){
+//     .manyList{
+//         max-height:calc(calc(var(--vh) * 100) - 215px)
+//     }
+// }

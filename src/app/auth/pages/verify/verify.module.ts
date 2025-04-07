@@ -9,6 +9,7 @@ import { VerifyPageRoutingModule } from './verify-routing.module';
 import { VerifyPage } from './verify.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     IonicModule,
     VerifyPageRoutingModule,
     ComponentsModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    TranslateModule.forChild()
   ],
   declarations: [VerifyPage]
 })

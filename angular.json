@@ -54,7 +54,16 @@
               "src/.htaccess",
               "src/manifest.webmanifest"
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss","src/theme/fonts.scss","src/theme/global-loginflow.scss","src/quilljs.snow.scss","node_modules/shepherd.js/dist/css/shepherd.css"],
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss",
+              "src/theme/fonts.scss",
+              "src/theme/global-loginflow.scss",
+              "src/quilljs.snow.scss",
+              "node_modules/shepherd.js/dist/css/shepherd.css",
+              "node_modules/@swimlane/ngx-datatable/index.css",
+              "node_modules/@swimlane/ngx-datatable/themes/material.css"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -144,7 +153,15 @@
                 "output": ".htaccess"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss","src/theme/fonts.scss","src/theme/global-loginflow.scss","src/quilljs.snow.scss","node_modules/shepherd.js/dist/css/shepherd.css"],
+            "styles": [
+              "src/global.scss", 
+              "src/theme/variables.scss",
+              "src/theme/fonts.scss",
+              "src/theme/global-loginflow.scss",
+              "src/quilljs.snow.scss",
+              "node_modules/shepherd.js/dist/css/shepherd.css"
+
+            ],
             "scripts": []
           },
           "configurations": {

@@ -1,7 +1,7 @@
 
 
 <div header padding20 flex center-ver>
-  <h3 class="title" noMargin>Bevestigen</h3>
+  <h3 class="title" noMargin>{{'confirmation_questions.confirm' | translate}}</h3>
   <span class="spacer"></span>
   <ion-button (click)="dismiss(false)" fill="clear" color="dark" class="btn_dismiss">
     <ion-icon name="close"></ion-icon>
@@ -10,7 +10,7 @@
 <div [innerHtml]="message" weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : '80vh'}"></div>
 
 <div flex style="padding:20px;justify-content: flex-end;">
-  <ion-button [color]="'danger'" [innerHTML]="'Bevestigen'" (click)="dismiss(true)" fill="solid"></ion-button>
+  <ion-button [color]="'dark'" class="saveButton" [innerHTML]="'Annuleren'" (click)="dismiss(false)" fill="solid"></ion-button>
   <span class="spacer"></span>
-  <ion-button [color]="'dark'" [innerHTML]="'Annuleren'" (click)="dismiss(false)" fill="solid"></ion-button>
+  <ion-button [color]="'danger'" class="saveButton" [innerHTML]="'Bevestigen'" (click)="dismiss(true)" fill="solid"></ion-button>
 </div>

@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar style="padding-left:20px">
-    <h3>Selecteer</h3>
+    <h3>{{'buttons.select' | translate}}</h3>
     <ion-buttons slot="end">
       <ion-button size="large" (click)="modalController.dismiss()" >
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -13,35 +13,35 @@
       <ion-col [size]="12/5">
         <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('gender')">
           <fa-icon *ngIf="filter['gender'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'gender')"></fa-icon>
-          Gender 
+          {{'photos.gender' | translate}} 
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
         </ion-button>
       </ion-col>
       <ion-col [size]="12/5">
         <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('age')">
           <fa-icon *ngIf="filter['age'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'age')"></fa-icon>
-          Age 
+          {{'photos.age' | translate}}
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
         </ion-button>
       </ion-col>
-      <ion-col [size]="12/5">
+      <!-- <ion-col [size]="12/5">
         <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('occupation')">
           <fa-icon *ngIf="filter['occupation'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'occupation')"></fa-icon>
           Occupation 
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
         </ion-button>
-      </ion-col>
+      </ion-col> -->
       <ion-col [size]="12/5">
         <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('ethnicity')">
           <fa-icon *ngIf="filter['ethnicity'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'ethnicity')"></fa-icon>
-          Ethnicity
+          {{'photos.ethnicity' | translate}}
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
         </ion-button>
       </ion-col>
       <ion-col [size]="12/5">
         <ion-button fullwidth fill="outline" color="medium" (click)="selectFilter('emotion')">
           <fa-icon *ngIf="filter['emotion'].length" style="margin-right:10px" font-20 [icon]="icon.get('faTimes')" trash (click)="clearFilter($event,'emotion')"></fa-icon>
-          Emotion 
+          {{'photos.emotion' | translate}} 
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')"></fa-icon>
         </ion-button>
       </ion-col>
@@ -89,5 +89,5 @@
   <div class="spacer"></div>
   <ion-button fill="clear" [disabled]="end>=images.length" (click)="start= start + maxItems;end=end+maxItems" color="secondary"><fa-icon font-24 [icon]="icon.get('faChevronRight')"></fa-icon></ion-button>
   <div class="spacer"></div>
-  <ion-button (click)="modalController.dismiss(selectedImage)" class="saveButton" [disabled]="!selectedImage" fill="solid" color="primary">Opslaan</ion-button>
+  <ion-button (click)="modalController.dismiss(selectedImage)" class="saveButton" [disabled]="!selectedImage" fill="solid" color="primary">{{'buttons.save' | translate}}</ion-button>
 </div>  

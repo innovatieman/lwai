@@ -45,8 +45,8 @@ export class SelectItemPage implements OnInit {
     if(!this.title){
       this.title = 'Selecteer'
     }
-    // console.log(this.list)
-    // console.log(this.extraData)
+    console.log(this.list)
+    console.log(this.extraData)
   }
 
   formattedDate(date:any){

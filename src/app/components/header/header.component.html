@@ -15,7 +15,7 @@
           <img src="assets/icon/logo_single_black.png" style="margin-right: 10px;height:30px;min-width:30px;" *ngIf="media.screenSize=='sm'">
           <!-- <div style="font-size: 24px;" *ngIf="title">{{title | uppercase}}</div> -->
         </div>
-        <div class="menuList" *ngIf="!media.smallDevice&&!noMenuList">
+        <div class="menuList" *ngIf="!media.smallDevice&&!noMenuList && countShowPages">
           <div *ngFor="let item of menuItems">
             <div class="menuItem" (click)="item.url ? nav.go(item.url) : action(item)" [ngClass]="{'activeMenuItem':page==item.page}" *ngIf="shouldShowPage(item)">
               <span>{{item.title}}</span>
@@ -29,11 +29,11 @@
         <span class="spacer"></span>
         
         <ion-buttons slot="end" flex center-ver >
-          <ion-button *ngIf="!noMenuList" [color]="auth.userInfo.credits ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="nav.go('account/credits')">
+          <ion-button id="headerButtonCredits" *ngIf="!noMenuList && isVerified" [color]="auth.credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="nav.go('account/credits')">
             <span *ngIf="auth.credits.total">{{auth.credits.total}} <span *ngIf="!media.smallDevice">credits</span></span>
             <span *ngIf="!auth.credits.total">0 <span *ngIf="!media.smallDevice">credits</span></span>
           </ion-button>
-          <ion-button color="primary" (click)="showshortMenu($event)" size="large" *ngIf="!noMenuList">
+          <ion-button color="primary" id="header_menu" (click)="showshortMenu($event)" size="large" *ngIf="!noMenuList">
             <ion-icon name="person-circle" noMargin slot="end" style="font-size: 24px;"></ion-icon>
           </ion-button>
           <ion-button color="primary" (click)="buttonClick($event)" size="large" *ngIf="button">

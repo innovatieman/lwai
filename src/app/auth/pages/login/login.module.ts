@@ -9,6 +9,7 @@ import { LoginPageRoutingModule } from './login-routing.module';
 import { LoginPage } from './login.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     LoginPageRoutingModule,
     ComponentsModule,
     FontAwesomeModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TranslateModule.forChild()
   ],
   declarations: [LoginPage]
 })

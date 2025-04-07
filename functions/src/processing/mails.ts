@@ -64,15 +64,25 @@ exports.emailsToSend = functions.region('europe-west1').firestore
     const compiledMainTemplate = Handlebars.compile(mainTemplate[language]);
 
     // 2. Haal de specifieke template op
-    const templateDoc = await admin.firestore().collection('email_templates').doc(templateId).get();
-    if (!templateDoc.exists) {
-      throw new Error(`Template ${templateId} not found`);
+    let subject = ''
+    let body = ''
+    let from = ''
+    if(templateId){
+      const templateDoc = await admin.firestore().collection('email_templates').doc(templateId).get();
+      if (!templateDoc.exists) {
+        throw new Error(`Template ${templateId} not found`);
+      }
+
+      const template = templateDoc.data();
+      subject = template.subject[language] || template.subject['en']; // Fallback naar Engels
+      body = template.body[language] || template.body['en']; // Fallback naar Engels
+      from = template.from
     }
-
-    const template = templateDoc.data();
-    const subject = template.subject[language] || template.subject['en']; // Fallback naar Engels
-    const body = template.body[language] || template.body['en']; // Fallback naar Engels
-
+    else if(emailData.content){
+      subject = emailData.content.subject,
+      body = emailData.content.body
+      from = emailData.content.from
+    }
     // 3. Vervang placeholders uit de specifieke template
     const compiledTemplate = Handlebars.compile(body);
     const filledTemplateContent = compiledTemplate(emailData.data);
@@ -99,7 +109,7 @@ exports.emailsToSend = functions.region('europe-west1').firestore
     // 7. Bereid de e-mail voor verzending voor
     let emailContent: any = {
       to: emailData.to,
-      from: template.from,
+      from: from,
       message: {
         subject: finalSubject,
         html: finalHtml,
@@ -109,5 +119,7 @@ exports.emailsToSend = functions.region('europe-west1').firestore
 
     // 8. Voeg de e-mail toe aan de queue voor verzending
     await admin.firestore().collection('emailsToSend').add(emailContent);
+
+    await snap.ref.delete();
     return;
   });

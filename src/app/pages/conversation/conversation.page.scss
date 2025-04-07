@@ -10,10 +10,13 @@ ion-header{
     }
   }
 }
+.creditsButton{
+  --border-radius:24px!important;
+}
 
 .innerChatDiv{
   // max-height: calc(100vh - 532px);
-  overflow-y: auto;
+  overflow-y: hidden; //auto;
   overflow-x: hidden;
 }
 
@@ -645,7 +648,7 @@ video{
 
 .print,[print]{
   // display: block!important;
-  // display: none!important;
+  display: none!important;
 }
 .noprint,[noprint],[noPrint]{
   // display: none;

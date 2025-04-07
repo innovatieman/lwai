@@ -34,11 +34,18 @@
           </div>
         </div> -->
         
-        <ion-buttons slot="end" flex center-ver>
+        <ion-buttons slot="end" flex center-ver style="margin-right: 15px;">
+          <ion-button [color]="auth.credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline" (click)="nav.go('account/credits')">
+            <span *ngIf="auth.credits.total">{{auth.credits.total}} <span *ngIf="!media.smallDevice">{{'standards.credits' | translate}}</span></span>
+            <span *ngIf="!auth.credits.total">0 <span *ngIf="!media.smallDevice">{{'standards.credits' | translate}}</span></span>
+          </ion-button>
           <ion-button (click)="toggleVideo()" *ngIf="conversation.caseItem.avatarName" size="large">
             <fa-icon [icon]="icon.get('faVideoSlash')" *ngIf="interaction=='combination'&&conversation.activeConversation.video_on"></fa-icon>
             <fa-icon [icon]="icon.get('faVideo')"  *ngIf="interaction=='chat'||!conversation.activeConversation.video_on"></fa-icon>
           </ion-button>
+          <!-- <ion-button color="secondary" (click)="toggleVideo(true);nav.go('start')" size="large" >
+            <ion-icon name="home" noMargin slot="end" style="font-size: 24px;"></ion-icon>
+          </ion-button> -->
         </ion-buttons>
       </div>
     </div>
@@ -52,7 +59,7 @@
     <ion-card class="loaderCard" fullwidth fullheight>
       <div center>
         <ion-spinner name="bubbles"></ion-spinner>
-        <div>Connecting with AI</div>
+        <div>{{'conversation.connecting_ai' | translate}}</div>
       </div>
     </ion-card>
   </app-loader>
@@ -61,21 +68,22 @@
   <!-- <app-loader [full]="true"> -->
     <ion-card basicPadding class="loaderCard" fullwidth fullheight>
       <div center>
-        <ion-spinner name="bubbles"></ion-spinner>
-        <div>Analyzing your conversation</div>
+        <ion-spinner *ngIf="!conversationHasBeenAnalyzed()" name="bubbles"></ion-spinner>
+        <div *ngIf="!conversationHasBeenAnalyzed()">{{'conversation.analyzing_conversation' | translate}}</div>
         <ion-card class="cipherCard" basicPadding *ngIf="conversation.activeConversation.rating">
           <ion-card-header>
-            <ion-card-title class="chartTitle" weight600>Terwijl we wachten</ion-card-title>
+            <ion-card-title class="chartTitle" weight600 *ngIf="!conversationHasBeenAnalyzed()">{{'conversation.while_waiting' | translate}}</ion-card-title>
+            <ion-card-title class="chartTitle" weight600 *ngIf="conversationHasBeenAnalyzed()">{{'conversation.analysis_ready' | translate}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div font-15>We zijn benieuwd hoe je het gesprek ervaren hebt. Hoe realistisch vond je het gesprek?</div>
+            <div font-15>{{'conversation.feedback_reality' | translate}}</div>
             <app-star-rating [readOnlyItem]="false" *ngIf="!updatingStars&&!conversation.activeConversation.rating?.step1Filled" [fontSize]="media.smallDevice? 40 : 50" [rating]="conversation.activeConversation.rating.realism" (ratingChanged)="onRatingChanged($event,'realism')"></app-star-rating>
             <app-star-rating [readOnlyItem]="true" *ngIf="updatingStars||conversation.activeConversation.rating?.step1Filled" [fontSize]="media.smallDevice? 40 : 50" [rating]="conversation.activeConversation.rating.realism" (ratingChanged)="onRatingChanged($event,'realism')"></app-star-rating>
-            <ion-textarea marginBottom font-15 left rows="4" [autoGrow]="false" *ngIf="conversation.activeConversation.rating?.realism" placeholder="Kun je dit nog verder uitleggen.." [(ngModel)]="conversation.activeConversation.rating.comment"></ion-textarea>
+            <ion-textarea marginBottom font-15 left rows="4" [autoGrow]="false" *ngIf="conversation.activeConversation.rating?.realism" placeholder="Kun je dit nog verder uitleggen.." [(ngModel)]="rating_comment"></ion-textarea>
             <div flex center-ver>
               <span class="spacer"></span>
-              <ion-button class="saveButton" color="primary" fill="solid" *ngIf="conversation.activeConversation.rating?.realism&&!conversation.activeConversation.rating?.step1Filled" (click)="saveRating(1)">Verder</ion-button>
-              <ion-button class="saveButton" color="primary" fill="solid" *ngIf="conversation.activeConversation.rating?.realism&&conversation.activeConversation.rating?.step1Filled" [disabled]="true">Bedankt. Momentje geduld nog...</ion-button>
+              <ion-button class="saveButton" color="primary" fill="solid" *ngIf="conversation.activeConversation.rating?.realism&&!conversation.activeConversation.rating?.step1Filled" (click)="saveRating(1)">{{'conversation.read_analysis' | translate}}</ion-button>
+              <ion-button class="saveButton" color="primary" fill="solid" *ngIf="conversation.activeConversation.rating?.realism&&conversation.activeConversation.rating?.step1Filled" [disabled]="true">{{'conversation.thanks_wait' | translate}}</ion-button>
             </div>
           </ion-card-content>
         </ion-card>
@@ -96,9 +104,9 @@
         <img class="avatar" src="assets/img/default_avatar.png" *ngIf="!conversation.caseItem.avatarName">
         <div basicPadding class="connectingCardMobile" [ngStyle]="{'opacity':conversation.heyGen.streamIsActive || conversation.heyGen.connectionFailed ? 0 : 1}" *ngIf="interaction!='chat'&&conversation.activeConversation?.video_on">
           <ion-spinner name="bubbles" *ngIf="conversation.heyGen.connecting"></ion-spinner>
-          <span *ngIf="conversation.heyGen.connecting">Connecting</span>
-          <span *ngIf="conversation.heyGen.streamIsActive">Connected</span>
-          <span *ngIf="conversation.heyGen.connectionFailed">Connection failed</span>
+          <span *ngIf="conversation.heyGen.connecting">{{'conversation.connecting' | translate}}</span>
+          <span *ngIf="conversation.heyGen.streamIsActive">{{'conversation.connected' | translate}}</span>
+          <span *ngIf="conversation.heyGen.connectionFailed">{{'conversation.connection_failed' | translate}}</span>
         </div>
       </ion-card>
       </div>
@@ -118,8 +126,8 @@
         </ion-card>
         <ion-card basicPadding class="connectingCard" [ngStyle]="{'opacity':conversation.heyGen.streamIsActive ? 0 : 1}" *ngIf="interaction!='chat'&&conversation.activeConversation?.video_on">
           <ion-spinner name="bubbles" *ngIf="conversation.heyGen.connecting"></ion-spinner>
-          <span *ngIf="conversation.heyGen.connecting">Connecting</span>
-          <span *ngIf="conversation.heyGen.streamIsActive">Connected</span>
+          <span *ngIf="conversation.heyGen.connecting">{{'conversation.connecting' | translate}}</span>
+          <span *ngIf="conversation.heyGen.streamIsActive">{{'conversation.connected' | translate}}</span>
           <!-- <span *ngIf="!conversation.heyGen.streamIsActive&&!conversation.heyGen.connecting">Connection Failed</span> -->
         </ion-card>
         <div flex center-ver fullwidth style="padding:5px;height:300px;max-height:30%;" *ngIf="interaction=='chat'||!conversation.activeConversation?.video_on">
@@ -132,11 +140,11 @@
 
         <div class="leftDetails">
 
-          <ion-card class="cipherCard" basicPadding *ngIf="conversation.activeConversation?.phases | lastestAssistantItem">
+          <ion-card class="cipherCard" id="phasecard" basicPadding *ngIf="conversation.activeConversation?.phases | lastestAssistantItem">
             <ion-card-title class="phaseCardTitle" flex center-ver fullwidth>
-              Gespreksniveau
+              {{'conversation.conversation_level' | translate}}
               <span class="spacer"></span>
-              <fa-icon [icon]="icon.get('faInfoCircle')" (click)="showInfo(conversation.caseItem.conversationType,'phases','Gespreksniveau')" pointer></fa-icon>
+              <fa-icon [icon]="icon.get('faInfoCircle')" (click)="modalService.showText(info.getCategoryPhaseList(conversation.activeConversation.conversationType,true),translate.instant('conversation.conversation_level'))" pointer></fa-icon>
             </ion-card-title>
             <div class="phaseBars" marginBottom>
               <div *ngFor="let element of (conversation.activeConversation?.phases | lastestAssistantItem | parseJSON)?.element_levels;let i=index" pointer (click)="showImpact(element)">
@@ -158,9 +166,10 @@
             </div>
           </ion-card>
 
-          <ion-card class="cipherCard" basicPadding *ngIf="conversation?.activeConversation?.goals&&conversation.activeConversation.goalsItems?.free">
-            <ion-card-title class="chartTitle">Doel</ion-card-title>
-            <p font-14>{{conversation.activeConversation.goalsItems.free}}</p>
+          <ion-card class="cipherCard" id="goals_card" basicPadding>
+            <ion-card-title class="chartTitle">{{'conversation.goal' | translate}}</ion-card-title>
+            <p font-14 *ngIf="conversation?.activeConversation?.goals&&conversation.activeConversation.goalsItems?.free">{{conversation.activeConversation.goalsItems.free}}</p>
+            <p font-14 *ngIf="!conversation.activeConversation.goalsItems?.free">{{'conversation.no_goals' | translate}}</p>
             <!-- <ul>
               <li>Attitude: {{conversation.activeConversation.goalsItems.attitude}} <fa-icon [icon]="icon.get('faCheck')" iconClosed font-16 *ngIf="conversation.activeConversation.accomplishments?.includes('attitude')"></fa-icon></li>
               <li>Fases: {{conversation.activeConversation.goalsItems.phases}} <fa-icon [icon]="icon.get('faCheck')" iconClosed font-16 *ngIf="conversation.activeConversation.accomplishments?.includes('phases')"></fa-icon></li>
@@ -184,11 +193,12 @@
           </ion-card> -->
 
           <!-- <ion-card class="cipherCard" basicPadding *ngIf="cases.isAdmin">
-            <ion-card-title class="chartTitle">Kosten</ion-card-title>
+            <ion-card-title class="chartTitle">costs</ion-card-title>
             <ul>
-              <li>Prompt cost: ${{(conversation.usedTokens.prompt_tokens * 0.0025 / 1000) | number : '1.2-2'}}</li>
-              <li>Completion cost: ${{(conversation.usedTokens.completion_tokens * 0.01 / 1000) | number : '1.2-2'}}</li>
-              <li>Total cost: ${{((conversation.usedTokens.prompt_tokens * 0.0025 / 1000) + (conversation.usedTokens.completion_tokens * 0.01 / 1000)) | number : '1.2-2'}}</li>
+              <li>Prompt cost: {{(conversation.usedTokens.prompt_tokens * (0.1 / 1000000)) | currency : "EUR" }}</li>
+              <li>Completion cost: {{(conversation.usedTokens.completion_tokens * (0.4 / 1000000)) | currency : "EUR"}}</li>
+              <li>Total cost: {{(conversation.usedTokens.prompt_tokens * (0.1 / 1000000)) + (conversation.usedTokens.completion_tokens * (0.4 / 1000000)) | currency : "EUR"}}</li>
+
 
             </ul>
           </ion-card> -->
@@ -207,7 +217,7 @@
 
                 <ion-card-content noPadding>
                 <div class="innerChatDiv" >
-                    <div class="chatItem" *ngFor="let message of conversation.activeConversation.messages;let index=index" [ngClass]="message.role">
+                    <div class="chatItem" *ngFor="let message of conversation.activeConversation.messages;let index=index;let last=last" [ngClass]="message.role">
                       
                       
       
@@ -215,20 +225,20 @@
                         <div>{{message.content | cleanReaction}}</div>
                       </div>
                       
-                      <div class="chatAssistentInfo" *ngIf="message.role === 'assistant'">
+                      <div class="chatAssistentInfo" [id]="'ai_feedback'+index" *ngIf="message.role === 'assistant'">
                         <app-graph-gauge [value]="conversation.getAttitude(index)" height="75px"></app-graph-gauge>
                         <div>{{info.getAttitude(conversation.getAttitude(index)).title}}</div>
                       </div>
                       
       
-                      <div class="chatUserInfo" *ngIf="message.role === 'user'">
+                      <div class="chatUserInfo" [id]="'user_feedback'+index" *ngIf="message.role === 'user'">
                         <div     *ngIf="conversation.getFeedbackChat(index,'feedbackCipher')" class="userCipher" [ngClass]="{'high':conversation.getFeedbackChat(index,'feedbackCipher')>=8,'low':conversation.getFeedbackChat(index,'feedbackCipher')&&conversation.getFeedbackChat(index,'feedbackCipher')<5}">{{conversation.getFeedbackChat(index,'feedbackCipher')}}</div>
                         <fa-icon *ngIf="conversation.getFeedbackChat(index,'feedbackCipher')" [icon]="icon.get('faInfoCircle')" pointer class="chatUserIcon" (click)="showFeedbackModal(index)"></fa-icon>
                       </div>
 
                       <div style="text-align:right" fullwidth *ngIf="message.role === 'user'">
                         <div class="chatUser" >
-                          <div>{{message.content}}</div>
+                          <div style="text-align:left">{{message.content}}</div>
                         </div>
                       </div>
       
@@ -242,15 +252,17 @@
 
                     </div>
                     
-                    <div style="text-align:right" fullwidth *ngIf="conversation.latestUserItem(conversation.messages)!=conversation.tempTextUser&&conversation.tempTextUser">
+                    <div style="text-align:right" fullwidth *ngIf="(!conversation.activeConversation.messages?.length||conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].content!=conversation.tempTextUser)&&conversation.tempTextUser">
                       <div class="chatItem user">
-                        <div class="chatUser">
-                          <div>{{conversation.tempTextUser}}</div>
-                        </div>
                         <div class="chatUserInfo"></div>
+                        <div class="spacer"></div>
+                        <div class="chatUser">
+                          <div style="text-align:left">{{conversation.tempTextUser}}</div>
+                        </div>
                       </div>
                     </div>
-      
+
+
                     <div class="chatItem assistant" *ngIf="conversation.waiting&&!conversation.messageTemp.content">
                       <div>
                         <ion-spinner style="color:white;" name="dots"></ion-spinner>
@@ -267,10 +279,10 @@
         </div>
         <div class="analyzer" *ngIf="analyzing||record.analyzing">
           <div class="pulse-loader" *ngIf="analyzing">
-            Analyzing...
+            {{'conversation.analyzing_request' | translate}}
           </div>
           <div class="pulse-loader" *ngIf="record.analyzing">
-            Processing sound to text
+            {{'conversation.processing_sound' | translate}}
           </div>
         </div>
       
@@ -279,10 +291,10 @@
             <!-- chatInput -->
             <!-- <ion-col size="12" *ngIf="interaction!='combination' && !conversation.activeConversation.closed"> -->
               <ion-col [size]="media.smallDevice ? 9 : 10" *ngIf="interaction!='video'">
-              <ion-card class="inputCard" noMargin>
-                <ion-textarea [disabled]="conversation.activeConversation.closed" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
+              <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 ? noCredits($event) :  doNothing()">
+                <ion-textarea (keyup.enter)="auth.credits.total<=0 ? noCredits() :  sendQuestion()" [disabled]="conversation.activeConversation.closed" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
                   <ion-spinner *ngIf="loadingTextFromAudio" slot="end" name="dots"></ion-spinner>
-                  <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="!record.recording ? startRecording() : stopRecording()">
+                  <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="auth.credits.total<=0 ? noCredits() :  (!record.recording ? startRecording($event) : stopRecording($event))">
                   <!-- <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="!recording ? start() : stop()"> -->
                     <fa-icon slot="icon-only" *ngIf="!record.recording" [icon]="icon.get('faMicrophone')" pointer></fa-icon>
                     <fa-icon slot="icon-only" *ngIf="record.recording" [icon]="icon.get('faStop')" pointer></fa-icon>
@@ -304,26 +316,26 @@
                   <ion-button noMargin color="danger" fill="solid" expand="block" (click)="showEvaluation()">Evaluatie</ion-button>
                 </ion-col> -->
                 <ion-col size="6" noPadding>
-                  <ion-button color="secondary" fill="clear" (click)="toggleHelp()">
+                  <ion-button id="assistent_menu" color="secondary" fill="clear" (click)="auth.credits.total<=0 ? noCredits() :  toggleHelp()">
                     <fa-icon slot="icon-only" [icon]="icon.get('faGraduationCap')" pointer></fa-icon>
                   </ion-button>
                 </ion-col>
                 <ion-col size="6" noPadding>
-                  <ion-button color="secondary"  *ngIf="!conversation.activeConversation.closed&&(conversation.activeConversation.agentsSettings===undefined || conversation.activeConversation.agentsSettings.undo)" fill="clear" [disabled]="conversation.isLoading('reaction')||conversation.isLoading('choices')||conversation.isLoading('phases')||conversation.isLoading('feedback')" (click)="conversation.undoLastMove()">
+                  <ion-button color="secondary" id="undo"  *ngIf="!conversation.activeConversation.closed&&(conversation.activeConversation.agentsSettings===undefined || conversation.activeConversation.agentsSettings.undo || conversation.activeConversation.agentsSettings.undo===undefined)" fill="clear" [disabled]="conversation.isLoading('reaction')||conversation.isLoading('choices')||conversation.isLoading('phases')||conversation.isLoading('feedback')" (click)="conversation.undoLastMove()">
                     <fa-icon slot="icon-only" [icon]="icon.get('faUndoAlt')" pointer></fa-icon>
                   </ion-button>
                 </ion-col>
               </ion-row>
               <ion-row>
                 <ion-col size="6" noPadding *ngIf="!conversation.activeConversation.closed">
-                  <ion-button class="sendButton"  color="primary" fill="solid" [disabled]="conversation.waiting" (click)="conversation.addMessage(question);question=''">
+                  <ion-button class="sendButton" id="send_button"  color="primary" fill="solid" [disabled]="conversation.waiting" (click)="auth.credits.total<=0 ? noCredits() :  sendQuestion()">
                     <fa-icon slot="icon-only" [icon]="icon.get('faPaperPlane')" pointer></fa-icon>
                   </ion-button>
                 </ion-col>
     
                 <ion-col size="6" noPadding>
                   <!-- <ion-button color="success" class="sendButton" fill="solid" (click)="endConversation()"> -->
-                  <ion-button color="secondary" fill="clear" (click)="endConversation()">
+                  <ion-button color="secondary" id="end_button" fill="clear" (click)="endConversation()">
                     <fa-icon slot="icon-only" [icon]="icon.get('faDoorOpen')" pointer></fa-icon>
                   </ion-button>
                 </ion-col>
@@ -341,14 +353,14 @@
 
 <div noPrint *ngIf="media.smallDevice&&started" class="detailPart" [ngStyle]="{'top':showDetails ? '0px' : '101vh'}">
   <div flex fullwidth basicPadding center-ver>
-    <ion-card-title>Details</ion-card-title>
+    <ion-card-title>{{'conversation.details' | translate}}</ion-card-title>
     <span class="spacer"></span>
     <fa-icon [icon]="icon.get('faTimes')" class="closeBtn" pointer (click)="showDetails=!showDetails"></fa-icon>
   </div>
 
   <ion-card class="cipherCard" basicPadding>
     <ion-card-title class="phaseCardTitle" flex center-ver fullwidth>
-      Gespreksniveau
+      {{'conversation.conversation_level' | translate}}
       <span class="spacer"></span>
       <fa-icon [icon]="icon.get('faInfoCircle')" (click)="showInfo(conversation.caseItem.conversationType,'phases','Gespreksniveau')" pointer></fa-icon>
     </ion-card-title>
@@ -366,6 +378,22 @@
         <div marginBottom font-14>{{element.feedback}}</div>
       </div>
     </div>
+  </ion-card>
+
+</div>
+
+
+<div noPrint *ngIf="media.smallDevice&&started" class="detailPart" [ngStyle]="{'top':showGoals ? '0px' : '101vh'}">
+  <div flex fullwidth basicPadding center-ver>
+    <ion-card-title>{{'conversation.details' | translate}}</ion-card-title>
+    <span class="spacer"></span>
+    <fa-icon [icon]="icon.get('faTimes')" class="closeBtn" pointer (click)="showGoals=!showGoals"></fa-icon>
+  </div>
+
+  <ion-card class="cipherCard"  basicPadding>
+    <ion-card-title class="chartTitle">{{'conversation.goal' | translate}}</ion-card-title>
+    <p font-14 *ngIf="conversation?.activeConversation?.goals&&conversation.activeConversation.goalsItems?.free">{{conversation.activeConversation.goalsItems.free}}</p>
+    <p font-14 *ngIf="!conversation.activeConversation.goalsItems?.free">{{'conversation.no_goals' | translate}}</p>
   </ion-card>
 
 </div>

@@ -27,9 +27,10 @@
   color:var(--ion-color-primary);
 }
 .creditButton{
-    --border-color:var(--ion-color-primary);
+    --border-color:black;//var(--ion-color-primary);
     --color:var(--ion-color-primary);
-    margin-right:30px;
+    margin-right:20px;
+    margin-left:10px;
     --padding-start: 10px !important;
     --padding-end: 10px !important;
 }
@@ -49,7 +50,8 @@ ion-searchbar{
 main {
     display: flex;
     flex-direction: column;
-    height: 100vh;  // Zorg ervoor dat het main-element de volledige viewport-hoogte heeft
+    height:calc(var(--vh) * 100);
+    // height: 100vh;  // Zorg ervoor dat het main-element de volledige viewport-hoogte heeft
   }
   
   ion-grid.mainGrid {
@@ -186,4 +188,62 @@ svg{
   transform: rotate(-90deg);
   height: calc(68vw);
   // margin-top: calc(-55vw);// -100px;
+}
+
+
+
+
+
+.score-animation {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+  color: black;
+  background: rgba(255, 255, 255, 1);
+  // padding: 20px 20px;
+  border-radius:25px;
+  animation: fadeScore 5s ease-out forwards;
+}
+
+.tempGrow {
+  animation: growhshrink 3s ease-out forwards;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes growhshrink {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeScore {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  // 80% {
+  //   opacity: 0.8;
+  //   transform: translate(-50%, -50%) scale(1.5);
+  // }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.8);
+  }
 }

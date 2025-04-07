@@ -8,14 +8,14 @@
     <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
   </ion-button>
 </div>
-<div style="padding:30px;padding-top:0;overflow: auto;line-height:1.6;">
-  <div [innerHtml]="content | sanitizeHtml" weight400 [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : '80vh'}"></div>
+<div style="padding:30px;padding-top:0;overflow: auto;line-height:1.6;" [ngStyle]="{'max-height':'calc('+(vh * 100)+'px - 275px)'}">
+  <div [innerHtml]="content | sanitizeHtml" weight400 [ngStyle]="{'max-height':media.smallDevice ? 'calc('+(vh * 100)+'px - 40px)' : '80vh'}"></div>
 
   <div *ngFor="let rate of rating;let i = index" style="background:white;border-radius:24px;padding:15px;margin:10px 0px">
     <div font-16 weight600>{{rate.question}}</div>
-    <div *ngIf="rate.type=='stars'" style="margin:-20px">
-      <app-star-rating [readOnlyItem]="false" [starAmount]="rate.starAmount ? rate.starAmount : 5" *ngIf="!updatingStars" [fontSize]="media.smallDevice? (!rate.starAmount ? 40 : (200/rate.starAmount)) : (!rate.starAmount ? 50 : (400/rate.starAmount))" [rating]="rate.value" (ratingChanged)="onRatingChanged($event,i)"></app-star-rating>
-      <app-star-rating [readOnlyItem]="true" [starAmount]="rate.starAmount ? rate.starAmount : 5"  *ngIf="updatingStars" [fontSize]="media.smallDevice? (!rate.starAmount ? 40 : (200/rate.starAmount)) : (!rate.starAmount ? 50 : (400/rate.starAmount))" [rating]="rate.value"></app-star-rating>
+    <div *ngIf="rate.type=='stars'" >
+      <app-star-rating [readOnlyItem]="false" [starAmount]="rate.starAmount ? rate.starAmount : 5" *ngIf="!updatingStars" [fontSize]="media.screenSize=='xs'? (!rate.starAmount ? 40 : (300/rate.starAmount)) : (!rate.starAmount ? 50 : (400/rate.starAmount))" [rating]="rate.value" (ratingChanged)="onRatingChanged($event,i)"></app-star-rating>
+      <app-star-rating [readOnlyItem]="true" [starAmount]="rate.starAmount ? rate.starAmount : 5"  *ngIf="updatingStars" [fontSize]="media.screenSize=='xs'? (!rate.starAmount ? 40 : (300/rate.starAmount)) : (!rate.starAmount ? 50 : (400/rate.starAmount))" [rating]="rate.value"></app-star-rating>
     </div>
 
     <div *ngIf="rate.type=='text'">
@@ -33,9 +33,9 @@
 
     <div *ngIf="rate.type=='radio'">
       <ion-radio-group [(ngModel)]="rate.value">
-        <ion-item *ngFor="let option of rate.options" lines="none">
+        <ion-item *ngFor="let option of rate.options" lines="none" style="display:flex;align-items:center;height:28px;">
           <!-- <ion-label>{{option.text}}</ion-label> -->
-          <ion-radio slot="start" labelPlacement="end" [value]="option.value">{{option.text}}</ion-radio>
+          <ion-radio mode="md" slot="start" labelPlacement="end" [value]="option.value">{{option.text}}</ion-radio>
         </ion-item>
       </ion-radio-group>
       <ion-item lines="none" *ngIf="rate.value=='other'">

@@ -9,6 +9,7 @@ import { RegisterPageRoutingModule } from './register-routing.module';
 import { RegisterPage } from './register.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     RegisterPageRoutingModule,
     ReactiveFormsModule,
     ComponentsModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    TranslateModule.forChild()
   ],
   declarations: [RegisterPage]
 })

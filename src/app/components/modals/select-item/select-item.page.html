@@ -19,8 +19,8 @@
         <ion-list>
           <div  style="margin-bottom:15px;" *ngIf="!extraData||!extraData.object">
             <ion-item *ngFor="let listItem of list | filterSearch : search" button (click)="modalController.dismiss(listItem)">
-              <ion-thumbnail slot="start" *ngIf="listItem.lang" style="--size:30px;width:35px;height:25px;">
-                <img [src]="'./assets/img/'+listItem.value+'.png'" [alt]="listItem.lang">
+              <ion-thumbnail slot="start" *ngIf="listItem.flag" style="--size:30px;width:35px;height:25px;">
+                <img [src]="listItem.flag" [alt]="listItem.code">
               </ion-thumbnail>
               <fa-icon *ngIf="listItem.icon" [icon]="iconList ? icon.get(listItem) : icon.get(listItem.icon)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
               <fa-icon *ngIf="!listItem.icon&&iconList" [icon]="icon.get(listItem)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
@@ -41,12 +41,12 @@
           </div>
           <div  style="margin-bottom:15px;" *ngIf="extraData&&extraData.object&&extraData.multiple">
             <ion-item button (click)="selectAll()">
-              <ion-checkbox [ngModel]="allSelected" disabled (click)="preventBubble($event);selectAll()" style="margin-right: 10px;max-width:30px"></ion-checkbox>
+              <ion-checkbox mode="md" [ngModel]="allSelected" disabled (click)="preventBubble($event);selectAll()" style="margin-right: 10px;max-width:30px"></ion-checkbox>
               <ion-label color="medium">{{'Select all' | translate}}</ion-label>
               <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
             </ion-item>
             <ion-item *ngFor="let listItem of list | filterSearch : search : false : ['name']" button (click)="listItem.selected=!listItem.selected">
-              <ion-checkbox [(ngModel)]="listItem.selected" (click)="preventBubble($event)" style="margin-right: 10px;max-width:30px"></ion-checkbox>
+              <ion-checkbox mode="md" [(ngModel)]="listItem.selected" (click)="preventBubble($event)" style="margin-right: 10px;max-width:30px"></ion-checkbox>
               <ion-label *ngIf="listItem[extraData.field]" color="medium">{{listItem[extraData.field]}}</ion-label>
               <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
             </ion-item>

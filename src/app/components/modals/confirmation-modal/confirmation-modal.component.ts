@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { MediaService } from 'src/app/services/media.service';
 
 @Component({
@@ -8,11 +9,12 @@ import { MediaService } from 'src/app/services/media.service';
   styleUrls: ['./confirmation-modal.component.scss'],
 })
 export class ConfirmationModalComponent {
-  @Input() message: string = 'Weet je zeker dat je dit wilt doen?';
+  @Input() message: string = this.translate.instant('confirmation_questions.default_question');
 
   constructor(
     private modalController: ModalController,
-    public media:MediaService
+    public media:MediaService,
+    private translate:TranslateService
   ) {}
 
   dismiss(confirmed: boolean) {

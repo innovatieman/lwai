@@ -8,7 +8,7 @@ import { FirestoreService } from 'src/app/services/firestore.service';
   styleUrls: ['./token-analysis.page.scss'],
 })
 export class TokenAnalysisPage implements OnInit {
-  conversationId:string = 'NuLZ2W3rWzUuWbqE5WbI'
+  conversationId:string = 'QYcHMsKkRDu7UWlXDPbZ'
   tokenList:any = []
   userId:string = ''
   constructor(
@@ -31,7 +31,7 @@ export class TokenAnalysisPage implements OnInit {
       this.tokenList = tokens.map((token:any) => {
         return { id: token.payload.doc.id, ...token.payload.doc.data() }
       })
-      // console.log(this.tokenList)
+      console.log(this.tokenList)
       this.tokenList = this.tokenList.sort((a:any,b:any) => a.timestamp - b.timestamp)
 
     })

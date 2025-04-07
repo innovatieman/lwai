@@ -4,6 +4,8 @@ const fs = require("fs");
 const path = require("path");
 import * as responder from '../utils/responder'
 import * as functions from 'firebase-functions/v1';
+import * as ffmpeg from "ffmpeg-static";
+import { spawn } from "child_process";
 
 import { db } from "../firebase";
 import openai from '../configs/config-openai';
@@ -13,10 +15,13 @@ import axios from "axios";
 import admin from '../firebase'
 import * as moment from 'moment';
 // import { get } from 'axios';
+const { exec } = require('child_process'); // Nodig voor conversie
 
 const storage = admin.storage();
 const clientId = '8eFP7LHPy8OQB5u2a8t9Qg==';  // Vervang door je eigen client ID
 const clientSecret = '88jqH8PJw9G2GGq5oco7E7xEKmln2hXx';  // Vervang door je eigen client secret
+
+import { Runware } from "@runware/sdk-js";
 
 const openAiModal = 'gpt-4o';
 
@@ -38,7 +43,7 @@ const creditsCost:any = {
 // firebase deploy --only functions:chatAI,functions.choicesAI,functions.factsAI,functions.backgroundAI,functions.phasesAI,functions.feedbackAI,functions.closingAI,functions.promptChecker,functions.casePrompt,functions.goal,functions.soundToText,functions.skillsAI
 
 exports.chatAI = onRequest( 
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" ,runWith: {memory: '1GB'}},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -1072,18 +1077,205 @@ exports.skillsAI = onRequest(
   }
 );
 
+// exports.soundToTextAI = onRequest(
+//   { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', timeoutSeconds: 120, },
+
+//   async (req:any, res:any) => {
+//     try {
+//       console.log("Received request");
+//       console.log(JSON.stringify(req.body));
+//       ////////////////////////////////////////////////////////////////////
+//       // Check required parameters
+//       ////////////////////////////////////////////////////////////////////
+//       const body = req.body;
+//       if((!body.userId) || (!body.conversationId) || (!body.file)){
+//         console.log("Missing required parameters in request body");
+//         res.status(400).send("Missing required parameters in request body");
+//         return;
+//       }
+
+//       console.log("Received file size:", body.file.length);
+//       console.log("File format:", body.file.slice(0, 20)); // Log eerste 20 bytes om header te checken
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Check subscription
+//       ////////////////////////////////////////////////////////////////////
+//       const hasValidSubscription = await checkUserSubscription(body.userId);
+//       if (!hasValidSubscription) {
+//         res.status(403).send("User does not have a valid subscription");
+//         return;
+//       }
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Decode base64 file
+//       ////////////////////////////////////////////////////////////////////
+//       const buffer:any = Buffer.from(body.file, "base64");
+//       const filePath = path.join("/tmp", `audio-${Date.now()}.webm`);
+//       fs.writeFileSync(filePath, buffer);
+
+      
+//       ////////////////////////////////////////////////////////////////////
+//       // get sound length and calc credits cost
+//       ////////////////////////////////////////////////////////////////////
+//       const stats = fs.statSync(filePath);
+//       const fileSizeInBytes = stats.size;
+//       const soundLength = fileSizeInBytes / 16000;
+//       const creditsCosts = Math.ceil(soundLength / 30);
+
+//       console.log("Sound length:", soundLength, "Credits costs:", creditsCosts);
+//       ////////////////////////////////////////////////////////////////////
+//       // Stream OpenAI => Whisper
+//       ////////////////////////////////////////////////////////////////////
+//       const fileStream = fs.createReadStream(filePath);
+//       const whisperResponse = await openai.audio.transcriptions.create({
+//         model: "whisper-1",
+//         file: fileStream,
+//         temperature: 0.3,
+//       });
+//       const transcription = whisperResponse.text;
+//       fs.unlinkSync(filePath);
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Add token usage
+//       ////////////////////////////////////////////////////////////////////
+//       const  tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+//       await tokensRef.add({
+//         agent: 'soundToText',
+//         usage: {seconds: soundLength},
+//         credits: creditsCosts,
+//         timestamp: new Date().getTime(),
+//       });
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Update credits
+//       //////////////////////////////////////////////////////////////////
+//       await updateCredits(body.userId, creditsCosts);
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Return response
+//       ////////////////////////////////////////////////////////////////////
+//       res.status(200).json({ transcription });
+
+//     } catch (error) {
+//       ////////////////////////////////////////////////////////////////////
+//       // Error handling
+//       ////////////////////////////////////////////////////////////////////
+//       console.error("Error processing request:", error);
+//       res.status(500).send("Internal Server Error");
+//     }
+//   }
+
+// )
+
+// exports.soundToTextAI = onRequest(
+//   { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', timeoutSeconds: 120, },
+
+//   async (req:any, res:any) => {
+//     try {
+//       console.log("Received request");
+//       console.log(JSON.stringify(req.body));
+//       ////////////////////////////////////////////////////////////////////
+//       // Check required parameters
+//       ////////////////////////////////////////////////////////////////////
+//       const body = req.body;
+//       if((!body.userId) || (!body.conversationId) || (!body.file)){
+//         console.log("Missing required parameters in request body");
+//         res.status(400).send("Missing required parameters in request body");
+//         return;
+//       }
+
+//       console.log("Received file size:", body.file.length);
+//       console.log("File format:", body.file.slice(0, 20)); // Log eerste 20 bytes om header te checken
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Check subscription
+//       ////////////////////////////////////////////////////////////////////
+//       const hasValidSubscription = await checkUserSubscription(body.userId);
+//       if (!hasValidSubscription) {
+//         console.log("User does not have a valid subscription");
+//         res.status(403).send("User does not have a valid subscription");
+//         return;
+//       }
+//       console.log("User has a valid subscription");
+//       ////////////////////////////////////////////////////////////////////
+//       // Decode base64 file
+//       ////////////////////////////////////////////////////////////////////
+//       const buffer:any = Buffer.from(body.file, "base64");
+//       console.log("Buffer");
+//       const filePath = path.join("/tmp", `audio-${Date.now()}.webm`);
+//       console.log("File path:", filePath);
+//       fs.writeFileSync(filePath, buffer);
+
+//       console.log("File written");
+//       ////////////////////////////////////////////////////////////////////
+//       // get sound length and calc credits cost
+//       ////////////////////////////////////////////////////////////////////
+//       const stats = fs.statSync(filePath);
+//       const fileSizeInBytes = stats.size;
+//       const soundLength = fileSizeInBytes / 16000;
+//       const creditsCosts = Math.ceil(soundLength / 30);
+
+//       console.log("Sound length:", soundLength, "Credits costs:", creditsCosts);
+//       ////////////////////////////////////////////////////////////////////
+//       // Stream OpenAI => Whisper
+//       ////////////////////////////////////////////////////////////////////
+//       const fileStream = fs.createReadStream(filePath);
+//       const whisperResponse = await openai.audio.transcriptions.create({
+//         model: "whisper-1",
+//         file: fileStream,
+//         temperature: 0.3,
+//       });
+//       const transcription = whisperResponse.text;
+//       fs.unlinkSync(filePath);
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Add token usage
+//       ////////////////////////////////////////////////////////////////////
+//       const  tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+//       await tokensRef.add({
+//         agent: 'soundToText',
+//         usage: {seconds: soundLength},
+//         credits: creditsCosts,
+//         timestamp: new Date().getTime(),
+//       });
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Update credits
+//       //////////////////////////////////////////////////////////////////
+//       await updateCredits(body.userId, creditsCosts);
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Return response
+//       ////////////////////////////////////////////////////////////////////
+//       res.status(200).json({ transcription });
+
+//     } catch (error) {
+//       ////////////////////////////////////////////////////////////////////
+//       // Error handling
+//       ////////////////////////////////////////////////////////////////////
+//       console.error("Error processing request:", error);
+//       res.status(500).send("Internal Server Error");
+//     }
+//   }
+
+// )
+
+// const { exec } = require('child_process'); // Nodig voor conversie
+
+
 exports.soundToTextAI = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', timeoutSeconds: 120, },
+  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', timeoutSeconds: 120 },
 
   async (req:any, res:any) => {
     try {
       console.log("Received request");
       console.log(JSON.stringify(req.body));
+
       ////////////////////////////////////////////////////////////////////
       // Check required parameters
       ////////////////////////////////////////////////////////////////////
       const body = req.body;
-      if((!body.userId) || (!body.conversationId) || (!body.file)){
+      if ((!body.userId) || (!body.conversationId) || (!body.file)) {
         console.log("Missing required parameters in request body");
         res.status(400).send("Missing required parameters in request body");
         return;
@@ -1102,64 +1294,101 @@ exports.soundToTextAI = onRequest(
       }
 
       ////////////////////////////////////////////////////////////////////
-      // Decode base64 file
+      // 📌 Decodeer Base64 audio
       ////////////////////////////////////////////////////////////////////
-      const buffer:any = Buffer.from(body.file, "base64");
-      const filePath = path.join("/tmp", `audio-${Date.now()}.webm`);
-      fs.writeFileSync(filePath, buffer);
+      const inputBuffer = Buffer.from(body.file, "base64");
+      const fileHeader = body.file.slice(0, 20); // Bekijk de eerste 20 karakters
+      console.log("File header:", fileHeader);
+
+      // 📌 Detecteer MP4/WebM
+      const isMp4OrWebM = fileHeader.includes("ftyp") || fileHeader.includes("webm") || fileHeader.includes("AAAAHGZ0eXBpc281AAAA");
+
+      console.log("MP4/WebM detected:", isMp4OrWebM);
+      // 📌 Bestandspad bepalen
+      const inputFilePath = path.join("/tmp", `audio-${Date.now()}${isMp4OrWebM ? ".webm" : ".wav"}`);
+      fs.writeFileSync(inputFilePath, inputBuffer);
+
+      let finalFilePath = inputFilePath; // Default is inputFilePath
+      // let conversionNeeded:boolean = false;
 
       ////////////////////////////////////////////////////////////////////
-      // get sound length and calc credits cost
+      // 📌 Converteer naar WAV indien nodig
       ////////////////////////////////////////////////////////////////////
-      const stats = fs.statSync(filePath);
+      if (isMp4OrWebM) {
+        console.log("MP4/WebM gedetecteerd. Start conversie naar WAV...");
+        finalFilePath = inputFilePath.replace(".webm", ".wav"); // Nieuwe WAV-bestandspad
+        // conversionNeeded = true;
+
+        await new Promise((resolve, reject) => {
+          exec(`ffmpeg -i ${inputFilePath} -acodec pcm_s16le -ar 16000 -ac 1 ${finalFilePath}`, (error:any, stdout:any, stderr:any) => {
+            if (error) {
+              console.error(`Conversie mislukt: ${stderr}`);
+              reject(error);
+            } else {
+              console.log("Conversie voltooid!");
+              resolve(stdout);
+            }
+          });
+        });
+
+        fs.unlinkSync(inputFilePath); // Verwijder origineel MP4/WebM bestand
+      } else {
+        console.log("WAV-bestand gedetecteerd. Geen conversie nodig.");
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // 📌 Bepaal bestandsgrootte en kosten
+      ////////////////////////////////////////////////////////////////////
+      const stats = fs.statSync(finalFilePath);
       const fileSizeInBytes = stats.size;
       const soundLength = fileSizeInBytes / 16000;
       const creditsCosts = Math.ceil(soundLength / 30);
 
       console.log("Sound length:", soundLength, "Credits costs:", creditsCosts);
+
       ////////////////////////////////////////////////////////////////////
-      // Stream OpenAI => Whisper
+      // 📌 Stream OpenAI => Whisper
       ////////////////////////////////////////////////////////////////////
-      const fileStream = fs.createReadStream(filePath);
+      const fileStream = fs.createReadStream(finalFilePath);
       const whisperResponse = await openai.audio.transcriptions.create({
         model: "whisper-1",
         file: fileStream,
         temperature: 0.3,
       });
+
       const transcription = whisperResponse.text;
-      fs.unlinkSync(filePath);
+      fs.unlinkSync(finalFilePath); // Opruimen na verwerking
 
       ////////////////////////////////////////////////////////////////////
-      // Add token usage
+      // 📌 Tokens toevoegen
       ////////////////////////////////////////////////////////////////////
-      const  tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+      const tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
       await tokensRef.add({
         agent: 'soundToText',
-        usage: {seconds: soundLength},
+        usage: { seconds: soundLength },
         credits: creditsCosts,
         timestamp: new Date().getTime(),
       });
 
       ////////////////////////////////////////////////////////////////////
-      // Update credits
-      //////////////////////////////////////////////////////////////////
+      // 📌 Credits bijwerken
+      ////////////////////////////////////////////////////////////////////
       await updateCredits(body.userId, creditsCosts);
 
       ////////////////////////////////////////////////////////////////////
-      // Return response
+      // 📌 Respons terugsturen
       ////////////////////////////////////////////////////////////////////
       res.status(200).json({ transcription });
 
     } catch (error) {
       ////////////////////////////////////////////////////////////////////
-      // Error handling
+      // 📌 Foutafhandeling
       ////////////////////////////////////////////////////////////////////
       console.error("Error processing request:", error);
       res.status(500).send("Internal Server Error");
     }
   }
-
-)
+);
 
 exports.case_prompt = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" },
@@ -1448,7 +1677,7 @@ If the image does not meet these requirements, please create the image again.
           occupation: selectedOccupation,
           emotion: selectedEmotion,
           ethnicity: selectedEthnicity,
-          akool:true
+          akool:false
         }
   
         await saveImages(imageUrl,imageInfo);
@@ -1562,182 +1791,1043 @@ If the image does not meet these requirements, please create the image again.
   }
 );
 
+exports.generateAndStoreImageRunway = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" ,runWith: {memory: '4GB'} },
+  async (req: any, res: any) => {
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-cache");
 
-// exports.categoryCreatePhases = functions.region('europe-west1')
-//   .firestore
-//   .document('categories/{categoryId}')
-//   .onCreate(async (change:any, context:any) => {
-//     const categoryData = change.data();
+    const body = req.body;
 
-//     if(!categoryData.phaseList || categoryData.phaseList.length <2){
+    if (!body.userId) {
+      console.log("Missing required parameters in request body");
+      res.status(400).send("Missing required parameters: userId or prompt");
+      return;
+    }
 
-//       const [agent_instructions,formats] = await Promise.all([
-//         getAgentInstructions('phase_creator','main'), 
-//         getFormats('phase_creator')
-//       ]);
+    let prompt = `
+      A centered portrait of a 
+      [age] 
+      [gender] 
+      [ethnicity] 
+      [occupation],
+      who looks [emotion].
+      The person is positioned in the center of the frame.
+      The person’s hairstyle, clothing, and any accessories are chosen creatively by the AI.  
+      The background is soft, neutral, and simple (e.g., soft gray or light beige).  
+      The face is well-lit with a natural expression, and the portrait is in a [style].  
+      No text, lines, or other elements should be present in the image besides the portrait.
+`
+    if(body.prompt){
+      prompt = body.prompt;
+    }
+
+    console.log(prompt);
+
+    const ethnicities = ['African', 'Asian', 'Caucasian', 'Hispanic',' Middle Eastern', 'Native American', 'Mixed-race'];
+    const randomEthnicity = ethnicities[Math.floor(Math.random() * ethnicities.length)];
+    const gender = ['male, female', 'non-binary'];
+    const randomGender = gender[Math.floor(Math.random() * gender.length)];
+    const age = ['Child', 'Teenager', 'Young adult', 'Middle-aged', 'Senior', 'Elderly'];
+    const randomAge = age[Math.floor(Math.random() * age.length)];
+    const style = ['photo-realistic', 'Disney-style illustration', 'anime-style illustration'];
+    const randomStyle = style[Math.floor(Math.random() * style.length)];
+    const emotions = ['Happy', 'Sad', 'Angry', 'Surprised', 'Neutral', 'Disgusted', 'Fearful'];
+    const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
 
 
-//       let systemContent = agent_instructions.systemContent
-//       systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-//       let sendMessages:any[] = []
-
-//       sendMessages.push({
-//         role: "system",
-//         content: systemContent,
-//       })
-
-//       let content = agent_instructions.content.split("[category]").join(categoryData.title)
-
-//       sendMessages.push({
-//         role: "user",
-//         content: content,
-//       })
+    const selectedAge = body.age || randomAge;
+    const selectedGender = body.gender || randomGender;
+    const selectedEthnicity = body.ethnicity || randomEthnicity;
+    const selectedOccupation = body.occupation || 'Person';
+    const selectedStyle = body.style || randomStyle;
+    const selectedEmotion = body.emotion || randomEmotion;
 
 
-//       const completion = await openai.chat.completions.create({
-//         model: openAiModal,
-//         messages: sendMessages,
-//         temperature: agent_instructions.temperature,
-//         max_tokens: agent_instructions.max_tokens,
-//       });
+    prompt = prompt.replace('[age]', selectedAge)
+    prompt = prompt.replace('[gender]', selectedEthnicity)
+    prompt = prompt.replace('[ethnicity]', selectedGender)
+    prompt = prompt.replace('[occupation]', selectedOccupation)
+    prompt = prompt.replace('[style]', selectedStyle)
+    prompt = prompt.replace('[emotion]', selectedEmotion)
 
-//       const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
-      
-//       console.log('completeMessage: ' + completeMessage);
 
-//       const parsedMessage = JSON.parse(completeMessage);
+    try {
 
-//       await db.collection('categories').doc(context.params.categoryId).update({
-//         phaseList: Array.isArray(parsedMessage) ? parsedMessage : []
-//       });
+      const runware = new Runware({ apiKey: config.runware_api_key });
+      const images = await runware.requestImages({
+        positivePrompt: prompt,
+        width: 1024,
+        height: 1024,
+        model: 'runware:100@1',
+        numberResults: 2,
+        outputType: "URL",
+        outputFormat: "WEBP",
+      })
 
+      let imageInfo = {
+        userId: body.userId,
+        gender: selectedGender,
+        age: selectedAge,
+        style: selectedStyle,
+        occupation: selectedOccupation,
+        emotion: selectedEmotion,
+        ethnicity: selectedEthnicity,
+        akool:false,
+        runway:true
+      }
+
+      const url = await saveImages(images[0].imageURL,imageInfo);
+      await saveImages(images[1].imageURL,imageInfo);
+  
+
+      // console.log("Afbeelding opgeslagen:", publicUrl);
+      res.status(200).send({ status: 'image saved' ,imageURL:url});
+
+    } catch (error) {
+      console.error("Error generating or saving image:", error);
+      res.status(500).send("Error generating or saving image");
+    }
+  }
+);
+
+
+// exports.analyzeCaseLevel = functions.region('europe-west1')
+//   .runWith({memory:'1GB'}).firestore
+//   .document('cases/{caseId}')
+//   .onWrite(async (change, context) => {
+//     const caseId = context.params.caseId;
+//     const db = admin.firestore();
+//     let caseDataNew:any = {}
+//     let caseDataOld:any = {}
+//     if(change.before.exists){
+//       caseDataOld = change.before.data();
 //     }
-//   });
+//     if(change.after.exists){
+//       caseDataNew = change.after.data();
 
-exports.analyzeCaseLevel = functions.region('europe-west1')
-  .runWith({memory:'1GB'}).firestore
-  .document('cases/{caseId}')
-  .onWrite(async (change, context) => {
-    const caseId = context.params.caseId;
-    const db = admin.firestore();
-    let caseDataNew:any = {}
-    let caseDataOld:any = {}
-    if(change.before.exists){
-      caseDataOld = change.before.data();
-    }
-    if(change.after.exists){
-      caseDataNew = change.after.data();
+//       // if case_analyzed is minder dan 10 seconden geleden, dan niet analyseren
+//       if(caseDataNew.case_analyzed && caseDataNew.case_analyzed > Date.now() - 10000){
+//         return null;
+//       }
 
-      // if case_analyzed is minder dan 10 seconden geleden, dan niet analyseren
-      if(caseDataNew.case_analyzed && caseDataNew.case_analyzed > Date.now() - 10000){
-        return null;
-      }
+//       const categoryRef = db.collection('categories').doc(caseDataNew.conversation);
+//       const categorySnap = await categoryRef.get();
+//       if (!categorySnap.exists) {
+//         throw new Error("Category not found");
+//       }
+//       const categoryData = categorySnap.data();
 
-      const categoryRef = db.collection('categories').doc(caseDataNew.conversation);
-      const categorySnap = await categoryRef.get();
-      if (!categorySnap.exists) {
-        throw new Error("Category not found");
-      }
-      const categoryData = categorySnap.data();
+//       if(
+//         caseDataNew.role !== caseDataOld.role ||
+//         caseDataNew.casus !== caseDataOld.casus ||
+//         caseDataNew.attitude !== caseDataOld.attitude ||
+//         caseDataNew.steadfastness !== caseDataOld.steadfastness ||
+//         caseDataNew.conversation !== caseDataOld.conversation ||
+//         caseDataNew.goalsItems.free !== caseDataOld.goalsItems.free ||
+//         caseDataNew.goalsItems.attitude !== caseDataOld.goalsItems.attitude ||
+//         caseDataNew.goalsItems.phases?.length !== caseDataOld.goalsItems.phases?.length
+//       ){
 
-      if(
-        caseDataNew.role !== caseDataOld.role ||
-        caseDataNew.casus !== caseDataOld.casus ||
-        caseDataNew.attitude !== caseDataOld.attitude ||
-        caseDataNew.steadfastness !== caseDataOld.steadfastness ||
-        caseDataNew.conversation !== caseDataOld.conversation ||
-        caseDataNew.goalsItems !== caseDataOld.goalsItems
-      ){
-        await db.collection('cases').doc(caseId).update({
-          analyzing_level: true
-        });
+//         await db.collection('cases').doc(caseId).update({
+//           analyzing_level: true
+//         });
 
-        let caseText:string = '';
+//         let caseText:string = '';
 
-        if(caseDataNew.role){
-          caseText = caseText + 'Welke Rol moet de AI aannemen?\n' + caseDataNew.role + '\n\n';
-        }
+//         if(caseDataNew.role){
+//           caseText = caseText + 'Welke Rol moet de AI aannemen?\n' + caseDataNew.role + '\n\n';
+//         }
 
-        caseText = caseText + 'Welk gesprekstype / gesprekstechniek betreft het?\n' + categoryData.title + '\n\n';
+//         caseText = caseText + 'Welk gesprekstype / gesprekstechniek betreft het?\n' + categoryData.title + '\n\n';
 
-        caseText = caseText + 'Welke fases/elementen zijn van belang in dit gesprekstype?\n';
-        for(let i=0;i<categoryData.phaseList.length;i++){
-          caseText = caseText + 'Fase/element '+ (i+1) + ':\nTitel: ' + categoryData.phaseList[i].title + '\nOmschrijving :'+ categoryData.phaseList[i].description + '\n\n';
-        }
+//         caseText = caseText + 'Welke fases/elementen zijn van belang in dit gesprekstype?\n';
+//         for(let i=0;i<categoryData.phaseList.length;i++){
+//           caseText = caseText + 'Fase/element '+ (i+1) + ':\nTitel: ' + categoryData.phaseList[i].title + '\nOmschrijving :'+ categoryData.phaseList[i].description + '\n\n';
+//         }
 
 
-        if(caseDataNew.casus){
-          caseText = caseText + 'Beschrijf de casus:\n' + caseDataNew.casus + '\n\n';
-        }
-        if(caseDataNew.attitude){
-          caseText = caseText + 'Met welke begin attitude start de AI?\nScore: ' + caseDataNew.attitude + '\n\n';
-        }
-        else{
-          caseText = caseText + 'Met welke begin attitude start de AI?\nScore '+ '1' + '\n\n';
-        }
-        if(caseDataNew.steadfastness){
-          caseText = caseText + 'Hoe standvastig is de AI?\nScore: ' + caseDataNew.steadfastness + '\n\n';
-        }
-        else{
-          caseText = caseText + 'Hoe standvastig is de AI?\nScore: '+ '1' + '\n\n';
-        }
+//         if(caseDataNew.casus){
+//           caseText = caseText + 'Beschrijf de casus:\n' + caseDataNew.casus + '\n\n';
+//         }
+//         if(caseDataNew.attitude){
+//           caseText = caseText + 'Met welke begin attitude start de AI?\nScore: ' + caseDataNew.attitude + '\n\n';
+//         }
+//         else{
+//           caseText = caseText + 'Met welke begin attitude start de AI?\nScore '+ '1' + '\n\n';
+//         }
+//         if(caseDataNew.steadfastness){
+//           caseText = caseText + 'Hoe standvastig is de AI?\nScore: ' + caseDataNew.steadfastness + '\n\n';
+//         }
+//         else{
+//           caseText = caseText + 'Hoe standvastig is de AI?\nScore: '+ '1' + '\n\n';
+//         }
 
-        if(caseDataNew.goalsItems.attitude){
-          caseText = caseText + 'Tot welke attitudescore moeten de AI veranderd worden in het gesprek?\n' + caseDataNew.goalsItems.attitude + '\n\n';
-        }
-        if(caseDataNew.goalsItems.phases?.length){
-          caseText = caseText + 'Welke percentage moeten de fases worden vervuld?\n' 
-          for(let i=0;i<caseDataNew.goalsItems.phases.length;i++){
-            caseText = caseText + categoryData.phaseList[i].title + ': ' + caseDataNew.goalsItems.phases[i] + '\n';
-          }
-        }
-        if(caseDataNew.goalsItems.free){
-          caseText = caseText + 'Welke doelen moeten worden bereikt?\n' + caseDataNew.goalsItems.free + '\n\n';
-        }
+//         if(caseDataNew.goalsItems.attitude){
+//           caseText = caseText + 'Tot welke attitudescore moeten de AI veranderd worden in het gesprek?\n' + caseDataNew.goalsItems.attitude + '\n\n';
+//         }
+//         if(caseDataNew.goalsItems.phases?.length){
+//           caseText = caseText + 'Welke percentage moeten de fases worden vervuld?\n' 
+//           for(let i=0;i<caseDataNew.goalsItems.phases.length;i++){
+//             caseText = caseText + categoryData.phaseList[i].title + ': ' + caseDataNew.goalsItems.phases[i] + '\n';
+//           }
+//         }
+//         if(caseDataNew.goalsItems.free){
+//           caseText = caseText + 'Welke doelen moeten worden bereikt?\n' + caseDataNew.goalsItems.free + '\n\n';
+//         }
 
-        const [agent_instructions,formats] = await Promise.all([
-          getAgentInstructions('levels','main'), 
-          getFormats('levels')
-        ]);
-
-
-        let systemContent = agent_instructions.systemContent
-        systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
-
-        let sendMessages:any[] = [
-          {role: "system",content: systemContent},
-          {role: "user",content: agent_instructions.content.split('[case_data]').join(caseText)},
-        ]
+//         const [agent_instructions,formats] = await Promise.all([
+//           getAgentInstructions('levels','main'), 
+//           getFormats('levels')
+//         ]);
 
 
-        const completion = await openai.chat.completions.create({
-          model: openAiModal,
-          messages: sendMessages,
-          temperature: agent_instructions.temperature,
-          max_tokens: agent_instructions.max_tokens,
-        });
+//         let systemContent = agent_instructions.systemContent
+//         systemContent = systemContent + '\n\n' + formats.format + '\n\n' + formats.instructions;
 
-        const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
+//         let sendMessages:any[] = [
+//           {role: "system",content: systemContent},
+//           {role: "user",content: agent_instructions.content.split('[case_data]').join(caseText)},
+//         ]
 
-        await db.collection('cases').doc(caseId).update({
-          level: JSON.parse(completeMessage).level,
-          level_explanation: JSON.parse(completeMessage).description,
-          analyzing_level: false,
-          case_analyzed: Date.now(),
-        });
 
-        return null;
+//         const completion = await openai.chat.completions.create({
+//           model: openAiModal,
+//           messages: sendMessages,
+//           temperature: agent_instructions.temperature,
+//           max_tokens: agent_instructions.max_tokens,
+//         });
 
-      }
-    }
+//         const completeMessage = completion.choices[0].message.content.split('```json').join('').split('```').join('')
+
+//         await db.collection('cases').doc(caseId).update({
+//           level: JSON.parse(completeMessage).level,
+//           level_explanation: JSON.parse(completeMessage).description,
+//           analyzing_level: false,
+//           case_analyzed: Date.now(),
+//         });
+
+//         return null;
+
+//       }
+//     }
 
     
 
 
+//     return null;
+// });
+
+exports.translateCategory = functions.region('europe-west1').runWith({memory:'8GB'}) .https.onCall(async (data: any, context: any) => {
+  
+  const db = admin.firestore();
+  const user = await db.collection('users').doc(context.auth?.uid).get()
+  if(!user.exists){
+    console.log("User not found")
+      return new responder.Message('Admin not found',404)
+  }
+  const userData = user.data()
+  if(!userData?.isAdmin){
+      console.log("Admin not found")
+      return new responder.Message('Not authorized',403)
+  }
+  if(!data.categoryId || !data.original_language || !data.agents){
+    console.log("Missing required parameters")
+    return new responder.Message('Missing required parameters',400)
+  }
+//  console.log("Vertaal categorie:", data.categoryId);
+  const languagesRef = db.collection("languages");
+  const languagesSnap = await languagesRef.get();
+  let languages: any = {};
+  languagesSnap.forEach((doc: any) => {
+    languages[doc.id] = doc.data();
+  });
+  // console.log("Talen opgehaald:", languages);
+
+  const categoryId = data.categoryId;
+  const categoryRef = db.collection("categories").doc(categoryId);
+  const categorySnap = await categoryRef.get();
+  if (!categorySnap.exists) {
+    throw new Error("Category not found");
+  }
+  const categoryData = categorySnap.data();
+  // console.log("Categorie opgehaald:", categoryData);
+
+  // get all agents from subcollection agents
+  const agentsRef = categoryRef.collection("agents");
+  const agentsSnap = await agentsRef.get();
+  let agents: any = {};
+  agentsSnap.forEach((doc: any) => {
+    agents[doc.id] = {...doc.data(), id: doc.id};
+  });
+  // console.log("Agents opgehaald:", agents);
+
+
+  let languagesToTranslate:any[] = [];
+  let agentsToTranslate:any[] = [];
+  if(data.languages){
+    for(let i=0;i<data.languages.length;i++){
+      if(languages[data.languages[i]]){
+        languagesToTranslate.push({language:languages[data.languages[i]]});
+      }
+    }
+  }
+  else{
+    for(let i=0;i<Object.keys(languages).length;i++){
+      if(languages[Object.keys(languages)[i]].language !== data.original_language){
+        languagesToTranslate.push({language:languages[Object.keys(languages)[i]]});
+      }
+    }
+  }
+  if(data.agents){
+    for(let i=0;i<data.agents.length;i++){
+      if(agents[data.agents[i]]){
+        agentsToTranslate.push({agent:agents[data.agents[i]]});
+      }
+    }
+  }
+  else{
+    for(let i=0;i<Object.keys(agents).length;i++){
+      if(agents[Object.keys(agents)[i]].language !== data.original_language){
+        agentsToTranslate.push({agent:agents[Object.keys(agents)[i]]});
+      }
+    }
+  }
+
+  let catInput = categoryData;
+
+    // Haal instructies en formats op parallel
+    const [agentInstructions, formats] = await Promise.all([
+      getAgentInstructions("translator", "main"),
+      getFormats("translator"),
+    ]);
+
+    let systemContent =
+      agentInstructions.systemContent +
+      "\n\n" +
+      formats.format +
+      "\n\n" +
+      formats.instructions;
+
+    // Start alle vertalingen parallel
+    const translationPromises = languagesToTranslate.map(async (lang: any) => {
+      if(data.basics){
+        // console.log("Vertaal naar taal:", lang.language.language);
+        try {
+          
+          let content = agentInstructions.content
+            .split("[input]")
+            .join(JSON.stringify(catInput))
+            .split("[original_language]")
+            .join(languages[data.original_language]?.title || "")
+            .split("[original_language_short]")
+            .join(languages[data.original_language]?.language || "")
+            .split("[translated_language]")
+            .join(languages[lang.language.language]?.title || "")
+            .split("[translated_language_short]")
+            .join(languages[lang.language.language]?.language || "");
+
+          let sendMessages: any = [
+            { role: "system", content: systemContent },
+            { role: "user", content: content },
+          ];
+
+          const completion = await openai.chat.completions.create({
+            model: openAiModal,
+            messages: sendMessages,
+            temperature: agentInstructions.temperature,
+            max_tokens: agentInstructions.max_tokens,
+          });
+
+          const completeMessage = completion.choices[0].message.content.replace(
+            /```json|```/g,
+            ""
+          );
+
+          let translatedItem;
+          try {
+            translatedItem = JSON.parse(completeMessage);
+          } catch (error) {
+            console.error(
+              `Fout bij JSON-parsing voor taal ${lang}:`,
+              completeMessage,
+              error
+            );
+            return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+          }
+
+
+          let newCategoryItem: any = translatedItem.output;
+          
+          console.log("Nieuwe categorie item:", Object.keys(newCategoryItem));
+
+          await db
+            .collection("categories")
+            .doc(categoryId)
+            .collection("languages")
+            .doc(lang.language.language)
+            .set(newCategoryItem);
+        } catch (error) {
+          console.error(`Fout bij vertalen naar ${lang.language.language}:`, error);
+          return null; // 🔹 BELANGRIJK: zorg dat we altijd een waarde teruggeven
+        }
+
+      }
+
+      // const translationAgentsPromises = Object.keys(agents).map(async (agentId: any) => {
+      const translationAgentsPromises: Promise<void>[] = agentsToTranslate.map(async (agent: any): Promise<void> => {
+        
+        // console.log("Vertaal agent:", agent.agent.id);
+        try {
+          let content = agentInstructions.content
+            .split("[input]")
+            .join(JSON.stringify(agents[agent.agent.id]))
+            .split("[original_language]")
+            .join(languages[data.original_language]?.title || "")
+            .split("[original_language_short]")
+            .join(languages[data.original_language]?.language || "")
+            .split("[translated_language]")
+            .join(languages[lang.language.language]?.title || "")
+            .split("[translated_language_short]")
+            .join(languages[lang.language.language]?.language || "");
+          let sendMessages: any = [
+            { role: "system", content: systemContent },
+            { role: "user", content: content },
+          ];
+
+          // console.log("message system :", JSON.stringify(sendMessages[0]).substring(0, 100));
+          // console.log("message user :", JSON.stringify(sendMessages[1].content));
+
+          const completion = await openai.chat.completions.create({
+            model: openAiModal,
+            messages: sendMessages,
+            temperature: agentInstructions.temperature,
+            max_tokens: agentInstructions.max_tokens,
+          });
+          const completeMessage = completion.choices[0].message.content.replace(
+            /```json|```/g,
+            ""
+          );
+          let translatedItem;
+          try {
+            translatedItem = JSON.parse(completeMessage);
+          }
+          catch (error) {
+            console.error('error agent ',agent.agent.id)
+            console.error(
+              `Fout bij JSON-parsing agent voor taal ${lang.language.language} en  agent ${agent.agent.id}:`,
+              completeMessage,
+              error
+            );
+
+            await db
+            .collection("categories")
+            .doc(categoryId)
+            .collection("languages")
+            .doc(lang.language.language)
+            .collection("agents")
+            .doc(agent.agent.id)
+            .set({failedOutput:completeMessage});
+
+            return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+          }
+          let newCategoryItem: any = translatedItem.output;
+          await db
+            .collection("categories")
+            .doc(categoryId)
+            .collection("languages")
+            .doc(lang.language.language)
+            .collection("agents")
+            .doc(agent.agent.id)
+            .set(newCategoryItem);
+            return null
+        } catch (error) {
+          console.error(`Fout bij vertalen agent naar ${lang.language.language}:`, error);
+          return null; // 🔹 BELANGRIJK: zorg dat we altijd een waarde teruggeven
+        }
+
+
+
+
+      });
+
+      return await Promise.all(translationAgentsPromises);
+    });
+
+    // Wacht tot alle vertalingen zijn voltooid
+    await Promise.all(translationPromises);
+
+    return null;
+})
+
+exports.translateAttitudes = functions.region("europe-west1").runWith({ memory: "1GB" }).https.onCall(async (data: any, context: any) => {
+  const db = admin.firestore();
+  const user = await db.collection("users").doc(context.auth?.uid).get();
+  if (!user.exists) {
+    console.log("User not found");
+    return new responder.Message("Admin not found", 404);
+  }
+  const userData = user.data();
+  if (!userData?.isAdmin) {
+    console.log("Admin not found");
+    return new responder.Message("Not authorized", 403);
+  }
+  if (!data.languages) {
+    console.log("Missing required parameters");
+    return new responder.Message("Missing required parameters", 400);
+  }
+  // console.log("Vertaal attitudes:", data.languages);
+  const languagesRef = db.collection("languages");
+  const languagesSnap = await languagesRef.get();
+  let languages: any = {};
+  languagesSnap.forEach((doc: any) => {
+    languages[doc.id] = doc.data();
+  });
+  // console.log("Talen opgehaald:", languages);
+  let languagesToTranslate: any[] = [];
+  for (let i = 0; i < data.languages.length; i++) {
+    if (languages[data.languages[i]]) {
+      languagesToTranslate.push({ language: languages[data.languages[i]] });
+    }
+  }
+  // console.log("Talen om te vertalen:", languagesToTranslate);
+  // Haal instructies en formats op parallel
+  const [agentInstructions, formats] = await Promise.all([
+    getAgentInstructions("translator", "main"),
+    getFormats("translator"),
+  ]);
+  let systemContent =
+    agentInstructions.systemContent +
+    "\n\n" +
+    formats.format +
+    "\n\n" +
+    formats.instructions;
+  // Start alle vertalingen parallel
+    const translationPromises: Promise<void>[] = languagesToTranslate.map(async (lang: any): Promise<void> => {
+
+    try {
+      let content = agentInstructions.content
+        .split("[original_language]")
+        .join(languages[data.original_language]?.title || "")
+        .split("[original_language_short]")
+        .join(languages[data.original_language]?.language || "")
+        .split("[translated_language]")
+        .join(languages[lang.language.language]?.title || "")
+        .split("[translated_language_short]")
+        .join(languages[lang.language.language]?.language || "");
+      
+      const attitudesRef = db.collection("attitudes");
+      const attitudesSnap = await attitudesRef.get();
+
+      if (attitudesSnap.empty) {
+        console.log("Geen attitudes gevonden");
+        return null;
+      }
+
+      attitudesSnap.forEach(async (doc: any) => {
+        const attitudeData = doc.data();
+        let attitudeContent = content
+        .split("[input]")
+        .join(JSON.stringify(attitudeData))
+
+        let sendMessages: any = [
+          { role: "system", content: systemContent },
+          { role: "user", content: attitudeContent },
+        ];
+
+        // console.log("message system :", JSON.stringify(sendMessages[0]).substring(0, 100));
+        const completion = await openai.chat.completions.create({
+          model: openAiModal,
+          messages: sendMessages,
+          temperature: agentInstructions.temperature,
+          max_tokens: agentInstructions.max_tokens,
+        });
+        const completeMessage = completion.choices[0].message.content.replace(
+          /```json|```/g,
+          ""
+        );
+        let translatedItem;
+        try {
+          translatedItem = JSON.parse(completeMessage);
+        }
+        catch (error) {
+          console.error(
+            `Fout bij JSON-parsing voor taal ${lang.language.language}:`,
+            completeMessage,
+            error
+          );
+          return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+        }
+        let newAttitudeItem: any = translatedItem.output;
+        await db
+          .collection("attitudes")
+          .doc(doc.id)
+          .collection("languages")
+          .doc(lang.language.language)
+          .set(newAttitudeItem);
+        // console.log("Nieuwe attitude item:", Object.keys(newAttitudeItem));
+      });
+      return null;
+
+    }
+    catch (error) {
+      console.error(
+        `Fout bij vertalen naar ${lang.language.language}:`,
+        error
+      );
+      return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+    }
+  })
+
+  // Wacht tot alle vertalingen zijn voltooid
+  await Promise.all(translationPromises);
+  return null;
+
+})
+
+exports.translatePhases = functions.region('europe-west1').runWith({memory:'8GB'}) .https.onCall(async (data: any, context: any) => {
+  
+  const db = admin.firestore();
+  const user = await db.collection('users').doc(context.auth?.uid).get()
+  if(!user.exists){
+    console.log("User not found")
+      return new responder.Message('Admin not found',404)
+  }
+  const userData = user.data()
+  if(!userData?.isAdmin){
+      console.log("Admin not found")
+      return new responder.Message('Not authorized',403)
+  }
+  if(!data.categoryId || !data.original_language){
+    console.log("Missing required parameters")
+    return new responder.Message('Missing required parameters',400)
+  }
+//  console.log("Vertaal categorie:", data.categoryId);
+  const languagesRef = db.collection("languages");
+  const languagesSnap = await languagesRef.get();
+  let languages: any = {};
+  languagesSnap.forEach((doc: any) => {
+    languages[doc.id] = doc.data();
+  });
+  // console.log("Talen opgehaald:", languages);
+
+  const categoryId = data.categoryId;
+  const categoryRef = db.collection("categories").doc(categoryId);
+  const categorySnap = await categoryRef.get();
+  if (!categorySnap.exists) {
+    throw new Error("Category not found");
+  }
+  const categoryData = categorySnap.data();
+
+  let languagesToTranslate:any[] = [];
+  if(data.languages){
+    for(let i=0;i<data.languages.length;i++){
+      if(languages[data.languages[i]]){
+        languagesToTranslate.push({language:languages[data.languages[i]]});
+      }
+    }
+  }
+  else{
+    for(let i=0;i<Object.keys(languages).length;i++){
+      if(languages[Object.keys(languages)[i]].language !== data.original_language){
+        languagesToTranslate.push({language:languages[Object.keys(languages)[i]]});
+      }
+    }
+  }
+
+  let catInput = categoryData;
+
+    // Haal instructies en formats op parallel
+    const [agentInstructions, formats] = await Promise.all([
+      getAgentInstructions("translator", "main"),
+      getFormats("translator"),
+    ]);
+
+    let systemContent =
+      agentInstructions.systemContent +
+      "\n\n" +
+      formats.format +
+      "\n\n" +
+      formats.instructions;
+
+    // Start alle vertalingen parallel
+    const translationPromises = languagesToTranslate.map(async (lang: any):Promise<null> => {
+        try {
+          
+          let content = agentInstructions.content
+            .split("[input]")
+            .join(JSON.stringify(catInput))
+            .split("[original_language]")
+            .join(languages[data.original_language]?.title || "")
+            .split("[original_language_short]")
+            .join(languages[data.original_language]?.language || "")
+            .split("[translated_language]")
+            .join(languages[lang.language.language]?.title || "")
+            .split("[translated_language_short]")
+            .join(languages[lang.language.language]?.language || "");
+
+          let sendMessages: any = [
+            { role: "system", content: systemContent },
+            { role: "user", content: content },
+          ];
+
+          const completion = await openai.chat.completions.create({
+            model: openAiModal,
+            messages: sendMessages,
+            temperature: agentInstructions.temperature,
+            max_tokens: agentInstructions.max_tokens,
+          });
+
+          const completeMessage = completion.choices[0].message.content.replace(
+            /```json|```/g,
+            ""
+          );
+
+          let translatedItem;
+          try {
+            translatedItem = JSON.parse(completeMessage);
+          } catch (error) {
+            console.error(
+              `Fout bij JSON-parsing voor taal ${lang}:`,
+              completeMessage,
+              error
+            );
+            return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+          }
+
+
+          let newCategoryItem: any = translatedItem.output;
+          
+          console.log("Nieuwe categorie item:", Object.keys(newCategoryItem));
+
+          await db
+            .collection("categories")
+            .doc(categoryId)
+            .collection("languages")
+            .doc(lang.language.language)
+            .set(newCategoryItem);
+
+          return null;
+        } catch (error) {
+          console.error(`Fout bij vertalen naar ${lang.language.language}:`, error);
+          return null; // 🔹 BELANGRIJK: zorg dat we altijd een waarde teruggeven
+        }
+
+
+    });
+
+    // Wacht tot alle vertalingen zijn voltooid
+    await Promise.all(translationPromises);
+
+    return null;
+})
+
+exports.translateCase = functions
+  .region("europe-west1")
+  .runWith({ memory: "1GB" })
+  .firestore.document("cases/{caseId}")
+  .onWrite(async (change: any, context: any) => {
+    const caseId = context.params.caseId;
+    const db = admin.firestore();
+
+    let caseDataNew: any = {};
+    let caseDataOld: any = {};
+
+    if (change.before.exists) {
+      caseDataOld = change.before.data();
+    }
+    if (change.after.exists) {
+      caseDataNew = change.after.data();
+
+      // Stop als vertaling niet nodig is of al is gestart
+      if (!caseDataNew.translate || caseDataOld.translate) {
+        return null;
+      }
+      console.log("Start vertaling voor case", caseId);
+      // Gebruik een Firestore-transactie om race conditions te voorkomen
+      try {
+        await db.runTransaction(async (transaction: FirebaseFirestore.Transaction): Promise<null> => {
+          const caseRef = db.collection("cases").doc(caseId);
+          const caseDoc = await transaction.get(caseRef);
+        
+          if (!caseDoc.exists || caseDoc.data().translate) {
+            return null; // Expliciet return type
+          }
+        
+          transaction.update(caseRef, { translate: true });
+          return null; // Expliciet return type
+        });
+      } catch (error) {
+        console.error("Transactie fout:", error);
+        return null;
+      }
+      console.log("Start languageRef");
+      // Haal beschikbare talen op
+      const languagesRef = db.collection("languages");
+      const languagesSnap = await languagesRef.get();
+      let languages: any = {};
+      languagesSnap.forEach((doc: any) => {
+        languages[doc.id] = doc.data();
+      });
+      console.log("Talen opgehaald:", languages);
+      // Input samenstellen
+      let input = {
+        openingMessage: caseDataNew.openingMessage || "",
+        casus: caseDataNew.casus || "",
+        role: caseDataNew.role || "",
+        user_info: caseDataNew.user_info || "",
+        title: caseDataNew.title || "",
+        goalsItems: {
+          free: caseDataNew.goalsItems?.free || "",
+        },
+        level_explanation: caseDataNew.level_explanation || "",
+        free_question: caseDataNew.free_question || "",
+      };
+
+      // Haal instructies en formats op parallel
+      const [agentInstructions, formats] = await Promise.all([
+        getAgentInstructions("translator", "main"),
+        getFormats("translator"),
+      ]);
+
+      let systemContent =
+        agentInstructions.systemContent +
+        "\n\n" +
+        formats.format +
+        "\n\n" +
+        formats.instructions;
+
+      // Start alle vertalingen parallel
+      const translationPromises = Object.keys(languages).map(async (lang: any) => {
+
+        if(lang === caseDataNew.original_language){
+          let newCaseItem: any = { ...caseDataNew };
+          newCaseItem.language = lang;
+          delete newCaseItem.translate;
+
+          admin.firestore().collection("cases").doc(caseId).collection("translations").doc(lang).set(newCaseItem);
+          return null;
+        }
+
+        try {
+          let content = agentInstructions.content
+            .split("[input]")
+            .join(JSON.stringify(input))
+            .split("[original_language]")
+            .join(languages[caseDataNew.original_language]?.title || "")
+            .split("[original_language_short]")
+            .join(languages[caseDataNew.original_language]?.language || "")
+            .split("[translated_language]")
+            .join(languages[lang]?.[caseDataNew.original_language] || "")
+            .split("[translated_language_short]")
+            .join(languages[lang]?.language || "");
+
+          let sendMessages: any = [
+            { role: "system", content: systemContent },
+            { role: "user", content: content },
+          ];
+
+          const completion = await openai.chat.completions.create({
+            model: openAiModal,
+            messages: sendMessages,
+            temperature: agentInstructions.temperature,
+            max_tokens: agentInstructions.max_tokens,
+          });
+
+          const completeMessage = completion.choices[0].message.content.replace(
+            /```json|```/g,
+            ""
+          );
+
+          let translatedItem;
+          try {
+            translatedItem = JSON.parse(completeMessage);
+          } catch (error) {
+            console.error(
+              `Fout bij JSON-parsing voor taal ${lang}:`,
+              completeMessage,
+              error
+            );
+            return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+          }
+
+          let newCaseItem: any = { ...caseDataNew };
+          newCaseItem.openingMessage = translatedItem.output.openingMessage;
+          newCaseItem.casus = translatedItem.output.casus;
+          newCaseItem.role = translatedItem.output.role;
+          newCaseItem.user_info = translatedItem.output.user_info;
+          newCaseItem.title = translatedItem.output.title;
+          newCaseItem.goalsItems.free = translatedItem.output.goalsItems.free;
+          newCaseItem.level_explanation = translatedItem.output.level_explanation;
+          newCaseItem.free_question = translatedItem.output.free_question;
+          newCaseItem.original_language = caseDataNew.original_language;
+          newCaseItem.language = lang;
+          delete newCaseItem.translate;
+
+          return db
+            .collection("cases")
+            .doc(caseId)
+            .collection("translations")
+            .doc(lang)
+            .set(newCaseItem);
+        } catch (error) {
+          console.error(`Fout bij vertalen naar ${lang}:`, error);
+          return null; // 🔹 BELANGRIJK: zorg dat we altijd een waarde teruggeven
+        }
+      });
+
+      // Wacht tot alle vertalingen zijn voltooid
+      await Promise.all(translationPromises);
+
+      return null;
+    }
     return null;
 });
 
+exports.translateTutorial = functions
+  .region("europe-west1")
+  .runWith({ memory: "1GB" })
+  .firestore.document("tutorials/{tutorialId}")
+  .onWrite(async (change: any, context: any) => {
+    const tutorialId = context.params.tutorialId;
+    const db = admin.firestore();
+
+    let tutorialDataNew: any = {};
+    let tutorialDataOld: any = {};
+
+    if (change.before.exists) {
+      tutorialDataOld = change.before.data();
+    }
+    if (change.after.exists) {
+      tutorialDataNew = change.after.data();
+
+      // Stop als vertaling niet nodig is of al is gestart
+      if (!tutorialDataNew.translate || tutorialDataOld.translate) {
+        return null;
+      }
+      console.log("Start vertaling voor case", tutorialId);
+      // Gebruik een Firestore-transactie om race conditions te voorkomen
+      try {
+        await db.runTransaction(async (transaction: FirebaseFirestore.Transaction): Promise<null> => {
+          const itemRef = db.collection("tutorials").doc(tutorialId);
+          const itemDoc = await transaction.get(itemRef);
+        
+          if (!itemDoc.exists || itemDoc.data().translate) {
+            return null; // Expliciet return type
+          }
+        
+          transaction.update(itemRef, { translate: true });
+          return null; // Expliciet return type
+        });
+      } catch (error) {
+        console.error("Transactie fout:", error);
+        return null;
+      }
+      console.log("Start languageRef");
+      // Haal beschikbare talen op
+      const languagesRef = db.collection("languages");
+      const languagesSnap = await languagesRef.get();
+      let languages: any = {};
+      languagesSnap.forEach((doc: any) => {
+        languages[doc.id] = doc.data();
+      });
+      console.log("Talen opgehaald:", languages);
+      // Input samenstellen
+      let input = {
+        steps: tutorialDataNew.steps || "",
+      };
+
+      // Haal instructies en formats op parallel
+      const [agentInstructions, formats] = await Promise.all([
+        getAgentInstructions("translator", "main"),
+        getFormats("translator"),
+      ]);
+
+      let systemContent =
+        agentInstructions.systemContent +
+        "\n\n" +
+        formats.format +
+        "\n\n" +
+        formats.instructions;
+
+      // Start alle vertalingen parallel
+      const translationPromises = Object.keys(languages).map(async (lang: any) => {
+
+        if(lang === tutorialDataNew.original_language){
+          let newItem: any = { ...input };
+          newItem.language = lang;
+          delete newItem.translate;
+          admin.firestore().collection("tutorials").doc(tutorialId).collection("translations").doc(lang).set(newItem);
+          return null;
+        }
+
+        try {
+          let content = agentInstructions.content
+            .split("[input]")
+            .join(JSON.stringify(input))
+            .split("[original_language]")
+            .join(languages[tutorialDataNew.original_language]?.title || "")
+            .split("[original_language_short]")
+            .join(languages[tutorialDataNew.original_language]?.language || "")
+            .split("[translated_language]")
+            .join(languages[lang]?.[tutorialDataNew.original_language] || "")
+            .split("[translated_language_short]")
+            .join(languages[lang]?.language || "");
+
+          let sendMessages: any = [
+            { role: "system", content: systemContent },
+            { role: "user", content: content },
+          ];
+
+          const completion = await openai.chat.completions.create({
+            model: openAiModal,
+            messages: sendMessages,
+            temperature: agentInstructions.temperature,
+            max_tokens: agentInstructions.max_tokens,
+          });
+
+          const completeMessage = completion.choices[0].message.content.replace(
+            /```json|```/g,
+            ""
+          );
+
+          let translatedItem;
+          try {
+            translatedItem = JSON.parse(completeMessage);
+          } catch (error) {
+            console.error(
+              `Fout bij JSON-parsing voor taal ${lang}:`,
+              completeMessage,
+              error
+            );
+            return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+          }
+
+          let newItem: any = { ...input };
+          newItem.steps = translatedItem.output.steps;
+          newItem.original_language = tutorialDataNew.original_language;
+          newItem.language = lang;
+          delete newItem.translate;
+
+          return db
+            .collection("tutorials")
+            .doc(tutorialId)
+            .collection("translations")
+            .doc(lang)
+            .set(newItem);
+        } catch (error) {
+          console.error(`Fout bij vertalen naar ${lang}:`, error);
+          return null; // 🔹 BELANGRIJK: zorg dat we altijd een waarde teruggeven
+        }
+      });
+
+      // Wacht tot alle vertalingen zijn voltooid
+      await Promise.all(translationPromises);
+
+      return null;
+    }
+    return null;
+});
 
 
 exports.createPhases = functions.region('europe-west1').https.onCall(async (data: any, context: any) => {
@@ -1803,6 +2893,7 @@ exports.createPhasesOnCreate = functions.region('europe-west1')
 
 
   const categoryData = change.data();
+  const categoryId = change.id;
 
   const [agent_instructions,formats] = await Promise.all([
     getAgentInstructions('phase_creator','main'), 
@@ -1839,7 +2930,7 @@ exports.createPhasesOnCreate = functions.region('europe-west1')
   
   const parsedMessage = JSON.parse(completeMessage);
 
-  await db.collection('categories').doc(categoryData.id).update({
+  await db.collection('categories').doc(categoryId).update({
     phaseList: Array.isArray(parsedMessage) ? parsedMessage : []
   });
 
@@ -1853,6 +2944,7 @@ async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string){
   console.log('imageInfo: ' + imageUrl);
   console.log('imageInfo: ' + JSON.stringify(imageInfo));
   if(imageInfo.akool){
+    console .log('imageData laden');
     imageData = await axios.get(
       imageUrl, 
       { headers: {
@@ -1863,14 +2955,19 @@ async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string){
   else{
     
     console.log('imageData laden');
-    imageData = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    imageData = await axios.get(
+      imageUrl, 
+      { responseType: 'arraybuffer' });
     console.log('imageData geladen');
   }
 
+  console.log('start imagebuffer')
   const imageBuffer = Buffer.from(imageData.data, "binary");
   // Optioneel: Converteer PNG naar WebP (commentaar verwijderen als nodig)
+  console.log('start webp')
   const webpBuffer = await sharp(imageBuffer).webp().toBuffer();
   // Genereer een unieke bestandsnaam
+  console.log('start filename')
   const fileName = `generated-images/${Date.now()}_${imageInfo.userId}.webp`;
   // Upload de afbeelding naar Firebase Cloud Storage
   const bucket = storage.bucket('lwai-3bac8.firebasestorage.app');
@@ -1898,99 +2995,10 @@ async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string){
     ethnicity: imageInfo.ethnicity,
     emotion: imageInfo.emotion,
   });
+
+  return publicUrl;
 }
 
-
-// async function initializeConversationOld(
-//   categoryId: string,
-//   caseId: string,
-//   startAttitude: number,
-//   instructionType: string,
-//   userId: string,
-//   data:any
-// ): Promise<any[]> {
-//   try {
-//     const categoryRef = db.doc(`categories/${categoryId}`);
-//     let caseRef = db.doc(`cases/${caseId}`);
-//     if(data.trainerId){
-//       caseRef = db.doc(`cases_trainer/${caseId}`);
-//     }
-//     const [categorySnap, caseSnap, attitudes, positions, agent_instructions, userData,formats] = await Promise.all([
-//       categoryRef.get(),                  // Haal category op
-//       caseRef.get(),                      // Haal case op
-//       getAllAttitudes(),                  // Haal attitudes op
-//       getAllPositions(),                  // Haal positions op
-//       getAgentInstructions(instructionType,categoryId),   // Haal instructions op
-//       getUserInfo(userId)         ,        // Haal user info op
-//       getFormats(instructionType)
-//     ]);
-
-//     if (!categorySnap.exists || !caseSnap.exists) {
-//       throw new Error("Category or Case not found");
-//     }
-
-//     // const categoryData = categorySnap.data();
-//     const caseData = caseSnap.data();
-//     const attitudesText = JSON.stringify(attitudes);
-//     const positionsText = JSON.stringify(positions);
-    
-
-//     let systemContent = agent_instructions.systemContent;
-//     systemContent = systemContent.split("[role]").join(caseData.role); 
-//     systemContent = systemContent.replace("[description]", caseData.description);
-//     if(caseData.steadfastness){
-//       systemContent = systemContent.replace("[steadfastness]", caseData.steadfastness.toString());
-//     }
-//     systemContent = systemContent.replace("[attitudes]", attitudesText);
-//     systemContent = systemContent.replace("[current_attitude]", startAttitude.toString());
-
-//     systemContent = systemContent.replace("[positions]", positionsText);
-//     systemContent = systemContent.replace("[current_position]", startAttitude.toString());
-
-//     systemContent = systemContent + "\n\n" + formats.format + '\n\n' + formats.instructions;
-
-//     if(caseData.casus){
-//       systemContent = systemContent + "\nDe casus voor de gebruiker is als volgt: " + caseData.casus;
-//     }
-
-//     if(caseData.interest_goals){
-//       systemContent = systemContent.replace("[interest_goals]", caseData.interest_goals);
-//     }
-
-//     if(agent_instructions.extra_info){
-//       systemContent = systemContent + "\n\n" + agent_instructions.extra_info;
-//     }
-
-    
-
-//     let userMessage = ''
-//     if(data?.openingMessage){
-//       userMessage = data.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
-//     }
-//     if(!userMessage){
-//       userMessage = agent_instructions.content.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
-//     }
-
-//     // console.log('userMessage: ' + userMessage);
-
-
-//     return [
-//       {
-//         role: "system",
-//         content: systemContent,
-//         timestamp: new Date().getTime(),
-//       },
-//       {
-//         role: "user",
-//         content: userMessage,
-//         timestamp: new Date().getTime(),
-//       }
-//     ];
-//   } catch (error) {
-//     console.error("Error bij initialiseren van gesprek:", error);
-//     throw new Error("Failed to initialize conversation");
-//   }
-// }
 
 async function initializeConversation(body:any): Promise<any[]> {
   try {
@@ -2114,21 +3122,6 @@ async function getAllPositions(): Promise<{ id: string; [key: string]: any }[]> 
   }
 }
 
-// async function getInstructions(type: string): Promise<{ [key: string]: any } | null> {
-//   // console.log('instructions' + type)
-//   try {
-//     const snapshot = await db.collection("instructions").doc(type).get();
-//     if (!snapshot.exists) {
-//       console.warn(`Geen instructies gevonden voor type: ${type}`);
-//       return null;
-//     }
-//     return snapshot.data();
-//   } catch (error) {
-//     console.error("Error bij ophalen instructies:", error);
-//     throw new Error("Kan instructies niet ophalen.");
-//   }
-// }
-
 async function getAgentInstructions(type: string, categoryId:string): Promise<{ [key: string]: any } | null> {
   // console.log('instructions' + type)
 
@@ -2150,31 +3143,37 @@ async function getAgentInstructions(type: string, categoryId:string): Promise<{ 
 
     const mainInstructionsDoc = snapShotDoc.data();
 
-    const snapshot = await db.collection("categories").doc(categoryId).collection('agents').doc(type).get();
-    if (!snapshot.exists) {
-      console.warn(`Geen instructies gevonden voor type: ${type}`);
-      return null;
+    if(categoryId != 'main'){
+      const snapshot = await db.collection("categories").doc(categoryId).collection('agents').doc(type).get();
+      if (!snapshot.exists) {
+        console.warn(`Geen instructies gevonden voor type: ${type}`);
+        return null;
+      }
+
+      const instructions = snapshot.data();
+      if(instructions.overwrite&&instructions.systemContent){
+        mainInstructions.systemContent = instructions.systemContent;
+      }
+      else if(instructions.systemContent){
+        mainInstructions.systemContent = mainInstructions.systemContent.split("[category_input]").join(instructions.systemContent);
+      }
+      if(instructions.overwrite&&instructions.content){
+        mainInstructions.content = instructions.content;
+      }
+      else if(instructions.content){
+        mainInstructions.content = mainInstructions.content.split("[category_input]").join(instructions.content);
+      }
+      if(instructions.temperature){
+        mainInstructions.temperature = instructions.temperature;
+      }
+      if(instructions.max_tokens){
+        mainInstructions.max_tokens = instructions.max_tokens;
+      }
+
     }
 
-    const instructions = snapshot.data();
-    if(instructions.overwrite&&instructions.systemContent){
-      mainInstructions.systemContent = instructions.systemContent;
-    }
-    else if(instructions.systemContent){
-      mainInstructions.systemContent = mainInstructions.systemContent.split("[category_input]").join(instructions.systemContent);
-    }
-    if(instructions.overwrite&&instructions.content){
-      mainInstructions.content = instructions.content;
-    }
-    else if(instructions.content){
-      mainInstructions.content = mainInstructions.content.split("[category_input]").join(instructions.content);
-    }
-    if(instructions.temperature){
-      mainInstructions.temperature = instructions.temperature;
-    }
-    if(instructions.max_tokens){
-      mainInstructions.max_tokens = instructions.max_tokens;
-    }
+
+
     if(mainInstructionsDoc.general_layer){
       mainInstructions.systemContent = mainInstructions.systemContent.split("[general_layer]").join(mainInstructionsDoc.general_layer);
     }
@@ -2210,12 +3209,15 @@ async function checkUserSubscription(userId: string): Promise<boolean> {
   try {
     const subscriptionRef = db.collection(`users/${userId}/subscriptions`);
     const snapshot = await subscriptionRef.get();
-    if (snapshot.empty) return false;
+    if (snapshot.empty) {
+      return false;
+    }
+// return false;
 
     // Controleer op specifieke abonnementsvoorwaarden
     const validSubscriptions = snapshot.docs.filter((doc) => {
       const data = doc.data();
-      return data.status=='active' && (data.type === "premium" || data.type === "trial" || data.type === "student" ); // Pas dit aan naar jouw logica
+      return data.status=='active' && (data.type === "basic"); // Pas dit aan naar jouw logica
     });
 
     return validSubscriptions.length > 0;
@@ -2574,4 +3576,47 @@ function goalsText(conversationData:any,noSpecifics?:boolean){
   }
   
   return goals;
+}
+
+
+
+
+/**
+ * Converteert een WebM audiobestand naar WAV-formaat.
+ * @param inputBuffer - Buffer met WebM audio
+ * @returns {Promise<Buffer>} - Geconverteerd WAV-bestand als buffer
+ */
+export async function convertWebMtoWav(inputBuffer: Buffer): Promise<Buffer> {
+  // 📌 Maak tijdelijke bestanden aan
+  const inputPath = path.join("/tmp", `input-${Date.now()}.webm`);
+  const outputPath = path.join("/tmp", `output-${Date.now()}.wav`);
+
+  // 📌 Schrijf de WebM-audio naar een tijdelijk bestand
+  fs.writeFileSync(inputPath, inputBuffer);
+
+  return new Promise((resolve, reject) => {
+    // 📌 Voer FFmpeg uit om WebM naar WAV te converteren
+    const ffmpegProcess = spawn(ffmpeg as unknown as string, [
+      "-i", inputPath, // Inputbestand
+      "-ar", "16000",  // Sample rate 16kHz (geschikt voor Whisper AI)
+      "-ac", "1",      // Mono audio
+      "-b:a", "256k",  // Bitrate
+      outputPath       // Outputbestand
+    ]);
+
+    ffmpegProcess.on("close", (code) => {
+      if (code === 0) {
+        // 📌 Lees de geconverteerde WAV en geef als buffer terug
+        const wavBuffer = fs.readFileSync(outputPath);
+        
+        // 📌 Opruimen van tijdelijke bestanden
+        fs.unlinkSync(inputPath);
+        fs.unlinkSync(outputPath);
+
+        resolve(wavBuffer);
+      } else {
+        reject(new Error(`FFmpeg fout, exit code: ${code}`));
+      }
+    });
+  });
 }

@@ -3,15 +3,15 @@
     <img class="login_logo" src="assets/icon/logo_full_black_sm.png">
     <div class="login-container">
       
-      <h3 marginBottom *ngIf="isVerifying">Verifying...</h3>
-      <h3 marginBottom *ngIf="isVerified">✅ Successfull!</h3>
-      <h3 marginBottom *ngIf="isError">❌ Verification failed.</h3>
+      <h3 marginBottom *ngIf="isVerifying">{{'page_verify.verifying' | translate}}...</h3>
+      <h3 marginBottom *ngIf="isVerified">✅ {{'page_verify.success' | translate}}</h3>
+      <h3 marginBottom *ngIf="isError">❌ {{'page_verify.failure' | translate}}</h3>
 
-      <div *ngIf="isVerifying">Momentje nog</div>
-      <div *ngIf="isVerified">Fijn! nogmaals welkom. je wordt zo doorgestuurd.</div>
-      <div marginBottom *ngIf="isError">Helaas. Deze code is niet geldig. probeer opnieuw te registreren of gebruik een andere link.</div>
+      <div *ngIf="isVerifying">{{'page_verify.moment' | translate}}</div>
+      <div *ngIf="isVerified">{{'page_verify.isverified' | translate}}</div>
+      <div marginBottom *ngIf="isError">{{'page_verify.wrong_code' | translate}}</div>
       <div *ngIf="isError&&authService?.userInfo?.email">
-        <ion-button expand="block" color="primary" class="saveButton" (click)="resendVerification()">Stuur e-mail opnieuw</ion-button>
+        <ion-button expand="block" color="primary" class="saveButton" (click)="resendVerification()">{{'page_verify.resend' | translate}}</ion-button>
       </div>
 
     </div>

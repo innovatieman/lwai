@@ -4,17 +4,33 @@
     <ion-row>
       <ion-col [size]="media.screenSize=='xs' ? 2 : 3" class="selectColumn" style="padding-top:15px;">
         <div *ngIf="media.screenSize=='xs'">
+
+
+          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" (click)="nav.go('start/dashboard')">
+            <fa-icon [icon]="icon.get('faHome')" ></fa-icon>
+          </ion-card>
+
           <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" *ngFor="let item of menuItems" [ngClass]="{'activeTab':activeTab==item.tab}" (click)="changeTab(item.tab)">
               <fa-icon [icon]="icon.get(item.icon)" ></fa-icon>
           </ion-card>
 
-          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" *ngIf="auth.customer?.stripeId" (click)="openStripeDashboard()">
+          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" *ngIf="auth.customer?.stripeCustomerId" (click)="openStripeDashboard()">
               <fa-icon [icon]="icon.get('faCreditCard')" ></fa-icon>
           </ion-card>
 
         </div>
 
         <div *ngIf="media.screenSize!='xs'">
+          
+          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" >
+  
+            <ion-item lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false">
+              <div font-20 weight700>{{'page_account.dashboard' | translate}}</div>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faHome')"></fa-icon>
+            </ion-item>
+  
+          </div>
+
           <div *ngFor="let item of menuItems" style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab==item.tab,'notActiveItem':activeTab!=item.tab}">
   
             <ion-item lines="none" button (click)="changeTab(item.tab)" class="itemButton" [detail]="false">
@@ -24,10 +40,10 @@
   
           </div>
   
-          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.customer?.stripeId">
+          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.customer?.stripeCustomerId">
   
             <ion-item lines="none" button (click)="openStripeDashboard()" class="itemButton" [detail]="false">
-              <div font-20 weight700>Betalingen</div>
+              <div font-20 weight700>{{'page_account.billing' | translate}}</div>
               <fa-icon font-18 slot="end" style="color:rgba(0,0,0,0.3)" [icon]="icon.get('faExternalLinkAlt')"></fa-icon>
               <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faCreditCard')"></fa-icon>
             </ion-item>
@@ -45,44 +61,94 @@
           <ion-row>
             <ion-col size="12">
               <ion-card-header>
-                <ion-card-title>Mijn gegevens</ion-card-title>
+                <ion-card-title>{{'page_account.my_data' | translate}}</ion-card-title>
               </ion-card-header>
               <ion-card-content>
-                <ion-list>
-                  <ion-label position="stacked" style="margin-left:15px">Naam</ion-label>
+                <ion-list style="background:white;--background:white">
+                  <ion-label position="stacked" style="margin-left:15px">{{'page_account.first_name' | translate}}</ion-label>
                   <ion-item lines="none" class="fieldItem" style="--padding-start:0;">
                     <ion-input class="saveButton" borderRadius24 placeholder="Naam" type="text" [(ngModel)]="account.displayName"></ion-input>
                   </ion-item>
                 </ion-list>
-                <ion-button class="saveButton" [disabled]="!account.displayName || account.displayName == this.auth.userInfo.displayName" (click)="updateAccount()">Opslaan</ion-button>
+                <ion-button class="saveButton" [disabled]="!account.displayName || account.displayName == this.auth.userInfo.displayName" (click)="updateAccount()">{{'buttons.save' | translate}}</ion-button>
               </ion-card-content>
             </ion-col>
           </ion-row>
         </ion-card>
 
-        <ion-card basicPadding *ngIf="activeTab=='profile'">
-          <ion-card-header>
-            <ion-card-title>Mijn Profiel</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-card basicPadding>
+        <ion-card basicPadding *ngIf="activeTab=='basics'">
+          <ion-row>
+            <ion-col size="12">
               <ion-card-header>
-                <ion-card-title>Thema voorkeuren</ion-card-title>
-                
+                <ion-card-title>{{'page_account.location' | translate}}</ion-card-title>
               </ion-card-header>
-              <ion-item marginBottom listCard lines="none" *ngFor="let theme of infoService.themes">
-                <ion-toggle color="primary" [(ngModel)]="account.preferences.themes[theme.id]" (ionChange)="updatePreference()">
-                <!-- <ion-toggle color="primary" [(ngModel)]="account.preferences.themes[theme.id]"> -->
-                  {{theme.id | capitalize}}
-                </ion-toggle>
-              </ion-item>
-            </ion-card>
-          </ion-card-content>
+              <ion-card-content>
+                <ion-list style="background:white;--background:white">
+                  <ion-label position="stacked" style="margin-left:15px">{{'languages.country' | translate}}</ion-label>
+                  <ion-item lines="none" class="fieldItem" style="--padding-start:0;" (click)="showCountryPicker()">
+                    <div class="select">
+                      <ion-thumbnail slot="start" *ngIf="auth.userInfo?.country" style="--size:30px;width:35px;height:25px;">
+                        <img [src]="countries.country(auth.userInfo.country).flag">
+                      </ion-thumbnail>
+                      <div class="text" *ngIf="auth.userInfo?.country">{{countries.country(auth.userInfo.country).country}}</div>
+                    </div>
+                  </ion-item>
+
+                  <ion-label position="stacked" style="margin-left:15px">{{'languages.language' | translate}}</ion-label>
+                  <ion-item lines="none" class="fieldItem" style="--padding-start:0;" (click)="editLang()">
+                    <div class="select">
+                      <fa-icon font-24 [icon]="icon.get('faGlobeEurope')" class="langIcon" ></fa-icon>
+                      <div class="text">{{'languages.'+translate.currentLang | translate}}</div>
+                    </div>
+                  </ion-item>
+
+                  <ion-label position="stacked" style="margin-left:15px">{{'currency.currency' | translate}}</ion-label>
+                  <ion-item lines="none" class="fieldItem" style="--padding-start:0;" (click)="editCurrency()">
+                    <div class="select">
+                      <div font-22 weight700 style="margin-right:20px;" *ngIf="auth.userInfo.currency">{{'currency.'+auth.userInfo.currency+'_symbol' | translate}}</div>
+                      <div class="text" *ngIf="auth.userInfo.currency">{{'currency.'+auth.userInfo.currency | translate}}</div>
+                    </div>
+                  </ion-item>
+
+                </ion-list>
+              </ion-card-content>
+            </ion-col>
+          </ion-row>
         </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='basics'">
+          <ion-row>
+            <ion-col size="12">
+              <ion-card-header>
+                <ion-card-title flex center-ver fullwidth>
+                  <span>{{'page_account.preferences' | translate}}</span>
+                  <div class="spacer"></div>
+                  <ion-button class="saveButton" [disabled]="!filterEdited" (click)="updateFilter()">{{'buttons.save' | translate}}</ion-button>
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content style="max-height:600px;overflow-y:auto;">
+                <p style="padding:0 15px">{{'page_account.preferences_text' | translate}}</p>
+                <div *ngFor="let type of infoService.conversation_types | sortBy: -1 : 'order'">
+                  <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="type.selected = !type.selected">
+                      <ion-checkbox mode="md" slot="start" [(ngModel)]="type.selected" noPointerEvents></ion-checkbox>
+                      <ion-label>{{ type[translate.currentLang] }}</ion-label>
+                  </ion-item>
+                  <div *ngIf="type.selected" class="innerSelectCase">
+                      <ion-item lines="none" font-18 weight400 noMargin class="selectCaseItem innerSelectCaseItem" *ngFor="let subject of type.subjects" (click)="subject.selected = !subject.selected">
+                          <ion-checkbox mode="md" slot="start" [(ngModel)]="subject.selected" noPointerEvents></ion-checkbox>
+                          <ion-label>{{ subject[translate.currentLang] }}</ion-label>
+                      </ion-item>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-col>
+          </ion-row>
+        </ion-card>
+
 
         <ion-card basicPadding *ngIf="activeTab=='courses'">
           <ion-card-header>
-            <ion-card-title>Mijn cursussen</ion-card-title>
+            <ion-card-title>{{'page_account.my_courses' | translate}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-card basicPadding listCard borderSecondary borderRadius16 pointer *ngFor="let course of courses$ | async | sortBy : 1 : 'startdate' | filterKey : 'status' : 'finished'" flex center-ver fullwidth (click)="nav.go('course/'+course.courseId)">
@@ -95,7 +161,7 @@
 
         <ion-card basicPadding *ngIf="activeTab=='conversations'">
           <ion-card-header>
-            <ion-card-title>Mijn cases</ion-card-title>
+            <ion-card-title>{{'page_account.my_cases' | translate}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-card basicPadding listCard borderSecondary borderRadius16 pointer [ngStyle]="{'display' : media.screenSize=='xs' ? 'block' : 'flex'}" *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp' | filterKey : 'closed' : 'notEmpty'"  center-ver fullwidth (click)="openConversation(conversation)">
@@ -114,7 +180,7 @@
 
         <ion-card basicPadding *ngIf="activeTab=='subscriptions'">
           <ion-card-header>
-            <ion-card-title>Mijn abonnement</ion-card-title>
+            <ion-card-title>{{'page_account.my_subscription' | translate}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-row>
@@ -156,24 +222,15 @@
           </ion-card-content>
         </ion-card>
 
-        <ion-card basicPadding *ngIf="activeTab=='payment'">
-          <ion-card-header>
-            <ion-card-title>Betalingen</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            Hier komt de betaal instellingen
-          </ion-card-content>
-        </ion-card>
-
         <ion-card basicPadding *ngIf="activeTab=='credits'">
           <ion-card-header>
-            <ion-card-title>Credits</ion-card-title>
+            <ion-card-title>{{'page_account.credits' | translate}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-row>
               <ion-card basicPadding listCard borderSecondary borderRadius16 pointer basicMargin>
-                <ion-card-title *ngIf="auth.credits.total">Actueel aantal Credits: {{auth.credits.total}}</ion-card-title>
-                <ion-card-title *ngIf="!auth.credits.total">Op dit moment heb je geen credits (meer)</ion-card-title>
+                <ion-card-title *ngIf="auth.credits.total">{{'page_account.credits_current' | translate}} {{auth.credits.total}}</ion-card-title>
+                <ion-card-title *ngIf="!auth.credits.total">{{'page_account.no_credits' | translate}}</ion-card-title>
               </ion-card>
 
             </ion-row>
@@ -182,11 +239,11 @@
                 <ion-card basicPadding pointer flex center-ver center-hor class="creditsCard" (click)="buy(product)" *ngIf="product.prices?.length">
                   <div center>
                     <div font-24 weight700 marginBottom text-dark>
-                      {{product.credits}} credits
+                      {{product.credits}} {{'page_account.credits' | translate}}
                     </div>
                     <div font-20 weight600 marginBottom>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</div>
                     <ion-button class="saveButton" >
-                        Koop nu
+                        {{'page_account.buy_now' | translate}}
                     </ion-button>
                    
                   </div>
@@ -198,24 +255,6 @@
           </ion-card-content>
         </ion-card>
 
-        <ion-card basicPadding *ngIf="activeTab=='trainer'">
-          <ion-card-header>
-            <ion-card-title>Trainer</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-row>
-              <ion-col size="4">
-                <ion-card basicPadding solidTertiary pointer (click)="nav.go('trainer/courses')">
-                  <ion-card-header>
-                    <ion-card-title>Beheer Trajecten</ion-card-title>
-                  </ion-card-header>
-                </ion-card>
-              </ion-col>
-            </ion-row>
-            
-
-          </ion-card-content>
-        </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>

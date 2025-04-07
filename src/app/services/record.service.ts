@@ -18,8 +18,16 @@ export class RecordService {
       this.recording = true;
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   
-      // Gebruik 'audio/mp4' voor Safari, of fallback naar 'audio/webm' voor andere browsers
-      const mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/webm';
+      // const mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/webm';
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+      ? "audio/webm;codecs=opus"
+      : (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")
+      ? "audio/ogg;codecs=opus"
+      : "audio/mp4");
+      // : (MediaRecorder.isTypeSupported("'audio/mp4'")
+      // ? "audio/mp4"
+      // : "audio/wav")); // Laatste fallback
+      console.log("MIME type:", mimeType);
       this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
   
       const audioChunks: Blob[] = [];
@@ -70,7 +78,65 @@ export class RecordService {
     }
   }
 
+  // async startRecording(type: string, conversationId: string, callback: Function) {
+  //   if (type === 'audioToText') {
+  //     this.recording = true;
+  //     this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  
+  //     // Gebruik 'audio/mp4' voor Safari, of fallback naar 'audio/webm' voor andere browsers
+  //     const mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/webm';
+  //     this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
+  
+  //     const audioChunks: Blob[] = [];
+  
+  //     this.mediaRecorder.ondataavailable = (event) => {
+  //       if (event.data.size > 0) {
+  //         audioChunks.push(event.data);
+  //       }
+  //     };
+  
+  //     this.mediaRecorder.start();
+  
+  //     // **Forceer dat er minstens 1 chunk wordt verzameld voordat je stopt**
+  //     setTimeout(() => {
+  //       if (this.mediaRecorder!.state !== "inactive") {
+  //         this.mediaRecorder!.stop();
+  //       }
+  //     }, 60000); // Maximaal 60 seconden opnemen
+  
+  //     this.mediaRecorder.onstop = async () => {
+  //       console.log('Recording stopped');
+  //       this.recording = false;
+  //       this.analyzing = true;
+  
+  //       // **Controleer of er daadwerkelijk audio is opgenomen**
+  //       if (audioChunks.length === 0) {
+  //         console.error("Geen audio opgenomen! Mogelijk Safari bug.");
+  //         return;
+  //       }
+  
+  //       const audioBlob = new Blob(audioChunks, { type: mimeType });
+  
+  //       if (audioBlob.size > 0) {
+  //         console.log("Audio opgenomen, grootte:", audioBlob.size);
+  //         this.uploadAudio(audioBlob, conversationId, callback);
+  //       } else {
+  //         console.error("AudioBlob is nog steeds leeg!");
+  //       }
+  //     };
+  
+  //     // **Extra beveiliging: zorg dat er minstens 1 chunk komt**
+  //     // setTimeout(() => {
+  //     //   if (audioChunks.length === 0 && this.mediaRecorder!.state !== "inactive") {
+  //     //     console.warn("Geen chunks ontvangen, forceren van stop()");
+  //     //     this.mediaRecorder!.stop();
+  //     //   }
+  //     // }, 3000); // Forceer een stop na 3 seconden als er geen chunks zijn
+  //   }
+  // }
+
   stopRecording(callback?:Function) {
+    console.log('stopped');
     if (this.stream) {
       this.mediaRecorder?.stop();
       setTimeout(() => {
@@ -267,6 +333,7 @@ export class RecordService {
           };
   
           const response = await fetch("https://soundtotextai-p2qcpa6ahq-ew.a.run.app", {
+          // const response = await fetch("https://soundtotextgemini-p2qcpa6ahq-ew.a.run.app", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

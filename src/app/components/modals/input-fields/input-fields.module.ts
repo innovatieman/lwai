@@ -10,6 +10,7 @@ import { InputFieldsPage } from './input-fields.page';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     InputFieldsPageRoutingModule,
     FontAwesomeModule,
     TranslateModule.forChild(),
-    PipesModule
+    PipesModule,
+    QuillModule,
   ],
   declarations: [InputFieldsPage]
 })

@@ -10,6 +10,8 @@ import { CasesPage } from './cases.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { HttpClientModule } from '@angular/common/http';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
 @NgModule({
   imports: [
@@ -19,7 +21,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     CasesPageRoutingModule,
     ComponentsModule,
     PipesModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    HttpClientModule,
+    NgxDatatableModule
   ],
   declarations: [CasesPage]
 })

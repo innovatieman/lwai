@@ -12,10 +12,13 @@ export class CleanReactionPipe implements PipeTransform {
     
     let tempValue = value.split(', reaction:')
     tempValue.splice(0,1)
-    return tempValue.join(', reaction:')
+    return this.clearStringChars(tempValue.join(', reaction:'))
 
 
   }
 
+  clearStringChars(input: string) {
+    return input.split('{').join('').split('}').join('')
+  }
 }
 

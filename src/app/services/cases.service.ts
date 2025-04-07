@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ChangeDetectorRef, EventEmitter, Injectable, Output, output } from '@angular/core';
 import { combineLatest, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
@@ -6,20 +6,24 @@ import { AuthService } from '../auth/auth.service';
 import { FirestoreService } from './firestore.service';
 import { TranslateService } from '@ngx-translate/core';
 import { InfoService } from './info.service';
+import { NavService } from './nav.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CasesService {
+  @Output()  casesLoaded:EventEmitter<boolean> = new EventEmitter()
   selectedType:any = undefined
   all:any[] = []
   isAdmin:boolean = false
+  suggestions:any[] = []
   constructor(
     private fire:AngularFirestore,
     private auth:AuthService,
     private firestore: FirestoreService,
     private translate: TranslateService,
-    private infoService: InfoService
+    private infoService: InfoService,
+    private nav:NavService,
   ) { 
     this.auth.isAdmin().subscribe((admin) => {
       this.isAdmin = admin;
@@ -31,8 +35,28 @@ export class CasesService {
           for(let i = 0; i < this.all.length; i++){
             this.all[i].conversationTypes = this.infoService.getConversationType('',this.all[i].types,true)
           }
+          this.casesLoaded.emit(true)
         }
       }, 200);
+    })
+
+    this.nav.changeNav.subscribe((res)=>{
+      console.log('changeNav',res)
+      this.all = []
+      this.loadCases(()=>{
+        let checkInt = setInterval(() => {
+          if(this.infoService.conversation_types.length){
+            clearInterval(checkInt)
+            for(let i = 0; i < this.all.length; i++){
+              this.all[i].conversationTypes = this.infoService.getConversationType('',this.all[i].types,true)
+            }
+          }
+        }, 200);
+        console.log(this.all)
+        setTimeout(() => {
+          this.all = JSON.parse(JSON.stringify(this.all))
+        }, 200);
+      })
     })
   }
 
@@ -91,7 +115,7 @@ export class CasesService {
 
 
   loadCases(callback?:Function) {
-    const currentLang = this.translate.currentLang || 'en-EN';
+    const currentLang = this.translate.currentLang || 'en';
     // Query voor cases die toegankelijk zijn voor de gebruiker
     this.fire
       .collection('cases', ref => ref.where('open_to_user', '==', true))
@@ -127,7 +151,11 @@ export class CasesService {
         this.all = cases.map(doc => ({
           ...doc,
           title: doc.translation?.title || doc.title,
-          content: doc.translation?.content || doc.content,
+          user_info: doc.translation?.user_info || doc.user_info,
+          casus: doc.translation?.casus || doc.casus,
+          openingMessage: doc.translation?.openingMessage || doc.openingMessage,
+          goalsItem: doc.translation?.goalsItem || doc.goalsItem,
+          level_explanation: doc.translation?.level_explanation || doc.level_explanation,
         }));
         if (callback) {
           callback();

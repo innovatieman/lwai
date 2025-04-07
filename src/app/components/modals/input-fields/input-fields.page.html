@@ -7,14 +7,14 @@
         
         <h3 style="padding: 0 15px;color:var(--color-global)" font-20>{{title | uppercase}}</h3>
         <!-- <h3 style="padding: 15px;color:var(--ion-color-secondary)" font-title>{{title}}</h3> -->
-        <div style="padding: 0 15px;color:var(--color-global);margin-top:20px;line-height:1.5" *ngIf="text" [innerHtml]="text | sanitizeHtml">{{text}}</div>
+        <div style="padding: 0 15px;color:var(--color-global);margin-top:20px;line-height:1.5;margin-bottom:20px;" *ngIf="text" [innerHtml]="text | sanitizeHtml">{{text}}</div>
         <div style="padding:15px 0px;background-color:white;border-radius:16px;margin-bottom:10px" *ngIf="fields.length>0">
           <ion-item pointer lines="full" *ngFor="let field of fields;let index=index" [ngClass]="{'pointer':field.type==='date'}" (click)="field.type==='date' ? selectDate(field.value,index,null,field.min,field.max) : (field.type==='selectModal' ? selectItem(field.options,index,field.title,field.translate) :  doNothing())">
             
             <ion-thumbnail slot="start" *ngIf="field.lang" style="--size:30px;width:35px;height:25px;position: relative;top:5px">
               <img [src]="'./assets/img/'+field.value+'.png'" [alt]="field.value">
             </ion-thumbnail>
-            <ion-checkbox slot="start" *ngIf="field.type==='checkbox'" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-checkbox>
+            <ion-checkbox mode="md" slot="start" *ngIf="field.type==='checkbox'" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-checkbox>
             <ion-label *ngIf="field.type==='checkbox'" class="ion-text-wrap" pointer [innerHtml]="field.title"></ion-label>
             <ion-icon name="checkmark-circle" slot="start" *ngIf="!field.type||field.type==='text'||field.type==='textarea'"></ion-icon>
             <ion-icon name="calendar" slot="start" *ngIf="field.type==='date'"></ion-icon>
@@ -45,11 +45,14 @@
             <ion-select *ngIf="field.type=='select'&&!field.optionKeys" interface="popover"  [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value">
               <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}</ion-select-option>
             </ion-select>
+            <ion-select mode="md" *ngIf="field.type=='select'&&field.optionKeys" interface="popover"  [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value">
+              <ion-select-option style="color:#204289;--color:#204289" mode="md" *ngFor="let option of field.optionKeys" [value]="option.value">{{option.title}}</ion-select-option>
+            </ion-select>
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&!field.lang&&!field.keyvalue" relative style="top:-10px">{{field.value}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&!field.lang&&field.keyvalue" relative style="top:-10px">{{helpers[field.keyvalue](field.value)}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&field.lang&&field.value" relative style="top:-10px">{{'language_'+field.value | translate}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&field.translate" relative style="top:-10px">{{field.value | translate}}</ion-text>
-            <ion-textarea *ngIf="field.type==='textarea'" rows="4"  type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" placeholder="Voeg hier eventuele informatie toe"></ion-textarea>
+            <ion-textarea *ngIf="field.type==='textarea'" rows="6"  type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" [placeholder]="field.placeholder ? field.placeholder : ''"></ion-textarea>
             
             <ion-toggle *ngIf="field.type==='toggle'" style="color:var(--color-global)" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value">
               {{field.title}}
@@ -65,14 +68,19 @@
             <div *ngIf="field.type==='header'">
               <h3 style="color:var(--ion-color-primary);padding:0!important" font-title>{{field.title}}</h3>
             </div>
-            <!-- <ion-input *ngIf="field.type=='date'" type="date" placeholder="Selecteer een datum" (click)="selectDate(field.value,index)"  [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input> -->
-            <!-- <ion-input *ngIf="field.type=='date'" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input> -->
-            <!-- <ionic-calendar-date-picker *ngIf="field.type=='date'" (onSelect)="dateSelected($event)"></ionic-calendar-date-picker> -->
-    
-            <!-- <ion-datetime *ngIf="field.type=='date'" [(ngModel)]="field.value"
-            displayFormat="D MMM YYYY"
-            monthShortNames="jan, feb, mar, apr, mei, jun, jul, aug, sep, okt, nov, dec"></ion-datetime> -->
-            
+
+
+            <quill-editor *ngIf="!showHtml&&field.type=='html'" [(ngModel)]="field.value" [modules]="configModules"></quill-editor>
+            <ion-toolbar *ngIf="showHtml" style="padding-left:10px;">
+              <ion-buttons slot="start">
+                <ion-button (click)="showEditor()">
+                  <fa-icon [icon]="icons.get('faArrowLeft')" slot="start">keyboard_arrow_left</fa-icon>
+                  Terug
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+            <textarea *ngIf="showHtml&&field.type=='html'" class="pureHtml" [(ngModel)]="data.value"></textarea>
+
           </ion-item>
         </div>
         <div flex center-hor paddingBasic>

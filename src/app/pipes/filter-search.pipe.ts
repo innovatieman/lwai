@@ -1,11 +1,11 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import * as e from 'cors';
 
 @Pipe({
   name: 'filterSearch'
 })
 export class FilterSearchPipe implements PipeTransform {
-
+  @Injectable({ providedIn: 'root' })
   transform(value: any,filter:any,exact?:boolean ,fields?:string[],subKey?:string): any {
     if(!value){return null}
     if(filter===''||filter===undefined||(typeof filter!='string'&&filter.length==0)){return value}
@@ -62,7 +62,7 @@ export class FilterSearchPipe implements PipeTransform {
 
             if(typeof filter == 'string'){
               if(typeof value[i][fields[f]]!='undefined'&&typeof value[i][fields[f]] != 'string'){
-                // console.log(typeof value[i][fields[f]])
+                // console.log(value[i][fields[f]].toString(),filter.toLowerCase(),value[i][fields[f]].toString().indexOf(filter.toLowerCase())>-1,valueChecked)
                 if(!subKey||!value[i][subKey]){
                   if(value[i][fields[f]].toString().indexOf(filter.toLowerCase())>-1&&!valueChecked){
                     nwValue.push(value[i])
@@ -148,7 +148,6 @@ export class FilterSearchPipe implements PipeTransform {
         }
       }
     }
-
     return nwValue
   }
 

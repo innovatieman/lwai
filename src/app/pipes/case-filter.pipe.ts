@@ -1,10 +1,10 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'caseFilter',
 })
 export class CaseFilterPipe implements PipeTransform {
-
+  @Injectable({ providedIn: 'root' })
   transform(cases: any[], types: any[], subjectTypes: { [key: string]: any }, openToUser: boolean[]): any[] {
     if (!cases) return [];
     // console.log('Filtering cases', cases, types, subjectTypes, openToUser);

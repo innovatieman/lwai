@@ -66,4 +66,62 @@ export class LevelsService {
         }
       }
   }
+
+  levelColor(level:number){
+    // let colors = [
+    //   "#eae2b7",
+    //   "#FFEA00",
+    //   "#FFB700",
+    //   "#FFAA00",
+    //   "#FF7B00"
+    // ]
+    let colors = [
+      "#FFFFFF",
+      "#FFFFFF",
+      "#FFFFFF",
+      "#FFFFFF",
+      "#FFFFFF"
+    ]
+
+    if(!level){
+      level = 1
+    }
+    if(level>colors.length){
+      level = colors.length
+    }
+    return colors[level-1]
+  }
+
+  levelColorText(level:number){
+    let colors = [
+      "#212121",
+      "#212121",
+      "#212121",
+      "#212121",
+      "#212121"
+  ]
+    if(!level){
+      level = 1
+    }
+    if(level>colors.length){
+      level = colors.length
+    }
+    return colors[level-1]
+  }
+  levelColorTextLevel(level:number){
+    let colors = [
+      "#5f5f5f",
+      "#5f5f5f",
+      "#5f5f5f",
+      "#5f5f5f",
+      "#5f5f5f"
+  ]
+    if(!level){
+      level = 1
+    }
+    if(level>colors.length){
+      level = colors.length
+    }
+    return colors[level-1]
+  }
 }

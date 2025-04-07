@@ -19,15 +19,15 @@
 </div>
 <div flex *ngIf="options.buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':options.btnsClass==='flex-column'}">
   <span [ngClass]="{'spacer':!last}" *ngFor="let btn of options.buttons;let last = last">
-  <ion-button [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':options.btnsClass==='flex-column'}"></ion-button>
+  <ion-button class="saveButton" [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':options.btnsClass==='flex-column'}"></ion-button>
   </span>
 </div>
 <div flex center-ver class="feedback" *ngIf="options.feedback&&feedbackGiven===false">
-  <span>Was deze informatie nuttig?</span>
+  <span>{{'feedback.default_question' | translate}}</span>
   <span class="spacer"></span>
   <fa-icon [icon]="icon.get('faThumbsUp')" (click)="feedback(true)" class="icon"></fa-icon>
   <fa-icon [icon]="icon.get('faThumbsDown')" (click)="feedback(false)" class="icon"></fa-icon>
 </div>
 <div flex center-ver class="feedback" *ngIf="feedbackGiven">
-  <span >Bedankt voor je feedback!</span>
+  <span >{{'feedback.thanks' | translate}}</span>
 </div>

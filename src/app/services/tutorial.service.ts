@@ -1,7 +1,6 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import { ShepherdService } from 'angular-shepherd';
 import { FirestoreService } from './firestore.service';
-import { color } from 'highcharts';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
 import { MediaService } from './media.service';
@@ -18,6 +17,8 @@ const defaultStepOptions = {
   providedIn: 'root'
 })
 export class tutorialService {
+  @Output() action: EventEmitter<string> = new EventEmitter();
+  
   [x:string]: any;
   allTutorials:any = []
   tutorialsPerPage:any = {};
@@ -34,11 +35,14 @@ export class tutorialService {
       on: 'bottom'
     },
     classes: '',
-    buttons: [
-      'cancel',
-      'back',
-      'next'
-    ],
+    buttons: {
+      back: true,
+      cancel: false,
+      no_thanks: false,
+      next: true,
+      complete: false,
+      please: false,
+    },
     cancelIcon: {
       enabled: true
     },
@@ -52,7 +56,7 @@ export class tutorialService {
       classes: "saveButton",
       secondary: true,
       text: this.translate.instant('buttons.back'),
-      type: "back"
+      type: "back",
     },
     cancel: {
       classes: "saveButton",
@@ -60,20 +64,34 @@ export class tutorialService {
       text: this.translate.instant('buttons.exit'),
       action: ()=>{
         this.exit()
-      }
+      },
+    },
+    no_thanks: {
+      classes: "saveButton",
+      secondary: true,
+      text: this.translate.instant('buttons.no_thanks'),
+      action: ()=>{
+        this.exit()
+      },
     },
     next: {
       classes: "saveButton",
       text: this.translate.instant('buttons.next'),
-      type: "next"
+      type: "next",
     },
     complete: {
       classes: "saveButton",
       text: this.translate.instant('buttons.complete'),
       action: ()=>{
         this.complete()
-      }
-    }
+      },
+    },
+    please: {
+      classes: "saveButton",
+      text: this.translate.instant('buttons.please'),
+      type: "next",
+    },
+    
   };
 
   constructor(
@@ -94,10 +112,19 @@ export class tutorialService {
       }
         this.tutorialsPerPage[tutorial.page][tutorial.trigger] = tutorial
     })
-    console.log(this.tutorialsPerPage)
+    // console.log(this.tutorialsPerPage)
     this.tutorialsLoaded = true
   }
   
+  get allButtons(){
+    let buttons:any[] = []
+    for(let button in this.STEPS_BUTTONS){
+      let buttonData:any = this.STEPS_BUTTONS[button]
+      buttonData.id = button
+      buttons.push(buttonData)
+    }
+    return buttons
+  }
 
 
   getTutorials(){
@@ -105,41 +132,76 @@ export class tutorialService {
       this.allTutorials = tutorials.map((tutorial:any)=>{
         return {
           ...tutorial.payload.doc.data(),
-          id:tutorial.payload.doc.id
+          id:tutorial.payload.doc.id,
+          languages:{}
         }
       })
+      // get all tutorials languages as subcollection
+      this.allTutorials.forEach((tutorial:any)=>{
+        this.firestore.getSub('tutorials',tutorial.id,'translations').subscribe((languages:any)=>{
+          languages.map((language:any)=>{
+            tutorial.languages[language.payload.doc.id] = language.payload.doc.data()
+          })
+        }
+        )
+      })
+      console.log(this.allTutorials)
       this.organizeTutorials()
     })
   }
 
   triggerTutorial(page:string,trigger:string,restart?:boolean){
-    let count:number = 0;
-    let checkInterval = setInterval(()=>{
-      count++
-      if(count>2000){
-        clearInterval(checkInterval)
+    this.auth.userInfo$.subscribe(userInfo => {
+      if (userInfo) {
+        let count:number = 0;
+        let checkInterval = setInterval(()=>{
+          count++
+          if(count>2000){
+            clearInterval(checkInterval)
+          }
+          if(this.tutorialsLoaded && this.auth.userInfo.uid){
+            clearInterval(checkInterval)
+    
+            if((this.auth.tutorials.tutorials&&this.auth.tutorials.tutorials[page]&&(this.auth.tutorials.tutorials[page][trigger] || this.auth.tutorials.tutorials[page][trigger.replace('_mobile','')])&&!restart) || (!this.tutorialsPerPage[page] || !this.tutorialsPerPage[page][trigger] || !this.tutorialsPerPage[page][trigger].active)){
+            // if(!this.tutorialsPerPage[page][trigger].active){
+              return
+            }
+            if(!this.tutorialsPerPage[page][trigger].desktop && !this.media.smallDevice){
+              return
+            }
+            if(!this.tutorialsPerPage[page][trigger].mobile && this.media.smallDevice){
+              return
+            }
+            // console.log('start tutorial')
+            this.startTutorial(page,trigger)
+          }
+        },100)
       }
-      if(this.tutorialsLoaded && this.auth.userInfo.uid){
-        clearInterval(checkInterval)
-
-        // if((this.auth.userInfo?.tutorials&&this.auth.userInfo?.tutorials[page]&&this.auth.userInfo?.tutorials[page][trigger]&&!restart) || !this.tutorialsPerPage[page][trigger].active){
-        if(!this.tutorialsPerPage[page][trigger].active){
-          return
-        }
-        this.startTutorial(page,trigger)
-      }
-    },100)
+    })
   }
 
   startTutorial(page:string,trigger:string){
+    // console.log(this.tutorialsPerPage[page],this.tutorialsPerPage[page][trigger],!this.activeTutorial)
     if(this.tutorialsPerPage[page]&&this.tutorialsPerPage[page][trigger]&&!this.activeTutorial){
       this.activeTutorial = this.tutorialsPerPage[page][trigger]
       this.shepherdService.defaultStepOptions = defaultStepOptions;
       this.shepherdService.modal = true;
-      let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].steps)
+      let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang].steps)
+      // console.log(steps)
       this.shepherdService.addSteps(steps);
       this.shepherdService.start();
     }
+  }
+
+  getContent(page:string,trigger:string,step:number,field:string){
+    let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang].steps)
+    let stepData = steps[step]
+    if(stepData){
+      if(stepData[field]){
+        return stepData[field]
+      }
+    }
+    return ''
   }
 
 
@@ -161,9 +223,19 @@ export class tutorialService {
     steps.forEach((step:any)=>{
       
       let buttons:any[] = []
-      step.buttons.forEach((button:any)=>{
-        buttons.push(this.STEPS_BUTTONS[button])
-      })
+      // this.STEPS_BUTTONS.forEach((button:any)=>{
+      //   if(step.buttons[button]){
+      //     buttons.push(this.STEPS_BUTTONS[button])
+      //   }
+      // })
+      // console.log(step)
+      for(let button in this.STEPS_BUTTONS){
+        let buttonData:any = this.STEPS_BUTTONS[button]
+        if(step.buttons[button]){
+          buttons.push(buttonData)
+        }
+      }
+
 
       let text = ''
       if(step.photo){
@@ -189,14 +261,29 @@ export class tutorialService {
         scrolledTo: step.scrolledTo,
         text: text,
         when: {
-          show: () => {
-            console.log('show step');
+          cancel: () => {
+            this.exit(true)
+            this.activeTutorial = null
           },
           hide: () => {
-            console.log('hide step');
+            console.log('hide')
+            if(step.onhide){
+              this.action.emit(step.onhide)
+            }
+          },
+          show: () => {
+            if(step.onshow){
+
+              this[step.onshow]()
+            }
           }
         }
       })
+      if(!step.attachTo?.element){
+        delete newSteps[newSteps.length-1].attachTo
+      }
+            
+      // console.log(newSteps)
     })
     return newSteps
   }
@@ -215,18 +302,18 @@ export class tutorialService {
     if(!completed){
       this.shepherdService.cancel();
     }
-    let userTutorials = this.auth.userInfo.tutorials
+    let userTutorials = this.auth.tutorials.tutorials
     if(!userTutorials){
       userTutorials = {}
     }
     if(!userTutorials[this.activeTutorial.page]){
       userTutorials[this.activeTutorial.page] = {}
     }
-    userTutorials[this.activeTutorial.page][this.activeTutorial.trigger] = true
+    userTutorials[this.activeTutorial.page][this.activeTutorial.trigger.replace('_mobile','')] = true
     console.log(userTutorials)
-    this.firestore.update('users',this.auth.userInfo.uid,{tutorials:userTutorials})
+    this.firestore.setSub('users',this.auth.userInfo.uid,'tutorials','tutorials',{tutorials:userTutorials})
     this.activeTutorial = null
-    console.log(this.activeTutorial) 
+    // console.log(this.activeTutorial) 
   }
 
   complete(){

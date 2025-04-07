@@ -13,7 +13,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class RateLearningPage implements OnInit {
   rating:any = [
     {
-      question:'Hoeveel heb je geleerd?',
+      question:this.translate.instant('feedback.amount_learned'),
       value:1,
       type:'stars'
     }
@@ -23,7 +23,7 @@ export class RateLearningPage implements OnInit {
   title:string='';
   content:string='';
   id:any='';
-
+  vh:number = 0;
   constructor(
     public modalCtrl:ModalController,
     private navParams:NavParams,
@@ -33,6 +33,10 @@ export class RateLearningPage implements OnInit {
     private translate:TranslateService,
   ) { 
 
+  }
+
+  ngAfterViewInit(){
+    this.vh = window.innerHeight * 0.01;
   }
 
   ngOnInit() {

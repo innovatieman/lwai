@@ -8,7 +8,7 @@ export class ToggleConsoleService {
   constructor() { }
 
   disableConsole(): void {
-    console.warn(`🚨 Console output is disabled on production!`);
+    // console.warn(`🚨 Console output is disabled on production!`);
     console.log = function (): void { };
     console.debug = function (): void { };
     console.warn = function (): void { };

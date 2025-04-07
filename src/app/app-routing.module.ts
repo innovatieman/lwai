@@ -18,6 +18,10 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'start/welcome',
+    loadChildren: () => import('./auth/pages/wait-verify/wait-verify.module').then( m => m.WaitVerifyPageModule)
+  }, 
+  {
     path: 'start/:tab',
     loadChildren: () => import('./pages/start/start.module').then( m => m.StartPageModule),
     canActivate: [AuthGuard],
@@ -36,7 +40,7 @@ const routes: Routes = [
     canActivate: [AdminGuard],
   },
   {
-    path: 'conversation/:conversation/:case',
+    path: 'conversation/:case',
     loadChildren: () => import('./pages/conversation/conversation.module').then( m => m.ConversationPageModule),
     canActivate: [AuthGuard],
   },
@@ -52,6 +56,7 @@ const routes: Routes = [
   {
     path: 'account',
     loadChildren: () => import('./pages/account/account.module').then( m => m.AccountPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'account/:tab',
@@ -65,7 +70,8 @@ const routes: Routes = [
   },
   {
     path: 'conversation-start',
-    loadChildren: () => import('./components/modals/conversation-start/conversation-start.module').then( m => m.ConversationStartPageModule)
+    loadChildren: () => import('./components/modals/conversation-start/conversation-start.module').then( m => m.ConversationStartPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'trainer/courses',
@@ -95,7 +101,8 @@ const routes: Routes = [
   },
   {
     path: 'course/:course_id',
-    loadChildren: () => import('./pages/course/course.module').then( m => m.CoursePageModule)
+    loadChildren: () => import('./pages/course/course.module').then( m => m.CoursePageModule),
+    canActivate: [AuthGuard],
   },
 
   {
@@ -105,19 +112,21 @@ const routes: Routes = [
   },
   {
     path: 'enlist/:course_id',
-    loadChildren: () => import('./pages/enlist/enlist.module').then( m => m.EnlistPageModule)
+    loadChildren: () => import('./pages/enlist/enlist.module').then( m => m.EnlistPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'verify',
-    loadChildren: () => import('./auth/pages/verify/verify.module').then( m => m.VerifyPageModule)
+    loadChildren: () => import('./auth/pages/verify/verify.module').then( m => m.VerifyPageModule),
   },
   {
     path: 'wait-verify',
-    loadChildren: () => import('./auth/pages/wait-verify/wait-verify.module').then( m => m.WaitVerifyPageModule)
+    loadChildren: () => import('./auth/pages/wait-verify/wait-verify.module').then( m => m.WaitVerifyPageModule),
   }, 
   {
     path: 'bagend/types',
-    loadChildren: () => import('./bagend/types/types.module').then( m => m.TypesPageModule)
+    loadChildren: () => import('./bagend/types/types.module').then( m => m.TypesPageModule),
+    canActivate: [AdminGuard],
   },
   {
     path: 'bagend/photo-generator',
@@ -138,9 +147,26 @@ const routes: Routes = [
     path: 'bagend/tutorials',
     loadChildren: () => import('./bagend/tutorials/tutorials.module').then( m => m.TutorialsPageModule),
     canActivate: [AdminGuard],
-
   },
-
+  {
+    path: 'bagend/user-messages',
+    loadChildren: () => import('./bagend/user-messages/user-messages.module').then( m => m.UserMessagesPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'verifysocial/:id/:action',
+    loadChildren: () => import('./bagend/verifysocial/verifysocial.module').then( m => m.VerifysocialPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'bagend/socials',
+    loadChildren: () => import('./bagend/socials/socials.module').then( m => m.SocialsPageModule)
+  },
+  {
+    path: 'welcome',
+    loadChildren: () => import('./pages/welcome/welcome.module').then( m => m.WelcomePageModule)
+  },
+  
   {
     path: '**',
     redirectTo: 'start',
@@ -216,6 +242,14 @@ const routes: Routes = [
     path: 'achievement-horizontal',
     loadChildren: () => import('./components/achievement-horizontal/achievement-horizontal.module').then( m => m.AchievementHorizontalPageModule)
   },
+  {
+    path: 'caseinfo',
+    loadChildren: () => import('./components/modals/caseinfo/caseinfo.module').then( m => m.CaseinfoPageModule)
+  },
+  
+  
+  
+
 
 
 

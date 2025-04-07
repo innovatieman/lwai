@@ -23,12 +23,21 @@ export class AppComponent {
     window.addEventListener('resize', this.setRealViewportHeight);
 
     if(!environment.log_on){
-      // this.toggleConsole.disableConsole();
+      this.toggleConsole.disableConsole();
     }
 
     this.nav.setLang()
 
     this.listenForUpdates();
+
+    this.nav.renewPWA.subscribe(()=>{
+      this.swUpdate.activateUpdate().then(() => {
+        console.log('Update activated, reloading...');
+        setTimeout(() => {
+          document.location.reload();
+        }, 2000);
+      });
+    })
   }
 
 

@@ -1,0 +1,66 @@
+<app-header page="admin"></app-header>
+<main>
+  <ion-grid>
+    <ion-row>
+        <ion-col size="3" style="padding-top:15px">
+          <div style="background:white;padding:10px 0px;border-radius:16px" marginBottom>
+            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterReadMessages(false)">
+                <ion-checkbox slot="start" [checked]="filterReadIsActive(false)" noPointerEvents></ion-checkbox>
+                <ion-label>Niet gelezen berichten</ion-label>
+            </ion-item>
+            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterReadMessages(true)">
+              <ion-checkbox slot="start" [checked]="filterReadIsActive(true)" noPointerEvents></ion-checkbox>
+              <ion-label>Gelezen berichten</ion-label>
+          </ion-item>
+          </div>
+
+          <div style="background:white;padding:10px 0px;border-radius:16px" marginBottom>
+            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterArchivedMessages(false)">
+                <ion-checkbox slot="start" [checked]="filterArchivedIsActive(false)" noPointerEvents></ion-checkbox>
+                <ion-label>Nieuwe berichten</ion-label>
+            </ion-item>
+            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterArchivedMessages(true)">
+              <ion-checkbox slot="start" [checked]="filterArchivedIsActive(true)" noPointerEvents></ion-checkbox>
+              <ion-label>Gearchiveerde berichten</ion-label>
+            </ion-item>
+          </div>
+        </ion-col>
+        <ion-col size="9">
+          <ion-card basicPadding borderRadius16 *ngFor="let message of allMessages | filterKey : 'archived' : filterArchivedMessages ;let i = index">
+            <ion-card-header >
+              <div fullwidth flex center-ver fullwidth>
+                <div>
+                  <ion-card-title font-18>{{message.subject}}</ion-card-title>
+                  <span font-16>{{message.displayName}}</span>
+                </div>
+                <div class="spacer"></div>
+                <div>{{helper.showLocalDate(message.timestamp,'',0,true)}}</div>
+                <fa-icon font-24 titleIcon text-medium *ngIf="!message.read&&!message.archived&&!message.replied" [icon]="icon.get('faEnvelope')"></fa-icon>
+                <fa-icon font-24 titleIcon text-success *ngIf="message.read&&!message.archived&&!message.replied" [icon]="icon.get('faCheck')"></fa-icon>
+                <fa-icon font-24 titleIcon text-warning *ngIf="message.archived" [icon]="icon.get('faArchive')"></fa-icon>
+                <fa-icon font-24 titleIcon text-success *ngIf="message.replied" [icon]="icon.get('faReply')"></fa-icon>
+                <fa-icon font-24 titleIcon [icon]="icon.get('faChevronDown')" class="chevron" (click)="(showMessage!=i ? read(message) : doNothing());showMessage==i ?  showMessage = -1 : showMessage = i;" [ngStyle]="{'transform': showMessage==i ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+              </div>
+            </ion-card-header>
+            <ion-card-content *ngIf="showMessage==i">
+              <div font-16 [innerHTML]="message.message"></div>
+              <div *ngIf="message.replied" basicPadding marginTop borderRadius16 borderPrimary style="max-height:300px;overflow-y:auto">
+                <div weight700 font-20>Reply:</div>
+                <div marginBottom font-16><span weight600>Subject:</span> {{message.replySubject}}</div>
+                <div font-16 [innerHTML]="message.replyMessage"></div>
+              </div>
+              <div flex center-ver marginTop>
+                <ion-button color="medium" class="saveButton" fill="outline" (click)="unarchive(message)" *ngIf="message.archived">Heractiveer</ion-button>
+                <ion-button color="warning" class="saveButton" fill="outline" (click)="archive(message);showMessage=-1" *ngIf="!message.archived">Archiveer</ion-button>
+                <fa-icon titleIcon [icon]="icon.get('faTrashAlt')" *ngIf="message.archived" trash font-24 (click)="delete(message)"></fa-icon>
+                <fa-icon titleIcon [icon]="icon.get('faEnvelope')" *ngIf="!message.archived&&message.read" text-medium font-24 (click)="unread(message)"></fa-icon>
+                
+                <div class="spacer"></div>
+                <ion-button color="primary" class="saveButton" fill="outline" (click)="reply(message)">Beantwoord</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

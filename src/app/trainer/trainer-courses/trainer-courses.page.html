@@ -153,12 +153,12 @@
         <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!itemIsActive&&activeTab!='dashboard'&&activeTab!='infoItems'">
             <div *ngFor="let type of infoService.conversation_types">
                 <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="type.selected = !type.selected">
-                    <ion-checkbox slot="start" [(ngModel)]="type.selected" noPointerEvents></ion-checkbox>
+                    <ion-checkbox mode="md" slot="start" [(ngModel)]="type.selected" noPointerEvents></ion-checkbox>
                     <ion-label>{{ type[translate.currentLang] }}</ion-label>
                 </ion-item>
                 <div *ngIf="type.selected" class="innerSelectCase">
                     <ion-item lines="none" font-18 weight400 noMargin class="selectCaseItem innerSelectCaseItem" *ngFor="let subject of type.subjects" (click)="subject.selected = !subject.selected">
-                        <ion-checkbox slot="start" [(ngModel)]="subject.selected" noPointerEvents></ion-checkbox>
+                        <ion-checkbox mode="md" slot="start" [(ngModel)]="subject.selected" noPointerEvents></ion-checkbox>
                         <ion-label>{{ subject[translate.currentLang] }}</ion-label>
                     </ion-item>
                 </div>
@@ -166,11 +166,11 @@
         </div>
         <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="activeTab=='active_courses'&&!itemIsActive">
             <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('public',true)">
-                <ion-checkbox slot="start" [checked]="filterActive('public',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
+                <ion-checkbox mode="md" slot="start" [checked]="filterActive('public',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
                 <ion-label>Zichtbaar voor publiek</ion-label>
             </ion-item>
             <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('public',false)">
-                <ion-checkbox slot="start" [checked]="filterActive('public',false)" noPointerEvents (click)="check($event)"></ion-checkbox>
+                <ion-checkbox mode="md" slot="start" [checked]="filterActive('public',false)" noPointerEvents (click)="check($event)"></ion-checkbox>
                 <ion-label>Verborgen voor publiek</ion-label>
             </ion-item>
 

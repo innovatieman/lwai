@@ -58,3 +58,46 @@ ion-note{
   .creditsCard:hover{
     transform: scale(1.05);
   }
+
+  .fieldItem{
+    border-radius:5px;
+    padding:15px 0px;
+    // margin-bottom:20px;
+    --padding-start: 10px;
+    .select{
+        background: var(--background-light);
+        min-height:16px;
+        border:solid 1px rgba(0, 0, 0, 0.1);
+        --padding-start:10px;
+        --padding-end:10px;
+        --padding-top:7px;
+        --padding-bottom:7px;
+        color:#5C6F84;
+        width: 100%;
+        height: 100%;
+        border-radius: 32px;
+        padding: 0px 30px;
+        line-height: 40px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        ion-thumbnail,fa-icon{
+            margin-right: 10px;
+        }
+        .text{
+            font-size: 16px;
+            font-weight: 600;
+        }
+    }
+
+}
+
+
+.selectCaseItem{
+  ion-checkbox{
+      --size:24px;
+  }
+}
+.innerSelectCaseItem{
+  padding-left: 20px;
+}

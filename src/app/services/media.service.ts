@@ -106,7 +106,7 @@ export class MediaService {
     }
  }
 
-  async selectAvatar(event:Event,callback:Function){
+  async selectAvatar(event:Event,callback:Function,withGeneration?:boolean){
     this.selectMenuservice.selectedItem = null
     let list = [
       {title:'Upload foto',icon:'faCloudUploadAlt',action:'upload'},
@@ -114,6 +114,9 @@ export class MediaService {
       {title:'Selecteer uit bibliotheek',icon:'faImage',action:'library'},
       {title:'Verwijder foto',icon:'faTrashAlt',action:'delete'},
     ]
+    if(withGeneration){
+      list.push({title:'Genereer avatar',icon:'faUserNinja',action:'generate'})
+    }
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
       componentProps:{
@@ -148,6 +151,9 @@ export class MediaService {
           break;
         case 'delete':
           callback('delete')
+          break;
+        case 'generate':
+          callback('generate')
           break;
         default:
           break;

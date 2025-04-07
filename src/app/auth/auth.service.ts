@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { Auth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
+import { Auth, AuthProvider, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -13,6 +13,8 @@ import { ModalService } from '../services/modal.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { environment } from 'src/environments/environment';
 import { InfoService } from '../services/info.service';
+import { TranslateService } from '@ngx-translate/core';
+import { CountriesService } from '../services/countries.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +23,7 @@ export class AuthService {
   user$: Observable<firebase.User | null>;
   userRoles$: Observable<{ isAdmin: boolean, isConfirmed:boolean } | null>;
   customer:any = {}
+  tutorials:any = {tutorials:{}}
   userInfo:any = {}
   conversations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Conversaties als Observable
   userInfo$: BehaviorSubject<any | null> = new BehaviorSubject<any | null>(null);
@@ -29,11 +32,11 @@ export class AuthService {
   private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
   activeCourses: any[] = [];
   allCourses: any[] = [];
-
+  profile:any = {}
   skills:any = {impact:{score:0,prevScore:0},flow:{score:0,prevScore:0},logic:{score:0,prevScore:0}}
   credits:any = {total:0}
 
-  skillsLevels:any = [0,100,300,700,1500]
+  skillsLevels:any = [0,100,200,400,800]
 
   constructor(
     private nav: NavService,
@@ -45,6 +48,8 @@ export class AuthService {
     private modalService: ModalService,
     private auth:Auth,
     private infoService:InfoService,
+    private translate:TranslateService,
+    private countries:CountriesService
 
   ) {
     this.user$ = this.afAuth.authState;
@@ -68,16 +73,28 @@ export class AuthService {
       if (user) {
         this.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
-        this.loadCourses(user.uid);
+        // this.loadCourses(user.uid);
         this.getCredits(user.uid)
         this.getSkills(user.uid)
+        this.getTutorials(user.uid)
         this.getCustomer(user.uid)
+        this.getProfile(user.uid)
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
     });
     
     this.getUserInfo()
+
+    this.nav.changeLang.subscribe((lang) => {
+      console.log(lang)
+      if(this.userInfo.email && lang!=this.userInfo.language){
+        this.functions.httpsCallable('editUserLang')({language:lang}).subscribe(response=>{
+          console.log(response)
+        })
+      }
+    })
+
 
   }
 
@@ -104,6 +121,22 @@ export class AuthService {
   async getSkills(uid:string){
     this.firestoreService.getSubDoc('users',uid,'skills','skills').subscribe((data:any)=>{
       this.skills = data.payload.data()
+    })
+  }
+
+  async getTutorials(uid:string){
+    this.firestoreService.getSubDoc('users',uid,'tutorials','tutorials').subscribe((data:any)=>{
+      if(data.payload.data()){
+        this.tutorials = data.payload.data()
+      }
+    })
+  }
+
+  async getProfile(uid:string){
+    this.firestoreService.getSub('users',uid,'profile').subscribe((data:any)=>{
+      data.map((profile:any) => {
+        this.profile[profile.payload.doc.id] = profile.payload.doc.data()
+      })
     })
   }
 
@@ -147,9 +180,24 @@ export class AuthService {
           this.userInfo = data;
           if (this.userInfo) {
             this.userInfo.uid = user.uid;
+            this.setStartCountry()
           }
           this.userInfo$.next(this.userInfo); // Update de BehaviorSubject
+          if(this.userInfo?.filter){
+            let countCheck = 0
+            let checkFilter = setInterval(() => {
+              countCheck++
+              if(countCheck>30){
+                clearInterval(checkFilter)
+              }
+              if(this.infoService.conversation_types.length){
+                clearInterval(checkFilter)
+                this.infoService.fillConversationTypes(this.userInfo.filter)
+              }
+            }, 500);
+          }
         });
+
       }
     });
   }
@@ -168,39 +216,118 @@ export class AuthService {
   // }
 
   async login(email: string, password: string): Promise<void> {
+    this.toast.showLoader('Inloggen...')
     try {
       const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
       await userCredential.user?.reload();
-  
+      this.toast.hideLoader();
       if (userCredential.user?.emailVerified) {
         this.nav.go('start');
+        if(this.userInfo.language && this.userInfo.language!=this.translate.currentLang){
+          this.nav.setLang(this.userInfo.language)
+        }
       } else {
-        console.log('User is not verified');
+        // console.log('User is not verified');
         this.nav.go('wait-verify');
       }
     } catch (error) {
+      this.toast.hideLoader();
       console.error('Login error:', error);
       this.toast.show('Login mislukt');
       throw error;
     }
   }
 
-  async loginWithGoogle(): Promise<void> {
+  // async loginWithGoogle(): Promise<void> {
+  //   try {
+  //     const provider = new GoogleAuthProvider();
+  //     await this.afAuth.signInWithPopup(provider);
+  //     this.nav.go('start')
+  //   } catch (error) {
+  //     console.error('Google login failed:', error);
+  //     this.toast.show('Login mislukt');
+  //     throw error;
+  //   }
+  // }
+
+  async signInWithProvider(provider: AuthProvider | OAuthProvider, providerName: string) {
     try {
-      const provider = new GoogleAuthProvider();
-      await this.afAuth.signInWithPopup(provider);
-      this.nav.go('start')
+      const useRedirect = providerName === 'apple';
+      let userCredential;
+  
+      if (useRedirect) {
+        await this.afAuth.signInWithRedirect(provider);
+        return;
+      } else {
+        userCredential = await this.afAuth.signInWithPopup(provider);
+      }
+  
+      const isNew = userCredential.additionalUserInfo?.isNewUser;
+      const email = userCredential.user?.email;
+  
+      if (isNew) {
+        await this.firestoreService.create('user_languages', {
+          language: this.translate.currentLang,
+          email: email
+        });
+        console.log(`Nieuwe gebruiker via ${providerName}:`, email);
+        this.nav.go('start/welcome');
+      } else {
+        console.log(`Bestaande gebruiker via ${providerName}:`, email);
+        this.nav.go('start');
+      }
+  
     } catch (error) {
-      console.error('Google login failed:', error);
-      this.toast.show('Login mislukt');
-      throw error;
+      console.error(`${providerName} login mislukt:`, error);
+      this.toast.show(`${providerName.charAt(0).toUpperCase() + providerName.slice(1)} login mislukt`);
     }
   }
+  
+  // 👇 Deze 3 functies koppel je aan je buttons
+  signInWithGoogle() {
+    this.signInWithProvider(new GoogleAuthProvider(), 'google');
+  }
+  
+  signInWithFacebook() {
+    this.signInWithProvider(new FacebookAuthProvider(), 'facebook');
+  }
+  
+  signInWithApple() {
+    this.signInWithProvider(new OAuthProvider('apple.com'), 'apple');
+  }
+
+
+
+  // async signInWithGoogle() {
+  //   const provider = new GoogleAuthProvider();
+  //   try {
+  //     const userCredential = await this.afAuth.signInWithPopup(provider);
+  //     const isNew = userCredential.additionalUserInfo?.isNewUser;
+  //     const email = userCredential.user?.email;
+  
+  //     if (isNew) {
+  //       console.log('Nieuwe gebruiker via Google:', email);
+  //       await this.firestoreService.create('user_languages', {
+  //         language: this.translate.currentLang,
+  //         email: email
+  //       });
+  //       this.nav.go('start/welcome');
+  //     } else {
+  //       console.log('Bestaande gebruiker via Google:', email);
+  //       this.nav.go('start');
+  //     }
+  
+  //   } catch (error) {
+  //     console.error('Google Login Mislukt:', error);
+  //     this.toast.show('Google Login Mislukt');
+  //   }
+  // }
 
   async loginWithApple(): Promise<void> {
     try {
       const provider = new OAuthProvider('apple.com');
-      await this.afAuth.signInWithPopup(provider);
+      // await this.afAuth.signInWithPopup(provider);
+      await this.afAuth.signInWithRedirect(provider);
       this.nav.go('start')
     } catch (error) {
       console.error('Apple login failed:', error);
@@ -231,16 +358,52 @@ export class AuthService {
   // Registreer een nieuwe gebruiker
   async register(email: string, password: string): Promise<void> {
     try {
+      this.toast.showLoader('Registreren...');
       email = email.toLowerCase();
       await this.afAuth.createUserWithEmailAndPassword(email, password);
-
-      this.modalService.showText('Je ontvangt een e-mail om je account te verifiëren.','Registratie gelukt');
-      this.nav.go('wait-verify'); 
-      } catch (error) {
+      console.log('registered')
+      // this.modalService.showText('Je ontvangt een e-mail om je account te verifiëren.','Registratie gelukt');
+      setTimeout(() => {
+        this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:email})
+      }, 2000);
+      // this.functions.httpsCallable('editUserLang')({language:this.translate.currentLang})
+      console.log('Register success');
+      this.toast.hideLoader();
+      this.toast.showLoader('Gegevens laden voor de eerste keer');
+      setTimeout(() => {
+        this.toast.hideLoader();
+        this.nav.go('wait-verify'); 
+      }, 3000);
+      } catch (error:any) {
+        this.toast.hideLoader();
         console.error('Register error:', error);
-        this.toast.show('Registratie mislukt');
-        throw error;
+        if(error.toString().includes('email-already-in-use')){
+          this.login(email,password)
+        }
+        else{
+          this.toast.show('Registratie mislukt');
+          throw error;
+        }
       }
+  }
+
+  resendEmailVerification(callback?:Function){
+    // this.toast.showLoader()
+    console.log({email:this.userInfo.email,displayName:this.userInfo.displayName})
+    this.functions.httpsCallable('reSendVerificationEmail')({email:this.userInfo.email,displayName:this.userInfo.displayName}).subscribe((response:any)=>{
+      this.toast.hideLoader()
+      if(callback){
+        callback(response)
+      }
+      else{
+        if(response.status==200){
+          this.toast.show('Email verstuurd')
+        }
+        else{
+          this.toast.show('Er is iets misgegaan')
+        }
+      }
+    })
   }
 
   async registerWithGoogle() {
@@ -248,7 +411,8 @@ export class AuthService {
     try {
       const userCredential = await this.afAuth.signInWithPopup(provider);
       console.log('Google Login Succes:', userCredential.user);
-      this.nav.go('start')
+      this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
+      this.nav.go('start/welcome')
     } catch (error) {
       console.error('Google Login Mislukt:', error);
       this.toast.show('Google Login Mislukt');
@@ -260,7 +424,8 @@ export class AuthService {
     try {
       const userCredential = await this.afAuth.signInWithPopup(provider);
       console.log('Apple Login Succes:', userCredential.user);
-      this.nav.go('start')
+      this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
+      this.nav.go('start/welcome')
     } catch (error) {
       console.error('Apple Login Mislukt:', error);
       this.toast.show('Apple Login Mislukt');
@@ -272,7 +437,8 @@ export class AuthService {
     try {
       const userCredential = await this.afAuth.signInWithPopup(provider);
       console.log('Facebook Login Succes:', userCredential.user);
-      this.nav.go('start')
+      this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
+      this.nav.go('start/welcome')
     } catch (error) {
       console.error('Facebook Login Mislukt:', error);
       this.toast.show('Facebook Login Mislukt');
@@ -312,6 +478,12 @@ export class AuthService {
 
   isAuthenticated(): Observable<User | null> {
     return user(this.auth); // Haalt de huidige gebruiker op uit Firebase
+  }
+
+  isVerified(): Observable<boolean> {
+    return this.user$.pipe(
+      map((user) => user?.emailVerified ?? false) // Retourneer true als de gebruiker geverifieerd is
+    );
   }
 
   // Controleer of een gebruiker admin is
@@ -514,6 +686,24 @@ export class AuthService {
     }
 
 
-
+    async setStartCountry(){
+      if(!this.userInfo.country||!this.userInfo.currency){
+          const response = await fetch("https://getiplocation-p2qcpa6ahq-ew.a.run.app", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+          const data = await response.json();
+          console.log(data)
+          if(data){
+            let country = data.country_code
+            let currency = this.countries.availableCurrency(data.currency?.code)
+            this.functions.httpsCallable('editUserCountry')({country:country}).subscribe((response:any)=>{})
+            this.functions.httpsCallable('editUserCurrency')({currency:currency}).subscribe((response:any)=>{})
+          }
+      }
+    }
 
 }

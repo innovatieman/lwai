@@ -25,9 +25,14 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'reaction' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 
@@ -44,9 +49,13 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'feedback' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 
@@ -63,9 +72,13 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'choices' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 
@@ -82,13 +95,17 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'facts' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 
-        <h3>Achtegrond expert</h3>
+        <h3>Achtergrond expert</h3>
         <table>
           <tr>
             <th>Input tokens</th>
@@ -101,9 +118,13 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'background' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 
@@ -120,9 +141,13 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'phases' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 
@@ -139,9 +164,13 @@
           <tr *ngFor="let token of tokenList | filterKey : 'agent' : 'close' ">
             <td>{{token.usage.prompt_tokens}}</td>
             <td>{{token.usage.completion_tokens}}</td>
-            <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
+            <!-- <td>${{token.usage.prompt_tokens * 0.0025 / 1000 | number : '1.5-5'}}</td>
             <td>${{token.usage.completion_tokens * 0.01 / 1000 | number : '1.5-5'}}</td>
-            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.0025 / 1000) + (token.usage.completion_tokens * 0.01 / 1000) | number : '1.5-5'}}</td> -->
+            <td>${{token.usage.prompt_tokens * 0.1 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{token.usage.completion_tokens * 0.4 / 1000000 | number : '1.7-7'}}</td>
+            <td>${{(token.usage.prompt_tokens * 0.1 / 1000000) + (token.usage.completion_tokens * 0.4 / 1000000) | number : '1.7-7'}}</td>
+
           </tr>
         </table>
 

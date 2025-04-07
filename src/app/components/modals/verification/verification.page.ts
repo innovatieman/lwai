@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { MediaService } from 'src/app/services/media.service';
 
 @Component({
@@ -9,18 +10,20 @@ import { MediaService } from 'src/app/services/media.service';
   styleUrls: ['./verification.page.scss'],
 })
 export class VerificationPage implements OnInit {
-  title: string = 'Bevestigen';
-  message: string = 'Weet je het zeker';
+  title: string = this.translate.instant('buttons.confirm');
+  message: string = this.translate.instant('confirmation_questions.default_question');
   buttons: any[] = [
     {
-      text: 'Annuleren',
+      text: this.translate.instant('buttons.cancel'),
       value: false,
       color: 'dark',
+      fill:'solid'
     },
     {
-      text: 'OK',
+      text: this.translate.instant('buttons.ok'),
       value: true,
       color: 'primary',
+      fill:'solid'
     }
   ]
 
@@ -28,6 +31,7 @@ export class VerificationPage implements OnInit {
     private modalCtrl: ModalController,
     public media: MediaService,
     private route: ActivatedRoute,
+    private translate: TranslateService
   ) { }
 
   ngOnInit() {

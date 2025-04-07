@@ -7,14 +7,45 @@
         "shortDateTime":"D-MM-YY HH:mm",
         "month_long":"MMMM YYYY"
     },
+    "standards":{
+        "impact":"Impact",
+        "impact_description":"Hebben jouw interacties effect? Bereik je de doelen van de gesprekken?",
+        "flow":"Flow",
+        "flow_description":"Hoe soepel lopen de gesprekken? Wordt de andere persoon gehoord, ontstaat er een connectie?",
+        "logic":"Logic",
+        "logic_description":"Is jouw bijdrage aan het gesprek helder gestructureerd en te volgen voor de ander?",
+        "credits":"Credits",
+        "cases":"Cases",
+        "levels":"Niveaus",
+        "level":"Niveau"
+    },
     "menu":{
         "login": "Inloggen",
         "logout": "Uitloggen",
         "register": "Account aanmaken",
-        "unkown_user": "Welkom"
+        "unkown_user": "Welkom",
+        "feedback": "Feedback",
+        "feedback_title":"Geef ons feedback",
+        "feedback_subject":"Onderwerp",
+        "feedback_type":"Soort bericht",
+        "feedback_message":"Jouw bericht",
+        "feedback_question":"Vraag",
+        "feedback_remark":"Opmerking",
+        "feedback_text":"Fijn dat je contact met ons opneemt. Heb je feedback, een vraag of een opmerking? Laat het ons weten. We nemen zo snel mogelijk contact met je op, als je dat wilt.",
+        "feedback_sent":"Bedankt voor je bericht."
     },
     "confirmation_questions":{
-        "delete": "Weet u zeker dat u dit item wilt verwijderen?"
+        "delete": "Weet u zeker dat u dit item wilt verwijderen?",
+        "default_question": "Weet je het zeker?",
+        "confirm": "Bevestigen"
+    },
+    "credits":{
+        "credits":"Credits",
+        "credits_current":"Actueel aantal Credits:",
+        "no_credits":"Geen credits",
+        "buy_now":"Koop nu",
+        "buy_credits":"Koop credits",
+        "no_credits_conversation":"Je hebt geen credits meer. Je kunt het gesprek alleen nog afsluiten voor een analyse. Ga naar je account om credits te kopen om het gesprek verder voort te kunnen zetten."
     },
     "error_messages":{
         "required":"Niet alle verplichte velden zijn ingevuld.",
@@ -25,7 +56,8 @@
         "no_title":"Er is geen titel ingevuld.",
         "no_attitude":"Er is geen houding bepaald.",
         "no_steadfastness":"Er is geen standvastigheid bepaald.",
-        "no_input":"Er zijn geen gegevens om te verwerken."
+        "no_input":"Er zijn geen gegevens om te verwerken.",
+        "failure":"Er is een fout opgetreden."
     },
     "buttons":{
         "cancel":"Annuleren",
@@ -42,7 +74,32 @@
         "previous":"Vorige",
         "back":"Terug",
         "exit":"Exit",
-        "complete":"Voltooid"
+        "complete":"Voltooid",
+        "please":"Ja, graag",
+        "skip":"Overslaan",
+        "no_thanks":"Nee, bedankt",
+        "change":"Wijzigen",
+        "close":"Afsluiten",
+        "export_pdf":"Exporteer naar PDF",
+        "confirm":"Bevestigen",
+        "continue_now":"Nu doorgaan",
+        "continue_later":"Later doorgaan",
+        "end":"Beëindigen",
+        "dashboard":"Dashboard",
+        "search_case":"Zoek case",
+        "account":"Account",
+        "filter":"Filter",
+        "show":"Toon",
+        "more":"meer",
+        "less":"minder",
+        "start":"Starten",
+        "letsgo":"Aan de slag"
+    },
+    "messages":{
+        "saved":"Gegevens opgeslagen",
+        "success":"Gelukt!",
+        "busy_saving":"Bezig met opslaan...",
+        "deleted":"Verwijderd"
     },
     "modal_intros":{
         "info_phases":"Bij dit gesprek zijn een aantal elementen (of fases) van belang.",
@@ -74,8 +131,32 @@
     },
     "languages":{
         "language":"Taal",
+        "country":"Land",
+        "select_language":"Selecteer taal",
+        "select_country":"Selecteer land",
+        "language_changed":"Taal is gewijzigd",
+        "country_changed":"Land is gewijzigd",
         "nl":"Nederlands",
-        "en":"English"
+        "en":"Engels"
+    },
+    "currency":{
+        "currency":"Valuta",
+        "select_currency":"Selecteer valuta",
+        "currency_changed":"Valuta is gewijzigd",
+        "EUR":"Euro",
+        "USD":"US Dollar",
+        "GBP":"Britse Pond",
+        "JPY":"Japanse Yen",
+        "DKK":"Deense Kroon",
+        "SEK":"Zweedse Kroon",
+        "AUD":"Australische Dollar",
+        "EUR_symbol":"€",
+        "USD_symbol":"$",
+        "GBP_symbol":"£",
+        "JPY_symbol":"¥",
+        "DKK_symbol":"kr",
+        "SEK_symbol":"kr",
+        "AUD_symbol":"$"
     },
     "toast":{
         "added":"Toegevoegd",
@@ -91,7 +172,248 @@
         "level":"Level"
     },
     "start":{
-        "unconfirmed":"Momenteel is je account nog niet bevestigd. De toegang tot deze tool is beperkt en je krijgt alleen toegang als je account door de administrator is bevestigd. Nog even geduld a.u.b."
-
+        "unconfirmed":"Momenteel is je account nog niet bevestigd. De toegang tot deze tool is beperkt en je krijgt alleen toegang als je account door de administrator is bevestigd. Nog even geduld a.u.b.",
+        "your_progress":"Jouw voortgang",
+        "achievements":"prestaties",
+        "achievements_title":"Prestaties",
+        "achievements_temp":"Binnenkort zijn hier nog meer prestaties beschikbaar.",
+        "continue_conversation":"Ga verder met je gesprek met",
+        "continue_conversation_button":"Ga verder",
+        "started_on":"Gestart op",
+        "no_results":"Geen resultaten",
+        "your_cases":"Jouw cases en suggesties:"
+    },
+    "page_login":{
+        "title":"Log in op uw account",
+        "email":"E-mail",
+        "password":"Wachtwoord",
+        "forgot_password":"Wachtwoord vergeten?",
+        "forgot_password_message":"Vul je e-mailadres in en ontvang instructies om je wachtwoord opnieuw in te stellen.",
+        "remember_password":"Ik weet 'm weer",
+        "reset_password":"Wachtwoord opnieuw instellen",
+        "no_account":"Nog geen account?",
+        "register":"Registreer nu",
+        "login":"Inloggen",
+        "login_error":"Er is een fout opgetreden tijdens het inloggen. Controleer uw gegevens en probeer het opnieuw.",
+        "welcome":"Welkom terug",
+        "continue_with":"Of ga door met",
+        "terms1":"Door in te loggen, ga je akkoord met de",
+        "terms2":"Algemene voorwaarden",
+        "terms3":"en het",
+        "terms4":"Privacybeleid"
+    },
+    "page_register":{
+        "title":"Account aanmaken",
+        "subtitle":"Je kunt zo direct aan de slag. Even snel een account aanmaken en je kan beginnen.",
+        "name":"Naam",
+        "email":"E-mail",
+        "password":"Wachtwoord",
+        "password_confirm":"Bevestig wachtwoord",
+        "register":"Registreren",
+        "account_exists":"Heb je al een account?",
+        "login":"Log hier in",
+        "register_error":"Er is een fout opgetreden tijdens het registreren. Controleer uw gegevens en probeer het opnieuw.",
+        "welcome":"Welkom",
+        "continue_with":"Of ga door met",
+        "terms1":"Door te registreren, ga je akkoord met de",
+        "terms2":"Algemene voorwaarden",
+        "terms3":"en het",
+        "terms4":"Privacybeleid"
+    },
+    "page_verify":{
+        "verifying":"Account verifiëren",
+        "success":"Gelukt!!",
+        "failure":"Niet gelukt.",
+        "moment":"Momentje nog",
+        "isverified":"Fijn! nogmaals welkom. je wordt zo doorgestuurd.",
+        "wrong_code":"Helaas. Deze code is niet geldig. probeer opnieuw te registreren of gebruik een andere link.",
+        "resend":"Stuur e-mail opnieuw",
+        "issend":"Verificatie e-mail is opnieuw verzonden",
+        "mail_unkown":"Geen e-mail adres bekend"
+    },
+    "page_wait_verify":{
+        "success":"De registratie is gelukt!",
+        "question_title":"Voor de beste ervaring willen we je 3 dingen vragen.",
+        "first_name":"Je voornaam",
+        "preferences":"Je voorkeuren",
+        "skip":"Overslaan",
+        "preferences_text":"Welke gesprekken zou je nu graag willen voeren? Je kunt deze voorkeuren later altijd weer aanpassen.",
+        "preferences_no_content":"Weet je zeker dat je verder wilt gaan zonder voorkeuren op te slaan? Geen probleem hoor. Fijn dat iemand zo'n brede interesse heeft!",
+        "verify_email":"Dan hoef je nu alleen nog je e-mailadres te verifieren. Je hebt een e-mail ontvangen met een link. Als je daarop klikt, ben je er klaar voor.",
+        "resend":"Stuur de e-mail opnieuw",
+        "issend":"Email wordt opnieuw verstuurd",
+        "start":"Aan de slag!",
+        "thanks":"Dank je wel!",
+        "set":"Instellen",
+        "code_checking":"We controleren de code.",
+        "code_valid":"Dank je. Je e-mail is gecontroleerd.",
+        "code_invalid":"Helaas, dit is niet de goede code",
+        "code_expired":"Helaas, je code is verlopen. Je kunt een nieuwe code aanvragen",
+        "step_0_text":"Wil je voor we verder gaan eerst even je e-mailadres bevestigen? Je hebt inmiddels een e-mail ontvangen. met een code. Vul deze hier in",
+        "step_1_text":"Voor de beste ervaring willen we je graag een aantal vragen stellen. Allereerst je voornaam.",
+        "step_2_title":"Wat zijn je behoeften?",
+        "step_2_text":"Waar wil je AliciaLabs vooral voor gebruiken? (meerdere antwoorden zijn mogelijk)",
+        "step_3_title":"Welke situaties?",
+        "step_3_text":"In welke situaties wil je dit gebruiken? (meerdere antwoorden zijn mogelijk)",
+        "step_4_title":"Ervaring",
+        "step_4_text":"Hoe goed ben jij in het voeren van gesprekken?",
+        "step_5_title":"Voor nu",
+        "step_5_text":"We houden rekening met je voorkeur, maar willen je om te beginnen even een suggestie doen. Met welke situatie zou je het willen uitproberen?",
+        "step_6_title":"We zijn er bijna",
+        "step_6_text_people_with_other_opinion":"Waarover zou je het gesprek willen voeren?",
+        "step_6_text_colleagues":"Wat is het onderwerp van het gesprek?",
+        "step_6_text_customer":"Van wat voor soort bedrijf ben je klant?",
+        "step_6_text_citizen":"Met welke organisatie heb je contact?",
+        "step_6_text_my_profession":"Wat voor soort werk doe je?",
+        "step_6_text_open_for_unknown":"Waarmee zullen we je eens verrassen?",
+        "step_7_title":"Aa de slag",
+        "step_7_text_single":"Top 😄! Je kunt aan de slag. We raden je aan om met het onderstaande gesprek te beginnen.",
+        "step_7_text":"Top 😄! Je kunt aan de slag. We raden je aan om met 1 van onderstaande gesprekken te beginnen.",
+        "skip_suggestion_title":"Toch een ander idee?",
+        "skip_suggestion_text":"Je mag uiteraard ook op zoek naar andere gesprekken als je dat liever hebt.",
+        "skip_suggestion_button":"Zelf zoeken",
+        "skip_suggestion_popup":"Hoewel we je graag willen helpen, willen we je ook de vrijheid geven om zelf te kiezen. Je kunt onze suggestie ook overslaan en zelf een gesprek zoeken. Veel plezier!"
+    },
+    "page_account":{
+        "dashboard":"Dashboard",
+        "billing":"Betalingen",
+        "my_data":"Mijn gegevens",
+        "first_name":"Voornaam",
+        "location":"Locatie",
+        "preferences":"Voorkeuren",
+        "preferences_text":"Welke gesprekken zou je nu graag willen voeren?",
+        "my_courses":"Mijn cursussen",
+        "my_cases":"Mijn cases",
+        "my_subscription":"Mijn abonnement",
+        "credits":"Credits",
+        "credits_current":"Actueel aantal Credits:",
+        "no_credits":"Op dit moment heb je geen credits (meer)",
+        "buy_now":"Koop nu",
+        "account":"Account",
+        "my_finished_cases":"Mijn afgeronde cases",
+        "my_finished_courses":"Mijn afgeronde modules",
+        "my_subscriptions":"Mijn abonnementen",
+        "payment_success":"Betaling geslaagd. Eventuele credits zie je zo verschijnen.",
+        "delete_cases_confirm":"Weet je zeker dat je dit gesprek wilt verwijderen?",
+        "delete_courses_confirm":"Weet je zeker dat je deze module wilt verwijderen?"
+    },
+    "cases":{
+        "badge_video":"Video",
+        "level":"Niveau",
+        "start_conversation":"Start gesprek",
+        "read_more":"Lees meer"
+    },
+    "edit_html":{
+        "title":"Wijzig tekst"
+    },
+    "feedback":{
+        "title":"Feedback",
+        "default_question":"Was deze informatie nuttig?",
+        "thanks":"Bedankt voor je feedback!",
+        "amount_learned":"Hoeveel heb je geleerd?"
+    },
+    "photos":{
+        "gender":"Gender",
+        "age":"Leeftijd",
+        "occupation":"Beroep",
+        "ethnicity":"Etniciteit",
+        "photo":"Foto",
+        "emotion":"Emotie"
+    },
+    "conversation":{
+        "connecting_ai":"Verbinding maken met AI",
+        "connecting":"Verbinding maken",
+        "connected":"Verbonden",
+        "connection_failed":"Verbinding mislukt",
+        "analyzing":"Analyseren",
+        "analyzing_request":"Analyseren...",
+        "processing_sound":"Je spraak omzetten naar tekst...",
+        "analyzing_conversation":"Gesprek analyseren",
+        "analyzing_text":"We analyseren je feedback en gebruiken deze om onze diensten te verbeteren.",
+        "while_waiting":"Terwijl we wachten",
+        "analysis_ready":"Je analyse is klaar, wil je de vraag nog even beantwoorden?",
+        "feedback_reality":"We zijn benieuwd hoe je het gesprek ervaren hebt. Hoe realistisch vond je het gesprek?",
+        "read_analysis":"Bekijk analyse",
+        "thanks_wait":"Bedankt. Momentje geduld nog...",
+        "conversation_level":"Gespreksniveau",
+        "goal":"Doel",
+        "costs":"Kosten",
+        "choices_text":"Hier zijn enkele mogelijke reacties om je op weg te helpen.",
+        "help":"Help",
+        "close_text":"Wil je het gesprek helemaal beëindigen en hier feedback op krijgen?<br> Of wil je later verder gaan?",
+        "end_error":"Er is iets misgegaan bij het afsluiten van het gesprek. Probeer het later nog eens.",
+        "sound_error":"Er is iets misgegaan bij het omzetten van spraak naar tekst. Probeer het later nog eens.",
+        "background_error":"Er is iets misgegaan bij het ophalen van de achtergrond informatie. Probeer het later nog eens.",
+        "choices_error":"Er is iets misgegaan bij het ophalen van de suggesties. Probeer het later nog eens.",
+        "facts_error":"Er is iets misgegaan bij het ophalen van de feiten. Probeer het later nog eens.",
+        "menu_evaluation":"Bekijk de eindevaluatie",
+        "menu_choices":"Geef me wat suggesties om te zeggen",
+        "menu_facts":"Check de genoemde feiten voor me",
+        "menu_background":"Geef me wat achtergrond informatie",
+        "menu_level":"Hoe staat het met het gesprek?",
+        "menu_phases":"Hoe zijn de gespreksfases gegaan?",
+        "no_goals":"Geen specifieke doelen bepaald",
+        "menu_goal":"Wat is ook al weer het doel van het gesprek?",
+        "details":"Details",
+        "pdf":{
+            "title_name":"Gespreksverslag van",
+            "creating":"'Het document wordt gegenereerd...'",
+            "conversation":"Het gesprek",
+            "attitude":"Houding",
+            "feedback":"Feedback",
+            "cipher":"Cijfer",
+            "evaluation":"Eindevaluatie"
+        }
+    },
+    "terms":{
+        "terms":"https://www.iubenda.com/gebruiksvoorwaarden/84749837",
+        "privacy":"https://www.iubenda.com/privacy-policy/84749837",
+        "cookie":"https://www.iubenda.com/privacy-policy/84749837/cookie-policy"
+    },
+    "conversation_start":{
+        "case":"De Case",
+        "goal_instructions":"Geef aan wanneer volgens jouw je doel is behaald.",
+        "free_question_instructions":"En geef hier antwoord op de vraag.",
+        "goal":"Doel",
+        "starting":"Het gaat beginnen",
+        "starting_instructions":"Geef aan hoe je het gesprek wilt beginnen. Je gesprekspartner zal hierop direct reageren als begin van het gesprek.",
+        "opening":"Opening",
+        "opening_user":"Pas onderstaande opening aan, als je wilt."
+    },
+    "useOptions":{
+        "my_understanding":"Ik wil beter begrepen worden",
+        "others_understanding":"Ik wil beter anderen begrijpen",
+        "achieve_conversation":"Ik wil meer bereiken in gesprekken",
+        "benefit_conversation":"Ik wil meer voordeel halen uit gesprekken",
+        "better_persuade":"Ik wil beter overtuigen",
+        "help_others":"Ik wil anderen helpen",
+        "solve_problem":"Ik wil een probleem oplossen",
+        "self_develop":"Ik wil mezelf ontwikkelen"
+    },
+    "situationOptions":{
+        "friends":"Met vrienden",
+        "family":"Met familie",
+        "neighbours":"Met buren",
+        "people_with_other_opinion":"Met mensen met andere mening",
+        "colleagues":"Met collega's",
+        "customer":"Als klant",
+        "patient":"Als patient",
+        "citizen":"Als burger",
+        "my_profession":"In mijn vak",
+        "open_for_unknown":"Ik sta open voor het onbekende"
+    },
+    "experienceOptions":{
+        "never":"Ik voer ze nooit, dus ik denk dat ik het wel kan",
+        "difficult":"Dit vind ik echt heel moeilijk",
+        "learn":"Ik kan nog wel wat leren",
+        "satisfied":"Meestal ben ik wel tevreden",
+        "compliments":"Ik krijg veel complimenten",
+        "profession":"Het voeren van gesprekken is mijn vak"
     }
+    
+
+
 }
+
+
+

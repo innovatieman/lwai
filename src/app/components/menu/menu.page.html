@@ -10,23 +10,34 @@
     <div>
       <div *ngIf="auth.userInfo?.displayName" class="displayName">{{auth.userInfo?.displayName}}</div>
       <div *ngIf="!auth.userInfo?.displayName" class="displayName"> {{'menu.unkown_user' | translate}}</div>
+      <div *ngIf="auth.userInfo?.email" class="email">{{auth.userInfo?.email}}</div>
     </div>
   </div> 
 
-  <ion-list id="inbox-list" *ngIf="!customMenu && media.smallDevice">
+  <ion-list id="inbox-list" *ngIf="!customMenu && media.smallDevice && auth.userInfo.isConfirmed">
     <div *ngFor="let p of appPages; let i = index">
-      <ion-item (click)="popoverController.dismiss()" pointer [ngClass]="p.class" (click)="nav.go(p.url)" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
+      <ion-item pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
       </ion-item> 
     </div>
+      <ion-item pointer (click)="openFeedback();popoverController.dismiss()" lines="none" detail="false">
+        <fa-icon [icon]="icon.get('faComment')" slot="start"></fa-icon>
+        <ion-label>{{ 'menu.feedback' | translate }}</ion-label>
+      </ion-item> 
   </ion-list>
 
-  <ion-list id="inbox-list" *ngIf="!customMenu && !media.smallDevice">
+  <ion-list id="inbox-list" *ngIf="!customMenu && !media.smallDevice && auth.userInfo.isConfirmed">
     <div *ngFor="let p of accountPages; let i = index">
-      <ion-item (click)="popoverController.dismiss()" pointer [ngClass]="p.class" (click)="nav.go(p.url)" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
+      <ion-item pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
+      </ion-item> 
+    </div>
+    <div>
+      <ion-item pointer (click)="openFeedback();popoverController.dismiss()" lines="none" detail="false">
+        <fa-icon [icon]="icon.get('faComment')" slot="start"></fa-icon>
+        <ion-label>{{ 'menu.feedback' | translate }}</ion-label>
       </ion-item> 
     </div>
   </ion-list>
@@ -62,7 +73,7 @@
   </div>
 
 
-  <div class="actionButtons" *ngIf="!customMenu" style="padding-bottom:0">
+  <div class="actionButtons" *ngIf="!customMenu">
 
     <div fullwidth >
       <ion-button color="primary" *ngIf="!isAuthenticated" (click)="nav.go('register');popoverController.dismiss()">
@@ -78,10 +89,14 @@
       {{'menu.logout' | translate}}
     </ion-button>
 
-    <div>
-      <ion-button (click)="editLang()" fill="clear">
-        <span>{{'languages.language' | translate}}: {{'languages.'+translateService.currentLang | translate}}</span>
-      </ion-button>
+    <div align-center marginTop fullwidth>
+      <!-- <ion-button (click)="editLang()" fill="clear">
+        <span font-12>{{'languages.language' | translate}}: {{'languages.'+translateService.currentLang | translate}}</span>
+      </ion-button> -->
+      <div class="languageSelection" center-ver text-secondary (click)="editLang()">
+        <fa-icon [icon]="icon.get('faGlobeEurope')" class="langIcon" ></fa-icon>
+        <span>{{'languages.'+translateService.currentLang | translate}}</span>
+      </div>
     </div>
   </div>
   
@@ -106,7 +121,9 @@
       </ion-list>
     </ion-accordion>
   </ion-accordion-group> -->
-
+  <div *ngIf="!customMenu" class="versionNumber" (click)="nav.refreshPWA()">
+    {{versionNumber}}
+  </div>
 
 </div>
 

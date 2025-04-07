@@ -59,9 +59,12 @@ export class ConversationStartPage implements OnInit {
         }
       }
 
+      if(this.caseItem.openingMessage){
+        this.caseItem.openingMessage = this.caseItem.openingMessage.replace('[name]',this.auth.userInfo.displayName).replace('[role]',this.caseItem.role)
+      }
 
       this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
-      // console.log(this.caseItem)
+      console.log(this.caseItem)
     }
     else{
       this.modalCtrl.dismiss()

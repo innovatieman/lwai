@@ -3,8 +3,8 @@
   "assetGroups": [
     {
       "name": "app",
-      "installMode": "prefetch",
-      "updateMode": "prefetch",
+      "installMode": "prefetch",  
+      "updateMode": "prefetch",  
       "resources": {
         "files": [
           "/favicon.ico",
@@ -16,13 +16,27 @@
     },
     {
       "name": "assets",
-      "installMode": "lazy",
-      "updateMode": "prefetch",
+      "installMode": "lazy",      
+      "updateMode": "lazy",
       "resources": {
         "files": [
           "/assets/**",
           "/*.(png|jpg|jpeg|svg|webp)"
         ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-fresh",
+      "urls": [
+        "/api/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",  
+        "maxSize": 100,
+        "maxAge": "1h",
+        "timeout": "10s"
       }
     }
   ]

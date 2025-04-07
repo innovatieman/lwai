@@ -1,16 +1,24 @@
 import { EventEmitter, Injectable, Output } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { NavController, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { MenuPage } from '../components/menu/menu.page';
+import { SelectMenuService } from './select-menu.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NavService {
-  // @Output() changeNav: EventEmitter<boolean> = new EventEmitter();
+  @Output() changeNav: EventEmitter<boolean> = new EventEmitter();
+  @Output() changeLang: EventEmitter<string> = new EventEmitter();
+  @Output() renewPWA: EventEmitter<boolean> = new EventEmitter();
   langList:string[] = ['en','nl']
   constructor(
     private navController: NavController,
     private translate: TranslateService,
+    private functions: AngularFireFunctions,
+    private selectMenuservice:SelectMenuService,
+    private popoverController:PopoverController
   ) { }
 
   public go(page: string,backwards?: boolean){
@@ -51,6 +59,51 @@ export class NavService {
     localStorage.setItem('lang',lang)
     this.translate.setDefaultLang(lang);
     this.translate.use(lang)
-    // this.changeNav.emit(true)
+    this.translate.currentLang = lang
+    this.changeNav.emit(true)
+    this.changeLang.emit(lang)
   }
+
+  async editLang(){
+    let list:any[] = []
+    this.langList.forEach((lang)=>{
+      list.push({
+        value:lang,
+        title:this.translate.instant('languages.'+lang),
+        icon:'faGlobeEurope'
+      })
+    })
+    await this.showshortMenu(event,list,((response:any)=>{
+      if(response.value&&response.value!=localStorage.getItem('lang')){
+        this.setLang(response.value)
+        this.selectMenuservice.selectedItem = undefined
+        // location.reload()
+      }
+    }))
+   
+  }
+
+  shortMenu:any
+  async showshortMenu(event:any,list:any[],callback:Function){
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        pages:list,
+        listShape:true,
+        customMenu:true,
+      },
+      cssClass: 'shortMenu',
+      event: event,
+      translucent: false,
+      reference:'trigger',
+    });
+    await this.shortMenu.present();
+    await this.shortMenu.onDidDismiss()
+    callback(this.selectMenuservice.selectedItem)
+  }
+
+  refreshPWA(){
+    this.renewPWA.emit(true)
+  }
+
 }

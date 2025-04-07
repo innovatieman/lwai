@@ -1,0 +1,25 @@
+<app-header [page]="'admin'"></app-header>
+
+<main>
+  <div fullheight fullwidth flex center-ver center-hor>
+    <ion-card style="width:100%;max-width:500px;text-align:center" basicPadding>
+      <ion-card-header>
+        <ion-card-title font-20 weight600 *ngIf="data.id">{{data.title}}</ion-card-title>
+        <ion-card-title font-20 weight600 *ngIf="processing">Bezig met verwerken</ion-card-title>
+        <ion-card-title font-20 weight600 *ngIf="!processing&&!data.id">Gegevens niet gevonden</ion-card-title>
+      </ion-card-header>
+      <ion-card-content *ngIf="data.id&&!processing" font-16 weight700>
+          <div *ngIf="data.status=='verification successful'">✅ Dank je voor je akkoord. Ik ga het plaatsen.</div>
+          <div *ngIf="data.status=='posted'">✅ 📭 Het is geplaatst.</div>
+          <div *ngIf="data.status=='cancelled'">❌ Jammer dat ie niet goed genoeg was. Het is gecancelled.</div>
+          <div *ngIf="data.status=='new'">🔄 📄 De tekst wordt wordt opnieuw geschreven.</div>
+          <div *ngIf="data.status=='text created'">🔄 🖼️ De foto wordt wordt opnieuw gemaakt.</div>
+          <div *ngIf="data.status=='verification pending'&&action!='edit'">❓ De bal ligt weer bij jou. Er is een nieuwe mail gestuurd ter accordering.</div>
+          <div *ngIf="data.status=='verification pending'&&action=='edit'">❗️ Dus jij kan het beter? Pas maar aan dan!</div>
+          
+          <ion-button marginTop *ngIf="data.status=='verification pending'&&action=='edit'" expand="full" class="saveButton" (click)="edit()">Pas aan</ion-button>
+      </ion-card-content>
+      
+    </ion-card>
+  </div>
+</main>

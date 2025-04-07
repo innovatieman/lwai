@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
 import { AuthService } from '../../auth.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-verify',
@@ -22,7 +23,8 @@ export class VerifyPage implements OnInit {
     private modalService:ModalService,
     private nav:NavService,
     private functions:AngularFireFunctions,
-    public authService: AuthService
+    public authService: AuthService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -55,12 +57,11 @@ export class VerifyPage implements OnInit {
     if(this.authService.userInfo.email){
       const callable = this.functions.httpsCallable('reSendVerificationEmail');
       callable({ email: this.authService.userInfo.email, displayName: this.authService.userInfo.displayName}).subscribe((result) => {
-        console.log('Verification email sent:', result);
-        this.modalService.showText('Verificatie email is opnieuw verzonden','Gelukt');
+        this.modalService.showText(this.translate.instant('page_verify.issend'),this.translate.instant('page_verify.success'));
       });
     }
     else{
-      this.modalService.showText('Geen e-mail adres bekend','Mislukt');
+      this.modalService.showText(this.translate.instant('page_verify.mail_unkown'),this.translate.instant('page_verify.failure'));
     }
   }
 

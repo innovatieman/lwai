@@ -43,6 +43,37 @@ export class HelpersService {
     return arr.length
   }
 
+  getDailySeed(): number {
+    const today = new Date();
+    const seedString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    let hash = 0;
+    for (let i = 0; i < seedString.length; i++) {
+      hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash);
+  }
+
+  seededRandom(seed: number): () => number {
+    return function() {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+  }
+  
+  shuffleArrayDeterministic<T>(array: T[], seed: number): T[] {
+    const result = [...array];
+    const random = this.seededRandom(seed);
+  
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+  
+    return result;
+  }
+
+
+
   get now(){
     return moment().format('yyyymmddHis')
   }
@@ -521,6 +552,16 @@ export class HelpersService {
     {"code":"SE","nl":"Zweden","en":"Sweden"},
     {"code":"CH","nl":"Zwitserland","en":"Switzerland"},
   ]
+
+  shuffle(array:any[]) {
+    if(!array || array.length === 0) {
+      return [];
+    }
+    const seed = this.getDailySeed();
+    let cases:any = JSON.parse(JSON.stringify(array));
+    cases = cases.slice(0, 15);
+    return this.shuffleArrayDeterministic(cases, seed);
+  }
 
   get countryList(){
     let list = []

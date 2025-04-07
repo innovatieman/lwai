@@ -113,6 +113,10 @@ ion-item{
         --color:var(--color-global)!important;
     }
 }
+ion-checkbox{
+    --checkbox-background: white;
+    --border-color: var(--color-global);  
+}
 .spacer{
     flex: 1 1 auto;
 }
@@ -328,7 +332,7 @@ ion-item{
 .upsideDown{
     transform: rotate(180deg);
 }
-.chevron{
+.chevron, [chevron]{
     transition: all 0.3s;
 }
 [solidPrimary]{
@@ -541,6 +545,7 @@ video{
   .pulse-loader {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+
 //////////////////////////////////////
 /// Modal Styles                   ///
 //////////////////////////////////////
@@ -559,12 +564,30 @@ ion-modal.caseModal{
 }
 
 ion-modal.selectManyModal{
-    --width: 1800px;
+    --width: 80%;
     --max-width: 100%;
 }
 ion-modal.evaluationModal{
     --width: 1000px;
     --max-width: 100%;
+}
+
+@media only screen and (max-width: 667px) {
+    ion-modal.selectManyModal{
+        --width: 100%;
+    }
+    ion-modal.evaluationModal{
+        --width: 100%;
+    }
+}
+
+@media only screen and (min-width:668px) and (max-width: 1024px) {
+    ion-modal.selectManyModal{
+        --width: 90%;
+    }
+    ion-modal.evaluationModal{
+        --width: 90%;
+    }
 }
 
 ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal, ion-modal.evaluationModal {
@@ -958,6 +981,12 @@ main{
             padding: 15px;
             padding-bottom:30px;
             background: white;
+        }
+    }
+    @media screen and (max-width: 667px){
+        .shepherd-text{
+            max-height: 600px;
+            overflow: auto;
         }
     }
     .inner-photo{

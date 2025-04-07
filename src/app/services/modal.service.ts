@@ -13,6 +13,7 @@ import { RateLearningPage } from '../components/modals/rate-learning/rate-learni
 import { SelectManyPage } from '../components/modals/select-many/select-many.page';
 import { EvaluationPage } from '../components/modals/evaluation/evaluation.page';
 import { SelectImageLibraryPage } from '../components/modals/select-image-library/select-image-library.page';
+import { CaseinfoPage } from '../components/modals/caseinfo/caseinfo.page';
 
 @Injectable({
   providedIn: 'root',
@@ -92,6 +93,23 @@ export class ModalService {
         options:options
       },
       backdropDismiss:options.backdropDismiss,
+      cssClass:'infoModal',
+    })
+    if(callback){
+      modalItem.onWillDismiss().then(data=>{
+        callback(data)
+      })
+    }
+    return await modalItem.present()
+  }
+
+  public async showCaseInfo(caseItem:any,callback?:any){
+    const modalItem = await this.modalController.create({
+      component:CaseinfoPage,
+      componentProps:{
+        caseItem:caseItem
+      },
+      backdropDismiss:true,
       cssClass:'infoModal',
     })
     if(callback){
@@ -191,7 +209,7 @@ export class ModalService {
     // return await modalItem.present
   }
 
-  public async selectItem(text:string,list:any[],callback:Function,iconList?:any[],title?:string,extraData?:any){
+  public async selectItem(text:string,list:any[],callback:Function,iconList?:any,title?:string,extraData?:any){
     const modalItem = await this.modalController.create({
       component:SelectItemPage,
       componentProps:{

@@ -10,6 +10,7 @@ import { EvaluationPage } from './evaluation.page';
 import { ComponentsModule } from '../../components.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PipesModule } from 'src/app/pipes/pipes.module';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { PipesModule } from 'src/app/pipes/pipes.module';
     EvaluationPageRoutingModule,
     ComponentsModule,
     FontAwesomeModule,
-    PipesModule
+    PipesModule,
+    TranslateModule.forChild()
   ],
   declarations: [EvaluationPage]
 })

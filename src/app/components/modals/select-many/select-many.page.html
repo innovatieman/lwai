@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar style="padding-left:20px">
-    <h3>{{properties.title}}</h3>
+    <h3 font-18>{{properties.title}}</h3>
     <ion-buttons slot="end">
       <ion-button size="large" (click)="dismiss()" >
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -11,20 +11,20 @@
     <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" [placeholder]="translate.instant('search')"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
-<div class="inner-content">
+<div class="inner-content" [ngStyle]="{'max-height':(vh * 100)+'px'}">
     <div *ngIf="properties.text" style="padding: 10px 15px 0px 15px;font-weight:500;font-size:18" [innerHtml]="properties.text"></div>
-    <div style="max-height: calc(100% - 200px);overflow: auto;margin-bottom: 60px;">
+    <div class="manyList" [ngStyle]="{'max-height':media.screenSize=='xs' ? 'calc('+(vh * 100)+'px'+' - 207px)' : 'calc('+(vh * 100)+'px'+' - 200px)'}">
       
       <ion-grid>
-        <ion-row>
-          <ion-col [size]="helper.cardSize" *ngFor="let item of localItems | searchMany : search : properties.subList : translate.currentLang">
+        <ion-row [ngStyle]="{'max-height':'calc('+(vh * 100)+'px'+' - 218px)','overflow':'auto'}">
+          <ion-col [size]="helper.cardSizeSmall" *ngFor="let item of localItems | searchMany : search : properties.subList : translate.currentLang">
             <ion-card noPadding noMargin noBackground>
               <ion-card-header>
                 <ion-card-title>{{item[translate.currentLang]}}</ion-card-title>
               </ion-card-header>
               <ion-card-content>
                 <ion-item noMargin noBackground lines="none" *ngFor="let subItem of item[properties.subList]" (click)="subItem.selected = !subItem.selected">
-                  <ion-checkbox slot="start" [(ngModel)]="subItem.selected"></ion-checkbox>
+                  <ion-checkbox mode="md" slot="start" [(ngModel)]="subItem.selected"></ion-checkbox>
                   <ion-label>{{subItem[translate.currentLang]}}</ion-label>
                 </ion-item>
               </ion-card-content>
@@ -35,12 +35,12 @@
 
 
     </div>
+    <div class="footer">
+      <ion-button (click)="dismiss()" class="saveButton" fill="solid" color="dark">{{'buttons.cancel' | translate}}</ion-button>
+      <div class="spacer"></div>
+      <ion-button (click)="save()" class="saveButton" [disabled]="!changes" fill="solid" color="primary">{{'buttons.save' | translate}}</ion-button>
+    </div>  
 </div>
-<div class="footer">
-  <ion-button (click)="dismiss()" class="saveButton" fill="solid" color="dark">{{'buttons.cancel' | translate}}</ion-button>
-  <div class="spacer"></div>
-  <ion-button (click)="save()" class="saveButton" [disabled]="!changes" fill="solid" color="primary">Wijzigingen opslaan</ion-button>
-</div>  
 
 
   

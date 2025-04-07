@@ -5,6 +5,11 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AuthService } from '../../auth.service';
 import { NavService } from 'src/app/services/nav.service';
 import { IconsService } from 'src/app/services/icons.service';
+import { TranslateService } from '@ngx-translate/core';
+import { PopoverController } from '@ionic/angular';
+import { SelectMenuService } from 'src/app/services/select-menu.service';
+import { MenuPage } from 'src/app/components/menu/menu.page';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 
 @Component({
   selector: 'app-register',
@@ -19,7 +24,11 @@ export class RegisterPage implements OnInit {
     private fb: FormBuilder,
     public auth: AuthService,
     public nav: NavService,
-    public icon: IconsService
+    public icon: IconsService,
+    public translateService: TranslateService,
+    private popoverController: PopoverController,
+    private selectMenuservice:SelectMenuService,
+    private functions: AngularFireFunctions,
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -28,11 +37,12 @@ export class RegisterPage implements OnInit {
   }
 
   ngOnInit() {
-    // if(this.auth.userInfo.uid){
-    //   console.log(this.auth.user$)
-    //   this.nav.go('start')
-    // }
-    this.doNothing();
+    this.auth.userInfo$.subscribe(userInfo => {
+      if(this.auth.userInfo.uid){
+        console.log('userInfo',userInfo)
+        this.nav.go('start')
+      }
+    });
   }
 
   doNothing() {}
@@ -53,4 +63,8 @@ export class RegisterPage implements OnInit {
     // Facebook Login logica (bijvoorbeeld via capacitor)
     console.log('Facebook Sign-In nog niet geïmplementeerd.');
   }
+
+
+  
+
 }

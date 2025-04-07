@@ -9,7 +9,7 @@ export class lastestAssistantItemPipe implements PipeTransform {
     if(!messages||messages.length<1){
       return '';
     }
-    let newMessages = messages.filter((message:any) => message.role === 'assistant');
+    let newMessages = messages.filter((message:any) => message.role === 'assistant' || message.role === 'model');
     newMessages = newMessages.sort((a:any, b:any) => a.timestamp - b.timestamp);
     
     if(newMessages.length>0){

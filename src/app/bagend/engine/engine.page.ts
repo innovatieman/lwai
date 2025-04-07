@@ -2,11 +2,13 @@ import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { IonSelect } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { first, max, Subscription, take } from 'rxjs';
 import { BackupService } from 'src/app/services/backup.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { NavService } from 'src/app/services/nav.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -57,6 +59,7 @@ export class EnginePage implements OnInit {
   }
   
   phaseList:any = {title:'Fase indeling',id:'phaseList'}
+  phaseExplanation:any = {title:'Fase indeling',id:'phaseExplanation'}
 
   sortByOptions:any = {
     'attitudes':'level',
@@ -116,16 +119,16 @@ export class EnginePage implements OnInit {
   fieldOptions:any = [
     {field:'title',label:'Title',type:'text',agents:['main'],categories:['all']},
     {field:'general_layer',label:'General Layer knowledge',type:'textarea',agents:['main'],categories:['main']},
-    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
+    {field:'systemContent',label:'System Content',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator'],categories:['all']},
     {field:'extraInfo',label:'Extra kennis input over de categorie',type:'textarea',agents:['reaction'],categories:['all']},
-    {field:'content',label:'Vraag aan Agent',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
-    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
-    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:0,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels'],categories:['all']},
+    {field:'content',label:'Vraag aan Agent',type:'textarea',notHtml:false,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator'],categories:['all']},
+    {field:'temperature',label:'Creativiteits temperatuur',type:'range',min:0,max:2.0, step:0.1,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator'],categories:['all']},
+    {field:'max_tokens',label:'Maximum aantal tokens',type:'range',min:0,max:10000, step:100,agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator'],categories:['all']},
   ]
   
   fieldOptionsFormat:any = [
-    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels']},
-    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels']},
+    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator']},
+    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator']},
   ]
   
   fieldOptionsList:any = [
@@ -145,6 +148,8 @@ export class EnginePage implements OnInit {
     private rf:ChangeDetectorRef,
     private toast:ToastService,
     private functions:AngularFireFunctions,
+    private nav:NavService,
+    private translate:TranslateService,
   ) { }
 
   async ngOnInit() {
@@ -159,12 +164,42 @@ export class EnginePage implements OnInit {
       console.log(this.attitudes)
     })
     this.load('positions')
-    // this.showEditor()
-    // setTimeout(() => {
-    //   this.activateItem(this.getCategory('main'))
-    // }, 3000);
-    // this.createItems()
+    // this.addContent()
   }
+
+
+  // addContent(){
+  //   this.firestoreService.update('categories','assessment',{phaseExplanation:
+  //     [
+  //       {
+  //         "title": "Informatie verzamelen",
+  //         "short": "Verzamelen",
+  //         "explanation": "In deze fase wordt alle relevante informatie verzameld over de prestaties, context en omstandigheden van de persoon of situatie. Dit is belangrijk omdat een eerlijke en onderbouwde beoordeling alleen mogelijk is als het volledige plaatje in beeld is."
+  //       },
+  //       {
+  //         "title": "Analyse en interpretatie",
+  //         "short": "Analyse",
+  //         "explanation": "De verzamelde gegevens worden geanalyseerd om patronen, successen en knelpunten te herkennen. Deze fase is essentieel omdat het helpt om objectieve inzichten te verkrijgen en om eventuele aannames te toetsen aan de feiten."
+  //       },
+  //       {
+  //         "title": "Feedback en evaluatie",
+  //         "short": "Feedback",
+  //         "explanation": "De bevindingen worden gedeeld met de medewerker, die daarop kan reageren. Deze fase is belangrijk omdat het ruimte biedt voor dialoog, reflectie en gedeeld begrip — en zo bijdraagt aan acceptatie van de uitkomst."
+  //       },
+  //       {
+  //         "title": "Conclusie en aanbevelingen",
+  //         "short": "Conclusie",
+  //         "explanation": "Er wordt een heldere conclusie geformuleerd en aanbevelingen worden besproken voor verdere ontwikkeling of verbetering. Deze fase is belangrijk omdat het richting geeft aan groei en laat zien hoe feedback kan worden omgezet in concrete actie."
+  //       },
+  //       {
+  //         "title": "Follow-up en monitoring",
+  //         "short": "Follow-up",
+  //         "explanation": "Tot slot worden afspraken gemaakt over opvolging en monitoring. Deze fase is cruciaal om te zorgen dat het beoordelingsgesprek niet losstaat van de praktijk, maar leidt tot daadwerkelijke verbetering, ontwikkeling of borging."
+  //       }
+  //     ]
+  //   })
+  // }
+
 
   async getAgents(){
     this.firestoreService.getSub('categories','main','agents').pipe(first()).subscribe((items:any) => {
@@ -247,7 +282,7 @@ export class EnginePage implements OnInit {
     this.modalService.selectItem('',listCats,(response:any)=>{
       if(response.data){
         console.log(response.data)
-        if(response.data.id!='main' && (this.activeAgent.id=='phase_creator' || this.activeAgent.id=='skills' || this.activeAgent.id=='levels')){
+        if(response.data.id!='main' && (this.activeAgent.id=='phase_creator' || this.activeAgent.id=='skills' || this.activeAgent.id=='levels' || this.activeAgent.id=='translator')){
           this.changeAgent({title:'Basisgegevens',id:'main'})
           this.activateItem(response.data)
         }
@@ -356,7 +391,7 @@ export class EnginePage implements OnInit {
         })
       }
       else{
-        if(field!='phaseList'){
+        if(field!='phaseList'&&field!='phaseExplanation'){
           if(this.activeAgent.id=='main'){
             if(html){
               if(!this.activeItem[field]){
@@ -394,7 +429,7 @@ export class EnginePage implements OnInit {
             this.firestoreService.setSub('categories',this.activeItem.id,'agents',this.activeAgent.id,this.activeItem[this.activeAgent.id][field],field)
           }
         }
-        else if(field=='phaseList'){
+        else if(field=='phaseList'||field=='phaseExplanation'){
           if(this.activeAgent.id=='phaseList'){
             this.firestoreService.set('categories',this.activeItem.id,this.activeItem[field],field,true,'',()=>{
               this.load('categories')
@@ -444,21 +479,30 @@ export class EnginePage implements OnInit {
     },100)
   }
 
-  addPhase(){
-    this.activeItem[this.phaseList.id].push({title:'',description:''})
-    this.update('phaseList')  
+  addPhase(list?:string){
+    if(!list){
+      list = 'phaseList'
+    }
+    this.activeItem[this[list].id].push({title:'',description:''})
+    this.update(list)  
   }
 
-  removePhase(index:number){
-    this.activeItem[this.phaseList.id].phases.splice(index,1)
-    this.update('phaseList')
+  removePhase(index:number,list?:string){
+    if(!list){
+      list = 'phaseList'
+    }
+    this.activeItem[this[list].id].splice(index,1)
+    this.update(list)
   }
 
-  movePhase(index:number, direction:number){
-    let temp =this.activeItem[this.phaseList.id].phases[index]
-    this.activeItem[this.phaseList.id].phases[index] = this.categories[this.activeTab].phases[index+direction]
-    this.activeItem[this.phaseList.id].phases[index+direction] = temp
-    this.update('phaseList')
+  movePhase(index:number, direction:number,list?:string){
+    if(!list){
+      list = 'phaseList'
+    }
+    let temp =this.activeItem[this[list].id][index]
+    this.activeItem[this[list].id][index] = this.activeItem[this[list].id][index+direction]//this.categories[this.activeTab][index+direction]
+    this.activeItem[this[list].id][index+direction] = temp
+    this.update(list)
   }
 
   newCategory(){
@@ -479,6 +523,7 @@ export class EnginePage implements OnInit {
               overwrite:0,
             })
           }
+          this.firestoreService
           setTimeout(() => {
             this.load('categories',()=>{
               this.toast.hideLoader()
@@ -607,6 +652,139 @@ export class EnginePage implements OnInit {
   //   }
   // }
 
+  async translateCategory(){
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      // if(lang!=='nl'){
+        list.push({
+          value:lang,
+          title:this.translate.instant('languages.'+lang),
+          icon:'faGlobeEurope'
+        })
+      // }
+    })
+
+    this.modalService.selectItem('naar welke talen wil je vertalen?',list,(response:any)=>{
+      console.log(response)
+      if(response.data){
+        let newList = []
+        for(let i=0;i<response.data.length;i++){
+          newList.push(response.data[i].value)
+        }
+
+        let agentList = [
+          {id:'main',title:'Basisgegevens'},
+        ]
+        for(let i=0;i<this.agents.length;i++){
+          agentList.push({id:this.agents[i].id,title:this.agents[i].title})
+        }
+        this.modalService.selectItem('Welke agenten wil je vertalen?',agentList,(response:any)=>{
+          console.log(response)
+          if(response.data){
+            console.log(response.data)
+            let basics:boolean = false
+            let newAgentList = []
+            for(let i=0;i<response.data.length;i++){
+              if(response.data[i].id=='main'){
+                basics = true
+              }
+              else{
+                newAgentList.push(response.data[i].id)
+              }
+            }
+            let obj = {
+              categoryId:this.activeItem.id,
+              original_language:'nl',
+              languages:newList,
+              agents:newAgentList,
+              basics:basics,
+            }
+            this.functions.httpsCallable('translateCategory')(obj).subscribe((result:any)=>{
+              console.log(result)
+              this.toast.show('Vertaling is klaar')
+            })
+
+          }
+        },null,undefined,{multiple:true,object:true,field:'title'})
 
 
+
+
+        
+      }
+    },null,undefined,{multiple:true,object:true,field:'title'})
+
+    
+     
+  }
+
+  translateAttitudes(){
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      // if(lang!=='nl'){
+        list.push({
+          value:lang,
+          title:this.translate.instant('languages.'+lang),
+          icon:'faGlobeEurope'
+        })
+      // }
+    })
+
+    this.modalService.selectItem('naar welke talen wil je vertalen?',list,(response:any)=>{
+      console.log(response)
+      if(response.data){
+        let newList = []
+        for(let i=0;i<response.data.length;i++){
+          newList.push(response.data[i].value)
+        }
+        let obj = {
+          categoryId:this.activeItem.id,
+          original_language:'nl',
+          languages:newList,
+        }
+        this.functions.httpsCallable('translateAttitudes')(obj).subscribe((result:any)=>{
+          console.log(result)
+          this.toast.show('Vertaling is klaar')
+        })
+      }
+    },null,undefined,{multiple:true,object:true,field:'title'})
+  }
+
+
+  async translatePhases(){
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      // if(lang!=='nl'){
+        list.push({
+          value:lang,
+          title:this.translate.instant('languages.'+lang),
+          icon:'faGlobeEurope'
+        })
+      // }
+    })
+
+    this.modalService.selectItem('naar welke talen wil je de fases vertalen?',list,(response:any)=>{
+      console.log(response)
+      if(response.data){
+        let newList = []
+        for(let i=0;i<response.data.length;i++){
+          newList.push(response.data[i].value)
+        }
+
+        let obj = {
+          categoryId:this.activeItem.id,
+          original_language:'nl',
+          languages:newList,
+        }
+        this.functions.httpsCallable('translatePhases')(obj).subscribe((result:any)=>{
+          console.log(result)
+          this.toast.show('Vertaling is klaar')
+        })
+
+      }
+    },null,undefined,{multiple:true,object:true,field:'title'})
+
+    
+     
+  }
 }

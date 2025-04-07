@@ -16,6 +16,7 @@ import { environment } from 'src/environments/environment';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { addDoc, collection, onSnapshot } from 'firebase/firestore';
 import { MediaService } from 'src/app/services/media.service';
+import { CountriesService } from 'src/app/services/countries.service';
 
 
 @Component({
@@ -47,14 +48,14 @@ export class AccountPage implements OnInit {
   subscriptionsStripe: any;
   db: any;
   menuItems:any=[
-    {title:'Mijn gegevens',tab:'basics',icon:'faUser'},
+    {title:this.translate.instant('page_account.account'),tab:'basics',icon:'faUser'},
     // {title:'Mijn profiel',tab:'profile',icon:'faSlidersH'},
-    {title:'Mijn afgeronde cases',tab:'conversations',icon:'faComments'},
-    {title:'Mijn afgeronde modules',tab:'courses',icon:'faGraduationCap'},
+    {title:this.translate.instant('page_account.my_finished_cases'),tab:'conversations',icon:'faComments'},
+    // {title:this.translate.instant('page_account.my_finished_courses'),tab:'courses',icon:'faGraduationCap'},
     // {title:'Mijn prestaties',tab:'progress',icon:'faAward'},
-    {title:'Mijn abonnementen',tab:'subscriptions',icon:'faStar'},
+    // {title:this.translate.instant('page_account.my_subscriptions'),tab:'subscriptions',icon:'faStar'},
     // {title:'Betaalinstellingen',tab:'payment',icon:'faCreditCard'},
-    {title:'Credits',tab:'credits',icon:'faCoins'},
+    {title:this.translate.instant('page_account.credits'),tab:'credits',icon:'faCoins'},
 
   ]
 
@@ -72,7 +73,8 @@ export class AccountPage implements OnInit {
     public infoService:InfoService,
     private functions:AngularFireFunctions,
     private route:ActivatedRoute,
-    public media:MediaService
+    public media:MediaService,
+    public countries:CountriesService
   ) { }
 
   ngOnInit() {
@@ -82,10 +84,10 @@ export class AccountPage implements OnInit {
       }
       if(params['status']){
         if(params['status']=='success'){
-          this.modalService.showText('Betaling geslaagd. Eventuele credits zie je zo verschijnen','Gelukt')
+          this.modalService.showText(this.translate.instant('page_account.payment_success'),this.translate.instant('messages.success'))
         }
         else if(params['status']=='error'){
-          this.toast.show('Er is iets misgegaan',4000,'middle')
+          this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
         }
         this.nav.go('account/'+ this.activeTab)
       }
@@ -163,6 +165,8 @@ export class AccountPage implements OnInit {
   //   }
   // }
 
+
+
   async collectStripeProducts() {
     // const app = getApp();
     // this.payments = getStripePayments(app, {
@@ -213,13 +217,30 @@ export class AccountPage implements OnInit {
       localStorage.setItem('buying Credits',item.credits)
       localStorage.setItem('oldCredits',this.auth.credits.total)
     }
+
+    let stripeId:any = ''
+    if(this.auth.customer?.stripeCustomerId){
+      stripeId = this.auth.customer.stripeCustomerId
+    }
+
+    if(!stripeId){
+      let newCustomer = await this.functions.httpsCallable('createCustomerId')({email:user.email}).toPromise()
+      const stripeId = newCustomer.stripeCustomerId
+    }
+    if(!stripeId){
+      this.toast.hideLoader()
+      this.toast.show('Error creating customer')
+      return
+    }
+
     let checkoutSessionData:any = {
       price: item.prices[0].id,
       success_url: window.location.origin + (item.metadata?.type=='subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
       cancel_url: window.location.origin + (item.metadata?.type=='subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
       metadata:{
         userId:user.uid
-      }
+      },
+      customer:stripeId
     };
     if (item.prices[0].type=='one_time') {
       checkoutSessionData['mode'] = 'payment';
@@ -228,6 +249,7 @@ export class AccountPage implements OnInit {
       checkoutSessionData['mode'] = 'subscription';
     }
 
+    console.log(checkoutSessionData)
     try {
       // ✅ Firestore Collection Reference met compat API
       const checkoutSessionRef = this.firestore.collection(`customers/${user.uid}/checkout_sessions`);
@@ -250,22 +272,6 @@ export class AccountPage implements OnInit {
           console.error("Stripe error:", value.error);
         }
       })
-
-      // ✅ Snapshot listener om te luisteren naar wijzigingen in Firestore
-      // docRef.get().then((snap) => {
-      //   console.log("Checkout session updated:", snap.data());
-      //   if (snap.exists) {
-      //     const { error, url } = snap.data() as any;
-      //     if (error) {
-      //       console.error("Stripe error:", error);
-      //       return;
-      //     }
-      //     if (url) {
-      //       console.log("Redirecting to:", url);
-      //       window.location.assign(url);
-      //     }
-      //   }
-      // });
 
     } catch (error) {
       console.error("Error creating checkout session:", error);
@@ -297,13 +303,13 @@ export class AccountPage implements OnInit {
 
   updateAccount(){
     if(this.account.displayName){
-      this.toast.showLoader('Bezig met opslaan')
+      this.toast.showLoader(this.translate.instant('messages.busy_saving'))
       this.functions.httpsCallable('editUserName')({displayName:this.account.displayName}).subscribe((response:any)=>{
         if(response.status==200){
-          this.toast.show('Gegevens opgeslagen',3000,'bottom')
+          this.toast.show(this.translate.instant('messages.saved'),3000,'bottom')
         }
         else{
-          this.toast.show('Er is iets misgegaan',3000)
+          this.toast.show(this.translate.instant('error_messages.failure'),3000)
         }
         this.toast.hideLoader()
       })
@@ -321,25 +327,25 @@ export class AccountPage implements OnInit {
   openConversation(conversation:any){
     localStorage.setItem('continueConversation',"true")
     localStorage.setItem('conversation',JSON.stringify(conversation))
-    this.nav.go('conversation/'+conversation.conversationType+'/'+conversation.caseId)
+    this.nav.go('conversation/'+conversation.caseId)
   }
 
 
 
-  upgrade(type:string,paymentMethod:string){
-    this.auth.upgradeSubscription(type,paymentMethod,(response:any)=>{
-      console.log(response)
-      this.toast.show('Abonnement geüpgraded')
-    })
-  }  
+  // upgrade(type:string,paymentMethod:string){
+  //   this.auth.upgradeSubscription(type,paymentMethod,(response:any)=>{
+  //     console.log(response)
+  //     this.toast.show('Abonnement geüpgraded')
+  //   })
+  // }  
 
   deleteConversation(event:any,conversation:any){
     event.stopPropagation()
     console.log(conversation)
-    this.modalService.showConfirmation('Weet je zeker dat je dit gesprek wilt verwijderen?').then((response)=>{
+    this.modalService.showConfirmation(this.translate.instant('page_account.delete_cases_confirm')).then((response)=>{
       if(response){
         this.firestoreService.deleteSub('users',this.auth.userInfo.uid, 'conversations',conversation.conversationId).then(()=>{
-          this.toast.show('Gesprek verwijderd')
+          this.toast.show(this.translate.instant('messages.deleted'))
         })
       }
     })
@@ -348,10 +354,10 @@ export class AccountPage implements OnInit {
   deleteCourse(event:any,course:any){
     event.stopPropagation()
     console.log(course)
-    this.modalService.showConfirmation('Weet je zeker dat je deze module wilt verwijderen?').then((response)=>{
+    this.modalService.showConfirmation(this.translate.instant('page_account.delete_courses_confirm')).then((response)=>{
       if(response){
         this.firestoreService.deleteSub('users',this.auth.userInfo.uid, 'courses',course.courseId).then(()=>{
-          this.toast.show('Module verwijderd')
+          this.toast.show(this.translate.instant('messages.deleted'))
         })
       }
     })
@@ -359,16 +365,144 @@ export class AccountPage implements OnInit {
   }
 
 
-  buyCredits(amount:number){
-    this.toast.showLoader('Bezig met verwerking')
-    this.functions.httpsCallable('buyCredits')({amount:amount}).subscribe((response:any)=>{
-      console.log(response)
-      this.toast.hideLoader()
-      this.toast.show('Credits gekocht')
+  // buyCredits(amount:number){
+  //   this.toast.showLoader('Bezig met verwerking')
+  //   this.functions.httpsCallable('buyCredits')({amount:amount}).subscribe((response:any)=>{
+  //     console.log(response)
+  //     this.toast.hideLoader()
+  //     this.toast.show('Credits gekocht')
+  //   })
+  // }
+
+  openStripeDashboard(){
+    // this.nav.goto(this.auth.customer.stripeLink,true)
+    this.toast.showLoader('Opening Stripe dashboard')
+    this.functions.httpsCallable('createStripePortalSession')({}).subscribe((response:any)=>{
+      if(response?.url){
+        this.toast.hideLoader()
+        window.location.href = response?.url;
+      }
+      else{
+        this.toast.hideLoader()
+        this.toast.show('Error opening Stripe dashboard')
+        console.log(response)
+      }
+      
     })
   }
 
-  openStripeDashboard(){
-    this.nav.goto(this.auth.customer.stripeLink,true)
+  selectingCountry:boolean = false
+  showCountryPicker(){
+    if(this.selectingCountry){
+      return
+    }
+    this.selectingCountry = true
+    let list = JSON.parse(JSON.stringify(this.countries.list))
+    for(let i = 0; i<list.length;i++){
+      list[i].title = list[i].country,
+      list[i].value= list[i].code
+      list[i].flag = 'assets/flags/'+list[i].code.toLowerCase()+'.svg'
+    }
+    list.unshift(this.countries.country(this.auth.userInfo.country))
+
+
+
+    this.modalService.selectItem('',list,(result:any)=>{
+      this.selectingCountry = false
+      if(result.data){
+        this.functions.httpsCallable('editUserCountry')({country:result.data.value}).subscribe((response:any)=>{
+          this.toast.show(this.translate.instant('languages.country_changed'))
+        })
+      }
+    },null,this.translate.instant('languages.select_country'))
+  }
+
+  async editLang(){
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      list.push({
+        value:lang,
+        title:this.translate.instant('languages.'+lang),
+        icon:'faGlobeEurope'
+      })
+    })
+    this.modalService.selectItem('',list,(result:any)=>{
+      this.selectingCountry = false
+      if(result.data){
+        this.functions.httpsCallable('editUserLang')({language:result.data.language}).subscribe((response:any)=>{
+          this.toast.show(this.translate.instant('languages.language_changed'))
+        })
+      }
+    },null,this.translate.instant('languages.select_language'))
+   
+  }
+
+  editCurrency(){
+    let list:any[] = []
+    this.countries.currencyNames.forEach((currency)=>{
+      list.push({
+        value:currency.code,
+        title:currency.title,
+      })
+    })
+    this.modalService.selectItem('',list,(result:any)=>{
+      if(result.data){
+        this.toast.showLoader()
+        this.functions.httpsCallable('editUserCurrency')({currency:result.data.value}).subscribe((response:any)=>{
+          this.toast.hideLoader()
+          this.toast.show(this.translate.instant('currency.currency_changed'))
+        })
+      }
+    },null,this.translate.instant('currency.select_currency'))
+  }
+
+  updateFilter(){
+    console.log(this.currentFilterTypes)
+    this.toast.showLoader(this.translate.instant('messages.busy_saving'))
+    this.functions.httpsCallable('editUserFilter')({filter:this.currentFilterTypes}).subscribe((response:any)=>{
+      this.toast.hideLoader()
+      this.toast.show(this.translate.instant('messages.saved'))
+    })
+  }
+
+  filterTypes(){
+    let filter: any = {
+      types: [],
+      subjects: [],
+      subjectTypes: {}
+    };
+
+    for (let i = 0; i < this.infoService.conversation_types.length; i++) {
+      if (this.infoService.conversation_types[i].selected) {
+        const conversationTypeId = this.infoService.conversation_types[i].id;
+        filter.types.push(conversationTypeId);
+  
+        // Maak een lijst van subjects per conversationType
+        filter.subjectTypes[conversationTypeId] = [];
+  
+        for (let j = 0; j < this.infoService.conversation_types[i].subjects.length; j++) {
+          if (this.infoService.conversation_types[i].subjects[j].selected) {
+            filter.subjects.push(this.infoService.conversation_types[i].subjects[j].id);
+            filter.subjectTypes[conversationTypeId].push(this.infoService.conversation_types[i].subjects[j].id);
+          }
+        }
+      }
+    }
+
+    return filter;
+  }
+
+  get currentFilterTypes() {
+    return this.filterTypes()
+  }
+
+  get filterEdited(){
+    if(!this.auth.userInfo.filter && this.currentFilterTypes.types.length === 0 && this.currentFilterTypes.subjects.length === 0){
+      return false
+    }
+    if(!this.auth.userInfo.filter && ( this.currentFilterTypes.types.length > 0 || this.currentFilterTypes.subjects.length > 0)){
+      return true
+    }
+    return JSON.stringify(this.currentFilterTypes.types)!=JSON.stringify(this.auth.userInfo.filter.types) || JSON.stringify(this.currentFilterTypes.subjects)!=JSON.stringify(this.auth.userInfo.filter.subjects)
   }
 }

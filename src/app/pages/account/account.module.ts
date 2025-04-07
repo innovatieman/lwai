@@ -12,6 +12,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { NgCircleProgressModule } from 'ng-circle-progress';
 import { AchievementPageModule } from 'src/app/components/achievement/achievement.module';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { AchievementPageModule } from 'src/app/components/achievement/achievemen
     FontAwesomeModule,
     PipesModule,
     AchievementPageModule,
+    TranslateModule.forChild(),
     NgCircleProgressModule.forRoot({
       "backgroundStrokeWidth": 36,
       "space": 6,

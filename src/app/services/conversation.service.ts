@@ -14,6 +14,9 @@ import { HelpersService } from './helpers.service';
 import { InfoService } from './info.service';
 import { jsPDF } from "jspdf";
 import { ToastService } from './toast.service';
+import { tutorialService } from './tutorial.service';
+import { MediaService } from './media.service';
+import { TranslateService } from '@ngx-translate/core';
 
 
 @Injectable({
@@ -57,6 +60,9 @@ export class ConversationService implements OnDestroy {
     public helper:HelpersService,
     private infoService:InfoService,
     private toast:ToastService,
+    private tutorial: tutorialService,
+    private media:MediaService,
+    private translate:TranslateService
 
   ) { 
     this.heyGen.active.subscribe((active:boolean)=>{
@@ -73,6 +79,7 @@ export class ConversationService implements OnDestroy {
     this.waiting = true;
     let conversationId = ''
     let openingMessage = caseItem.openingMessage || ''
+    this.tempTextUser = openingMessage
     let steadFastness = caseItem.steadFastness || 0
     let agentsSettings = caseItem.editable_by_user?.agents || {
       choices:true,
@@ -96,6 +103,8 @@ export class ConversationService implements OnDestroy {
       photo:caseItem.photo,
       video_on:caseItem.avatarName?true:false,
       agentsSettings:agentsSettings,
+      free_question:caseItem.free_question || '',
+      free_answer:caseItem.free_answer || '',
     }
     if(caseItem.trainerId){
       conversationObj.trainerId = caseItem.trainerId
@@ -115,6 +124,15 @@ export class ConversationService implements OnDestroy {
       await this.firestoreService.set(`users/${this.auth.userInfo.uid}/conversations/${conversationId}/caseItem`,'caseItem', tempCaseItem)
       localStorage.setItem('conversation',JSON.stringify({conversationId, ...caseItem}))
       this.loadConversation(conversationId)
+      setTimeout(() => {
+        console.log('trigger tutorial')
+        if(this.media.smallDevice){
+        this.tutorial.triggerTutorial('conversation','onload_mobile')
+        }
+        else{
+          this.tutorial.triggerTutorial('conversation','onload')
+        }
+      }, 1000);
     })
 
     // let obj:any = {
@@ -144,7 +162,8 @@ export class ConversationService implements OnDestroy {
       .subscribe((conversation:any) => {
         // console.log(conversation)
         this.activeConversation = { ...conversation };
-          // console.log(this.activeConversation)
+          console.log(this.activeConversation)
+          console.log(this.attitude)
           if(this.activeConversation.attitude!=undefined && this.activeConversation.attitude!=this.attitude){
             this.attitude = this.activeConversation.attitude
             this.update.emit(true);
@@ -158,6 +177,7 @@ export class ConversationService implements OnDestroy {
       this.caseItem = caseItem
       this.dialog_role = caseItem.role;
     }
+    console.log(this.caseItem)
     let avatarName = this.activeConversation.avatarName || this.caseItem.avatarName
 
     let video_on = this.activeConversation.video_on
@@ -282,25 +302,34 @@ export class ConversationService implements OnDestroy {
   cleanTempText(){
     let temp = this.tempText.split(', reaction:')
     if(temp.length>1){
-      this.messageTemp.content = temp[1] + this.messageTemp.content
+      this.messageTemp.content = this.clearStringChars(temp[1] + this.messageTemp.content)
     }
   }
 
   setAttitude(){
+    console.log('setAttitude:',this.tempText)
     this.attitudeSet = true
     let attitudeString = ''
     if(this.tempText.includes('reaction:')){
       attitudeString = this.tempText.replace('newAttitude:','').split(', reaction:')[0]
-      this.attitude = parseInt(attitudeString)
+      
+      this.attitude = parseInt(this.clearStringNumbers(attitudeString))
       this.update.emit(true);
     }
+  }
+
+  clearStringNumbers(input: string) {
+    return input.split('{').join('').split('}').join('')
+  }
+  clearStringChars(input: string) {
+    return input.split('{').join('').split('}').join('')
   }
 
   reloadAttitude(){
     let attitudeString = ''
     if(this.latestAssistantItem(this.activeConversation.messages).includes('newAttitude:')){
       attitudeString = this.latestAssistantItem(this.activeConversation.messages).replace('newAttitude:','').split(', reaction:')[0]
-      this.attitude = parseInt(attitudeString)
+      this.attitude = parseInt(this.clearStringNumbers(attitudeString))
       this.update.emit(true);
     }
   }
@@ -314,8 +343,13 @@ export class ConversationService implements OnDestroy {
     // console.log(obj)
     this.messages.push({role:'user',content:this.message})
     this.attitude = obj.attitude
+    obj.language = this.translate.currentLang
     this.update.emit(true);
-    const response = await fetch("https://chatai-p2qcpa6ahq-ew.a.run.app", {
+    // setTimeout(() => {
+    //   this.tempTextUser = ""
+    // }, 10000);
+    // const response = await fetch("https://chatai-p2qcpa6ahq-ew.a.run.app", {
+    const response = await fetch("https://chatgemini-p2qcpa6ahq-ew.a.run.app", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -337,6 +371,7 @@ export class ConversationService implements OnDestroy {
     let buffer = ''; // Buffer om incomplete zinnen op te slaan
 
     while (!done) {
+      this.tempTextUser = ""
       const { value, done: readerDone } = await reader.read();
       done = readerDone;
 
@@ -383,11 +418,55 @@ export class ConversationService implements OnDestroy {
       }
     }
 
+    // while (!done) {
+    //   const { value, done: readerDone } = await reader.read();
+    //   done = readerDone;
+    
+    //   if (value) {
+    //     const chunk = decoder.decode(value);
+        
+    //     // Stap 1: Controleer of we al voorbij ", reaction:" zijn
+    //     if (!this.tempText.includes(', reaction:')) {
+    //       this.tempText += chunk;
+    
+    //       if (this.tempText.includes(', reaction:')) {
+    //         this.cleanTempText();
+    //         this.setAttitude();
+    //       }
+    //     } else {
+    //       // Stap 2: We verwerken de zinnen in de buffer
+    //       buffer += chunk;
+    
+    //       // Zoek naar volledige zinnen met regex
+    //       const sentenceRegex = /[^.!?]+[.!?]/g;  // Herkent volledige zinnen
+    //       let match;
+    //       let sentences = [];
+    
+    //       while ((match = sentenceRegex.exec(buffer)) !== null) {
+    //         sentences.push(match[0]); // Voeg volledige zin toe
+    //       }
+    
+    //       // Verwijder de verwerkte zinnen uit de buffer
+    //       if (sentences.length > 0) {
+    //         buffer = buffer.slice(sentenceRegex.lastIndex);
+    //       }
+    
+    //       // Stap 3: Stuur de zinnen in volgorde naar HeyGen
+    //       for (let sentence of sentences) {
+    //         if (this.heyGen.streamingAvatar) {
+    //           this.heyGen.speakText(sentence.trim()); // Avatar spreekt uit
+    //         }
+    //         this.messageTemp.content += sentence.trim();
+    //         this.scrollChatToBottom();
+    //       }
+    //     }
+    //   }
+    // }
     this.waiting = false;
     // this.messages.push({'role':'assistant','content':this.messageTemp.content})
     this.messageTemp = {'role':'assistant','content':''}
     this.tempText = ''
-    this.tempTextUser = ''
+    // this.tempTextUser = ''
     this.attitudeSet = false
     // this.getExtraInfo('choices')
     this.getExtraInfo('phases')
@@ -415,6 +494,7 @@ export class ConversationService implements OnDestroy {
     }
     // console.log(obj)
     this.tempTextUser = message
+    console.log(this.tempTextUser)
     this.scrollChatToBottom()
     this.startLoading('reaction')
     // this.startLoading('choices')
@@ -443,27 +523,34 @@ export class ConversationService implements OnDestroy {
     let url = ''
     // let url = 'https://conversationAIDirect-p2qcpa6ahq-ew.a.run.app'
     if(obj.instructionType == 'facts'){
-      url = 'https://factsai-p2qcpa6ahq-ew.a.run.app'
+      // url = 'https://factsai-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://factsGemini-p2qcpa6ahq-ew.a.run.app'
     }
     else if(obj.instructionType == 'phases'){
-      url = 'https://phasesai-p2qcpa6ahq-ew.a.run.app'
+      // url = 'https://phasesai-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://phasesgemini-p2qcpa6ahq-ew.a.run.app'
     }
     else if(obj.instructionType == 'feedback'){
-      url = 'https://feedbackai-p2qcpa6ahq-ew.a.run.app'
+      // url = 'https://feedbackai-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://feedbackgemini-p2qcpa6ahq-ew.a.run.app'
     }
     else if(obj.instructionType == 'choices'){
-      url = 'https://choicesai-p2qcpa6ahq-ew.a.run.app'
+      // url = 'https://choicesai-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://choicesgemini-p2qcpa6ahq-ew.a.run.app'
     }
     else if(obj.instructionType == 'goals'){
-      url = 'https://goalai-p2qcpa6ahq-ew.a.run.app'
+      // url = 'https://goalai-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://goalgemini-p2qcpa6ahq-ew.a.run.app'
     }
     else if(obj.instructionType == 'background'){
-      url = 'https://backgroundai-p2qcpa6ahq-ew.a.run.app'
+      // url = 'https://backgroundai-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://backgroundgemini-p2qcpa6ahq-ew.a.run.app'
     }
     if(!url){
       console.error('No url found')
       return;
     }
+    obj.language = this.translate.currentLang
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -533,26 +620,33 @@ export class ConversationService implements OnDestroy {
         return [];
     }
     try {
-        const choices: { choice: string; description: string }[] = [];
-        // Match each Choice block using a regular expression
-        const choiceRegex = /{Choice \d+:.*?\[(.*?)\]\[(.*?)\]}/gs;
-        let match;
+      return JSON.parse(input);
+      // console.log(input)
+      //   const choices: { choice: string; description: string }[] = [];
+      //   // Match each Choice block using a regular expression
+      //   const choiceRegex = /{Choice \d+:.*?\[(.*?)\]\[(.*?)\]}/gs;
+      //   let match;
 
-        while ((match = choiceRegex.exec(input)) !== null) {
-            const choice = match[1].trim().replace(/^"/, '').replace(/"$/, '');
-            const description = match[2].trim().replace(/^"/, '').replace(/"$/, '');
-            choices.push({ choice, description });
-        }
+      //   while ((match = choiceRegex.exec(input)) !== null) {
+      //       const choice = match[1].trim().replace(/^"/, '').replace(/"$/, '');
+      //       const description = match[2].trim().replace(/^"/, '').replace(/"$/, '');
+      //       console.log(choice,description)
+      //       choices.push({ choice, description });
+      //   }
 
-        // Respect the length condition
-        if (length && choices.length >= length) {
-            return choices;
-        }
-        return choices; // Always return an array
+      //   // Respect the length condition
+      //   if (length && choices.length >= length) {
+      //       return choices;
+      //   }
+      //   return choices; // Always return an array
     } catch (error) {
+        console.error('Error parsing Choices:', error);
         return [];
     }
   }
+
+
+
 
 
   latestAssistantItem(messages:any){
@@ -627,6 +721,7 @@ export class ConversationService implements OnDestroy {
   }
 
   getAttitude(index:number){
+    // console.log(index)
     if(!this.activeConversation.messages||this.activeConversation.messages.length<1){
       return 0;
     }
@@ -637,7 +732,7 @@ export class ConversationService implements OnDestroy {
     let attitudeString = ''
     if(assistantMessage.includes('reaction:')){
       attitudeString = assistantMessage.replace('newAttitude:','').split(', reaction:')[0]
-      attitude = parseInt(attitudeString)
+      attitude = parseInt(this.clearStringNumbers(attitudeString))
     }
     return attitude;
   }
@@ -657,17 +752,22 @@ export class ConversationService implements OnDestroy {
         newIndex = i
       }
     }
+
     if(newIndex<0 || !this.activeConversation.feedback || this.activeConversation.feedback.length<1 || !this.activeConversation.feedback[newIndex]){
       return '';
     }
     let feedback:any = {}
     if(this.activeConversation.feedback[newIndex].content.substring(0,1) != '{'){
-    let feedback:any = {}
+      // let feedback:any = {}
       feedback= this.activeConversation.feedback[newIndex].content.split('```json').join('').split('```').join('')
     }
     else{
       feedback = JSON.parse(this.activeConversation.feedback[newIndex].content)
     } 
+    if(typeof feedback =='string'){
+      feedback = JSON.parse(feedback)
+    }
+    
     if(type=='id'){
       return this.activeConversation.feedback[newIndex].id
     }
@@ -729,7 +829,7 @@ export class ConversationService implements OnDestroy {
       instructionType:'skills',
       categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
     }
-    const responseSkills = fetch("https://skillsai-p2qcpa6ahq-ew.a.run.app", {
+    const responseSkills = fetch("https://skillsgemini-p2qcpa6ahq-ew.a.run.app", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -743,7 +843,7 @@ export class ConversationService implements OnDestroy {
       instructionType:'close',
       categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
     }
-    const response = await fetch("https://closingai-p2qcpa6ahq-ew.a.run.app", {
+    const response = await fetch("https://closinggemini-p2qcpa6ahq-ew.a.run.app", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -906,10 +1006,10 @@ export class ConversationService implements OnDestroy {
 
   async export2Pdf(){
     console.log(this.activeConversation)
-    this.toast.showLoader('Het document wordt gegenereerd...')
+    this.toast.showLoader(this.translate.instant('conversation.pdf.creating'))
 
     let doc:any = {
-      title: 'Gespreksverslag met '+this.activeConversation.role,
+      title: this.activeConversation.title,
       user: this.auth.userInfo.displayName,
       messages: JSON.parse(JSON.stringify(this.activeConversation.messages)),
       goal:'',
@@ -954,6 +1054,7 @@ export class ConversationService implements OnDestroy {
     let margin = 72;
     let y = margin;
     let x = margin;
+    pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
     
     pdf.addImage('./assets/img/logo_full_black.png', 'PNG', x+35, y, 136*2.5, 30*2.5);
     y += 150;
@@ -963,7 +1064,7 @@ export class ConversationService implements OnDestroy {
     y += 30;
 
     pdf.setFontSize(20);
-    pdf.text(doc.user, x, y);
+    pdf.text(this.translate.instant('conversation.pdf.title_name') + ' ' + doc.user, x, y);
     y += 30;
     pdf.setFontSize(12);
     pdf.text(doc.date, x, y);
@@ -983,15 +1084,19 @@ export class ConversationService implements OnDestroy {
 
 
     pdf.addPage();
+    pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+    pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
     countPages++;
     y = 72;
     pdf.setFontSize(20);
-    pdf.text('Het gesprek:', x, y);
+    pdf.text(this.translate.instant('conversation.pdf.conversation')+':', x, y);
     y += 30;
     pdf.setFontSize(12);
     for (let i = 0; i < doc.messages.length; i++) {
       if (y > pageHeight - margin) {
         pdf.addPage();
+        pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+        pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
         countPages++;
         y = margin;
       }
@@ -1006,23 +1111,30 @@ export class ConversationService implements OnDestroy {
 
         if (textSpace > pageHeight - y - margin) {
           pdf.addPage();
+          pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+          pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
+
           countPages++;
           y = margin;
         }
 
         // Tekst met zwarte border en border-radius
-        pdf.setDrawColor(0);
+        pdf.setDrawColor(32,66,137);
         pdf.setLineWidth(1);
         let boxWidth = (pageWidth - margin * 2) * 0.75;
-        let boxHeight = textSpace + 10;
-        pdf.roundedRect(x, y, boxWidth, boxHeight, 8, 8, 'S');
-
+        let boxHeight = textSpace + 5;
+        pdf.roundedRect(x, y, boxWidth+10, boxHeight, 8, 8, 'S');
+        pdf.setTextColor(32,66,137);
         pdf.text(textLines, x + 5, y + 15);
-        y += boxHeight + 10;
+        y += boxHeight + 20;
 
-        pdf.setFontSize(10);
-        let attitudeLines = pdf.splitTextToSize('Attitude: ' + doc.messages[i].attitude, (pageWidth - margin * 2) * 0.75);
-        pdf.text(attitudeLines, x, y);
+        pdf.setFontSize(12);
+        // pdf.setTextColor(0);
+        pdf.setFont('Helvetica','bold')
+        pdf.text('Attitude:', x, y);
+        pdf.setFont('Helvetica','')
+        let attitudeLines = pdf.splitTextToSize(doc.messages[i].attitude, (pageWidth - margin * 2) * 0.75);
+        pdf.text(attitudeLines, x + 50, y);
         y += pdf.getLineHeight() * attitudeLines.length + 10;
 
       } else if (doc.messages[i].role === this.auth.userInfo.displayName) {
@@ -1035,38 +1147,56 @@ export class ConversationService implements OnDestroy {
 
         if (textSpace > pageHeight - y - margin) {
           pdf.addPage();
+          pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+          pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
           countPages++;
           y = margin;
         }
 
         // Tekst met zwarte border, border-radius en lichtgroene achtergrond
-        pdf.setDrawColor(0);
+        pdf.setDrawColor(32,66,137);
         pdf.setLineWidth(1);
-        pdf.setFillColor(204, 255, 204); // Lichtgroene achtergrond
+        pdf.setFillColor(116, 150, 223)
+        // pdf.setFillColor(204, 255, 204); // Lichtgroene achtergrond
         let boxWidth = (pageWidth - margin * 2) * 0.75;
         let boxHeight = textSpace + 10;
         let boxX = pageWidth - margin - boxWidth;
-        pdf.roundedRect(boxX, y, boxWidth, boxHeight, 8, 8, 'FD');
+        pdf.roundedRect(boxX, y, boxWidth+10, boxHeight, 8, 8, 'FD');
 
+        pdf.setTextColor(255);
         pdf.text(textLines, boxX + 5, y + 15);
-        y += boxHeight + 10;
+        y += boxHeight + 15;
 
-        pdf.setFontSize(10);
-        let feedbackLines = pdf.splitTextToSize('Feedback: ' + doc.messages[i].feedback, (pageWidth - margin * 2) * 0.75);
+        pdf.setTextColor(0);
+        pdf.setFont('Helvetica','bold')
+        pdf.text(this.translate.instant('conversation.pdf.cipher')+':', boxX, y);
+        pdf.setFont('Helvetica','')
+
+        let feedbackCipherLines = pdf.splitTextToSize(doc.messages[i].feedbackCipher, (pageWidth - margin * 2) * 0.75);
+        pdf.text(feedbackCipherLines, boxX+50, y);
+        y += pdf.getLineHeight() * feedbackCipherLines.length + 10;
+
+        pdf.setFontSize(12);
+        pdf.setFont('Helvetica','bold')
+        pdf.text(this.translate.instant('conversation.pdf.feedback')+':', boxX, y);
+        pdf.setFont('Helvetica','')
+
+        y += 15;
+        let feedbackLines = pdf.splitTextToSize(doc.messages[i].feedback, (pageWidth - margin * 2) * 0.75);
         pdf.text(feedbackLines, boxX, y);
         y += pdf.getLineHeight() * feedbackLines.length + 10;
 
-        let feedbackCipherLines = pdf.splitTextToSize('Cijfer: ' + doc.messages[i].feedbackCipher, (pageWidth - margin * 2) * 0.75);
-        pdf.text(feedbackCipherLines, boxX, y);
-        y += pdf.getLineHeight() * feedbackCipherLines.length + 10;
+        
       }
     }
 
     pdf.addPage();
+    pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+    pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
     countPages++;
     y = 72;
     pdf.setFontSize(20);
-    pdf.text('Eindevaluatie', x, y);
+    pdf.text(this.translate.instant('conversation.pdf.evaluation'), x, y);
 
     y += 30;
     pdf.setFontSize(12);
@@ -1100,7 +1230,7 @@ export class ConversationService implements OnDestroy {
             this.toast.show('Het document is gegenereerd en wordt gedownload.')   
           }, 1000);
         },
-        x: 30, // Marges
+        x: 50, // Marges
         y: ((countPages-1) * pageHeight) + 80, // Voeg de hoogte van de vorige pagina's toe
         width: 100, // Schaal de inhoud naar de beschikbare breedte van een A4-pagina
         html2canvas: {

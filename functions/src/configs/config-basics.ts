@@ -17,5 +17,9 @@ export const config = {
     test_secret_key: process.env.STRIPE_TEST_SECRET_KEY || '',
     test_secret_webhook: process.env.STRIPE_TEST_SECRET_WEBHOOK || '',
     test_secret_webhook_subscriptions: process.env.STRIPE_TEST_SECRET_WEBHOOK_SUBSCRIPTIONS || '',
-  }
+    live_secret_key: process.env.STRIPE_LIVE_SECRET_KEY || '',
+  },
+  runware_api_key: process.env.RUNWARE_API_KEY || '',
+  gemini_api_key: process.env.GEMINI_API_KEY || '',
+  ipapi_api_key: process.env.IPAPI_API_KEY || '',
 };
