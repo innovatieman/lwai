@@ -93,7 +93,8 @@
         "more":"meer",
         "less":"minder",
         "start":"Starten",
-        "letsgo":"Aan de slag"
+        "letsgo":"Aan de slag",
+        "attachment":"Bijlage"
     },
     "messages":{
         "saved":"Gegevens opgeslagen",
@@ -218,7 +219,10 @@
         "terms1":"Door te registreren, ga je akkoord met de",
         "terms2":"Algemene voorwaarden",
         "terms3":"en het",
-        "terms4":"Privacybeleid"
+        "terms4":"Privacybeleid",
+        "show_offerCode":"Ik heb een code ontvangen",
+        "hide_offerCode":"Verberg de code",
+        "offerCode":"Voer hier je code in"
     },
     "page_verify":{
         "verifying":"Account verifiëren",
@@ -266,7 +270,7 @@
         "step_6_text_citizen":"Met welke organisatie heb je contact?",
         "step_6_text_my_profession":"Wat voor soort werk doe je?",
         "step_6_text_open_for_unknown":"Waarmee zullen we je eens verrassen?",
-        "step_7_title":"Aa de slag",
+        "step_7_title":"Aan de slag",
         "step_7_text_single":"Top 😄! Je kunt aan de slag. We raden je aan om met het onderstaande gesprek te beginnen.",
         "step_7_text":"Top 😄! Je kunt aan de slag. We raden je aan om met 1 van onderstaande gesprekken te beginnen.",
         "skip_suggestion_title":"Toch een ander idee?",
@@ -295,7 +299,16 @@
         "my_subscriptions":"Mijn abonnementen",
         "payment_success":"Betaling geslaagd. Eventuele credits zie je zo verschijnen.",
         "delete_cases_confirm":"Weet je zeker dat je dit gesprek wilt verwijderen?",
-        "delete_courses_confirm":"Weet je zeker dat je deze module wilt verwijderen?"
+        "delete_courses_confirm":"Weet je zeker dat je deze module wilt verwijderen?",
+        "delete_account_confirm":"Weet je zeker dat je je account wilt verwijderen? Dit kan niet ongedaan gemaakt worden.",
+        "delete_account_success":"Je account is verwijderd. We hopen je in de toekomst weer te zien.",
+        "delete_account_failure":"Er is iets misgegaan bij het verwijderen van je account. Probeer het later nog eens.",
+        "busy_deleting":"Bezig met verwijderen...",
+        "delete_account_title":"Account verwijderen",
+        "delete_account_confirm_input_text":"Typ hieronder 'VERWIJDEREN' in om je account te verwijderen.",
+        "DELETE":"VERWIJDEREN",
+        "remove_account":"Verwijder je account",
+        "delete_account_admin":"Je account kan alleen door de administrator worden verwijderd. Neem contact op met de administrator om je account te laten verwijderen."
     },
     "cases":{
         "badge_video":"Video",
@@ -371,6 +384,7 @@
         "cookie":"https://www.iubenda.com/privacy-policy/84749837/cookie-policy"
     },
     "conversation_start":{
+        "the_case":"De Casus",
         "case":"De Case",
         "goal_instructions":"Geef aan wanneer volgens jouw je doel is behaald.",
         "free_question_instructions":"En geef hier antwoord op de vraag.",
@@ -409,6 +423,11 @@
         "satisfied":"Meestal ben ik wel tevreden",
         "compliments":"Ik krijg veel complimenten",
         "profession":"Het voeren van gesprekken is mijn vak"
+    },
+    "share":{
+        "basic_site":"`Ken jij AliciaLabs al?\nIk ga dit eens uitproberen.\nMet AliciaLabs kun je realistische gesprekken simuleren en direct feedback krijgen. Je krijgt 300 gratis credits bij aanmelding! Probeer het ook eens via https://www.alicialabs.com/",
+        "basic_title":"Ken jij AliciaLabs al?",
+        "basic_text_case":"Ken jij AliciaLabs al?\nIk heb net onderstaand interessant gesprek geoefend:\n\n[case_title].\n[case_user_info].\n\nWil jij deze situatie ook oefenen en je gespreksvaardigheden verbeteren? Met AliciaLabs kun je realistische gesprekken simuleren en direct feedback krijgen. Je krijgt 300 gratis credits bij aanmelding! Probeer het ook eens hier [case_link]."
     }
     
 

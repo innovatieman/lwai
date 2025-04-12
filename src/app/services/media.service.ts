@@ -8,6 +8,7 @@ import { ToastService } from './toast.service';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { finalize } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +37,8 @@ export class MediaService {
     private functions: AngularFireFunctions,
     private toast:ToastService,
     private storage: AngularFireStorage,
-    private auth:AuthService
+    private auth:AuthService,
+    private translate:TranslateService,
   ) {
     this.setScreenSize()
    }
@@ -45,6 +47,9 @@ export class MediaService {
     return this.activeScreenSize
   }
 
+  get isAppleDevice() {
+    return /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+  }
   async clearCaches() {
     const cacheNames = await caches.keys();
     await Promise.all(cacheNames.map(cache => caches.delete(cache)));
@@ -441,4 +446,129 @@ export class MediaService {
     //   })
     // );
   }
+
+  async shareCase(caseItem:any,event:any){
+    event.preventDefault()
+    event.stopPropagation()
+    if (navigator.share) {
+      if(caseItem=='login'){
+        await navigator.share({
+          title:  this.translate.instant('share.basic_title'),
+          text: this.translate.instant('share.basic_site'),
+        });
+      }
+      else{
+
+        await navigator.share({
+          title:  this.translate.instant('share.basic_title'),
+          text: this.translate.instant('share.basic_text_case').replace('[case_title]',caseItem.title).replace('[case_user_info]',caseItem.user_info).replace('[case_link]',`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`)
+        });
+      }
+
+    } else {
+      if(caseItem=='login'){
+        this.showShareMenu(event,'https://www.alicialabs.com/',this.translate.instant('share.basic_site'),this.translate.instant('share.basic_title'))
+      }
+      else{
+        this.showShareMenu(event,`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`,this.translate.instant('share.basic_text_case').replace('[case_title]',caseItem.title).replace('[case_user_info]',caseItem.user_info).replace('[case_link]',`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`),this.translate.instant('share.basic_title'))
+      }
+    }
+  }
+
+
+  shareMenu:any
+  async showShareMenu(event:any,url:string,text?:any,title?:string){
+    let list = [
+      {
+        type: 'email',
+        title: 'E-mail',
+        icon: 'faEnvelope',
+        background: '#D44638',
+        color: '#FFFFFF',
+        link: 'mailto:?body={{text}}&subject={{title}}'
+      },
+      {
+        type: 'whatsapp',
+        title: 'WhatsApp',
+        icon: 'faWhatsapp',
+        background: '#25D366',
+        color: '#FFFFFF',
+        link: 'https://wa.me/?text={{text}}'
+      },
+      {
+        type: 'facebook',
+        title: 'Facebook',
+        icon: 'faFacebook',
+        background: '#1877F2',
+        color: '#FFFFFF',
+        link: 'https://www.facebook.com/sharer/sharer.php?u={{text}}'
+      },
+      {
+        type: 'x',
+        title: 'X',
+        icon: 'faXTwitter',
+        background: '#000000',
+        color: '#FFFFFF',
+        link: 'https://x.com/intent/tweet?text={{text}}'
+      },
+      {
+        type: 'linkedin',
+        title: 'LinkedIn',
+        icon: 'faLinkedin',
+        background: '#0A66C2',
+        color: '#FFFFFF',
+        link: 'https://www.linkedin.com/shareArticle?url={{url}}'
+      },
+      {
+        type: 'telegram',
+        title: 'Telegram',
+        icon: 'faTelegram',
+        background: '#0088CC',
+        color: '#FFFFFF',
+        link: 'https://t.me/share/url?url={{text}}'
+      },
+      {
+        type: 'copy',
+        title: 'Copy',
+        icon: 'faCopy',
+        background: '#3A76F0',
+        color: '#FFFFFF',
+        copy: true,
+      },
+    ]
+    this.shareMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        customMenu:true,
+        pages:list,
+        listShape:false,
+        shareMenu:true,
+      },
+      cssClass: 'customMenu',
+      event: event,
+      translucent: false,
+    });
+    await this.shareMenu.present();
+    await this.shareMenu.onWillDismiss();
+    
+    if(this.selectMenuservice.selectedItem?.link){
+      let link = this.selectMenuservice.selectedItem.link
+      if(link.includes('{{text}}')){
+        link = link.replace('{{text}}',text)
+      }
+      if(link.includes('{{title}}')){
+        link = link.replace('{{title}}',title)
+      }
+      if(link.includes('{{url}}')){
+        link = link.replace('{{url}}',url)
+      }
+      window.open(link, '_blank');
+    }
+    else if(this.selectMenuservice.selectedItem?.copy){
+      navigator.clipboard.writeText(text).then(() => {
+        this.toast.show(this.translate.instant('share.copied'),2000)
+      });
+    }
+  }
+
 }

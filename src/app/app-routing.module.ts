@@ -154,6 +154,11 @@ const routes: Routes = [
     canActivate: [AdminGuard],
   },
   {
+    path: 'bagend/voices',
+    loadChildren: () => import('./bagend/voices/voices.module').then( m => m.VoicesPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
     path: 'verifysocial/:id/:action',
     loadChildren: () => import('./bagend/verifysocial/verifysocial.module').then( m => m.VerifysocialPageModule),
     canActivate: [AdminGuard],

@@ -262,3 +262,21 @@
   font-style: italic;
   cursor: pointer;
 }
+.shareMenuItem{
+  height: 60px;
+  width: 60px;
+  justify-content: center;
+  align-items: center;
+  display: flex
+;
+  font-size: 40px;
+  padding: 0;
+  border-radius: 12px;
+  fa-icon{
+    width:initial;
+  }
+}
+.shareMenuTitle{
+  font-size: 10px;
+  font-weight: 500;
+}

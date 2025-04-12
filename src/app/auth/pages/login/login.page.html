@@ -1,10 +1,14 @@
 <main [full]="true">
   <div class="login-page">
-    <img class="login_logo" src="assets/icon/logo_full_black_sm.png">
+    <img class="login_logo" src="assets/icon/logo_full_black_sm.png" pointer (click)="nav.goto('https://www.alicialabs.com')" />
     <div class="login-container" relative>
       <div class="languageSelection" flex center-ver text-secondary (click)="nav.editLang()">
         <fa-icon [icon]="icon.get('faGlobeEurope')" class="langIcon" ></fa-icon>
         <span>{{'languages.'+translateService.currentLang | translate}}</span>
+      </div>
+      <div class="shareButtonLogin" pointer (click)="media.shareCase('login',$event)">
+        <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+        <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
       </div>
       <!-- <div class="icon-wrapper">
         <fa-icon class="user-icon" [icon]="icon.get('faUser')" ></fa-icon>

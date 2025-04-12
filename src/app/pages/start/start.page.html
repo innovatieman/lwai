@@ -325,7 +325,8 @@
                                                     </div>
                                                 </ion-col>
                                                 <ion-col size="3" fullheight flex center-ver center-hor>
-                                                    <ion-button class="saveButton" fill="outline" color="medium" (click)="modalService.showText(translate.instant('start.achievements_temp'),translate.instant('start.achievements_title'));showFlags==showFlags" style="position:relative;top:-10px; opacity:0.4;">
+                                                    <ion-button class="saveButton" fill="outline" color="medium" (click)="showFlags=!showFlags" style="position:relative;top:-10px; opacity:0.4;">
+                                                    <!-- <ion-button class="saveButton" fill="outline" color="medium" (click)="modalService.showText(translate.instant('start.achievements_temp'),translate.instant('start.achievements_title'));showFlags==showFlags" style="position:relative;top:-10px; opacity:0.4;"> -->
                                                         <span>{{'buttons.show' | translate}} <span *ngIf="!showFlags">{{'buttons.more' | translate}}</span><span *ngIf="showFlags">{{'buttons.less' | translate}}</span> {{'start.achievements' | translate}}</span>
                                                         <fa-icon titleIcon font-18 [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': showFlags ? 'rotate(180deg)' : 'none'}" style="transition:all .3s;"></fa-icon>
                                                     </ion-button>
@@ -339,6 +340,11 @@
                                                     <div [ngStyle]="{'max-height': showFlags ? '800px' : '0px','overflow':'hidden','transition':'all .3s'}">
                                                         <div singleLine marginBottom></div>
                                                         <ion-row>
+                                                            <ion-col noPadding size="12" flex align-top center-hor style="margin-bottom: 50px;">
+                                                                <app-achievement (click)="badge.achieved =!badge.achieved" *ngFor="let badge of badges.badges" [class]="badge.class" [achieved]="badge.achieved" [achievement_icon]="badge.icon" [title]="badge.title" [text]="badge.text"></app-achievement>
+                                                            </ion-col>
+                                                        </ion-row>
+                                                        <!-- <ion-row>
                                                             <ion-col noPadding size="12" flex align-top center-hor style="margin-bottom: 50px;">
                                                                 <app-achievement [class]="'creative'" [achieved]="true" achievement_icon="faPlay" title="Starter" text="Je bent het gesprek aangegaan!"></app-achievement>
                                                                 <app-achievement [class]="'success'" [achieved]="true" achievement_icon="faGraduationCap" title="Student" text="Je hebt wat geleerd!"></app-achievement>
@@ -363,7 +369,7 @@
                                                                 <app-achievement [class]="'light'" [achieved]="false" achievement_icon="faSitemap" title="Dirigent" text="Je bent 50 punten gestegen in je Logic."></app-achievement>
                                                                 <app-achievement [class]="'success'" achievement_icon="faMicrophone" title="Start" text="Je bent het gesprek aangegaan!"></app-achievement>
                                                             </ion-col>
-                                                        </ion-row>
+                                                        </ion-row> -->
                                                     </div>
                                                 </ion-col>
                                             </ion-row>
@@ -383,8 +389,12 @@
 
                                 <ion-card fullwidth noMargin id="progressCardMobile">
                                     <ion-card-header style="padding:15px">
-                                        <ion-card-title font-24 uppercase weight700 text-secondary>
-                                            <span >Jouw voortgang</span>
+                                        <ion-card-title font-24 uppercase weight700 text-secondary flex center-ver>
+                                            <span>{{'start.your_progress' | translate}}</span>
+                                            <div class="spacer"></div>
+                                            <fa-icon titleIcon pointer style="z-index:5" [icon]="icon.get('faInfoCircle')" (click)="modalService.showText(tutorial.getContent('start','onload',1,'text'),tutorial.getContent('start','onload',1,'title'))"></fa-icon>
+                                            
+
                                         </ion-card-title>
                                     </ion-card-header>
                                     <ion-card-content style="padding-bottom:0;">
@@ -768,6 +778,10 @@
                                             <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
                                             <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
                                             <div *ngIf="caseItem.avatarName" class="videoAvatarBadge">{{'cases.badge_video' | translate}}</div>
+                                            <div class="shareButtonCase" pointer (click)="media.shareCase(caseItem,$event)">
+                                                <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+                                                <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
+                                            </div>
                                             <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                                                 <ion-card-header>
                                                     <ion-card-title font-18 weight600>{{caseItem.title}}</ion-card-title>
@@ -788,6 +802,7 @@
                                                         <div font-12 [ngStyle]="{'color':levelService.levelColorTextLevel(caseItem.level)}">{{'standards.level' | translate}}</div>
                                                     </div>
                                                 </ion-button>
+                                                <div class="spacer"></div>
                                                 <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="auth.credits.total<=0 ? noCredits($event) : startConversation(caseItem,$event)">{{'cases.start_conversation' | translate}}</ion-button>
                                             </div>
                                         </ion-card-content>

@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { Auth, AuthProvider, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
+import { Auth, AuthProvider, getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -35,6 +35,7 @@ export class AuthService {
   profile:any = {}
   skills:any = {impact:{score:0,prevScore:0},flow:{score:0,prevScore:0},logic:{score:0,prevScore:0}}
   credits:any = {total:0}
+  creditsChanged:EventEmitter<boolean> = new EventEmitter<boolean>();
 
   skillsLevels:any = [0,100,200,400,800]
 
@@ -70,10 +71,12 @@ export class AuthService {
       })
     );
     this.user$.subscribe((user) => {
+      // console.log('user',user)
       if (user) {
         this.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
         // this.loadCourses(user.uid);
+        // console.log('getting credits')
         this.getCredits(user.uid)
         this.getSkills(user.uid)
         this.getTutorials(user.uid)
@@ -98,23 +101,12 @@ export class AuthService {
 
   }
 
-  // async getUserInfo(){
-  //   this.user$.subscribe(user => {
-  //     if(user){
-  //       this.firestore.doc(`users/${user.uid}`).valueChanges().subscribe((data:any) => {
-  //         this.userInfo = data
-  //         if(this.userInfo){
-  //           this.userInfo.uid = user.uid
-  //         }
-  //         // console.log(this.userInfo)
-  //       })
-  //     }
-  //   })
-  // }
-
   async getCredits(uid:string){
     this.firestoreService.getSubDoc('users',uid,'credits','credits').subscribe((data:any)=>{
-      this.credits = data.payload.data()
+      if(data.payload.data()&&this.credits.total != data.payload.data().total){
+        this.credits = data.payload.data()
+        this.creditsChanged.emit(true)
+      }
     })
   }
 
@@ -173,6 +165,19 @@ export class AuthService {
 
   }
 
+  async refreshFirebaseUser(): Promise<firebase.User | null> {
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    if (user) {
+      await user.reload();
+      this.getUserInfo();
+      return null;
+    }
+  
+    return null;
+  }
+
   async getUserInfo() {
     this.user$.subscribe(user => {
       if (user) {
@@ -181,8 +186,8 @@ export class AuthService {
           if (this.userInfo) {
             this.userInfo.uid = user.uid;
             this.setStartCountry()
+            this.userInfo$.next(this.userInfo); // Update de BehaviorSubject
           }
-          this.userInfo$.next(this.userInfo); // Update de BehaviorSubject
           if(this.userInfo?.filter){
             let countCheck = 0
             let checkFilter = setInterval(() => {
@@ -222,13 +227,19 @@ export class AuthService {
       await userCredential.user?.reload();
       this.toast.hideLoader();
       if (userCredential.user?.emailVerified) {
-        this.nav.go('start');
+        if(this.nav.redirectUrl){
+          this.nav.go(this.nav.redirectUrl)
+          this.nav.redirectUrl = null
+        }else{
+          this.nav.go('start')
+        }
         if(this.userInfo.language && this.userInfo.language!=this.translate.currentLang){
           this.nav.setLang(this.userInfo.language)
         }
       } else {
         // console.log('User is not verified');
         this.nav.go('wait-verify');
+        this.nav.redirectUrl = null
       }
     } catch (error) {
       this.toast.hideLoader();
@@ -270,11 +281,16 @@ export class AuthService {
           language: this.translate.currentLang,
           email: email
         });
-        console.log(`Nieuwe gebruiker via ${providerName}:`, email);
         this.nav.go('start/welcome');
+        this.nav.redirectUrl = null
       } else {
-        console.log(`Bestaande gebruiker via ${providerName}:`, email);
-        this.nav.go('start');
+        if(this.nav.redirectUrl){
+          this.nav.go(this.nav.redirectUrl)
+          this.nav.redirectUrl = null
+        }else{
+          this.nav.go('start')
+        }
+
       }
   
     } catch (error) {
@@ -406,44 +422,44 @@ export class AuthService {
     })
   }
 
-  async registerWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    try {
-      const userCredential = await this.afAuth.signInWithPopup(provider);
-      console.log('Google Login Succes:', userCredential.user);
-      this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
-      this.nav.go('start/welcome')
-    } catch (error) {
-      console.error('Google Login Mislukt:', error);
-      this.toast.show('Google Login Mislukt');
-    }
-  }
+  // async registerWithGoogle() {
+  //   const provider = new GoogleAuthProvider();
+  //   try {
+  //     const userCredential = await this.afAuth.signInWithPopup(provider);
+  //     console.log('Google Login Succes:', userCredential.user);
+  //     this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
+  //     this.nav.go('start/welcome')
+  //   } catch (error) {
+  //     console.error('Google Login Mislukt:', error);
+  //     this.toast.show('Google Login Mislukt');
+  //   }
+  // }
 
-  async registerWithApple() {
-    const provider = new OAuthProvider('apple.com');
-    try {
-      const userCredential = await this.afAuth.signInWithPopup(provider);
-      console.log('Apple Login Succes:', userCredential.user);
-      this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
-      this.nav.go('start/welcome')
-    } catch (error) {
-      console.error('Apple Login Mislukt:', error);
-      this.toast.show('Apple Login Mislukt');
-    }
-  }
+  // async registerWithApple() {
+  //   const provider = new OAuthProvider('apple.com');
+  //   try {
+  //     const userCredential = await this.afAuth.signInWithPopup(provider);
+  //     console.log('Apple Login Succes:', userCredential.user);
+  //     this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
+  //     this.nav.go('start/welcome')
+  //   } catch (error) {
+  //     console.error('Apple Login Mislukt:', error);
+  //     this.toast.show('Apple Login Mislukt');
+  //   }
+  // }
 
-  async registerWithFacebook() {
-    const provider = new FacebookAuthProvider();
-    try {
-      const userCredential = await this.afAuth.signInWithPopup(provider);
-      console.log('Facebook Login Succes:', userCredential.user);
-      this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
-      this.nav.go('start/welcome')
-    } catch (error) {
-      console.error('Facebook Login Mislukt:', error);
-      this.toast.show('Facebook Login Mislukt');
-    }
-  }
+  // async registerWithFacebook() {
+  //   const provider = new FacebookAuthProvider();
+  //   try {
+  //     const userCredential = await this.afAuth.signInWithPopup(provider);
+  //     console.log('Facebook Login Succes:', userCredential.user);
+  //     this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:userCredential.user?.email})
+  //     this.nav.go('start/welcome')
+  //   } catch (error) {
+  //     console.error('Facebook Login Mislukt:', error);
+  //     this.toast.show('Facebook Login Mislukt');
+  //   }
+  // }
 
 
   // Uitloggen
@@ -452,6 +468,9 @@ export class AuthService {
       await this.afAuth.signOut();
       this.userInfo = {}
       this.nav.go('/login');
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
       this.toast.show('Uitloggen mislukt');
@@ -685,25 +704,34 @@ export class AuthService {
       return this.publicCourses.find((course) => course.id === courseId)
     }
 
-
+    settingCountry:boolean = false
+    countrySet:boolean = false
     async setStartCountry(){
-      if(!this.userInfo.country||!this.userInfo.currency){
-          const response = await fetch("https://getiplocation-p2qcpa6ahq-ew.a.run.app", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({}),
-          });
-          const data = await response.json();
-          console.log(data)
-          if(data){
-            let country = data.country_code
-            let currency = this.countries.availableCurrency(data.currency?.code)
-            this.functions.httpsCallable('editUserCountry')({country:country}).subscribe((response:any)=>{})
-            this.functions.httpsCallable('editUserCurrency')({currency:currency}).subscribe((response:any)=>{})
-          }
+      if(this.settingCountry || this.countrySet){
+        return
       }
+      this.settingCountry = true
+      setTimeout(async () => {
+        if(!this.userInfo.country||!this.userInfo.currency){
+            const response = await fetch("https://getiplocation-p2qcpa6ahq-ew.a.run.app", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({}),
+            });
+            const data = await response.json();
+            console.log(data)
+            if(data){
+              this.countrySet = true
+              let country = data.country_code
+              let currency = this.countries.availableCurrency(data.currency?.code)
+              this.functions.httpsCallable('editUserCountry')({country:country}).subscribe((response:any)=>{})
+              this.functions.httpsCallable('editUserCurrency')({currency:currency}).subscribe((response:any)=>{})
+            }
+            this.settingCountry = false
+        }
+      }, 2000);
     }
 
 }

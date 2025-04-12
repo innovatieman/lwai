@@ -93,7 +93,8 @@
         "more": "more",
         "less": "less",
         "start": "Start",
-        "letsgo": "Let's go"
+        "letsgo": "Let's go",
+        "attachment": "Attachment"
       },
       "messages": {
       "saved": "Data saved",
@@ -218,7 +219,10 @@
       "terms1": "By registering, you agree to the",
       "terms2": "Terms and Conditions",
       "terms3": "and the",
-      "terms4": "Privacy Policy"
+      "terms4": "Privacy Policy",
+      "show_offerCode":"Do you have a code?",
+      "hide_offerCode":"Hide the code",
+      "offerCode":"Enter your code here"
     },
     "page_verify": {
       "verifying": "Verifying account",
@@ -295,7 +299,16 @@
       "my_subscriptions": "My subscriptions",
       "payment_success": "Payment successful. Any new credits will appear shortly.",
       "delete_cases_confirm": "Are you sure you want to delete this conversation?",
-      "delete_courses_confirm": "Are you sure you want to delete this module?"
+      "delete_courses_confirm": "Are you sure you want to delete this module?",
+      "delete_account_confirm": "Are you sure you want to delete your account? This cannot be undone.",
+      "delete_account_success": "Your account has been deleted. We hope to see you again in the future.",
+      "delete_account_failure": "Something went wrong while deleting your account. Please try again later.",
+      "busy_deleting": "Deleting...",
+      "delete_account_title": "Delete account",
+      "delete_account_confirm_input_text": "Type 'DELETE' below to delete your account.",
+      "DELETE": "DELETE",
+      "remove_account":"Remove your account",
+      "delete_account_admin":"Your account can only be deleted by the administrator. Please contact the administrator to have your account deleted."
     },
     "cases": {
       "badge_video": "Video",
@@ -371,6 +384,7 @@
       "cookie":"https://www.iubenda.com/privacy-policy/75452715/cookie-policy"
     },
     "conversation_start":{
+      "the_case":"The Case",
       "case":"The Case",
       "goal_instructions":"Indicate when you think your goal has been achieved.",
       "free_question_instructions":"And answer the question here.",
@@ -409,6 +423,10 @@
         "satisfied":"I am usually satisfied",
         "compliments":"I get a lot of compliments",
         "profession":"Having conversations is my profession"
+    },
+    "share":{
+        "basic_site":"`Do you know AliciaLabs yet?\nI'm going to try this out.\nWith AliciaLabs, you can simulate realistic conversations and get immediate feedback. You get 300 free credits upon registration! Try it out at https://www.alicialabs.com/",
+        "basic_title":"Do you know AliciaLabs yet?",
+        "basic_text_case":"Do you know AliciaLabs yet?\nI've just practiced the interesting conversation below:\n\n[case_title].\n[case_user_info].\n\nWould you like to practice this situation too and improve your conversation skills? With AliciaLabs, you can simulate realistic conversations and get immediate feedback. You get 300 free credits upon registration! Try it out here [case_link]."  
     }
-
 }

@@ -40,4 +40,5 @@ export * from './apis/ip'
 export * from './apis/stripe'
 export * from './processing/learnings'
 export * from './apis/social'
+export * from './processing/rendering'
 

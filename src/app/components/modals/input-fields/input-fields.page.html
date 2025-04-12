@@ -16,13 +16,13 @@
             </ion-thumbnail>
             <ion-checkbox mode="md" slot="start" *ngIf="field.type==='checkbox'" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-checkbox>
             <ion-label *ngIf="field.type==='checkbox'" class="ion-text-wrap" pointer [innerHtml]="field.title"></ion-label>
-            <ion-icon name="checkmark-circle" slot="start" *ngIf="!field.type||field.type==='text'||field.type==='textarea'"></ion-icon>
+            <!-- <ion-icon name="checkmark-circle" slot="start" *ngIf="!field.type||field.type==='text'||field.type==='textarea'"></ion-icon>
             <ion-icon name="calendar" slot="start" *ngIf="field.type==='date'"></ion-icon>
             <ion-icon name="time" slot="start" *ngIf="field.type==='time'"></ion-icon>
             <ion-icon name="toggle" slot="start" *ngIf="field.type==='toggle'"></ion-icon>
             <ion-icon name="keypad" slot="start" *ngIf="field.type==='number'"></ion-icon>
             <ion-icon name="chevron-down" slot="start" *ngIf="(field.type==='select'||field.type=='selectModal')&&!field.lang"></ion-icon>
-            <ion-icon name="mail" slot="start" *ngIf="field.type==='email'"></ion-icon>
+            <ion-icon name="mail" slot="start" *ngIf="field.type==='email'"></ion-icon> -->
             <ion-label *ngIf="!field.type||field.type==='text'||field.type==='textarea'||field.type==='range'||field.type==='email'" position="floating" [ngStyle]="{'pointer-events': field.html ? 'all' : 'none'}">
               {{field.title}}
               <span *ngIf="field.html" style="margin-left:10px;font-size:16px" (click)="editHtml(field)">
@@ -35,13 +35,20 @@
             <ion-label *ngIf="field.type==='time'" position="stacked">{{field.title}}</ion-label>
             <ion-label *ngIf="field.type==='number'" position="stacked">{{field.title}}</ion-label>
             <ion-label *ngIf="field.type==='select'||field.type=='selectModal'" position="stacked" relative style="top:-10px">{{field.title}}</ion-label>
-            <ion-input *ngIf="!field.type||field.type==='text'" [required]="field.required" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
+            <ion-input *ngIf="!field.type||field.type==='text'" [placeholder]="field.placeholder || ''" [required]="field.required" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
             <ion-input *ngIf="field.type==='email'" type="email" [required]="field.required" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
             <div flex *ngIf="field.type==='time'">
               <ion-input *ngIf="field.type==='time'" [required]="field.required" type="time" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
             </div>
-            <ion-input *ngIf="field.type=='number'" [required]="field.required" type="number" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
+            <ion-input *ngIf="field.type=='number'" [required]="field.required" type="number" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" ></ion-input>
             <!-- <ion-datetime displayFormat="H:mm" *ngIf="field.type=='time'" [required]="field.required" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-datetime> -->
+            <input hidden #fileInput *ngIf="field.type=='file'" (change)="onFileSelected($event)" [required]="field.required" type="file" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" />
+            <div *ngIf="field.type === 'file'" class="file-field" fullwidth flex center-ver>
+              <ion-button (click)="triggerFileInputClick()">{{'buttons.attachment' | translate}}</ion-button>
+              <ion-label titleIcon *ngIf="fileField.name">{{ fileField.name }}</ion-label>
+              <div class="spacer"></div>
+              <ion-icon titleIcon font-20 *ngIf="field.value" name="close-circle" (click)="clearFile(field)"></ion-icon>
+            </div>
             <ion-select *ngIf="field.type=='select'&&!field.optionKeys" interface="popover"  [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value">
               <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}</ion-select-option>
             </ion-select>
@@ -52,7 +59,7 @@
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&!field.lang&&field.keyvalue" relative style="top:-10px">{{helpers[field.keyvalue](field.value)}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&field.lang&&field.value" relative style="top:-10px">{{'language_'+field.value | translate}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&field.translate" relative style="top:-10px">{{field.value | translate}}</ion-text>
-            <ion-textarea *ngIf="field.type==='textarea'" rows="6"  type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" [placeholder]="field.placeholder ? field.placeholder : ''"></ion-textarea>
+            <ion-textarea *ngIf="field.type==='textarea'" style="padding-left: 0 !important;" rows="6"  type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" [placeholder]="field.placeholder ? field.placeholder : ''"></ion-textarea>
             
             <ion-toggle *ngIf="field.type==='toggle'" style="color:var(--color-global)" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value">
               {{field.title}}

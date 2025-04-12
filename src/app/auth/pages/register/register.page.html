@@ -1,10 +1,14 @@
 <main [full]="true">
   <div class="login-page">
-    <img class="login_logo" src="assets/icon/logo_full_black_sm.png">
+    <img class="login_logo" src="assets/icon/logo_full_black_sm.png" pointer (click)="nav.goto('https://www.alicialabs.com')" />
     <div class="login-container" relative>
       <div class="languageSelection" flex center-ver text-secondary (click)="nav.editLang()">
         <fa-icon [icon]="icon.get('faGlobeEurope')" class="langIcon" ></fa-icon>
         <span>{{'languages.'+translateService.currentLang | translate}}</span>
+      </div>
+      <div class="shareButtonLogin" pointer (click)="media.shareCase('login',$event)">
+        <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+        <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
       </div>
       <!-- <div class="icon-wrapper">
         <fa-icon class="user-icon" [icon]="icon.get('faUser')" ></fa-icon>
@@ -27,6 +31,15 @@
             <ion-icon slot="end" name="eye-off" *ngIf="showPassword" (click)="showPassword = false"></ion-icon>
           </ion-input>
         </ion-item>
+        <div class="showOfferCodeText" *ngIf="!showOfferCode" (click)="showOfferCode=!showOfferCode">{{'page_register.show_offerCode' | translate}}</div>
+
+        <ion-item lines="none" class="fieldItem" *ngIf="showOfferCode">
+          <ion-label position="stacked">{{'page_register.offerCode' | translate}}</ion-label>
+          <ion-input type="text" [(ngModel)]="offerCode" (ionChange)="offerToLocal()" [ngModelOptions]="{standalone: true}">
+            <ion-icon slot="end" name="close" (click)="showOfferCode = false"></ion-icon>
+          </ion-input>
+        </ion-item>
+
         <ion-button type="submit" class="saveButton" >{{'page_register.register' | translate}}</ion-button>
       </form>
       <p class="register-link">{{'page_register.account_exists' | translate}} <span pointer (click)="nav.go('login')" class="showPassWordReset">{{'page_register.login' | translate}}</span></p>

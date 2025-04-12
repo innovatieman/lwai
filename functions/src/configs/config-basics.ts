@@ -22,4 +22,6 @@ export const config = {
   runware_api_key: process.env.RUNWARE_API_KEY || '',
   gemini_api_key: process.env.GEMINI_API_KEY || '',
   ipapi_api_key: process.env.IPAPI_API_KEY || '',
+  elevenlabs_api_key: process.env.ELEVENLABS_API_KEY || '',
+  hume_api_key:process.env.HUME_API_KEY || '',
 };

@@ -8,7 +8,7 @@
     <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
   </ion-button>
 </div>
-<div *ngIf="!options.video&&options.content&&!options.image" [innerHtml]="options.content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : 'calc(100vh - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}"></div>
+<div *ngIf="!options.video&&options.content&&!options.image" [innerHtml]="options.content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc('+(vh * 100)+'px'+' - 40px)' : 'calc('+(vh * 100)+'px'+' - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}"></div>
 <div *ngIf="options.video" class="inner-content">
   <div class="video-container">
     <iframe [src]="options.content | sanitizeHtml : 'urlResource'" (load)="hideLoader()" frameborder="0" ></iframe>

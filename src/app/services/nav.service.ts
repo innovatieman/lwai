@@ -13,13 +13,19 @@ export class NavService {
   @Output() changeLang: EventEmitter<string> = new EventEmitter();
   @Output() renewPWA: EventEmitter<boolean> = new EventEmitter();
   langList:string[] = ['en','nl']
+  redirectUrl:any = null
+  specialCode:string = ''
   constructor(
     private navController: NavController,
     private translate: TranslateService,
     private functions: AngularFireFunctions,
     private selectMenuservice:SelectMenuService,
     private popoverController:PopoverController
-  ) { }
+  ) { 
+    let urlParams = new URLSearchParams(window.location.search);
+    this.redirectUrl = urlParams.get('redirect');
+    this.specialCode = urlParams.get('specialcode')||''
+  }
 
   public go(page: string,backwards?: boolean){
     if(backwards){

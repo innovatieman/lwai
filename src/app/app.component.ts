@@ -48,7 +48,7 @@ export class AppComponent {
   
   async listenForUpdates() {
     if (!this.swUpdate.isEnabled) {
-      console.log('Service Worker updates are not enabled.');
+      // console.log('Service Worker updates are not enabled.');
       return;
     }
 

@@ -567,7 +567,6 @@ export class ConversationService implements OnDestroy {
     // console.log(this.extraTemp[obj.instructionType][extraTempIndex])
   }
 
-
   // async openai_extra(obj:any) {
   //   console.log(obj)
   //   const response = await fetch("https://conversationAI-p2qcpa6ahq-ew.a.run.app", {

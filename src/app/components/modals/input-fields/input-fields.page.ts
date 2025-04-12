@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { IconsService } from 'src/app/services/icons.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -9,6 +9,7 @@ import { HelpersService } from 'src/app/services/helpers.service';
 import { NavService } from 'src/app/services/nav.service';
 import { EditHtmlPage } from '../edit-html/edit-html.page';
 import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 
 @Component({
   selector: 'app-input-fields',
@@ -38,6 +39,8 @@ export class InputFieldsPage implements OnInit {
       }
     }
   }
+  @ViewChild('fileInput') fileInput:any;
+  
   showHtml:boolean=false
   constructor(
     public icons:IconsService,
@@ -47,7 +50,8 @@ export class InputFieldsPage implements OnInit {
     private rf:ChangeDetectorRef,
     private translate:TranslateService,
     public helpers:HelpersService,
-    public nav:NavService
+    public nav:NavService,
+    private functions:AngularFireFunctions
   ) { 
     moment().locale('nl')
   }
@@ -56,8 +60,27 @@ export class InputFieldsPage implements OnInit {
 
   }
 
+  triggerFileInputClick() {
+    this.fileInput?.nativeElement?.click();
+  }
+  clearFile(field:any) {
+    field.value = '';
+    if (this.fileInput?.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+    }
+  }
+  showValue(field:any){
+    console.log(field)
+  }
   dateSelected($event:any){
     // console.log($event)
+  }
+  fileField:any = {}
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.fileField = file;
+    }
   }
 
   selectDate(date:any,index:number,showTime?:boolean | null,min?:any,max?:any){
@@ -145,7 +168,9 @@ export class InputFieldsPage implements OnInit {
     return await modalItem.present()
   }
 
-  save(){
+  async save(){
+    this.toast.showLoader()
+    let noWaiting = true
     for (let i=0;i<this.fields.length;i++) {
       if(this.fields[i].required&&!this.fields[i].value){
         this.toast.show('* '+ this.translate.instant('error_messages.required'),null,'middle')
@@ -168,8 +193,21 @@ export class InputFieldsPage implements OnInit {
           .split('</p><br><p>').join('<br><br>')
           .split('</p><p>').join('<br>')
       }
+      if(this.fields[i].type=='file'){
+        noWaiting = false
+        if(this.fileField.name){
+          await this.uploadFile(this.fileField,(response:any)=>{
+            this.fields[i].value = response.result.url
+            this.toast.hideLoader()
+            this.modalController.dismiss(this.fields)
+          })
+        }
+      }
     }
-    this.modalController.dismiss(this.fields)
+    if(noWaiting){
+      this.toast.hideLoader()
+      this.modalController.dismiss(this.fields)
+    }
     
   }
 
@@ -229,5 +267,21 @@ export class InputFieldsPage implements OnInit {
     },100)
   }
 
+  async uploadFile(selectedFile:any,callback:Function){
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = (reader.result as string).split(',')[1];
+      
+      const result = await this.functions.httpsCallable('uploadFile')({
+        fileData: base64Data,
+        contentType: selectedFile.type,
+        fileExtension: selectedFile.name.split('.').pop()
+      }).toPromise();
+      callback(result)
+    };
+    reader.readAsDataURL(selectedFile);
+
+   }
 
 }

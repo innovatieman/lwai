@@ -39,6 +39,9 @@
             <span *ngIf="auth.credits.total">{{auth.credits.total}} <span *ngIf="!media.smallDevice">{{'standards.credits' | translate}}</span></span>
             <span *ngIf="!auth.credits.total">0 <span *ngIf="!media.smallDevice">{{'standards.credits' | translate}}</span></span>
           </ion-button>
+          <ion-button color="secondary" id="header_menu" (click)="openFeedback()" size="large">
+            <ion-icon name="chatbubble-ellipses" noMargin slot="end" style="font-size: 24px;"></ion-icon>
+          </ion-button>
           <ion-button (click)="toggleVideo()" *ngIf="conversation.caseItem.avatarName" size="large">
             <fa-icon [icon]="icon.get('faVideoSlash')" *ngIf="interaction=='combination'&&conversation.activeConversation.video_on"></fa-icon>
             <fa-icon [icon]="icon.get('faVideo')"  *ngIf="interaction=='chat'||!conversation.activeConversation.video_on"></fa-icon>

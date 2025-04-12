@@ -7,6 +7,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 import { CaseFilterPipe } from 'src/app/pipes/case-filter.pipe';
 import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
 import { FilterSearchPipe } from 'src/app/pipes/filter-search.pipe';
+import { BadgesService } from 'src/app/services/badges.service';
 import { CasesService } from 'src/app/services/cases.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
@@ -89,7 +90,8 @@ export class StartPage implements OnInit {
     public levelService:LevelsService,
     private filterSearchPipe: FilterSearchPipe,
     private caseFilterPipe: CaseFilterPipe,
-    private filterKeyPipe: FilterKeyPipe
+    private filterKeyPipe: FilterKeyPipe,
+    public badges:BadgesService
   ) { }
 
   ngOnInit() {
@@ -106,7 +108,7 @@ export class StartPage implements OnInit {
         }, 2000);
       }
       setTimeout(() => {
-        console.log('trigger tutorial')
+        // console.log('trigger tutorial')
         if(this.media.smallDevice){
           this.tutorial.triggerTutorial(location.pathname.substring(1),'onload_mobile')
         }
@@ -125,8 +127,15 @@ export class StartPage implements OnInit {
       }
     });
     this.setupProgressCircles()
-
+    this.infoService.conversationTypesLoaded.subscribe((res)=>{
+      this.updateVisibleCases()
+    })
     this.cases.casesLoaded.subscribe((res)=>{
+      // let urlParams = new URLSearchParams(window.location.search);
+      // let searchTerm = urlParams.get('searchTerm');
+      // if(searchTerm){
+      //   this.searchTerm = searchTerm
+      // }
       this.updateVisibleCases();
     })
     this.nav.changeLang.subscribe((res)=>{
@@ -134,6 +143,14 @@ export class StartPage implements OnInit {
         location.reload()
       // }
     })
+    let urlParams = new URLSearchParams(window.location.search);
+    let searchTerm = urlParams.get('searchTerm');
+    if(searchTerm){
+      this.searchTerm = searchTerm
+      setTimeout(() => {
+        this.updateVisibleCases();
+      }, 1000);
+    }
     // this.sendTestMail()
   }
 
@@ -505,7 +522,7 @@ export class StartPage implements OnInit {
       subjects: [],
       subjectTypes: {}
     };
-  
+    // console.log('filter types',this.infoService.conversation_types)
     for (let i = 0; i < this.infoService.conversation_types.length; i++) {
       if (this.infoService.conversation_types[i].selected) {
         const conversationTypeId = this.infoService.conversation_types[i].id;
@@ -601,6 +618,7 @@ export class StartPage implements OnInit {
 
     updateVisibleCases() {
       // | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterKey : 'level' : currentFilterLevels | filterSearch : searchTerm : false : ['title','tags']
+
       const filtered = this.caseFilterPipe.transform(
         this.cases.all,
         this.currentFilterTypes.types,
@@ -612,9 +630,8 @@ export class StartPage implements OnInit {
         filtered,
         this.searchTerm,
         false,
-        ['title','tags','user_info']
+        ['title','tags','user_info','id']
       );
-      console.log(this.filterLevels())
       const searchedLevels = this.filterKeyPipe.transform(
         searched,
         'level',
@@ -661,4 +678,5 @@ export class StartPage implements OnInit {
       this.updateVisibleCases();
     }
 
+    
 }

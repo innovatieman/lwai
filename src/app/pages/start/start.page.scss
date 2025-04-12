@@ -29,7 +29,7 @@
 .creditButton{
     --border-color:black;//var(--ion-color-primary);
     --color:var(--ion-color-primary);
-    margin-right:20px;
+    // margin-right:20px;
     margin-left:10px;
     --padding-start: 10px !important;
     --padding-end: 10px !important;
@@ -135,18 +135,18 @@ main {
   .topButton:hover{
     border:solid 1px var(--ion-color-primary);
   }
-  .videoAvatarBadge{
-    position: absolute;
-    right: 15px;
-    top: 10px;
-    z-index: 2;
-    background-color: var(--ion-color-light);
-    color: var(--ion-color-light-contrast);
-    padding: 4px 10px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
+.videoAvatarBadge{
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  z-index: 2;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-light-contrast);
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .activeItem{

@@ -13,6 +13,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class InfoModalPage implements OnInit {
   @ViewChild("iframe",{static:false}) iframe!: ElementRef;
   feedbackGiven:boolean = false
+  vh:number = 0
   @Input() options:any={
     title:'',
     content:'',
@@ -41,6 +42,10 @@ export class InfoModalPage implements OnInit {
       this.toast.showLoader()
     }
     // console.log(this.options)
+  }
+  ngAfterViewInit() {
+    this.vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${this.vh}px`);  
   }
 
   hideLoader(){

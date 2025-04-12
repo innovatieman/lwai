@@ -43,7 +43,7 @@
   </ion-list>
 
   <ion-grid style="padding:0px 5px">
-    <ion-row *ngIf="customMenu&&!listShape">
+    <ion-row *ngIf="customMenu&&!listShape&&!shareMenu">
       <ion-col size="6" *ngFor="let p of appPages; let i = index">
         <ion-card class="customMenuItem" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
           <ion-row>
@@ -60,9 +60,26 @@
         </ion-card>
       </ion-col>
     </ion-row>
+
+    <ion-row *ngIf="customMenu&&!listShape&&shareMenu" marginBottom>
+      <ion-col size="12">
+        <div font-18 weight600 basicPadding style="padding-bottom:0" flex center-ver>
+          <span>Deel dit!</span>
+          <div class="spacer"></div>
+          <fa-icon [icon]="icon.get('faTimes')" (click)="popoverController.dismiss()" class="closeIcon"></fa-icon>
+        </div>
+      </ion-col>
+      <div singleLine></div>
+      <ion-col size="3" *ngFor="let p of appPages; let i = index" center flex center-ver center-hor flex-column>
+        <ion-card class="shareMenuItem" (click)="dismissPopover(p)" [ngStyle]="{'background':p.background,'color':p.color}">
+            <fa-icon *ngIf="p.icon" [icon]="icon.get(p.icon)" [ngStyle]="{'color':p.color}" class="shareIcon"></fa-icon>
+        </ion-card>
+        <div class="shareMenuTitle" [innerHTML]="p.title"></div>
+      </ion-col>
+    </ion-row>
   </ion-grid>
 
-  <div *ngIf="customMenu&&listShape">
+  <div *ngIf="customMenu&&listShape&&!shareMenu">
     <ion-list>
       <ion-item lines="none" button *ngFor="let p of appPages; let i = index let first = first;let last=last" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
         <!-- <ion-icon *ngIf="p.icon" [name]="p.icon" slot="start"></ion-icon> -->

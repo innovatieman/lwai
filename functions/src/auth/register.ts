@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import admin from '../firebase'
-import * as moment from 'moment'
+import moment from 'moment'
 import * as responder from '../utils/responder'
 
 exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
@@ -26,7 +26,7 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
       }
       
       return admin.firestore().collection('users').doc(user.uid).set(userObj)
-        .then(()=>{
+        .then(async ()=>{
           const basicSubscription = {
               type: "basic",
               period: "unlimited",
@@ -36,12 +36,16 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
                 ),
               status: "active",
           };
-
-
-          const credits = {
+          let credits = {
             total: 300,
             lastUpdated: admin.firestore.Timestamp.now(),
           };
+          const deletedUsersRef = admin.firestore().collection('deletedUsers').doc(user.email)
+          const deletedUsers = await deletedUsersRef.get()
+          if (deletedUsers.exists) {
+            credits.total = 0;
+            deletedUsersRef.delete()
+          }
 
           const skills = {
             impact: {
@@ -159,7 +163,7 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
   const data = change.data();
   const email = data.email;
   let language = data.language || 'en';
-  const displayName = '';
+  let displayName = '';
 
   const existingLangRef = admin.firestore().collection('languages').doc(language);
   const existingLang = await existingLangRef.get();
@@ -175,6 +179,7 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
     language: language
   });
 
+  displayName = user.displayName || '';
 
   if (user.emailVerified) {
     console.log(`Skipping verification email for verified user: ${email}`);
@@ -211,7 +216,8 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
     language: language,
     data: {
       name: displayName,
-      verificationLink: customLink
+      verificationLink: customLink,
+      code: code
     }
   };
 
@@ -232,7 +238,7 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   const userData = user.docs[0].data();
   let language = userData.language || 'en';
 
-  console.log(`Resending verification email to ${email} in language ${language}`);
+  // console.log(`Resending verification email to ${email} in language ${language}`);
 
   //create 6 digit code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -269,7 +275,8 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
     language: language,
     data: {
       name: displayName,
-      verificationLink: customLink
+      verificationLink: customLink,
+      code: code
     }
   };
 
@@ -406,3 +413,74 @@ exports.verifyEmailInitCode = functions.region('europe-west1').https.onCall(asyn
   await docRef.delete();
   return new responder.Message("email verified", 200);
 });
+
+exports.deleteSelf = functions.region('europe-west1').https.onCall(async (data, context) => {
+  if(!context.auth){
+    return new responder.Message('Not authorized', 500);
+  }
+  const uid = context.auth.uid
+  const email = context.auth.token.email
+  const user = await admin.auth().getUser(uid)
+  if(!user){
+    return new responder.Message('User not found', 404);
+  }
+  await admin.firestore().collection('deletedUsers').doc(email).set({
+    deletedAt:Date.now(),
+  })
+  await admin.auth().deleteUser(uid)
+  return new responder.Message('User deleted', 200);
+})
+
+exports.checkOffer = functions.region('europe-west1').https.onCall(async (data, context)=>{
+  const code = data.code
+  const uid = context.auth?.uid
+
+  if(!uid){
+    return new responder.Message('Not authorized', 500);
+  }
+
+  const offer = await admin.firestore().collection('specialCodes').doc(code).get()
+  if(!offer.exists){
+    return new responder.Message('Offer not found', 404);
+  }
+
+  const offerData = offer.data()
+
+  if(offerData?.expires && offerData?.expires < (Date.now()/1000)){
+    return new responder.Message('Offer expired', 500);
+  }
+
+  const usedOfferRef = await admin.firestore().collection('users').doc(uid).collection('offers').doc(code).get()
+  if(usedOfferRef.exists){
+    return new responder.Message('Offer already used', 500);
+  }
+
+  await admin.firestore().collection('users').doc(uid).collection('offers').doc(code).set({
+    code:code,
+    createdAt:Date.now(),
+    credits:offerData?.credits || 0,
+  })
+
+  if(offerData?.credits){
+    await admin.firestore().collection('users').doc(uid).collection('credits').doc('credits').update({
+      total:admin.firestore.FieldValue.increment(offerData.credits)
+    })
+  }
+
+  return new responder.Message('Offer added', 200);
+})
+
+exports.clearDeletedUsers = functions.region('europe-west1')
+  .pubsub.schedule('1 1 1 * *') // Elke zaterdag om 04:00 uur
+  .timeZone('Europe/Amsterdam')
+  .onRun(async (context) => {
+    // get deletedUsers die langer dan 90 dagen geleden zijn aangemaakt
+    const deletedUsersRef = admin.firestore().collection('deletedUsers').where('deletedAt', '<=', Date.now() - 90 * 24 * 60 * 60 * 1000)
+    const deletedUsers = await deletedUsersRef.get()
+    const batch = admin.firestore().batch()
+    deletedUsers.forEach((doc) => {
+      batch.delete(doc.ref)
+    })
+    await batch.commit()
+    return null
+  }); 

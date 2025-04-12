@@ -128,4 +128,10 @@ export class UserMessagesPage implements OnInit {
   }
 
   doNothing(){}
+
+  openAttachment(attachment:any){
+    if(attachment){
+      window.open(attachment,'_blank')
+    }
+  }
 }

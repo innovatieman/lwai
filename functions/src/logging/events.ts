@@ -1,6 +1,6 @@
 import admin from '../firebase'
 import * as functions from 'firebase-functions/v1';
-import * as moment from 'moment'
+import moment from 'moment'
 import * as responder from '../utils/responder'
 
 exports.log = functions.region('europe-west1').https.onCall((data,context)=>{

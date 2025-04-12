@@ -34,7 +34,6 @@ export class InfoService {
   }
 
   async loadInfo() {
-
     const attitudesSnapshot = await firstValueFrom(this.firestore.get('attitudes'));
 
     const attitudesList = await Promise.all(
@@ -133,6 +132,13 @@ export class InfoService {
 
     // setTimeout(() => {
     //   console.log(this.conversation_types)
+    //   let textList = ''
+    //   for(let i = 0; i < this.conversation_types.length; i++){
+    //     for(let j = 0; j < this.conversation_types[i].subjects.length; j++){
+    //       textList += this.conversation_types[i].subjects[j].id + '\n'
+    //     }
+    //   }
+    //   console.log(textList)
     // }, 2000);
   }
 
@@ -218,6 +224,7 @@ export class InfoService {
           }
         }
       }
+      this.conversationTypesLoaded.emit(true)
       // console.log(this.conversation_types)
     }
   }

@@ -170,7 +170,7 @@
                                   <ion-col [size]="media.smallDevice ? 12 : 6" *ngFor="let button of tutorialService.allButtons">
                                     <ion-item lines="none" listCard >
                                       <ion-toggle color="primary" [(ngModel)]="step.buttons[button.id]" (ionChange)="update('steps')">
-                                        {{button.text}}
+                                        {{button.text}} {{button.nextMove}}
                                       </ion-toggle>
                                     </ion-item>
 

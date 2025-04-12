@@ -1,4 +1,4 @@
-<app-header ></app-header>
+<app-header [inactiveCredits]="true"></app-header>
 <main>
   <ion-grid>
     <ion-row basicPadding>
@@ -43,7 +43,7 @@
           </ion-item>
 
           <div center-ver flex>
-            <ion-button class="saveButton" color="primary" (click)="selectTypes(currentFilterTypes.types)">{{'page_wait_verify.set' | translate}}</ion-button>
+            <!-- <ion-button class="saveButton" color="primary" (click)="selectTypes(currentFilterTypes.types)">{{'page_wait_verify.set' | translate}}</ion-button> -->
             <div class="spacer"></div>
             <ion-button class="saveButton" color="dark" fill="outline" (click)="next(step)">{{'buttons.next' | translate}}</ion-button>
           </div>
@@ -171,6 +171,7 @@
                                         <div font-12 [ngStyle]="{'color':levelService.levelColorTextLevel(caseItem.level)}">{{'standards.level' | translate}}</div>
                                     </div>
                                 </ion-button>
+                                <div class="spacer"></div>
                                 <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="startConversation(caseItem,$event)">{{'cases.start_conversation' | translate}}</ion-button>
                             </div>
                         </ion-card-content>
@@ -200,7 +201,7 @@
 
 
               <ng-container *ngIf="media.smallDevice">
-                <ion-col [size]="12" *ngFor="let caseItem of suggestionCases;let i = index">
+                <ion-col [size]="12" *ngFor="let caseItem of suggestionCases | maxLength:2;let i = index">
 
                     <ion-card class="'caseItemSm" [id]="'case_card'+i" noMargin basicPadding pointer flex align-top style="border-radius:16px;width:calc(100% - 10px)" (click)="showCaseInfo(caseItem)"><!--" : startConversation(caseItem)">-->
                         <div style="width:100px;">
@@ -306,3 +307,4 @@
     </ion-row>
   </ion-grid>
 </main>
+

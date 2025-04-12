@@ -10,6 +10,7 @@ import { PopoverController } from '@ionic/angular';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { MenuPage } from 'src/app/components/menu/menu.page';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { MediaService } from 'src/app/services/media.service';
 
 @Component({
   selector: 'app-register',
@@ -19,16 +20,15 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 export class RegisterPage implements OnInit {
   registerForm: FormGroup;
   showPassword = false;
-
+  offerCode: string = '';
+  showOfferCode = false;
   constructor(
     private fb: FormBuilder,
     public auth: AuthService,
     public nav: NavService,
     public icon: IconsService,
     public translateService: TranslateService,
-    private popoverController: PopoverController,
-    private selectMenuservice:SelectMenuService,
-    private functions: AngularFireFunctions,
+    public media:MediaService
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -39,10 +39,26 @@ export class RegisterPage implements OnInit {
   ngOnInit() {
     this.auth.userInfo$.subscribe(userInfo => {
       if(this.auth.userInfo.uid){
-        console.log('userInfo',userInfo)
-        this.nav.go('start')
+        setTimeout(() => {
+          if(location.href.indexOf('register')>-1){
+            if(this.nav.redirectUrl){
+              this.nav.go(this.nav.redirectUrl)
+              this.nav.redirectUrl = null
+            }
+            else{
+              this.nav.go('start')
+            }
+          }
+        }, 500);
+        // this.nav.go('start')
       }
     });
+    setTimeout(() => {
+      if(this.nav.specialCode){
+        this.offerCode = this.nav.specialCode;
+        this.showOfferCode = true;
+      }
+    }, 500);
   }
 
   doNothing() {}
@@ -64,6 +80,9 @@ export class RegisterPage implements OnInit {
     console.log('Facebook Sign-In nog niet geïmplementeerd.');
   }
 
+  offerToLocal(){
+    this.nav.specialCode = this.offerCode;
+  }
 
   
 

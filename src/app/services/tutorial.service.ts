@@ -4,6 +4,7 @@ import { FirestoreService } from './firestore.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
 import { MediaService } from './media.service';
+import { NavService } from './nav.service';
 
 const defaultStepOptions = {
   classes: "tutorialPop",
@@ -91,6 +92,13 @@ export class tutorialService {
       text: this.translate.instant('buttons.please'),
       type: "next",
     },
+    moveToStart:{
+      classes: "saveButton",
+      text: this.translate.instant('buttons.complete'),
+      action: ()=>{
+        this.moveToStart()
+      },
+    }
     
   };
 
@@ -100,6 +108,7 @@ export class tutorialService {
     private translate:TranslateService,
     private auth:AuthService,
     private media:MediaService,
+    private nav:NavService
   ) {
     this.getTutorials()
   }
@@ -121,6 +130,9 @@ export class tutorialService {
     for(let button in this.STEPS_BUTTONS){
       let buttonData:any = this.STEPS_BUTTONS[button]
       buttonData.id = button
+      if(button == 'moveToStart'){
+        buttonData.nextMove = 'Naar start'
+      }
       buttons.push(buttonData)
     }
     return buttons
@@ -145,7 +157,7 @@ export class tutorialService {
         }
         )
       })
-      console.log(this.allTutorials)
+      // console.log(this.allTutorials)
       this.organizeTutorials()
     })
   }
@@ -317,9 +329,15 @@ export class tutorialService {
   }
 
   complete(){
-    console.log('complete',this.activeTutorial)
     this.shepherdService.complete();
     this.exit(true)
+  }
+  
+  moveToStart(){
+    console.log('moveToStart')
+    this.shepherdService.complete();
+    this.exit(true)
+    this.nav.go('start')
   }
 
   showAction(action:any){

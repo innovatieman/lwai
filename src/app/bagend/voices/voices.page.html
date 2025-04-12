@@ -1,0 +1,44 @@
+<app-header page="admin"></app-header>
+
+<main>
+  <ion-grid class="mainGrid">
+    <ion-row>
+      <ion-col size="3" class="selectColumn">
+      </ion-col>
+      <ion-col size="9">
+        <ion-card class="card">
+          <ion-card-header>
+            <ion-card-title>Test</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none" listCard marginBottom >
+              <ion-label position="stacked">Tekst</ion-label>
+              <ion-textarea noBorders [autoGrow]="true" rows="4" [(ngModel)]="test.text"></ion-textarea>
+            </ion-item>
+
+            <ion-item lines="none" listCard marginBottom>
+              <ion-label position="stacked">Emotie</ion-label>
+              <ion-textarea noBorders [autoGrow]="true" rows="4" [(ngModel)]="test.emotion"></ion-textarea>
+            </ion-item>
+
+            <ion-item lines="none" listCard marginBottom>
+              <ion-label position="stacked">Taal</ion-label>
+              <ion-input [(ngModel)]="test.language"></ion-input>
+            </ion-item>
+
+            <ion-item lines="none" listCard marginBottom>
+              <ion-label position="stacked">Taal</ion-label>
+              <div flex center-ver>
+                <ion-button (click)="test.model = 'eleven_multilingual_v2'" fill="solid" [color]="test.model == 'eleven_multilingual_v2' ? 'primary' : 'light'">Default</ion-button>
+                <div class="spacer"></div>
+                <ion-button (click)="test.model = 'eleven_flash_v2.5'" fill="solid" [color]="test.model == 'eleven_flash_v2.5' ? 'primary' : 'light'">Flash</ion-button>
+              </div>
+            </ion-item>
+
+            <ion-button class="saveButton" (click)="testSpeech()">Test</ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</main>

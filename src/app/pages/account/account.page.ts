@@ -47,6 +47,7 @@ export class AccountPage implements OnInit {
   customers: any;
   subscriptionsStripe: any;
   db: any;
+  isAdmin: boolean = false;
   menuItems:any=[
     {title:this.translate.instant('page_account.account'),tab:'basics',icon:'faUser'},
     // {title:'Mijn profiel',tab:'profile',icon:'faSlidersH'},
@@ -78,6 +79,9 @@ export class AccountPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.auth.isAdmin().subscribe((admin) => {
+      this.isAdmin = admin;
+    });
     this.route.params.subscribe(params=>{
       if(params['tab']){
         this.activeTab = params['tab']
@@ -184,7 +188,7 @@ export class AccountPage implements OnInit {
   }
 
   async fetchProducts() {
-    this.firestoreService.query('products','metadata.type','credits').subscribe((products:any)=>{
+    this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
       this.products = products.map((product:any)=>{
         let item = {
           id: product.payload.doc.id,
@@ -225,7 +229,7 @@ export class AccountPage implements OnInit {
 
     if(!stripeId){
       let newCustomer = await this.functions.httpsCallable('createCustomerId')({email:user.email}).toPromise()
-      const stripeId = newCustomer.stripeCustomerId
+      stripeId = newCustomer.result?.stripeId
     }
     if(!stripeId){
       this.toast.hideLoader()
@@ -504,5 +508,46 @@ export class AccountPage implements OnInit {
       return true
     }
     return JSON.stringify(this.currentFilterTypes.types)!=JSON.stringify(this.auth.userInfo.filter.types) || JSON.stringify(this.currentFilterTypes.subjects)!=JSON.stringify(this.auth.userInfo.filter.subjects)
+  }
+
+  removeUser(){
+    this.modalService.showConfirmation(this.translate.instant('page_account.delete_account_confirm')).then((response)=>{
+      if(response){
+        console.log('/^'+this.translate.instant('page_account.DELETE')+'$/')
+        this.modalService.inputFields(this.translate.instant('page_account.delete_account_title'),this.translate.instant('page_account.delete_account_confirm_input_text'),[
+          {
+            placeholder:this.translate.instant('page_account.DELETE'),
+            type:'text',
+            value:'',
+            required:true,
+            pattern:this.translate.instant('page_account.DELETE')
+
+          }],(result:any)=>{
+            if(result.data){
+              this.deleteAccount()
+            }
+        })
+      }
+    })
+  }
+
+  deleteAccount(){
+    if(this.isAdmin){
+      this.toast.show(this.translate.instant('page_account.delete_account_admin'))
+      return
+    }
+    this.toast.showLoader(this.translate.instant('page_account.busy_deleting'))
+    this.functions.httpsCallable('deleteSelf')({}).subscribe((response:any)=>{
+      this.toast.hideLoader()
+      if(response.status==200){
+        this.toast.show(this.translate.instant('page_account.delete_account_success'),3000)
+        setTimeout(() => {
+          this.auth.logout()
+        }, 3000);
+      }
+      else{
+        this.toast.show(this.translate.instant('page_account.delete_account_failure'),3000)
+      }
+    })
   }
 }

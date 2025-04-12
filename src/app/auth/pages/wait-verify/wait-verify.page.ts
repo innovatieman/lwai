@@ -42,6 +42,7 @@ export class WaitVerifyPage implements OnInit {
   suggestionCases: any[] = []
   verifyCode:any = {}
   initiated:boolean = false
+  isLoggedIn:boolean = false
   useOptions: any[]=[
     {id:'my_understanding'},
     {id:'others_understanding'},
@@ -97,14 +98,32 @@ export class WaitVerifyPage implements OnInit {
   ngOnInit() {
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
+        this.isLoggedIn = true
        this.displayName = userInfo.displayName;
       //  console.log(userInfo)
+       this.auth.getCredits(userInfo.uid)
        this.startingStep()
       }
       else{
         // this.nav.go('login')
       }
     });
+    this.nav.changeLang.subscribe((lang) => {
+      const video = this.myVideo.nativeElement;
+      video.pause();
+      video.autoplay = false;
+      video.src = 'https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/tutorials/welcome_'+this.translate.currentLang+'.mp4'
+      video.load();
+      setTimeout(() => {
+        video.play();
+      }, 1000);
+      
+    })
+    setTimeout(() => {
+      if(!this.isLoggedIn){
+        this.nav.go('login')
+      }
+    }, 10000);
     this.auth.isVerified().subscribe((auth) => {
       if(auth){
         this.isVerified = true
@@ -131,7 +150,7 @@ export class WaitVerifyPage implements OnInit {
           video.muted = false;
           video.playsInline = true;
           video.autoplay = true;
-          // video.play();
+          video.play();
         }
       }, 1000);
     }, 4000);
@@ -162,7 +181,8 @@ export class WaitVerifyPage implements OnInit {
       if(response.status==200){
         this.isVerified = true
         this.verifyCode.valid = true
-        setTimeout(() => {
+        setTimeout(async () => {
+          await this.auth.refreshFirebaseUser()
           this.next(this.step)
         }, 1000);
       }
@@ -355,6 +375,11 @@ export class WaitVerifyPage implements OnInit {
     userTutorials['onboarding'][oldStep] = true
     this.firestore.setSub('users',this.auth.userInfo.uid,'tutorials','tutorials',{tutorials:userTutorials})
     this.step = oldStep+1
+    if(this.step==2){
+      this.infoService.loadInfo()
+      this.cases.reloadCases()
+      this.checkOffer()
+    }
     this.fillSteps()
     console.log(this.step,this.singleUse)
     if(this.step == 5){
@@ -385,7 +410,7 @@ export class WaitVerifyPage implements OnInit {
     }
   }
 
-  startingStep(){
+  async startingStep(){
     if(this.initiated){
       return
     }
@@ -393,23 +418,25 @@ export class WaitVerifyPage implements OnInit {
     if(this.isVerified){
       this.step = 1
     }
-    this.loading = false
     this.initiated = true
-    return
-    if(!this.auth.tutorials?.tutorials?.onboarding){
-      this.loading = false
-      return
-    }
-    console.log(this.auth.tutorials)
-    for(let i = 0; i < 6; i++){
-      if(this.auth.tutorials.tutorials['onboarding'][i]){
-        this.step = i+1
-      }
-    }
-    if(this.step >5 && !this.singleUse.id){
-      this.step = 5
-    }
+    // return
+    // await this.wait(2000)
     this.loading = false
+    // console.log('starting step',this.auth.tutorials)
+    // if(!this.auth.tutorials?.tutorials?.onboarding){
+    //   this.loading = false
+    //   return
+    // }
+    // for(let i = 0; i < 7; i++){
+    //   console.log('step',i,this.auth.tutorials.tutorials['onboarding'][i])
+    //   if(this.auth.tutorials.tutorials['onboarding'][i]){
+    //     this.step = i+1
+    //   }
+    // }
+    // if(this.step >5 && !this.singleUse.id){
+    //   this.step = 5
+    // }
+    // this.loading = false
   }
   selectingCountry:boolean = false
   showCountryPicker(){
@@ -452,7 +479,7 @@ export class WaitVerifyPage implements OnInit {
       value:types ? types : [],
     }
     this.modalService.selectMany(obj,(result:any)=>{
-      console.log(result)
+      // console.log(result)
       // this.filterTypesFromArray(result.data)
       // this.savePreferences(this.currentFilterTypes)
     })
@@ -661,12 +688,24 @@ export class WaitVerifyPage implements OnInit {
 
 
   skipSuggestion(){
-    this.modalService.showText(this.translate.instant('page_wait_verify.skip_suggestion_popup'),this.translate.instant('page_wait_verify.skip_suggestion_title'),false,[{text:this.translate.instant('buttons.back'),value:false,color:'dark'},{text:this.translate.instant('buttons.letsgo'),value:true,color:'primary'}]).then((res)=>{
+    this.modalService.showText(this.translate.instant('page_wait_verify.skip_suggestion_popup'),this.translate.instant('page_wait_verify.skip_suggestion_title'),false,[{text:this.translate.instant('buttons.back'),value:false,color:'dark'},{text:this.translate.instant('buttons.letsgo'),value:true,color:'primary'}],true,(res:any)=>{
       console.log(res)
+      if(res.data){
+        console.log('skip suggestion')
+        this.nav.go('start/cases')
+      }
     })
   }
 
-
+  checkOffer(){
+    if(this.nav.specialCode){
+      this.functions.httpsCallable('checkOffer')({code:this.nav.specialCode}).subscribe((response:any)=>{
+        console.log(response)
+        this.nav.specialCode = ''
+      })
+    }
+      
+  }
 
 
 }

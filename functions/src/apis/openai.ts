@@ -10,10 +10,10 @@ import { spawn } from "child_process";
 import { db } from "../firebase";
 import openai from '../configs/config-openai';
 import { config } from '../configs/config-basics';
-import * as sharp from "sharp";
+import sharp from "sharp";
 import axios from "axios";
 import admin from '../firebase'
-import * as moment from 'moment';
+import moment from 'moment';
 // import { get } from 'axios';
 const { exec } = require('child_process'); // Nodig voor conversie
 

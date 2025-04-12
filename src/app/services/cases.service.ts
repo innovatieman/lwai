@@ -77,6 +77,23 @@ export class CasesService {
     return caseArr[0]
   }
 
+  reloadCases(){
+    this.all = []
+    this.loadCases(()=>{
+      let checkInt = setInterval(() => {
+        if(this.infoService.conversation_types.length){
+          clearInterval(checkInt)
+          for(let i = 0; i < this.all.length; i++){
+            this.all[i].conversationTypes = this.infoService.getConversationType('',this.all[i].types,true)
+          }
+        }
+      }, 200);
+      console.log(this.all)
+      setTimeout(() => {
+        this.all = JSON.parse(JSON.stringify(this.all))
+      }, 200);
+    })
+  }
 
   // loadCases() {
   //   const userQuery = this.fire.collection('cases', ref => ref.where('open_to_user', '==', true)).snapshotChanges();

@@ -102,13 +102,13 @@
                     </div>
                   </ion-item>
 
-                  <ion-label position="stacked" style="margin-left:15px">{{'currency.currency' | translate}}</ion-label>
+                  <!-- <ion-label position="stacked" style="margin-left:15px">{{'currency.currency' | translate}}</ion-label>
                   <ion-item lines="none" class="fieldItem" style="--padding-start:0;" (click)="editCurrency()">
                     <div class="select">
                       <div font-22 weight700 style="margin-right:20px;" *ngIf="auth.userInfo.currency">{{'currency.'+auth.userInfo.currency+'_symbol' | translate}}</div>
                       <div class="text" *ngIf="auth.userInfo.currency">{{'currency.'+auth.userInfo.currency | translate}}</div>
                     </div>
-                  </ion-item>
+                  </ion-item> -->
 
                 </ion-list>
               </ion-card-content>
@@ -141,6 +141,16 @@
                   </div>
                 </div>
               </ion-card-content>
+            </ion-col>
+          </ion-row>
+        </ion-card>
+
+        <ion-card basicPadding pointer *ngIf="activeTab=='basics'" (click)="removeUser()">
+          <ion-row>
+            <ion-col size="12">
+              <ion-card-header>
+                <ion-card-title style="opacity:0.6">{{'page_account.remove_account' | translate}}</ion-card-title>
+              </ion-card-header>
             </ion-col>
           </ion-row>
         </ion-card>

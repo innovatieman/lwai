@@ -14,6 +14,15 @@ export class ToastService {
   isLoading:boolean = false
   isLoadingLong:boolean = false
   loaderStart:any
+
+  public dismissButton = [
+    {
+      text: '×',
+      role: 'cancel',
+      className: 'toast-button',
+    },
+  ];
+
   constructor(
     private toastController: ToastController,
     private loadingController:LoadingController,
@@ -33,9 +42,28 @@ export class ToastService {
       message: message,
       duration: duration,
       position: position,
-      color:'primary',
+      cssClass:'default-toast',
+      buttons: this.dismissButton,
     });
+    toast.addEventListener('ionToastWillPresent', () => this.applyStyles(toast));
+
     toast.present();
+  }
+
+  applyStyles(toast: HTMLIonToastElement) {
+    const container = toast.shadowRoot?.querySelector('.toast-content');
+    const button = toast.shadowRoot?.querySelector('.toast-button');
+    if (container) {
+      (container as HTMLElement).style.fontWeight = '600';
+      (container as HTMLElement).style.fontSize = '18px';
+      (button as HTMLElement).style.fontSize = '36px';
+      (button as HTMLElement).style.width = '36px';
+      (button as HTMLElement).style.height = '80px';
+      (button as HTMLElement).style.color = '#204289';
+      (button as HTMLElement).style.padding = '0';
+      (button as HTMLElement).style.paddingBottom = '10px';
+    }
+    
   }
 
   async showLoader(message?:string,duration?:number) {

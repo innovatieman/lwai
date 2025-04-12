@@ -9,9 +9,9 @@ const vertexAI = new VertexAI({ project: "lwai-3bac8", location: "europe-west1" 
 const modelVertex = vertexAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 // import * as ffmpeg from "ffmpeg-static";
 // import { spawn } from "child_process";
-
-
-
+const textToSpeech = require("@google-cloud/text-to-speech");
+const ttsClient = new textToSpeech.TextToSpeechClient();
+import { ElevenLabsClient} from "elevenlabs";
 import { db } from "../firebase";
 // import openai from '../configs/config-openai';
 import { config } from '../configs/config-basics';
@@ -21,10 +21,14 @@ import { config } from '../configs/config-basics';
 
 // const storage = admin.storage();
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { buffer } from "stream/consumers";
+import { Readable } from "stream";
 const genAI = new GoogleGenerativeAI(config.gemini_api_key);
 const modelGemini = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 // const openAiModal = 'gpt-4o';
-
+const eleven = new ElevenLabsClient({
+  apiKey: config.elevenlabs_api_key,
+});
 const creditsCost:any = {
   reaction: 3,
   choices: 4,
@@ -1174,8 +1178,8 @@ exports.soundToTextGemini = onRequest(
       // ✅ Detecteer MIME-type
       const detectedType = await fileType.fromFile(inputFilePath);
       const mimeType = detectedType ? detectedType.mime : "audio/wav"; // Default naar WAV indien onbekend
-
-      // console.log(`📌 Gedetecteerd MIME-type: ${mimeType}`);
+      
+      console.log(`📌 Gedetecteerd MIME-type: ${mimeType}`);
 
       // ✅ Bepaal bestandsgrootte voor kostenberekening
       const stats = fs.statSync(inputFilePath);
@@ -1185,39 +1189,65 @@ exports.soundToTextGemini = onRequest(
       // console.log(`🔹 Audio lengte: ${soundLength} sec | Kosten: ${creditsCosts} credits`);
 
       // ✅ Verwerk audio met Vertex AI Speech-to-Text (direct, zonder conversie)
-      const audioBytes = fs.readFileSync(inputFilePath).toString("base64");
-      const request = {
-        contents: [
-            { 
-                role: "user",
-                parts: [
-                    { text: "Can you convert this sound to text?" },
-                    { 
-                        file_data: { 
-                            mime_type: mimeType, 
-                            file_uri: audioBytes 
-                        }
-                    }
-                ]
-            }
-        ],
-      };
+      // const audioBytes = fs.readFileSync(inputFilePath).toString("base64");
+      // const request = {
+      //   contents: [
+      //       { 
+      //           role: "user",
+      //           parts: [
+      //               { text: "Can you convert this sound to text?" },
+      //               { 
+      //                   file_data: { 
+      //                       mime_type: mimeType, 
+      //                       file_uri: audioBytes 
+      //                   }
+      //               }
+      //           ]
+      //       }
+      //   ],
+      // };
+      const base64Audio = fs.readFileSync(inputFilePath).toString("base64");
 
+      // ✅ Genereer transcriptie via Gemini
+      const result = await modelVertex.generateContent({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: "Transcribe the following audio into Dutch." },
+              {
+                inlineData: {
+                  mimeType: 'audio/mp4',// mimeType,
+                  data: base64Audio,
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      // console.log('result - candidates', result.response.candidates.parts);
       // console.log("📡 Verstuur audio naar Vertex AI...");
-      const [response] = await modelVertex.generateContent(request);
-      const transcription = response.candidates[0]?.content || "❌ Geen transcriptie ontvangen";
+      // const [response] = await modelVertex.generateContent(request);
+      const transcription = result.response.candidates[0]?.content?.parts[0]?.text || "❌ Geen transcriptie ontvangen";
 
       // console.log("✅ Transcriptie ontvangen:", transcription);
       fs.unlinkSync(inputFilePath); // Opruimen bestand na verwerking
+
+      let usage = result.response.usageMetadata
+
 
       // ✅ Tokens opslaan in Firestore
       const tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
       await tokensRef.add({
         agent: 'soundToTextAI',
-        usage: { seconds: soundLength },
+        usage: { seconds: soundLength,
+          usage:usage,
+         },
         credits: creditsCosts,
         timestamp: new Date().getTime(),
       });
+
 
       // ✅ Credits bijwerken
       await updateCredits(body.userId, creditsCosts);
@@ -1329,6 +1359,119 @@ exports.case_prompt_gemini = onRequest(
     }
   }
 );
+
+
+exports.textToSpeechAngryStudio = onRequest(
+  {
+    cors: true,
+    region: "europe-west1",
+    timeoutSeconds: 60,
+  },
+  async (req:any, res:any) => {
+    try {
+      const body = req.body;
+
+      if (!body.text) {
+        res.status(400).send("❌ 'text' parameter is required");
+        return;
+      }
+
+      // const ssml = `
+      //   <speak>
+      //     <prosody pitch="-4%" rate="fast">
+      //       <emphasis level="strong">${body.text}</emphasis>
+      //     </prosody>
+      //   </speak>
+      // `;
+
+      const request = {
+        input: { text:body.text },
+        voice: {
+          languageCode: "nl-NL",
+          name: "nl-NL-Chirp3-HD-Leda", // 👈 Studio voice (gebruik "en-US-Studio-O" als fallback)
+        },
+        audioConfig: {
+          audioEncoding: "MP3",
+          effectsProfileId: ["telephony-class-application"], // optioneel
+        },
+      };
+
+      const [response] = await ttsClient.synthesizeSpeech(request);
+
+      res.status(200).json({
+        audio: response.audioContent.toString("base64"),
+        format: "mp3",
+      });
+    } catch (error) {
+      console.error("❌ Error during Studio TTS:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+);
+
+// import { HumeClient } from "hume"
+
+// const hume = new HumeClient({ apiKey: config.hume_api_key });
+
+
+exports.textToSpeechWithEmotion = onRequest({
+  cors: true,
+  region: "europe-west1",
+  timeoutSeconds: 60,
+},
+async (req:any, res:any) => {
+  try {
+    const { text, emotion, language, model } = req.body;
+
+    if (!text || !emotion) {
+      return res.status(400).json({ error: 'Missing text or emotion parameter.' });
+    }
+
+    console.log(`Received text: ${text}, emotion: ${emotion}, language: ${language}`);
+
+    let input:any = {
+      text: text,
+      model_id: model ||  "eleven_multilingual_v2",
+      previous_text:emotion,
+      output_format: "mp3_44100_128",
+    } 
+    if(model != 'eleven_multilingual_v2'){
+      input.language = language || 'nl-NL';
+    }
+
+    const base64Audio = await eleven.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", input );
+
+    // const response = await hume.tts.synthesizeJson({
+    //   utterances: [
+    //     {
+    //       text,
+    //       description: emotion, // bijv. "angry", "excited", "cold and sarcastic"
+    //     },
+    //   ],
+    // });
+
+    // const base64Audio = response.generations?.[0]?.audio;
+
+      if (!base64Audio) {
+        res.status(500).json({ error: "No audio generated by Hume" });
+        return;
+      }
+      const audioBuffer = await buffer(base64Audio as Readable);
+      res.set("Content-Type", "audio/mpeg"); 
+      res.send(audioBuffer); 
+
+      // res.status(200).json({
+      //   audio: base64Audio,
+      //   format: "mp3",
+      // });
+      
+
+
+  } catch (error) {
+    console.error('Error generating speech:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // exports.goalGemini = onRequest(
 //   { cors: config.allowed_cors, region: "europe-west1" },

@@ -1,6 +1,6 @@
 
 <ul>
-  <li [class]="class" [ngClass]="{'notAchieved': !achieved}">
+  <li [class]="class" [ngClass]="{'notAchieved': !achieved}" style="transition: all 1s ease-in-out" [ngStyle]="{'max-height': achieved ? '500px' : '125px'}">
       <div class="icon" [ngStyle]="{'margin-bottom':achieved ? '0' : '-60px','margin-top':achieved ? '0' : '-20px'}"><fa-icon *ngIf="achievement_icon" [icon]="icon.get(achievement_icon)"></fa-icon></div>
       <div *ngIf="achieved" class="title" [innerHtml]="title"></div>
       <div *ngIf="achieved" class="descr" [innerHTML]="text"></div>

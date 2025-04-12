@@ -34,7 +34,8 @@
                   <span font-16>{{message.displayName}}</span>
                 </div>
                 <div class="spacer"></div>
-                <div>{{helper.showLocalDate(message.timestamp,'',0,true)}}</div>
+                <fa-icon font-24 titleIcon text-medium *ngIf="message.attachment" [icon]="icon.get('faPaperclip')"></fa-icon>
+                <div titleIcon>{{helper.showLocalDate(message.timestamp,'',0,true)}}</div>
                 <fa-icon font-24 titleIcon text-medium *ngIf="!message.read&&!message.archived&&!message.replied" [icon]="icon.get('faEnvelope')"></fa-icon>
                 <fa-icon font-24 titleIcon text-success *ngIf="message.read&&!message.archived&&!message.replied" [icon]="icon.get('faCheck')"></fa-icon>
                 <fa-icon font-24 titleIcon text-warning *ngIf="message.archived" [icon]="icon.get('faArchive')"></fa-icon>
@@ -44,6 +45,10 @@
             </ion-card-header>
             <ion-card-content *ngIf="showMessage==i">
               <div font-16 [innerHTML]="message.message"></div>
+              <ion-button saveButton color="dark" fill="outline" (click)="openAttachment(message.attachment)" *ngIf="message.attachment">
+                <fa-icon [icon]="icon.get('faPaperclip')" ></fa-icon>
+                <span titleIcon>Open bijlage</span>
+              </ion-button>
               <div *ngIf="message.replied" basicPadding marginTop borderRadius16 borderPrimary style="max-height:300px;overflow-y:auto">
                 <div weight700 font-20>Reply:</div>
                 <div marginBottom font-16><span weight600>Subject:</span> {{message.replySubject}}</div>

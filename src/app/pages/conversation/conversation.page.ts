@@ -258,7 +258,7 @@ export class ConversationPage implements OnInit {
       else if(!this.started&&!localStorage.getItem('continueConversation')){
         //
         // console.log('not activated')
-        // this.nav.go('start')
+        this.nav.go('start')
       }
 
     })
@@ -664,7 +664,7 @@ export class ConversationPage implements OnInit {
       }
       // console.log(this.conversation?.activeConversation?.close,this.conversation?.activeConversation?.skills)
       // if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0]){
-        if(this.conversationHasBeenAnalyzed()){
+      if(this.conversationHasBeenAnalyzed()){
         // if(this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0] && this.conversation?.activeConversation?.skills&&this.conversation?.activeConversation?.skills[0]){
         // console.log('closing')
         this.conversation.closing = false
@@ -672,8 +672,8 @@ export class ConversationPage implements OnInit {
         clearInterval(closeInterval)
         // console.log(this.conversation.activeConversation.skills[0])
 
-        let skills = JSON.parse(this.conversation.activeConversation.skills[0].content)
-        console.log(skills)
+        // let skills = JSON.parse(this.conversation.activeConversation.skills[0].content)
+        // console.log(skills)
 
         this.modalService.showEvaluation({closing:this.conversation.activeConversation.close[0].content,skills:this.conversation.activeConversation.skills[0].content,title: 'Afsluiting',buttons:[{text:'Gelezen',value:true,color:'secondary'}],firstTime:firstTime,conversation_level:this.conversation.activeConversation.level,conversation:this.conversation.activeConversation,exportPdf:'conversation'},async ()=>{
 

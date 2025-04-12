@@ -1,30 +1,32 @@
 {
-  "hosting": {
-    "site": "alicilabs",
-    "public": "www",
-    "headers":[
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          }
-        ]
-      }
-    ],
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "site": "lwai-3bac8",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "/favicon.ico",
+          "destination": "/favicon.ico"
+        },
+        {
+          "source": "/robots.txt",
+          "destination": "/robots.txt"
+        },
+        {
+          "source": "/:lang/:id",
+          "function": "directToCase"
+        }
+      ],
+      "redirects": [
+        {
+          "source": "/",
+          "destination": "https://conversation.alicialabs.com",
+          "type": 301
+        }
+      ]
+    }
+  ],
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"

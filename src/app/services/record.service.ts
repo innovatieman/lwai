@@ -332,8 +332,8 @@ export class RecordService {
             file: base64data,
           };
   
-          const response = await fetch("https://soundtotextai-p2qcpa6ahq-ew.a.run.app", {
-          // const response = await fetch("https://soundtotextgemini-p2qcpa6ahq-ew.a.run.app", {
+          // const response = await fetch("https://soundtotextai-p2qcpa6ahq-ew.a.run.app", {
+          const response = await fetch("https://soundtotextgemini-p2qcpa6ahq-ew.a.run.app", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -347,6 +347,7 @@ export class RecordService {
   
           const result = await response.json();
           if (result.transcription) {
+            console.log("Transcription:", result.transcription);
             callback(result.transcription);
           } else {
             callback(null);

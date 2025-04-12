@@ -9,7 +9,7 @@ import * as functions from 'firebase-functions/v1';
 // import { db } from "../firebase";
 import openai from '../configs/config-openai';
 // import { config } from '../configs/config-basics';
-import * as sharp from "sharp";
+import sharp from "sharp";
 import axios from "axios";
 import admin from '../firebase'
 // import * as Busboy from "busboy";
@@ -19,6 +19,12 @@ const storage = admin.storage();
 const openAiModal = 'gpt-4o';
 const username_wp = 'blogwriter'
 const password_wp = 'IJqh jaxT fcaO 8fWA rruK 7Uu4'
+
+const allowedSenders = [
+    "maarten@inspiratiereizen.nl","maarten@maartenoosterhoff.nl",
+    "florian.bekkers@videadvies.nl",
+    "mark.nierop@innovatieman.nl","mark@teamsupporter.nl"
+]
 
 // const linkedInOrganizationUrn = "urn:li:organization:5583111"
 
@@ -204,19 +210,50 @@ exports.handleAiInboundEmail = onRequest(
             }
         });
 
-        if(!fields.to || fields.to.indexOf('social_writer@ai-inbound.alicialabs.com')===-1){
+        // check if from is allowed
+        if(!fields.from){
+            console.log('[SendGrid] Ongeldig afzender:', fields.from);
+            res.status(200).send('OK');
+            return;
+        }
+        let allowed = false
+        for(let i=0;i<allowedSenders.length;i++){
+            if(fields.from.toLowerCase().indexOf(allowedSenders[i])!==-1){
+                allowed = true;
+                break;
+            }
+        }
+        if(!allowed){
+            console.log('[SendGrid] Ongeldig afzender:', fields.from);
+            res.status(200).send('OK');
+            return;
+        }
+
+        if(!fields.to || (fields.to.indexOf('social_writer@ai-inbound.alicialabs.com')===-1 && fields.to.indexOf('innovation@ai-inbound.alicialabs.com')===-1)){
             console.log('[SendGrid] Ongeldig e-mailadres:', fields.to);
             res.status(200).send('OK');
             return;
         }
 
-        await db.collection("social_writer_emails").add({
-            from: fields.from || null,
-            to: fields.to || null,
-            subject: fields.subject || null,
-            date: Date.now(),
-            email: fields.email || null,
-        });
+        if(fields.to=='social_writer@ai-inbound.alicialabs.com'){
+            await db.collection("social_writer_emails").add({
+                from: fields.from || null,
+                to: fields.to || null,
+                subject: fields.subject || null,
+                date: Date.now(),
+                email: fields.email || null,
+            });
+        }
+
+        else if(fields.to=='innovation@ai-inbound.alicialabs.com'){
+            await db.collection("innovation_emails").add({
+                from: fields.from || null,
+                to: fields.to || null,
+                subject: fields.subject || null,
+                date: Date.now(),
+                email: fields.email || null,
+            });
+        }
 
         res.status(200).send('OK');
       } catch (err) {
@@ -228,7 +265,7 @@ exports.handleAiInboundEmail = onRequest(
   );
   
 
-exports.convertSocialEmails = functions.region('europe-west1')
+  exports.convertSocialEmails = functions.region('europe-west1')
   .runWith({memory:'1GB'}).firestore
   .document('social_writer_emails/{emailId}')
   .onCreate(async (change, context) => {
@@ -256,6 +293,39 @@ exports.convertSocialEmails = functions.region('europe-west1')
 
         await db.collection("socials_to_write").add(jsonResponse);
         await db.collection("social_writer_emails").doc(change.id).delete();
+    }
+
+    return null;
+  })
+
+  exports.convertInnovationEmails = functions.region('europe-west1')
+  .runWith({memory:'1GB'}).firestore
+  .document('innovation_emails/{emailId}')
+  .onCreate(async (change, context) => {
+    let email = change.data();
+    if (!email) return null;
+    if(!email.email){return null;}
+    
+    let agentInfo:any = await getagentInfo('converter');
+
+    let messages = setMessages(agentInfo.systemContent, email.email);
+    let temperature = agentInfo.temperature;
+
+    // let messages = setMessages('converter', email.email);
+    // let temperature = 0.2;
+    let response = await streamOpenAi(messages, temperature);
+    if (response && response.choices && response.choices.length > 0) {
+        const responseData = response.choices[0].message.content.split('```json').join('').split('```').join('');
+        const jsonResponse = JSON.parse(responseData);
+        jsonResponse.from = email.from;
+        jsonResponse.to = email.to;
+        jsonResponse.date = email.date;
+        if(email.subject){
+            jsonResponse.subject = email.subject;
+        }
+
+        await db.collection("innovation_to_process").add(jsonResponse);
+        await db.collection("innovation_emails").doc(change.id).delete();
     }
 
     return null;
@@ -290,6 +360,40 @@ exports.convertSocialEmails = functions.region('europe-west1')
 
         await db.collection("socials_in_action").add(jsonResponse);
         await db.collection("socials_to_write").doc(change.id).delete();
+    }
+
+    return null;
+  })
+
+  exports.allocateSInnovationEmails = functions.region('europe-west1')
+  .runWith({memory:'1GB'}).firestore
+  .document('innovation_to_process/{emailId}')
+  .onCreate(async (change, context) => {
+    let email = change.data();
+    if (!email) return null;
+    
+    if(!email.text){return null}
+    let agentInfo:any = await getagentInfo('innovation_allocator');
+
+    let messages = setMessages(agentInfo.systemContent, email.text);
+    let temperature = agentInfo.temperature;
+
+    // let messages = setMessages('allocator', email.text);
+    // let temperature = 0.6;
+    let response = await streamOpenAi(messages, temperature);
+    if (response && response.choices && response.choices.length > 0) {
+        const responseData = response.choices[0].message.content.split('```json').join('').split('```').join('')
+        const jsonResponse = JSON.parse(responseData);
+        jsonResponse.from = email.from;
+        jsonResponse.to = email.to;
+        jsonResponse.date = email.date;
+        if(email.subject){
+            jsonResponse.subject = email.subject;
+        }
+        jsonResponse.status = 'new';
+
+        await db.collection("innovation_in_action").add(jsonResponse);
+        await db.collection("innovation_to_process").doc(change.id).delete();
     }
 
     return null;
@@ -510,7 +614,220 @@ exports.convertSocialEmails = functions.region('europe-west1')
     return null;
   })
 
+  exports.createInnovation = functions.region('europe-west1')
+  .runWith({memory:'4GB'}).firestore
+  .document('innovation_in_action/{socialId}')
+  .onWrite(async (change, context) => {
+    let newData = change.after.data();
+    let oldData = change.before.data();
+    if (!newData && !oldData) return null;
+    if (!newData) return null;
+    let newItem:boolean = true
 
+    if(newData.status!='new' || oldData?.status=='new'){
+        newItem = false;
+    }
+    let messages:any = []
+    let response :any = null
+    let output:any = null
+    if(newItem){
+        if(newData.fase?.toLowerCase()=='moddergooien'){
+            console.log('Moddergooien')
+
+            let agentInfo:any = await getagentInfo('mud_thrower');
+
+            messages = setMessages(agentInfo.systemContent, newData.prompt);
+            let temperature = agentInfo.temperature;
+            response = await streamOpenAi(messages, temperature);
+            try{
+
+                if (response && response.choices && response.choices.length > 0) {
+                    const responseData = response.choices[0].message.content.split('```json').join('').split('```').join('')
+                    const jsonResponse = JSON.parse(responseData);
+                    jsonResponse.status = 'mud thrown';
+                    output = jsonResponse;
+                }
+            }
+            catch (error){
+                console.log('Error:', error);
+                console.log('Response:', response.choices[0].message.content)
+                output = {
+                    status: 'error',
+                }
+            }
+        }
+        // else if(newData.fase?.toLowerCase()=='linkedin'){
+        //     console.log('LinkedIn writer')
+
+        //     let agentInfo:any = await getagentInfo('linkedin_writer');
+
+        //     messages = setMessages(agentInfo.systemContent, newData.prompt);
+        //     let temperature = agentInfo.temperature;
+        //     response = await streamOpenAi(messages, temperature);
+        //     try{
+
+        //         if (response && response.choices && response.choices.length > 0) {
+        //             const responseData = response.choices[0].message.content.split('```json').join('').split('```').join('')
+        //             const jsonResponse = JSON.parse(responseData);
+        //             jsonResponse.status = 'text created';
+        //             output = jsonResponse;
+        //         }
+        //     }
+        //     catch (error){
+        //         console.log('Error:', error);
+        //         console.log('Response:', response.choices[0].message.content)
+        //         output = {
+        //             status: 'error',
+        //         }
+        //     }
+        // }
+    }
+    else{
+        if(change.after.data().fase.toLowerCase()=='moddergooien'){
+            if(change.after.data().status=='mud thrown' && change.before.data().status!=='mud thrown'){
+                if(!change.after.data().image){
+                    let agentInfo:any = await getagentInfo('image_creator_blog');
+                    let image = await createImage(change.after.data().english_summary, agentInfo.systemContent);
+                    let imageUrl = await saveImage(image);
+                    output = {
+                        status: 'image created',
+                        image: imageUrl,
+                    }
+                }
+                else{
+                    output = {
+                        status: 'image created',
+                    }
+                }
+            }
+            else if(change.after.data().status=='image created' && change.before.data().status!=='image created'){
+                let content = change.after.data().content;
+                content = content.replace(/<h3>/g, '<h3 style="font-family: Arial, sans-serif;font-size: 18px; margin-top:20px;">');
+                content = `<img src="${change.after.data().image}" style="width: 100%; height: auto; max-width: 600px; margin: 0 auto; display: block;" alt="Blog Image;margin-bottom:30px" />` + content;
+                content = `<h2 style="font-family: Arial, sans-serif;font-size: 22px; margin-top:20px;">${change.after.data().title}</h2>` + content;
+
+                sendVerification(change.after.data().medium, content, 'mark@innovatieman.nl', 'Mark', change.after.id);
+                output = {
+                    status: 'verification pending',
+                }
+                
+            }
+            else if(change.after.data().status=='verification successful' && change.before.data().status!=='verification successful'){
+                
+                let url = 'https://alicialabs.com/wp-json/mijnplugin/v1/post-blog';
+                // 'Authorization Basic auth
+
+                let headers =  {
+                    "Content-Type": "application/json",
+                    "Authorization": "Basic " + Buffer.from(`${username_wp}:${password_wp}`).toString("base64"),
+                }
+                
+                let data = {
+                    "title": change.after.data().title,
+                    "content": change.after.data().content,
+                    "author": 1,
+                    "featured_image": change.after.data().image,
+                    "categories": [6],
+                    "excerpt": change.after.data().summary,
+                  }
+
+                response = await postApi(url, data, headers);
+                output = {
+                    status: 'posted',
+                    post_url: response.link,
+                }
+            }
+        }
+        else if(change.after.data().medium.toLowerCase()=='linkedin'){
+            if(change.after.data().status=='text created' && change.before.data().status!=='text created'){
+                if(!change.after.data().image){
+                    let agentInfo:any = await getagentInfo('image_creator_linkedin');
+                    let image = await createImage(change.after.data().content, agentInfo.systemContent);
+                    let imageUrl = await saveImage(image);
+                    output = {
+                        status: 'image created',
+                        image: imageUrl,
+                    }
+                }
+                else{
+                    output = {
+                        status: 'image created',
+                    }
+                }
+            }
+            else if(change.after.data().status=='image created' && change.before.data().status!=='image created'){
+                let content = change.after.data().content;
+                content = content.replace(/<h3>/g, '<h3 style="font-family: Arial, sans-serif;font-size: 18px; margin-top:20px;">');
+                content = `<img src="${change.after.data().image}" style="width: 100%; height: auto; max-width: 600px; margin: 0 auto; display: block;" alt="Blog Image;margin-bottom:30px" />` + content;
+                content = `<h2 style="font-family: Arial, sans-serif;font-size: 22px; margin-top:20px;">${change.after.data().title}</h2>` + content;
+
+                sendVerification(change.after.data().medium, content, 'mark@innovatieman.nl', 'Mark', change.after.id);
+                output = {
+                    status: 'verification pending',
+                }
+                
+            }
+            // else if(change.after.data().status=='verification successful' && change.before.data().status!=='verification successful'){
+                
+
+            //     let initialResponseLinkedIn = await linkedInInitialize(linkedInHeaders);
+            //     let uploadUrl = linkedUploadImage(linkedInHeaders, initialResponseLinkedIn.value.uploadUrl, change.after.data().image);
+
+
+            //     let url = 'https://api.linkedin.com/v2/ugcPosts';
+            //     // 'Authorization Basic auth
+
+            //     let headers =  {
+            //         "Content-Type": "application/json",
+            //         "Authorization": "Bearer " + process.env.LINKEDIN_TOKEN,
+            //         "Linkedin-Version": 202411
+            //     }
+                
+            //     let data = {
+            //         "author": "urn:li:person:nMYeZe8_Kk",
+            //         "lifecycleState": "PUBLISHED",
+            //         "specificContent": {
+            //             "com.linkedin.ugc.ShareContent": {
+            //                 "shareCommentary": {
+            //                     "text": change.after.data().title + '\n\n' + change.after.data().content
+            //                 },
+            //                 "shareMediaCategory": "ARTICLE",
+            //                 "media": [
+            //                     {
+            //                         "status": "READY",
+            //                         "description": {
+            //                             "text": "Official LinkedIn Blog - Your source for insights and information about LinkedIn."
+            //                         },
+            //                         "originalUrl": "https://blog.linkedin.com/",
+            //                         "title": {
+            //                             "text": "Official LinkedIn Blog"
+            //                         }
+            //                     }
+            //                 ]
+            //             }
+            //         },
+            //         "visibility": {
+            //             "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+            //         }
+            //     }
+
+            //     // response = await postApi(url, data, headers);
+            //     // output = {
+            //     //     status: 'posted',
+            //     //     post_url: response.link,
+            //     // }
+            // }
+        }
+    }
+
+
+    if(output){
+        await db.collection("socials_in_action").doc(change.after.id).update(output)
+    }
+    
+
+    return null;
+  })
 
 async function streamOpenAi(messages:any, temperature:any) {
 return await openai.chat.completions.create({

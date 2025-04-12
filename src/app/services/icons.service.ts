@@ -20,13 +20,19 @@ import {
   faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
-  faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard
+  faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
-  faCircle,faStar as faStarOutline
+  faCircle,faStar as faStarOutline,
 
 } from '@fortawesome/free-regular-svg-icons';
+
+import {
+  faLinkedin,faFacebook,faInstagram,faTwitter,faYoutube,faWhatsapp,faTiktok,
+  faTelegram,faSignalMessenger,faXTwitter
+} from '@fortawesome/free-brands-svg-icons'
+
 import { UserService } from './user.service';
 
 @Injectable({
@@ -142,6 +148,7 @@ export class IconsService {
     faMinusCircle,
     faMobileAlt,
     faObjectGroup,
+    faPaperclip,
     faPaperPlane,
     faPause,
     faPenAlt,
@@ -210,6 +217,16 @@ export class IconsService {
     faVideoSlash,
     faWind,
     faWrench,
+    faLinkedin,
+    faFacebook,
+    faInstagram,
+    faTwitter,
+    faYoutube,
+    faWhatsapp,
+    faTiktok,
+    faTelegram,
+    faSignalMessenger,
+    faXTwitter
   };
   
   constructor(
