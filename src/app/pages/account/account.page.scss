@@ -21,8 +21,28 @@ ion-note{
         margin: -50px 0px;
     }
 // }
+.avatarImage{
+  height: 200px;
+  width:100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .title{
+    font-size: 36px;
+    text-transform: uppercase;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    // margin-bottom: 10px;
+  }
+}
 
-
+.caseItem{
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+  
+}
 .activeItem{
     background-color: var(--ion-color-primary);
     ion-item{
@@ -49,15 +69,7 @@ ion-note{
     }
   }
 
-  .creditsCard{
-    height:220px;
-    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
-    border-radius: 16px;
-    transition: all 0.3s;
-  }
-  .creditsCard:hover{
-    transform: scale(1.05);
-  }
+  
 
   .fieldItem{
     border-radius:5px;
@@ -100,4 +112,83 @@ ion-note{
 }
 .innerSelectCaseItem{
   padding-left: 20px;
+}
+
+
+.creditsCard:hover{
+  transform: scale(1.05);
+}
+.creditsCardUnlimited{
+  background-color: var(--ion-color-warning);
+  --background: var(--ion-color-warning);
+    ion-list{
+    background: var(--ion-color-warning);
+    --background: var(--ion-color-warning);
+    ion-item{
+      --background: var(--ion-color-warning);
+      --color: var(--ion-color-warning-contrast);
+    }
+  }
+}
+.creditsCard{
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
+  border-radius: 16px;
+  transition: all 0.3s;
+  .miniHeader{
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    margin-bottom: 10px;
+    margin-top:20px;
+  }
+  .header{
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: var(--ion-color-secondary);
+    margin-bottom: 10px;
+  }
+  .logo{
+    margin-bottom: 15px;
+    img{
+      max-height: 100px;
+    }
+  }
+  .credits{
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    margin-bottom: 10px;
+    letter-spacing: -2px;
+  }
+  .list{
+    margin-bottom: 20px;
+    h2{
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ion-color-secondary);
+      margin-bottom: 10px;
+    }
+    p{
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ion-color-secondary);
+      text-align: center;
+      // margin-bottom: 10px;
+    }
+  }
+  .extra_info{
+    margin-top:10px;
+    font-size: 14px;
+    font-style: italic;
+    cursor: pointer;
+  }
+}
+.credits_how_button{
+  font-weight: 500;
+  // text-align: center;
+  margin-top: 10px;
+  text-decoration: underline;
+  cursor: pointer;
 }

@@ -17,6 +17,7 @@ import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MediaService } from 'src/app/services/media.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-trainer-courses',
@@ -71,6 +72,13 @@ export class TrainerCoursesPage implements OnInit {
       }
     }
   }
+
+  showBasics: boolean = false;
+  showUserInput: boolean = false;
+  showUserInputMore: boolean = true;
+  showCasus: boolean = false;
+  showUserOptions: boolean = false;
+
   constructor(
     public firestore:FirestoreService,
     public icon:IconsService,
@@ -86,6 +94,7 @@ export class TrainerCoursesPage implements OnInit {
     private filterKeyPipe:FilterKeyPipe,
     private route:ActivatedRoute,
     public media:MediaService,
+    private toast:ToastService
   ) { }
 
   ionViewDidEnter(){
@@ -491,47 +500,47 @@ export class TrainerCoursesPage implements OnInit {
     this.selectNewCase.open()
   }
 
-  async newCase(){
-    await this.selectcategory((result:any) => {
-      this.newCaseConversation = result.id
-      if(this.newCaseConversation){
-        let newCaseItem:any = this.casesService.defaultCase(this.newCaseConversation,this.categoryInfo(this.newCaseConversation).openingMessage)
-        newCaseItem.trainerId = this.auth.userInfo.uid
-        this.newCaseConversation = ''
-        newCaseItem.title=''
-        this.modalService.showConversationStart({admin:true,conversationInfo:this.categoryInfo(newCaseItem.conversation),...newCaseItem})
-            .then((res:any)=>{
-              console.log(res)
-              if(res){
-                delete res.admin
-                delete res.conversationInfo
-                delete res.existing
-                if(!res.title || res.title == "New Case"){
-                  res.title = res.role
-                }
-                this.firestore.create('cases_trainer',res,(response:any)=>{
-                  console.log(response)
-                  this.load('cases_trainer',this.auth.userInfo.uid)
-                  this.caseItem = this.getCase(response.id)
-                  this.caseItem.id = response.id
-                  this.firestore.update('cases_trainer',response.id,{id:response.id})
-                })
-              }
-            })
+  // async newCase(){
+  //   await this.selectcategory((result:any) => {
+  //     this.newCaseConversation = result.id
+  //     if(this.newCaseConversation){
+  //       let newCaseItem:any = this.casesService.defaultCase(this.newCaseConversation,this.categoryInfo(this.newCaseConversation).openingMessage)
+  //       newCaseItem.trainerId = this.auth.userInfo.uid
+  //       this.newCaseConversation = ''
+  //       newCaseItem.title=''
+  //       this.modalService.showConversationStart({admin:true,conversationInfo:this.categoryInfo(newCaseItem.conversation),...newCaseItem})
+  //           .then((res:any)=>{
+  //             console.log(res)
+  //             if(res){
+  //               delete res.admin
+  //               delete res.conversationInfo
+  //               delete res.existing
+  //               if(!res.title || res.title == "New Case"){
+  //                 res.title = res.role
+  //               }
+  //               this.firestore.create('cases_trainer',res,(response:any)=>{
+  //                 console.log(response)
+  //                 this.load('cases_trainer',this.auth.userInfo.uid)
+  //                 this.caseItem = this.getCase(response.id)
+  //                 this.caseItem.id = response.id
+  //                 this.firestore.update('cases_trainer',response.id,{id:response.id})
+  //               })
+  //             }
+  //           })
   
   
   
-        // this.firestore.create('cases_trainer',newCaseItem,(result:any)=>{
-        //     this.newCaseConversation = ''
-        //     this.caseItem = this.getCase(result.id)
-        //     this.caseItem.id = result.id
-        //     this.firestore.update('cases_trainer',result.id,{id:result.id})
+  //       // this.firestore.create('cases_trainer',newCaseItem,(result:any)=>{
+  //       //     this.newCaseConversation = ''
+  //       //     this.caseItem = this.getCase(result.id)
+  //       //     this.caseItem.id = result.id
+  //       //     this.firestore.update('cases_trainer',result.id,{id:result.id})
             
-        //   })
-      }
-    })
+  //       //   })
+  //     }
+  //   })
 
-  }
+  // }
 
   editCase(caseItem:any,inCourse?:boolean){
     if(inCourse){
@@ -1133,5 +1142,150 @@ export class TrainerCoursesPage implements OnInit {
     return badge
   }
 
+
+  caseNotready(){
+    let check = 
+      this.caseItem?.title == '' || 
+      this.caseItem?.role == '' ||
+      this.caseItem?.user_info == '' ||
+      ! this.caseItem?.level ||
+      !this.caseItem?.attitude ||
+      !this.caseItem?.steadfastness ||
+      this.caseItem?.conversation == '' ||
+      !this.caseItem?.translate ||
+      this.caseItem?.photo == '' ||
+      (
+        this.caseItem?.editable_by_user?.free_answer == true &&
+        this.caseItem?.free_question == ''
+      )
+
+      return check
+  }
+
+  caseReady(part:string){
+    let check = false
+    switch(part){
+      case 'title':
+        check = this.caseItem?.title && this.caseItem?.user_info
+        break;
+      case 'basics':
+        check = this.caseItem?.role && this.caseItem?.conversation && this.caseItem?.level && this.caseItem?.attitude && this.caseItem?.steadfastness
+        break;
+      case 'looks':
+        check = this.caseItem?.photo
+        break;
+      case 'settings':
+        check = this.caseItem.translate && this.caseItem?.open_to_user
+        break;
+      case 'input':
+        check = ((this.caseItem.openingMessage && this.caseItem.editable_by_user.openingMessage) || !this.caseItem.editable_by_user.openingMessage) && ((this.caseItem.editable_by_user.free_answer && this.caseItem?.free_question) || !this.caseItem.editable_by_user.free_answer)
+        break;
+      default:
+        check = false
+    }
+    return check
+  }
+
+  async startTranslation(caseItem?:any){
+    let id = ''
+    if(!caseItem?.id){
+      if(!this.caseItem.id){
+        this.toast.show('Selecteer een casus')
+        return
+      }
+      id = this.caseItem.id
+    }
+    else{
+      id = caseItem.id
+    }
+    let list:any[] = []
+    this.nav.langList.forEach((lang)=>{
+      list.push({
+        value:lang,
+        title:this.translate.instant('languages.'+lang),
+        icon:'faGlobeEurope'
+      })
+    })
+    this.modalService.inputFields('Selecteer de originele taal','',[{
+      type:'select',
+      placeholder:'Selecteer de originele taal',
+      value:this.translate.currentLang,
+      optionKeys:list
+    }],(result:any)=>{
+      if(result.data){
+        this.firestore.update('cases_trainer',id!,{original_language:result.data[0].value,translate:false})
+        setTimeout(() => {
+          this.firestore.update('cases_trainer',id!,{original_language:result.data[0].value,translate:true}).then(()=>{
+            if(this.caseItem.id){
+              this.caseItem = {}
+            }
+          })
+        }, 1000);
+        this.toast.show('Translation started')
+      }
+    })
+     
+  }
+  
+  newCase(){
+    this.toast.showLoader()
+    let casus:any = this.casesService.defaultCase('','')
+    this.firestore.create('cases_trainer',casus).then(()=>{
+      setTimeout(() => {
+        for(let i = 0; i < this.cases.length; i++){
+          if(this.cases[i].created === casus.created){
+            this.caseItem = this.cases[i]
+          }
+        }
+      }, 1000);
+    })
+  }
+
+  changeCategory(){
+    setTimeout(() => {
+      this.caseItem.openingMessage = this.categoryInfo(this.caseItem.conversation).reaction.content
+      this.update('openingMessage')
+      this.toast.show(this.translate.instant('cases.change_category_message'))
+    }, 100);
+  }
+
+
+  generateCasus(event:Event,caseItem:any){
+    event.preventDefault()
+    event.stopPropagation()
+    
+    caseItem.existing = true
+
+    this.modalService.generateCase({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...caseItem}).then((res:any)=>{
+          console.log(res)
+      if(res && res.id){
+        delete res.admin
+        delete res.conversationInfo
+        delete res.existing
+        if(res.casus!=caseItem.casus){
+          res.translate = false
+        }
+        this.firestore.set('cases_trainer',res.id,res).then(()=>{
+          this.load('cases_trainer',this.auth.userInfo.uid)
+          this.caseItem = this.getCase(res.id)
+        })
+      }
+    })
+    this.selectMenuservice.selectedItem = undefined
+  }
+
+  editCasus(event:Event){
+    event.preventDefault()
+    event.stopPropagation()
+
+    this.modalService.editHtmlItem({value:this.caseItem.casus},(result:any)=>{
+      if(result.data && result.data.value!=this.caseItem.casus){
+        this.caseItem.casus = result.data.value
+        this.caseItem.translate = false
+        this.firestore.update('cases_trainer',this.caseItem.id,{casus:result.data.value,translate:false})
+      }
+    })
+
+  }
 
 }

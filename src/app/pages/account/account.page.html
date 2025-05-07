@@ -174,7 +174,49 @@
             <ion-card-title>{{'page_account.my_cases' | translate}}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <ion-card basicPadding listCard borderSecondary borderRadius16 pointer [ngStyle]="{'display' : media.screenSize=='xs' ? 'block' : 'flex'}" *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp' | filterKey : 'closed' : 'notEmpty'"  center-ver fullwidth (click)="openConversation(conversation)">
+            <ion-row>
+              <ion-col [size]="helper.cardSizeSmall" *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp' | filterKey : 'closed' : 'notEmpty';let i = index">
+                <ion-card [id]="'case_card'+i" noPadding pointer fullheight class="caseItem" (click)="openConversation(conversation)">
+                    <ion-card-content noPadding fullHeight>
+                        <div backgroundImage class="avatarImage" *ngIf="conversation.photo" [ngStyle]="{'background-image': 'url(' + conversation.photo + ')'}"></div>
+                        <div backgroundImage class="avatarImage" *ngIf="!conversation.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                        <div class="shareButtonCase" pointer (click)="media.shareCase(conversation,$event)">
+                            <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+                            <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
+                        </div>
+                        <div class="deleteButtonCase" pointer (click)="deleteConversation($event,conversation)">
+                          <fa-icon font-18 [icon]="icon.get('faTrashAlt')" trash></fa-icon>
+                      </div>
+                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                            <ion-card-header>
+                                <ion-card-title font-18 weight600>{{conversation.title}}</ion-card-title>
+                                <ion-card-subtitle font-14 weight400>{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-card-subtitle>
+                            </ion-card-header>
+                        </div>
+                        <div center flex center-ver center-hor>
+                            <!-- <div style="width:50%;padding:0px 10px">
+
+                                <div font-16 weight600 text-primary>Level {{caseItem.level}}</div>
+
+                                <app-star-rating [gridPadding]="0" [readOnlyItem]="true" [fontSize]="20" [rating]="4.3"></app-star-rating>
+                            </div> -->
+
+                            <!-- <ion-button *ngIf="conversation.level" class="saveButton creditButton" style="border-radius:100%" [ngStyle]="{'background':levelService.levelColor(conversation.level)}" fill="outline" size="small">
+                                <div>
+                                    <div [ngStyle]="{'color':levelService.levelColorText(conversation.level)}">{{conversation.level}}</div>
+                                    <div font-12 [ngStyle]="{'color':levelService.levelColorTextLevel(conversation.level)}">{{'standards.level' | translate}}</div>
+                                </div>
+                            </ion-button>
+                            <div class="spacer"></div> -->
+                            <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="openConversation(conversation,$event)">{{'buttons.watch' | translate}}</ion-button>
+                        </div>
+                    </ion-card-content>
+                </ion-card>
+
+              </ion-col>
+            </ion-row>
+
+            <!-- <ion-card basicPadding listCard borderSecondary borderRadius16 pointer [ngStyle]="{'display' : media.screenSize=='xs' ? 'block' : 'flex'}" *ngFor="let conversation of conversations$ | async | sortBy : 1 : 'timestamp' | filterKey : 'closed' : 'notEmpty'"  center-ver fullwidth (click)="openConversation(conversation)">
               <ion-card-title>{{ conversation.role }}</ion-card-title>
               <span class="spacer"></span>
               <ion-note *ngIf="media.screenSize!='xs'">{{ helper.showLocalDate(conversation.timestamp,translate.instant('date_formats.longDateTime'),0,true) }}</ion-note>
@@ -184,11 +226,12 @@
                 <div class="spacer"></div>
                 <fa-icon [icon]="icon.get('faTrashAlt')" trash noteIcon (click)="deleteConversation($event,conversation)"></fa-icon>
               </div>
-            </ion-card>
+            </ion-card> -->
+            
           </ion-card-content>
         </ion-card>
 
-        <ion-card basicPadding *ngIf="activeTab=='subscriptions'">
+        <!-- <ion-card basicPadding *ngIf="activeTab=='subscriptions'">
           <ion-card-header>
             <ion-card-title>{{'page_account.my_subscription' | translate}}</ion-card-title>
           </ion-card-header>
@@ -201,24 +244,7 @@
               </ion-col>
                 
             </ion-row>
-            <!-- <div>
-              <span class="subTag" *ngIf="auth.hasActive('basic') | async">
-                Basis
-              </span>
-              <span class="subTag" *ngIf="auth.hasActive('trial') | async">
-                Trial
-              </span>
-              <span class="subTag" *ngIf="auth.hasActive('premium') | async">
-                Premium
-              </span>
-              <span class="subTag" *ngIf="auth.hasActive('trainer') | async">
-                Trainer
-              </span>
-            </div> -->
-            <!-- <div>
-              <ion-button expand="block" *ngIf="!(auth.hasActive('premium') | async)" (click)="upgrade('premium','iDEAL')">Upgrade Premium</ion-button>
-              <ion-button expand="block" *ngIf="!(auth.hasActive('trainer') | async)" (click)="upgrade('trainer','iDEAL')">Upgrade Trainer</ion-button>
-            </div> -->
+
             <ion-list>
               <ion-item *ngFor="let subscription of subscriptions$ | async ">
                 <ion-label>
@@ -230,39 +256,174 @@
               </ion-item>
             </ion-list>
           </ion-card-content>
-        </ion-card>
+        </ion-card> -->
 
         <ion-card basicPadding *ngIf="activeTab=='credits'">
-          <ion-card-header>
-            <ion-card-title>{{'page_account.credits' | translate}}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-row>
-              <ion-card basicPadding listCard borderSecondary borderRadius16 pointer basicMargin>
-                <ion-card-title *ngIf="auth.credits.total">{{'page_account.credits_current' | translate}} {{auth.credits.total}}</ion-card-title>
-                <ion-card-title *ngIf="!auth.credits.total">{{'page_account.no_credits' | translate}}</ion-card-title>
-              </ion-card>
 
-            </ion-row>
-            <ion-row>
-              <ion-col [size]="helper.cardSizeSmall" *ngFor="let product of products | sortBy : -1 : 'credits'">
-                <ion-card basicPadding pointer flex center-ver center-hor class="creditsCard" (click)="buy(product)" *ngIf="product.prices?.length">
-                  <div center>
-                    <div font-24 weight700 marginBottom text-dark>
-                      {{product.credits}} {{'page_account.credits' | translate}}
+          <ion-card borderPrimary borderRadius16 pointer (click)="showInfoCredits=!showInfoCredits">
+            <ion-card-header>
+              <ion-card-title flex center-ver fullwidth>
+                {{'page_account.credits_how_title' | translate}}
+                <div class="spacer"></div>
+                <fa-icon [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': showInfoCredits ? 'rotate(180deg)' : 'rotate(0deg)'}" style="transition: all 0.3s ease-in-out;"></fa-icon>
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content *ngIf="showInfoCredits">
+              <div font-16 weight400 [innerHtml]="translate.instant('page_account.credits_how_text')"></div>
+              <!-- <div style="max-width:300px" fullwidth marginTop>
+                <div font-16 weight700 uppercase text-primary>Credits per optie</div>
+                <ion-list>
+                  <ion-item>
+                    <ion-label>Optie</ion-label>
+                    <ion-label slot="end">Credits</ion-label>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Interactie</ion-label>
+                    <ion-label slot="end">12</ion-label>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Suggesties</ion-label>
+                    <ion-label slot="end">4</ion-label>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Fact-checker</ion-label>
+                    <ion-label slot="end">7</ion-label>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Achtergrond informatie</ion-label>
+                    <ion-label slot="end">4</ion-label>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Gespreks analyse</ion-label>
+                    <ion-label slot="end">12</ion-label>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>Voice to text</ion-label>
+                    <ion-label slot="end">2</ion-label>   
+                  </ion-item>
+                </ion-list>
+              </div> -->
+            </ion-card-content>
+          </ion-card>
+          
+          
+
+          <ion-card-header marginTop>
+            <ion-card-title>{{'page_account.credits_open' | translate}}: 
+              <div inline-block marginLeft font-20 weight700 uppercase text-secondary *ngIf="auth.credits.total&&!auth.credits_unlimited_type">{{auth.credits.total}}</div>
+              <div inline-block marginLeft font-20 weight700 uppercase text-secondary *ngIf="auth.credits.total&&auth.credits_unlimited_type">{{'page_account.credits_unlimited_chat' | translate}}</div>
+              <div inline-block marginLeft font-20 weight700 uppercase text-secondary *ngIf="!auth.credits.total">{{'page_account.no_credits' | translate}}</div>
+
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-header *ngIf="auth.creditsList?.length">
+            <ion-card-title>{{'page_account.your_credits' | translate}}: </ion-card-title>
+          </ion-card-header>
+          <ion-row>
+            <div fullwidth>
+              <ion-card basicPadding listCard borderPrimary borderRadius16 pointer basicMargin *ngFor="let credits of auth.creditsList | sortBy : -1 : 'expires'">
+                <div flex center-ver fullwidth>
+                  <div font-18 weight600 text-primary>{{'page_account.credits_source_'+credits.source | translate}}</div>
+                  <div class="spacer"></div>
+                  <div font-14 weight400 align-right>{{'page_account.credits_expire' | translate}}: {{helper.showLocalDate(credits.expires,'',0,true)}}</div>
+                </div>
+                <div flex center-ver fullwidth *ngIf="!credits.type">
+                  <div font-18 weight600>{{'page_account.credits'| translate}}:</div>
+                  <div class="spacer"></div>
+                  <div><span font-18 weight600>{{credits.total}}</span> / <span>{{credits.amount}}</span></div>
+                </div>
+                <div flex center-ver fullwidth *ngIf="credits.type">
+                  <div font-18 weight600>{{'page_account.credits'| translate}}:</div>
+                  <div class="spacer"></div>
+                  <div font-18 weight600>{{'page_account.credits_unlimited_chat' | translate}}</div>
+                </div>
+              </ion-card>
+            </div>
+          </ion-row>
+          <ion-card-header>
+            <ion-card-title>{{'page_account.more_credits' | translate}}</ion-card-title>
+          </ion-card-header>
+          <ion-row>
+            
+            <ion-col [size]="helper.cardSizeSmall" *ngFor="let product of products | sortBy : -1 : 'credits'">
+              
+              <ion-card noPadding pointer class="caseItem" (click)="showProductInfo(product)">
+                <ion-card-content noPadding fullHeight>
+                    <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/credits.webp)'}">
+                      <div class="title">{{product.title}}</div>
                     </div>
-                    <div font-20 weight600 marginBottom>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</div>
-                    <ion-button class="saveButton" >
-                        {{'page_account.buy_now' | translate}}
-                    </ion-button>
-                   
-                  </div>
-                </ion-card>
-                
-              </ion-col>
-                
-            </ion-row>
-          </ion-card-content>
+                    <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                        <ion-card-header>
+                            <ion-card-title font-24 weight600>{{product.credits}} {{'page_account.credits' | translate}}</ion-card-title>
+                            <ion-card-subtitle font-14 weight600 text-secondary>{{product.conversations}}<br>Uitgebreide gesprekken</ion-card-subtitle>
+                        </ion-card-header>
+                    </div>
+                    <div center flex center-ver center-hor marginBottom *ngIf="product.prices?.length">
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</ion-button>
+                    </div>
+                </ion-card-content>
+            </ion-card>
+              
+            </ion-col>
+
+            <!-- <ion-col [size]="media.screenSize=='md' ? 6 : 12" *ngFor="let product of subscriptionsStripe | filterKey : 'title' : 'unlimited'">
+              
+              <ion-card noPadding pointer class="caseItem" (click)="showProductInfo(product)">
+                <ion-card-content noPadding fullHeight>
+                    <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/credits.webp)'}">
+                      <div class="title">{{product.title}}</div>
+                    </div>
+                    <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                        <ion-card-header>
+                            <ion-card-title font-24 weight600>{{'page_account.credits_unlimited_chat' | translate}}</ion-card-title>
+                            <ion-card-subtitle font-14 weight600 text-secondary>Onbeperkt<br>Uitgebreide gesprekken</ion-card-subtitle>
+                        </ion-card-header>
+                    </div>
+                    <div center flex center-ver center-hor marginBottom *ngIf="product.prices?.length">
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</ion-button>
+                    </div>
+                </ion-card-content>
+            </ion-card>
+              
+            </ion-col> -->
+
+            <!-- <ion-col [size]="helper.cardSizeSmall" *ngFor="let product of subscriptionsStripe | filterKey : 'title' : 'unlimited'">
+              <ion-card noPadding center class="creditsCard creditsCardUnlimited" *ngIf="product.prices?.length">
+                <div class="miniHeader">{{product.title}}</div>
+                <div class="header">{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</div>
+                <div class="logo">
+                  <img src="assets/icon/alicialabs_logo.png" alt="">
+                </div>
+                <div class="credits">{{'page_account.credits_unlimited_chat' | translate}}</div>
+                <div class="list">
+                  <ion-list>
+                    <ion-item>
+                      <ion-label>
+                        <p>Onbeperkt aantal gesprekken</p>
+                      </ion-label>
+                    </ion-item>
+                    <ion-item >
+                      <ion-label>
+                        <p>Geldig voor 1 jaar</p>
+                      </ion-label>
+                    </ion-item>
+                    <ion-item >
+                      <ion-label>
+                        <p>Persoonlijk dashboard</p>
+                      </ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+                <div class="buttons" marginBottom>
+                  <ion-button class="saveButton" (click)="buy(product)">
+                      {{'page_account.buy_now' | translate}}
+                  </ion-button>
+                </div>
+              </ion-card>
+            </ion-col> -->
+
+          </ion-row>
+            
         </ion-card>
 
       </ion-col>

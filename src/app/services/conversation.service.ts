@@ -71,7 +71,7 @@ export class ConversationService implements OnDestroy {
   }
 
   async startConversation(caseItem:any){
-    // console.log(caseItem)
+    console.log(caseItem)
     this.caseItem = caseItem
     this.caseItem.conversationType = caseItem.conversation
     // userId, conversationId, categoryId, caseId, instructionType, attitude
@@ -109,8 +109,8 @@ export class ConversationService implements OnDestroy {
     if(caseItem.trainerId){
       conversationObj.trainerId = caseItem.trainerId
     }
-    if(caseItem.courseId){
-      conversationObj.courseId = caseItem.courseId
+    if(caseItem.trainingId){
+      conversationObj.trainingId = caseItem.trainingId
     }
 
     await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',conversationObj,async (response:any)=>{
@@ -162,8 +162,10 @@ export class ConversationService implements OnDestroy {
       .subscribe((conversation:any) => {
         // console.log(conversation)
         this.activeConversation = { ...conversation };
+        setTimeout(() => {
           console.log(this.activeConversation)
-          console.log(this.attitude)
+        }, 2000);
+          // console.log(this.attitude)
           if(this.activeConversation.attitude!=undefined && this.activeConversation.attitude!=this.attitude){
             this.attitude = this.activeConversation.attitude
             this.update.emit(true);
@@ -211,6 +213,11 @@ export class ConversationService implements OnDestroy {
           // this.getExtraInfo('facts',conversationId)
           let obj:any = {
             userId:this.auth.userInfo.uid,
+            userEmail:this.auth.userInfo.email,
+            training:{
+              trainerId: this.activeConversation.trainer_id,
+              trainingId: this.activeConversation.trainingId,
+            },
             conversationId:conversationId,
             categoryId:this.caseItem.conversation,
             caseId:this.caseItem.id,
@@ -344,6 +351,11 @@ export class ConversationService implements OnDestroy {
     this.messages.push({role:'user',content:this.message})
     this.attitude = obj.attitude
     obj.language = this.translate.currentLang
+    obj.training = {
+      trainerId: this.activeConversation.trainer_id,
+      trainingId: this.activeConversation.trainingId,
+    }
+    console.log(obj)
     this.update.emit(true);
     // setTimeout(() => {
     //   this.tempTextUser = ""
@@ -485,6 +497,7 @@ export class ConversationService implements OnDestroy {
 
     let obj:any = {
       userId:this.auth.userInfo.uid,
+      userEmail:this.auth.userInfo.email,
       conversationId:this.activeConversation.conversationId,
       categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
       caseId:this.activeConversation.caseId,
@@ -509,6 +522,7 @@ export class ConversationService implements OnDestroy {
     }
     let obj:any = {
       userId:this.auth.userInfo.uid,
+      userEmail:this.auth.userInfo.email,
       conversationId:conversationId,
       instructionType:topic,
       role:this.dialog_role,
@@ -551,6 +565,11 @@ export class ConversationService implements OnDestroy {
       return;
     }
     obj.language = this.translate.currentLang
+    obj.training = {
+      trainerId: this.activeConversation.trainer_id,
+      trainingId: this.activeConversation.trainingId,
+    }
+    console.log(obj)
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -825,6 +844,11 @@ export class ConversationService implements OnDestroy {
     let objSkills:any = {
       conversationId:this.activeConversation.conversationId,
       userId:this.auth.userInfo.uid,
+      userEmail:this.auth.userInfo.email,
+      training:{
+        trainerId: this.activeConversation.trainer_id,
+        trainingId: this.activeConversation.trainingId,
+      },
       instructionType:'skills',
       categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
     }
@@ -839,6 +863,11 @@ export class ConversationService implements OnDestroy {
     let obj:any = {
       conversationId:this.activeConversation.conversationId,
       userId:this.auth.userInfo.uid,
+      userEmail:this.auth.userInfo.email,
+      training:{
+        trainerId: this.activeConversation.trainer_id,
+        trainingId: this.activeConversation.trainingId,
+      },
       instructionType:'close',
       categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
     }
@@ -951,6 +980,11 @@ export class ConversationService implements OnDestroy {
           this.startLoading('goals')
           let obj:any = {
             userId:this.auth.userInfo.uid,
+            userEmail:this.auth.userInfo.email,
+            training:{
+              trainerId: this.activeConversation.trainer_id,
+              trainingId: this.activeConversation.trainingId,
+            },
             conversationId:this.activeConversation.conversationId,
             categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
             caseId:this.activeConversation.caseId,

@@ -54,6 +54,10 @@ export class EditHtmlPage implements OnInit {
       for(let i=0;i<elements.length;i++){
         elements[i].setAttribute('style','border:0;')
       }
+      // elements = document.getElementsByClassName("ql-editor")
+      // for(let i=0;i<elements.length;i++){
+      //   elements[i].setAttribute('style','min-height:300px;')
+      // }
       setTimeout(() => {
 
         let htmlBtn:any = document.querySelector('.ql-HTML');
@@ -77,6 +81,9 @@ export class EditHtmlPage implements OnInit {
   }
 
   dismiss(){
+    if(!this.data.value){
+      this.data.value = ''
+    }
     this.data.value = this.data.value
     .split('</ol><p><br></p><p>').join('</ol>')
     .split('</p><p><br></p><ol>').join('<ol>')

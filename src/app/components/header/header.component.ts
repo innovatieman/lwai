@@ -25,6 +25,7 @@ export class HeaderComponent  implements OnInit {
   @Input() back:boolean = false
   @Input() button:string = ''
   @Input() inactiveCredits:boolean = false
+  @Input() showNoCredits:boolean = false
   @Output() buttonResponse = new EventEmitter()
   isVerified: boolean = false;
   showCredits: boolean = false;
@@ -51,7 +52,7 @@ export class HeaderComponent  implements OnInit {
     },
 
     {
-      url:'trainer/courses',
+      url:'trainer/modules',
       // action:'trainerMenu',
       page:'trainer',
       title:'Trainer',
@@ -137,12 +138,12 @@ export class HeaderComponent  implements OnInit {
     {
       title: 'Cursussen maken',
       icon: 'faBook',
-      url: '/trainer/courses',
+      url: '/trainer/modules',
     },
     {
       title: 'Actieve cursussen',
       icon: 'faUsers',
-      url: '/trainer/users',
+      url: '/trainer/dashboard',
     },
   ]
   
@@ -154,7 +155,7 @@ export class HeaderComponent  implements OnInit {
     public media:MediaService,
     private ref:ChangeDetectorRef,
     private popoverController:PopoverController,
-    private translateService:TranslateService,
+    public translateService:TranslateService,
     private firestore:FirestoreService,
     private modalController:ModalController,
     private toast:ToastService
@@ -310,7 +311,7 @@ export class HeaderComponent  implements OnInit {
           value:'',
         }
       ]
-  
+      console.log('fields',fields)
         const modalItem = await this.modalController.create({
           component:InputFieldsPage,
           componentProps:{
@@ -322,6 +323,7 @@ export class HeaderComponent  implements OnInit {
           cssClass:'infoModal',
         })
         modalItem.onWillDismiss().then(result=>{
+          console.log('result',result)
           if(result.data){
             this.firestore.create('user_messages',{
               type:result.data[0].value,

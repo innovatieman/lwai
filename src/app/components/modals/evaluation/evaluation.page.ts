@@ -166,7 +166,14 @@ export class EvaluationPage implements OnInit {
   }
 
   skillScoreDef(skill:string){
-    let score = 10
+    let conversationLength = 0
+    if(this.options.conversation.messages){
+      conversationLength = (this.options.conversation.messages.length -1) /2
+    }
+    let score = conversationLength - 10
+    if(score < 0){
+      score = 0
+    }
     let difficultyMultiplier = 1
     const userLevel = this.auth.skillsLevel(this.auth.skills[skill].score)
     const conversationLevel = this.options.conversation_level
@@ -193,14 +200,13 @@ export class EvaluationPage implements OnInit {
     if(this.options.skills?.goal_bonus){
       goalBonus = this.options.skills.goal_bonus
     }
-    // console.log('performanceBonus',performanceBonus)
-    // console.log('difficultyMultiplier',difficultyMultiplier)
-    // console.log('goalBonus',goalBonus)
-    score += performanceBonus
+
+    if(conversationLength >= 5){
+      score += performanceBonus
+    }
     score *= difficultyMultiplier
     score += goalBonus
     return score
   }
 
-  
 }

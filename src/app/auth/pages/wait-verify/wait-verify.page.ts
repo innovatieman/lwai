@@ -230,11 +230,11 @@ export class WaitVerifyPage implements OnInit {
     this.auth.resendEmailVerification((response:any)=>{
       this.toast.hideLoader()
       if(response?.status==200){
-        this.emailResend = 'Email is opnieuw verstuurd'
+        this.emailResend = this.translate.instant('page_wait_verify.issend')
         this.toast.hideLoader()
       }
       else{
-        this.emailResend = 'Er is iets misgegaan'
+        this.emailResend = this.translate.instant('error_messages.failure')
         this.toast.hideLoader()
       }
     });
@@ -379,6 +379,7 @@ export class WaitVerifyPage implements OnInit {
       this.infoService.loadInfo()
       this.cases.reloadCases()
       this.checkOffer()
+      this.checkregistrationCode()
     }
     this.fillSteps()
     console.log(this.step,this.singleUse)
@@ -698,6 +699,7 @@ export class WaitVerifyPage implements OnInit {
   }
 
   checkOffer(){
+    console.log(this.nav.specialCode)
     if(this.nav.specialCode){
       this.functions.httpsCallable('checkOffer')({code:this.nav.specialCode}).subscribe((response:any)=>{
         console.log(response)
@@ -705,6 +707,12 @@ export class WaitVerifyPage implements OnInit {
       })
     }
       
+  }
+
+  checkregistrationCode(){
+    if(this.nav.registrationCode){
+      this.auth.registerWithCode(this.nav.registrationCode)
+    }
   }
 
 

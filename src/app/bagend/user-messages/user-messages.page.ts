@@ -115,7 +115,7 @@ export class UserMessagesPage implements OnInit {
             content: {
               subject: result.data[0].value,
               body: result.data[1].value,
-              from:'Alicia Labs <user_agent@alicialabs.nl>'
+              from:'Alicia Labs <user_agent@alicialabs.com>'
             },
             language: 'en',
             data: {}

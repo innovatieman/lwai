@@ -23,6 +23,8 @@ import { config } from '../configs/config-basics';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { buffer } from "stream/consumers";
 import { Readable } from "stream";
+import moment from "moment";
+
 const genAI = new GoogleGenerativeAI(config.gemini_api_key);
 const modelGemini = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 // const openAiModal = 'gpt-4o';
@@ -44,10 +46,10 @@ const creditsCost:any = {
   skills: 5,
 }
 
-// firebase deploy --only functions:chatAI,functions.choicesAI,functions.factsAI,functions.backgroundAI,functions.phasesAI,functions.feedbackAI,functions.closingAI,functions.promptChecker,functions.casePrompt,functions.goal,functions.soundToText,functions.skillsAI
+// firebase deploy --only functions:chatGemini,functions:choicesGemini,functions:factsGemini,functions:backgroundGemini,functions:phasesGemini,functions:feedbackGemini,functions:closingGemini,functions:case_prompt_gemini,functions:soundToTextGemini,functions:skillsGemini
 
 exports.chatGemini = onRequest( 
-  { cors: config.allowed_cors, region: "europe-west1" ,runWith: {memory: '1GB'}},
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -150,7 +152,12 @@ exports.chatGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['reaction']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['reaction']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['reaction'],body.training.trainingId,body.training.trainerId);
+      }
 
     } catch (error) {
       ////////////////////////////////////////////////////////////////////
@@ -163,7 +170,7 @@ exports.chatGemini = onRequest(
 );
 
 exports.choicesGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -294,7 +301,12 @@ exports.choicesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['choices']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['choices']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['choices'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -312,7 +324,7 @@ exports.choicesGemini = onRequest(
 );
 
 exports.factsGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     
     ////////////////////////////////////////////////////////////////////
@@ -423,7 +435,12 @@ exports.factsGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['facts']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['facts']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['facts'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -441,7 +458,7 @@ exports.factsGemini = onRequest(
 );
 
 exports.backgroundGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
 
     ////////////////////////////////////////////////////////////////////
@@ -562,7 +579,12 @@ exports.backgroundGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['background']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['background']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['background'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -580,7 +602,7 @@ exports.backgroundGemini = onRequest(
 );
 
 exports.phasesGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -694,7 +716,12 @@ exports.phasesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['phases']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['phases']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['phases'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -712,7 +739,7 @@ exports.phasesGemini = onRequest(
 );
 
 exports.feedbackGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1", runWith: { memory: '2GB' } },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -838,7 +865,12 @@ exports.feedbackGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['feedback']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['feedback']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['feedback'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -856,7 +888,7 @@ exports.feedbackGemini = onRequest(
 );
 
 exports.closingGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -990,7 +1022,19 @@ exports.closingGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['closing']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['closing']);
+      }
+      else{
+        await db.collection('trainers').doc(body.training.trainerId).collection('trainings').doc(body.training.trainingId).collection('close').add({ 
+          content: completeMessage,
+          timestamp: new Date().getTime(),
+          user: body.userEmail,
+          caseId: body.conversationId
+        });
+
+        await updateCreditsTraining(body.userEmail,creditsCost['closing'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -1008,7 +1052,7 @@ exports.closingGemini = onRequest(
 );
 
 exports.skillsGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     ////////////////////////////////////////////////////////////////////
     // Set headers
@@ -1135,7 +1179,12 @@ exports.skillsGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      await updateCredits(body.userId, creditsCost['skills']);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['skills']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['skills'],body.training.trainingId,body.training.trainerId);
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Return response
@@ -1152,10 +1201,8 @@ exports.skillsGemini = onRequest(
   }
 );
 
-
-
 exports.soundToTextGemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', timeoutSeconds: 120 },
+  { cors: config.allowed_cors, region: "europe-west1", maxRequestSize: '40mb', memory: '1GiB', timeoutSeconds: 120 },
 
   async (req:any, res:any) => {
     try {
@@ -1250,7 +1297,12 @@ exports.soundToTextGemini = onRequest(
 
 
       // ✅ Credits bijwerken
-      await updateCredits(body.userId, creditsCosts);
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCosts);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost,body.training.trainingId,body.training.trainerId);
+      }
 
       // ✅ Stuur transcriptie terug
       res.status(200).json({ transcription });
@@ -1267,7 +1319,7 @@ exports.soundToTextGemini = onRequest(
 );
 
 exports.case_prompt_gemini = onRequest(
-  { cors: config.allowed_cors, region: "europe-west1" },
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
     setHeaders(res);
 
@@ -1360,7 +1412,6 @@ exports.case_prompt_gemini = onRequest(
   }
 );
 
-
 exports.textToSpeechAngryStudio = onRequest(
   {
     cors: true,
@@ -1438,8 +1489,11 @@ async (req:any, res:any) => {
     if(model != 'eleven_multilingual_v2'){
       input.language = language || 'nl-NL';
     }
-
-    const base64Audio = await eleven.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", input );
+    let voiceId = req.body.voiceId;
+    if(!voiceId){
+      voiceId = 'JBFqnCBsd6RMkjVDRZzb';
+    }
+    const base64Audio = await eleven.textToSpeech.convert(voiceId, input );
 
     // const response = await hume.tts.synthesizeJson({
     //   utterances: [
@@ -1640,13 +1694,26 @@ async function initializeConversation(body:any): Promise<any[]> {
     if(caseData.casus){
       let casus = caseData.casus;
       if(caseData.free_question){
-        casus = casus + '\n\nVraag aan de gebruiker: ' + caseData.free_question;
-        casus = casus + '\n\nAntwoord van de gebruiker: ' + (caseData.free_answer || 'Geen antwoord gegeven');
+        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question;
+        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer || agent_instructions.no_answer);
       }
+      if(caseData.free_question2){
+        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question2;
+        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer2 || agent_instructions.no_answer);
+      }
+      if(caseData.free_question3){
+        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question3;
+        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer3 || agent_instructions.no_answer);
+      }
+      if(caseData.free_question4){
+        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question4;
+        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer4 || agent_instructions.no_answer);
+      }
+      
       systemContent = systemContent.replace("[casus]",casus);
     }
     else{
-      systemContent = systemContent.replace("[casus]",'Geen casus specificaties');
+      systemContent = systemContent.replace("[casus]",agent_instructions.no_casus);
     }
 
     if(agent_instructions.extra_info){
@@ -1871,22 +1938,186 @@ async function getPreviousMessages(userId: string, conversationId: string, subCo
   }
 }
 
-async function updateCredits(userId: string, credits: number): Promise<void> {
+// async function updateCredits(userId: string, credits: number): Promise<void> {
+//   try {
+//     const creditsRef = db.collection("users").doc(userId).collection("credits").doc("credits");
+//     const creditsdata = await creditsRef.get();
+//     if (!creditsdata.exists) {
+//       throw new Error("User not found");
+//     }
+//     const creditsTotal = creditsdata.data();
+//     const newCredits = creditsTotal.total - credits;
+//     await creditsRef.update({ total: newCredits });
+//     return;
+//   }
+//   catch (error) {
+//     console.error("Error bij updaten credits:", error);
+//     throw new Error("Failed to update credits");
+//   } 
+// }
+
+async function updateCredits(userId: string, creditsToSubtract: number): Promise<void> {
   try {
-    const creditsRef = db.collection("users").doc(userId).collection("credits").doc("credits");
-    const creditsdata = await creditsRef.get();
-    if (!creditsdata.exists) {
-      throw new Error("User not found");
+    const creditsCollectionRef = db.collection("users").doc(userId).collection("credits");
+
+    // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
+    const creditsQuerySnapshot = await creditsCollectionRef
+      .where('total', '>', 0)
+      .orderBy('added', 'asc')
+      .get();
+
+    // let creditDocs = creditsQuerySnapshot.docs;
+    let creditDocs: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>[] = creditsQuerySnapshot.docs;
+
+    // Als er geen documenten zijn met total > 0, pak het laatst toegevoegde document (ook als total 0 of negatief is)
+    if (creditDocs.length === 0) {
+      const allCreditsSnapshot = await creditsCollectionRef
+        .orderBy('added', 'desc')
+        .limit(1)
+        .get();
+
+      if (!allCreditsSnapshot.empty) {
+        creditDocs = allCreditsSnapshot.docs;
+      } else {
+        // Als er helemaal geen 'added' field bestaat, pak document met id 'credits'
+        const fallbackDocRef = creditsCollectionRef.doc('credits');
+        const fallbackDocSnap = await fallbackDocRef.get();
+
+        if (fallbackDocSnap.exists) {
+          creditDocs = [fallbackDocSnap];
+        } else {
+          throw new Error("Geen credits documenten gevonden.");
+        }
+      }
     }
-    const creditsTotal = creditsdata.data();
-    const newCredits = creditsTotal.total - credits;
-    await creditsRef.update({ total: newCredits });
-    return;
-  }
-  catch (error) {
+
+    let remainingCredits = creditsToSubtract;
+    const batch = db.batch(); // We doen alles in een batch update
+
+    for (let i = 0; i < creditDocs.length; i++) {
+      const doc = creditDocs[i];
+      const data = doc.data();
+      const currentTotal = data.total || 0;
+
+      if (remainingCredits <= 0) {
+        break; // Niks meer af te boeken
+      }
+
+      let newTotal;
+
+      if (i === creditDocs.length - 1) {
+        // Laatste document mag in de min
+        newTotal = currentTotal - remainingCredits;
+        remainingCredits = 0;
+      } else {
+        if (currentTotal >= remainingCredits) {
+          newTotal = currentTotal - remainingCredits;
+          remainingCredits = 0;
+        } else {
+          newTotal = 0;
+          remainingCredits = remainingCredits - currentTotal;
+        }
+      }
+      const docRef = creditsCollectionRef.doc(doc.id);
+      batch.update(docRef, { total: newTotal });
+    }
+
+    await batch.commit();
+    // console.log("Credits succesvol geüpdatet");
+  } catch (error) {
     console.error("Error bij updaten credits:", error);
     throw new Error("Failed to update credits");
-  } 
+  }
+}
+
+async function updateCreditsTraining(userEmail: string, creditsToSubtract: number,trainingId:string,trainerId:string): Promise<void> {
+  try {
+    const creditsCollectionRef = db.collection("trainers").doc(trainerId).collection('trainings').doc(trainingId).collection("credits");
+    const creditsUsersCollectionRef = db.collection("trainers").doc(trainerId).collection('trainings').doc(trainingId).collection("creditsUsers");
+
+    // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
+    const creditsQuerySnapshot = await creditsCollectionRef
+      .where('total', '>', 0)
+      .orderBy('added', 'asc')
+      .get();
+
+    // let creditDocs = creditsQuerySnapshot.docs;
+    let creditDocs: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>[] = creditsQuerySnapshot.docs;
+
+    // Als er geen documenten zijn met total > 0, pak het laatst toegevoegde document (ook als total 0 of negatief is)
+    if (creditDocs.length === 0) {
+      const allCreditsSnapshot = await creditsCollectionRef
+        .orderBy('added', 'desc')
+        .limit(1)
+        .get();
+
+      if (!allCreditsSnapshot.empty) {
+        creditDocs = allCreditsSnapshot.docs;
+      } else {
+        // Als er helemaal geen 'added' field bestaat, pak document met id 'credits'
+        const fallbackDocRef = creditsCollectionRef.doc('credits');
+        const fallbackDocSnap = await fallbackDocRef.get();
+
+        if (fallbackDocSnap.exists) {
+          creditDocs = [fallbackDocSnap];
+        } else {
+          throw new Error("Geen credits documenten gevonden.");
+        }
+      }
+    }
+
+    let remainingCredits = creditsToSubtract;
+    const batch = db.batch(); // We doen alles in een batch update
+
+    for (let i = 0; i < creditDocs.length; i++) {
+      const doc = creditDocs[i];
+      const data = doc.data();
+      const currentTotal = data.total || 0;
+
+      if (remainingCredits <= 0) {
+        break; // Niks meer af te boeken
+      }
+
+      let newTotal;
+
+      if (i === creditDocs.length - 1) {
+        // Laatste document mag in de min
+        newTotal = currentTotal - remainingCredits;
+        remainingCredits = 0;
+      } else {
+        if (currentTotal >= remainingCredits) {
+          newTotal = currentTotal - remainingCredits;
+          remainingCredits = 0;
+        } else {
+          newTotal = 0;
+          remainingCredits = remainingCredits - currentTotal;
+        }
+      }
+      const docRef = creditsCollectionRef.doc(doc.id);
+      batch.update(docRef, { total: newTotal });
+    }
+
+    await batch.commit();
+
+    let creditsUsersDoc = await creditsUsersCollectionRef.doc(userEmail).get();
+    if (creditsUsersDoc.exists) {
+      let data = creditsUsersDoc.data();
+      if(data.total){
+        creditsToSubtract = data.total + creditsToSubtract;
+      }
+    }
+
+    await creditsUsersCollectionRef.doc(userEmail).set({
+      total: creditsToSubtract,
+      lastUse: moment().unix(),
+    });
+
+
+    // console.log("Credits succesvol geüpdatet");
+  } catch (error) {
+    console.error("Error bij updaten credits:", error);
+    throw new Error("Failed to update credits");
+  }
 }
 
 function cleanReactionMessage(message:string){

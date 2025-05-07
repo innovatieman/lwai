@@ -38,7 +38,7 @@ export class ConversationStartPage implements OnInit {
     public icon:IconsService,
     private toast:ToastService,
     public media:MediaService,
-    private translate:TranslateService,
+    public translate:TranslateService,
     public info:InfoService,
     public auth:AuthService,
     
@@ -60,7 +60,7 @@ export class ConversationStartPage implements OnInit {
       }
 
       if(this.caseItem.openingMessage){
-        this.caseItem.openingMessage = this.caseItem.openingMessage.replace('[name]',this.auth.userInfo.displayName).replace('[role]',this.caseItem.role)
+        this.caseItem.openingMessage = this.caseItem.openingMessage.replace('[name]',this.auth.userInfo.displayName).replace('[naam]',this.auth.userInfo.displayName).replace('[role]',this.caseItem.role).replace('[rol]',this.caseItem.role)
       }
 
       this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))

@@ -12,6 +12,7 @@ import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -23,7 +24,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     PipesModule,
     FontAwesomeModule,
     HttpClientModule,
-    NgxDatatableModule
+    NgxDatatableModule,
+    TranslateModule.forChild()
   ],
   declarations: [CasesPage]
 })

@@ -1,57 +1,63 @@
 import admin from '../firebase'
 import * as functions from 'firebase-functions/v1';
 import * as responder from '../utils/responder'
+import moment from 'moment';
+import { config } from '../configs/config-basics';
+import Stripe from "stripe";
+const stripe = new Stripe(config.stripe.live_secret_key);
 
-exports.buyCredits = functions.region('europe-west1').https.onCall(async (data: any, context: any) => {
-    // Check op authenticatie
-    if (!context.auth) {
-        return new responder.Message('Not authorized', 401);
-    }
 
-    // Check op het bedrag
-    if (!data.amount) {
-        return new responder.Message('No amount provided', 400);
-    }
 
-    try {
-        // Haal de gebruiker op
-        const doc = await admin.firestore().collection('users').doc(context.auth.uid).get();
-        let user = doc.data();
+// exports.buyCredits = functions.region('europe-west1').https.onCall(async (data: any, context: any) => {
+//     // Check op authenticatie
+//     if (!context.auth) {
+//         return new responder.Message('Not authorized', 401);
+//     }
 
-        if (!user) {
-            return new responder.Message('User not found', 404);
-        }
+//     // Check op het bedrag
+//     if (!data.amount) {
+//         return new responder.Message('No amount provided', 400);
+//     }
 
-        // Zet credits op 0 als het ontbreekt
-        if (!user.credits) {
-            user.credits = 0;
-        }
+//     try {
+//         // Haal de gebruiker op
+//         const doc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+//         let user = doc.data();
 
-        // Update de credits
-        user.credits += data.amount;
-        await admin.firestore().collection('users').doc(context.auth.uid).update(user);
+//         if (!user) {
+//             return new responder.Message('User not found', 404);
+//         }
 
-        // Voeg de transactie toe
-        await admin.firestore().collection('users').doc(context.auth.uid).collection('transactions').add({
-            type: 'credit_purchase',
-            amount: data.amount,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            user: context.auth.uid,
-            status: 'success',
-            paymentMethod: {
-                type: 'credit card',
-            },
-            valid_until: admin.firestore.Timestamp.fromDate(
-                new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30)
-            ),
-        });
+//         // Zet credits op 0 als het ontbreekt
+//         if (!user.credits) {
+//             user.credits = 0;
+//         }
 
-        return new responder.Message('Success');
-    } catch (e) {
-        console.error(e);
-        return new responder.Message('Error', 500);
-    }
-});
+//         // Update de credits
+//         user.credits += data.amount;
+//         await admin.firestore().collection('users').doc(context.auth.uid).update(user);
+
+//         // Voeg de transactie toe
+//         await admin.firestore().collection('users').doc(context.auth.uid).collection('transactions').add({
+//             type: 'credit_purchase',
+//             amount: data.amount,
+//             timestamp: admin.firestore.FieldValue.serverTimestamp(),
+//             user: context.auth.uid,
+//             status: 'success',
+//             paymentMethod: {
+//                 type: 'credit card',
+//             },
+//             valid_until: admin.firestore.Timestamp.fromDate(
+//                 new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30)
+//             ),
+//         });
+
+//         return new responder.Message('Success');
+//     } catch (e) {
+//         console.error(e);
+//         return new responder.Message('Error', 500);
+//     }
+// });
 
 exports.creditsBought = functions.region('europe-west1').firestore
   .document('customers/{userId}/payments/{paymentId}')
@@ -131,14 +137,248 @@ exports.creditsBought = functions.region('europe-west1').firestore
   }
 
   async function addCreditsToUser(userId:string,productData:any){
-    const userCredits = await admin.firestore().collection('users').doc(userId).collection('credits').doc('credits').get();
-    let creditsData = userCredits.data();
-    let currentCredits = 0;
-    if(creditsData?.total){
-        currentCredits = creditsData.total;
+    let obj:any = {
+        total: parseInt(productData.metadata.credits),
+        amount: parseInt(productData.metadata.credits),
+        added:moment().unix(),
+        expires: moment().add(365, 'days').unix(),
+        source: 'payment',
+    }
+    if(productData.metadata.unlimited){
+        obj.type=productData.metadata.unlimited;
+        await admin.firestore().collection('users').doc(userId).collection('credits').doc('0').set(obj);
+    }
+    else{
+        await admin.firestore().collection('users').doc(userId).collection('credits').add(obj);
     }
     
-    await admin.firestore().collection('users').doc(userId).collection('credits').doc('credits').update({
-        total: currentCredits + parseInt(productData.metadata.credits)
-    });
   }
+
+exports.expireCredits = functions.region('europe-west1').runWith({memory:'1GB'})
+    .pubsub.schedule('5 1/4 * * *')
+    .timeZone('Europe/Amsterdam')
+    .onRun(async (context) => {
+        try {
+            const now = moment().unix();
+
+            const creditsSnap = await admin.firestore()
+                .collectionGroup('credits')
+                .where('expires', '<=', now).where('total','!=', 0)
+                .get();
+
+            if (creditsSnap.empty) {
+                return new responder.Message('No credits to expire', 200);
+            }
+
+            const batch = admin.firestore().batch();
+
+            //log length of creditsSnap
+            creditsSnap.forEach((creditDoc: any) => {
+                batch.update(creditDoc.ref, { total: 0 }); // Alleen de velden die je wijzigt!
+            });
+
+            await batch.commit();
+
+
+            const creditsMinusSnap = await admin.firestore()
+                .collectionGroup('credits')
+                .where('total','<', 0)
+                .get();
+
+            if (creditsMinusSnap.empty) {
+                return new responder.Message('No credits to expire', 200);
+            }
+
+            const batchMinus = admin.firestore().batch();
+
+            //log length of creditsSnap
+            creditsMinusSnap.forEach((creditDoc: any) => {
+                batchMinus.update(creditDoc.ref, { total: 0 }); // Alleen de velden die je wijzigt!
+            });
+
+            await batchMinus.commit();
+
+
+
+            return null
+
+        } catch (error) {
+            console.error('Error expiring credits:', error);
+            throw new functions.https.HttpsError('internal', 'Error while expiring credits');
+        }
+  });
+
+exports.buyTrainerCredits = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 401);
+    }
+    
+    const uid = context.auth.uid;
+    const participants = data.participants;
+  
+    if (!participants || typeof participants !== 'number') {
+        return new responder.Message('Invalid number of participants', 400);
+    }
+
+    // 🔢 Bereken prijs per deelnemer, bijv. €5 per persoon
+    let extraPricePerCase = 200;
+    let price = 10000;
+
+    let type = 'chat'
+    if(data.type){
+        type = data.type;
+    }
+    let credits = 0;
+    let conversations = 1;
+    if(data.conversations){
+        conversations = data.conversations;
+    }
+    if(data.unlimited){
+        credits = 1000000;
+    }
+    else{
+        credits = participants * conversations * 350;
+    }
+
+    if(type=='chat'){
+        if(!data.unlimited&&conversations > 10){
+            price = price + ((conversations - 10) * extraPricePerCase);
+        }
+        if(data.unlimited){
+            let pricePerPerson = 1000;
+            price = price + (pricePerPerson * participants);
+        }
+    }
+  
+    try {
+      // 🔄 Ophalen van bestaande Stripe klant
+        const customerRef = admin.firestore().collection('customers').doc(uid);
+        const customerDoc = await customerRef.get();
+        const customerData = customerDoc.data();
+        let stripeCustomerId = customerData?.stripeCustomerId;
+
+    if(!stripeCustomerId){
+        const customerStripe = await stripe.customers.create({ email: context.auth.token.email });
+        await customerRef.set({ stripeCustomerId: customerStripe.id, email: context.auth.token.email });
+        stripeCustomerId = customerStripe.id;
+    }
+
+
+    const session = await admin.firestore()
+    .collection('customers')
+    .doc(uid)
+    .collection('checkout_sessions')
+    .add({
+        mode: 'payment',
+        customer: stripeCustomerId,
+        line_items: [{
+            price_data: {
+                currency: 'eur',
+                product_data: {
+                    name: 'Trainer Credits',
+                    description: `${participants} participants`
+                },
+                unit_amount: price
+            },
+            quantity: 1
+        }],
+        metadata: {
+            uid: uid,
+            participants: participants.toString(),
+            moduleId: data.moduleId,
+            credits: credits,
+            conversations: conversations | 1,
+            type: type,
+            unlimited: data.unlimited || false,
+        },
+        success_url: 'https://conversation.alicialabs.com/modules?success=true&module='+data.moduleId,
+        cancel_url: 'https://conversation.alicialabs.com/modules?success=false&module='+data.moduleId,
+        invoice_creation: {
+            enabled: true
+        },
+        payment_intent_data:{
+            setup_future_usage: 'off_session'
+        }
+    });
+
+    const sessionId = session.id;
+    return new responder.Message({ sessionId }, 200);
+
+
+    } catch (error) {
+        console.error('Error fetching customer data:', error);
+        throw new functions.https.HttpsError('internal', 'Fout bij het ophalen van klantgegevens.');
+    }
+});
+
+//   exports.createFlexibleCheckoutSession = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+//     if (!context.auth) {
+//       return new responder.Message('Not authorized', 401);
+//     }
+    
+//     const uid = context.auth.uid;
+//     const participants = data.participants;
+  
+//     if (!participants || typeof participants !== 'number') {
+//         return new responder.Message('Invalid number of participants', 400);
+//     }
+  
+//     // 🔢 Bereken prijs per deelnemer, bijv. €5 per persoon
+//     const prijsPerPersoonInCenten = 500;
+//     const totaalBedrag = prijsPerPersoonInCenten * participants;
+  
+//     try {
+//       // 🔄 Ophalen van bestaande Stripe klant
+//         const customerRef = admin.firestore().collection('customers').doc(uid);
+//         const customerDoc = await customerRef.get();
+//         const customerData = customerDoc.data();
+//         let stripeCustomerId = customerData?.stripeCustomerId;
+
+//     if(!stripeCustomerId){
+//         const customerStripe = await stripe.customers.create({ email: context.auth.token.email });
+//         await customerRef.set({ stripeCustomerId: customerStripe.id, email: context.auth.token.email });
+//         stripeCustomerId = customerStripe.id;
+//     }
+
+
+//     const session = await admin.firestore()
+//     .collection('customers')
+//     .doc(uid)
+//     .collection('checkout_sessions')
+//     .add({
+//         mode: 'payment',
+//         customer: stripeCustomerId,
+//         line_items: [{
+//             price_data: {
+//                 currency: 'eur',
+//                 product_data: {
+//                     name: 'Trainer Credits',
+//                     description: `${participants} participants`
+//                 },
+//                 unit_amount: totaalBedrag
+//             },
+//             quantity: 1
+//         }],
+//         metadata: {
+//             uid: uid,
+//             participants: participants.toString()
+//         },
+//         success_url: 'https://conversation.alicialabs.com/modules?success=true&module='+data.moduleId,
+//         cancel_url: 'https://conversation.alicialabs.com/modules?success=false&module='+data.moduleId,
+//         invoice_creation: {
+//             enabled: true
+//         },
+//         payment_intent_data:{
+//             setup_future_usage: 'off_session'
+//         }
+//     });
+
+//     const sessionId = session.id;
+//     return new responder.Message({ sessionId }, 200);
+
+
+//     } catch (error) {
+//         console.error('Error fetching customer data:', error);
+//         throw new functions.https.HttpsError('internal', 'Fout bij het ophalen van klantgegevens.');
+//     }
+// })

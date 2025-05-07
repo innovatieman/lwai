@@ -27,15 +27,18 @@
         
 
         <span class="spacer"></span>
-        
         <ion-buttons slot="end" flex center-ver >
-          <ion-button id="headerButtonCredits" *ngIf="!noMenuList && isVerified" [color]="credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="inactiveCredits ? doNothing() :  nav.go('account/credits')">
-            <span *ngIf="credits.total">{{auth.credits.total}} <span *ngIf="!media.smallDevice">credits</span></span>
-            <span *ngIf="!credits.total">0 <span *ngIf="!media.smallDevice">credits</span></span>
+          <ion-button id="headerButtonCredits" *ngIf="!noMenuList && !showNoCredits && isVerified" [color]="credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="inactiveCredits ? doNothing() :  nav.go('account/credits')">
+            <span *ngIf="credits.total&&!auth.credits_unlimited_type">{{auth.credits.total}} <span *ngIf="!media.smallDevice">{{translateService.instant('standards.credits')}}</span></span>
+            <span *ngIf="credits.total&&auth.credits_unlimited_type" flex center-ver>
+              <ion-icon name="infinite" noMargin slot="end" style="font-size: 18px;"></ion-icon>
+              <span marginLeft *ngIf="!media.smallDevice">{{translateService.instant('standards.credits')}}</span>
+            </span>
+            <span *ngIf="!credits.total">0 <span *ngIf="!media.smallDevice">{{translateService.instant('standards.credits')}}</span></span>
           </ion-button>
-          <ion-button color="secondary" id="header_menu" (click)="openFeedback()" size="large" *ngIf="!noMenuList">
+          <!-- <ion-button color="secondary" id="header_menu" (click)="openFeedback()" size="large" *ngIf="!noMenuList">
             <ion-icon name="chatbubble-ellipses" noMargin slot="end" style="font-size: 32px;"></ion-icon>
-          </ion-button>
+          </ion-button> -->
           <ion-button color="secondary" id="header_menu" (click)="showshortMenu($event)" size="large" *ngIf="!noMenuList">
             <ion-icon name="person-circle" noMargin slot="end" style="font-size: 32px;"></ion-icon>
           </ion-button>

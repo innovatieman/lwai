@@ -197,13 +197,14 @@ export class CasesService {
       open_to_user:false,
       open_to_public:false,
       open_to_admin:true,
-      title:'New Case',
+      title:'',
       role:'',
       user_role:'',
       description:'',
       attitude:1,
       steadfastness:50,
-      goals:{
+      casus:'',
+      goalsItems: {
         phases:[],
         free:'',
         attitude:0,
@@ -230,7 +231,7 @@ export class CasesService {
         
         goals:{
           phases:false,
-          free:false,
+          free:true,
           attitude:false,
         },
         max_time:false,

@@ -116,14 +116,14 @@ export class SubscriptionsService {
   }
 
   publicCourses: any[] = [];
-  getPublicCourses(){
-    return this.firestoreService.query('active_courses','public',true).subscribe((courses) => {
-      this.publicCourses = courses.map((course:any) => {
-        return { id: course.payload.doc.id, ...course.payload.doc.data() }
-      })
-      console.log(this.publicCourses)
-    })
-  }
+  // getPublicCourses(){
+  //   return this.firestoreService.query('active_courses','public',true).subscribe((courses) => {
+  //     this.publicCourses = courses.map((course:any) => {
+  //       return { id: course.payload.doc.id, ...course.payload.doc.data() }
+  //     })
+  //     console.log(this.publicCourses)
+  //   })
+  // }
 
   getPublicCourse(courseId:string){
     return this.publicCourses.find((course) => course.id === courseId)

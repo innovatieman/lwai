@@ -17,6 +17,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { addDoc, collection, onSnapshot } from 'firebase/firestore';
 import { MediaService } from 'src/app/services/media.service';
 import { CountriesService } from 'src/app/services/countries.service';
+import { LevelsService } from 'src/app/services/levels.service';
 
 
 @Component({
@@ -44,6 +45,7 @@ export class AccountPage implements OnInit {
   // ]
   payments: any;
   products: any;
+  products_unlimited: any;
   customers: any;
   subscriptionsStripe: any;
   db: any;
@@ -59,6 +61,7 @@ export class AccountPage implements OnInit {
     {title:this.translate.instant('page_account.credits'),tab:'credits',icon:'faCoins'},
 
   ]
+  showInfoCredits:boolean = false
 
 
   constructor(
@@ -75,10 +78,12 @@ export class AccountPage implements OnInit {
     private functions:AngularFireFunctions,
     private route:ActivatedRoute,
     public media:MediaService,
-    public countries:CountriesService
+    public countries:CountriesService,
+    public levelService:LevelsService
   ) { }
 
   ngOnInit() {
+
     this.auth.isAdmin().subscribe((admin) => {
       this.isAdmin = admin;
     });
@@ -193,6 +198,8 @@ export class AccountPage implements OnInit {
         let item = {
           id: product.payload.doc.id,
           credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+          conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
+          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
           ...product.payload.doc.data()
         }
         //get subcollection prices
@@ -210,73 +217,105 @@ export class AccountPage implements OnInit {
     })
   }
 
-  async buy(item:any){
+  // async fetchProducts_unlimited() {
+  //   this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
+  //     this.products = products.map((product:any)=>{
+  //       let item = {
+  //         id: product.payload.doc.id,
+  //         credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+  //         conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
+  //         title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
+  //         ...product.payload.doc.data()
+  //       }
+  //       //get subcollection prices
+  //       this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+  //         item.prices = prices.map((price:any)=>{
+  //           return {
+  //             id: price.payload.doc.id,
+  //             ...price.payload.doc.data()
+  //           }
+  //         })
+  //       })
+  //       return item
+  //     })
+  //     console.log(this.products)
+  //   })
+  // }
+
+  async buy(item: any) {
     const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
       return;
     }
-    this.toast.showLoader('Bezig met verwerking')
-    if(item.credits){
-      localStorage.setItem('buying Credits',item.credits)
-      localStorage.setItem('oldCredits',this.auth.credits.total)
+  
+    this.toast.showLoader('Bezig met verwerking');
+  
+    if (item.credits) {
+      localStorage.setItem('buying Credits', item.credits);
+      localStorage.setItem('oldCredits', this.auth.credits.total);
     }
-
-    let stripeId:any = ''
-    if(this.auth.customer?.stripeCustomerId){
-      stripeId = this.auth.customer.stripeCustomerId
+  
+    let stripeId: any = '';
+    if (this.auth.customer?.stripeCustomerId) {
+      stripeId = this.auth.customer.stripeCustomerId;
     }
-
-    if(!stripeId){
-      let newCustomer = await this.functions.httpsCallable('createCustomerId')({email:user.email}).toPromise()
-      stripeId = newCustomer.result?.stripeId
+  
+    if (!stripeId) {
+      let newCustomer = await this.functions.httpsCallable('createCustomerId')({ email: user.email }).toPromise();
+      stripeId = newCustomer.result?.stripeId;
     }
-    if(!stripeId){
-      this.toast.hideLoader()
-      this.toast.show('Error creating customer')
-      return
+  
+    if (!stripeId) {
+      this.toast.hideLoader();
+      this.toast.show('Error creating customer');
+      return;
     }
-
-    let checkoutSessionData:any = {
+  
+    let checkoutSessionData: any = {
       price: item.prices[0].id,
-      success_url: window.location.origin + (item.metadata?.type=='subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
-      cancel_url: window.location.origin + (item.metadata?.type=='subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
-      metadata:{
-        userId:user.uid
+      success_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
+      cancel_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
+      automatic_tax: { enabled: true },
+      metadata: {
+        userId: user.uid
       },
-      customer:stripeId
+      customer: stripeId
     };
-    if (item.prices[0].type=='one_time') {
+  
+    if (item.prices[0].type == 'one_time') {
       checkoutSessionData['mode'] = 'payment';
-    }
-    else{
+      checkoutSessionData['payment_intent_data'] = {
+        setup_future_usage: 'off_session'
+      };
+      checkoutSessionData['invoice_creation'] = {
+        enabled: true
+      };
+      
+    } else {
       checkoutSessionData['mode'] = 'subscription';
     }
-
-    console.log(checkoutSessionData)
+  
+    console.log(checkoutSessionData);
+  
     try {
-      // ✅ Firestore Collection Reference met compat API
       const checkoutSessionRef = this.firestore.collection(`customers/${user.uid}/checkout_sessions`);
-
-      // ✅ Document toevoegen aan Firestore en document ID ophalen
       const docRef = await checkoutSessionRef.add(checkoutSessionData);
-
+  
       console.log("Checkout session created:", docRef.id);
-
-      this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`,docRef.id).subscribe((value:any)=>{
-        // console.log(value)
+  
+      this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`, docRef.id).subscribe((value: any) => {
         setTimeout(() => {
-          this.toast.hideLoader()
+          this.toast.hideLoader();
         }, 2000);
-
-        if(value.url){
+  
+        if (value.url) {
           window.location.assign(value.url);
-        }
-        else if(value.error){
+        } else if (value.error) {
           console.error("Stripe error:", value.error);
         }
-      })
-
+      });
+  
     } catch (error) {
       console.error("Error creating checkout session:", error);
     }
@@ -284,10 +323,12 @@ export class AccountPage implements OnInit {
 
 
   async fetchSubscriptionsStripe() {
-    this.firestoreService.query('products','metadata.type','subscription').subscribe((products:any)=>{
+    this.firestoreService.queryDouble('products','metadata.type','subscription','==','active',true,'==').subscribe((products:any)=>{
       this.subscriptionsStripe = products.map((product:any)=>{
         let item = {
           id: product.payload.doc.id,
+          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
           ...product.payload.doc.data()
         }
         //get subcollection prices
@@ -328,7 +369,10 @@ export class AccountPage implements OnInit {
     this.firestoreService.update('users',this.auth.userInfo.uid,obj)
   }
 
-  openConversation(conversation:any){
+  openConversation(conversation:any,event?:any){
+    if(event){
+      event.stopPropagation()
+    }
     localStorage.setItem('continueConversation',"true")
     localStorage.setItem('conversation',JSON.stringify(conversation))
     this.nav.go('conversation/'+conversation.caseId)
@@ -368,15 +412,6 @@ export class AccountPage implements OnInit {
 
   }
 
-
-  // buyCredits(amount:number){
-  //   this.toast.showLoader('Bezig met verwerking')
-  //   this.functions.httpsCallable('buyCredits')({amount:amount}).subscribe((response:any)=>{
-  //     console.log(response)
-  //     this.toast.hideLoader()
-  //     this.toast.show('Credits gekocht')
-  //   })
-  // }
 
   openStripeDashboard(){
     // this.nav.goto(this.auth.customer.stripeLink,true)
@@ -547,6 +582,31 @@ export class AccountPage implements OnInit {
       }
       else{
         this.toast.show(this.translate.instant('page_account.delete_account_failure'),3000)
+      }
+    })
+  }
+  
+
+  showProductInfo(product:any){
+    console.log(product)
+    let item = {
+      title: product.credits +' '+ this.translate.instant('page_account.credits'),
+      user_info: `<div style="line-height:30px">
+        Goed voor ${product.conversations} goede gesprekken<br>
+        Selecteer uit alle onderwerpen<br>
+        Geldig voor 1 jaar<br>
+        Persoonlijk dashboard
+      </div>`,
+      type: 'product',
+      id: product.id,
+      photo:'assets/img/credits.webp',
+      price: product.prices[0].unit_amount,
+      currency: product.prices[0].currency,
+    }
+    this.modalService.showCaseInfo(item,(response:any)=>{
+      console.log(response)
+      if(response.data){
+        this.buy(product)
       }
     })
   }

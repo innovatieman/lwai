@@ -1,0 +1,98 @@
+ion-item{
+    margin-bottom:20px
+}
+[backgroundGlobal] {
+    background: var(--background-global)!important;
+}
+main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;  // Zorg ervoor dat het main-element de volledige viewport-hoogte heeft
+}
+  
+ion-grid.mainGrid {
+    flex: 1;  // Laat het grid zich aanpassen aan de resterende ruimte binnen het scherm
+    overflow: hidden;  // Verberg overbodige scroll buiten de kolommen
+    height:100%;
+}
+  
+.selectColumn,
+.detailColumn {
+    height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
+    overflow-y: auto;  // Activeer verticale scroll wanneer nodig
+    padding-right: 10px;  // Optionele padding voor scrollbalk
+}
+.avatarImage{
+    height: 200px;
+    width:100%;
+}
+.cardButton{
+    --border-color:#eaeaea;
+    --color:var(--ion-color-primary);
+}
+.cardButton:hover{
+    --border-color:var(--ion-color-primary);
+}
+.creditButton{
+    --border-color:var(--ion-color-primary);
+    --color:var(--ion-color-primary);
+    margin-right:30px;
+    --padding-start: 10px !important;
+    --padding-end: 10px !important;
+}
+.creditButton:hover{
+    --background:none;
+}
+.btnImgChange{
+    position: absolute;
+    text-align: center;
+    bottom: 20px;
+}
+.typeItem{
+    padding: 5px 10px;
+    border-radius: 16px;
+    background-color: var(--ion-color-primary);
+    color:var(--ion-color-primary-contrast);
+    font-size: 12px;
+    text-align: center;
+    margin: 5px 5px 5px 0px;
+    font-weight: 500;
+    display: inline-block;
+
+}
+.selectedModule{
+    --background: var(--ion-color-primary);
+    ion-label{
+        color:var(--ion-color-primary-contrast);
+    }
+}
+
+.infoItemImage{
+    width: 100%;
+    height: 200px;
+    // border:solid 1px #eaeaea;
+    border-radius: 24px;
+    background:var(--background-global);
+    overflow: hidden;
+    img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+.ImageDeleteButton{
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    z-index: 2;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--ion-color-danger);
+}
+.ImageUploadButton{
+    position: absolute;
+    width: 100%;
+    bottom:20px;
+    text-align: center;
+    z-index: 2;
+}

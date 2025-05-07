@@ -52,6 +52,11 @@ export class CasesPage implements OnInit {
   listSortBy = 'conversation'
   listOrder = -1
 
+  showBasics: boolean = false;
+  showUserInput: boolean = false;
+  showUserInputMore: boolean = true;
+  showCasus: boolean = false;
+  showUserOptions: boolean = false;
 
   constructor(
     public firestore:FirestoreService,
@@ -125,7 +130,6 @@ export class CasesPage implements OnInit {
 
 
 
-
   // private loadCases(callback?:Function) {
   //   this.firestore.get('cases').subscribe((cases) => {
   //     this.cases = cases.map((casus:any) => {
@@ -184,6 +188,12 @@ export class CasesPage implements OnInit {
             level_explanation: doc.translation?.level_explanation || doc.level_explanation,
             role: doc.translation?.role || doc.role,
           }));
+          // if(this.caseItem.id){
+          //   this.caseItem = this.cases.filter((e:any) => {
+          //     return e.id === this.caseItem.id
+          //   })[0]
+          // }
+
           if (callback) {
             callback();
           }
@@ -194,17 +204,34 @@ export class CasesPage implements OnInit {
     }
 
 
-  private loadCategories() {
+  private async loadCategories() {
     this.firestore.get('categories').subscribe((categories) => {
       this.categories = categories.map((category:any) => {
         return { id: category.payload.doc.id, ...category.payload.doc.data() }
       })
+      this.loadCategorySubcollections()
       this.categoriesList = this.categories.map((category:any) => {
         return { select: category.id, title: category.title, id: category.id, icon: 'faArrowRight' }
       })
     })
   }
+
+  loadCategorySubcollections(){
+    this.categories.forEach((category:any) => {
+      this.firestore.getSubSubDoc('categories',category.id,'languages',this.translate.currentLang,'agents','reaction').subscribe((reaction:any) => {
+        // add reaction to category
+        this.categories = this.categories.map((cat:any) => {
+          if(cat.id === category.id){
+            cat.reaction = reaction.payload.data() 
+          }
+          return cat
+        })
+      })
+    })
+  }
+
   categoryInfo(id:string){
+    console.log(this.categories)
     if(!this.categories.length) return {}
     let category = this.categories.filter((e:any) => {
       return e.id === id
@@ -220,8 +247,19 @@ export class CasesPage implements OnInit {
     console.log(this.caseItem)
   }
 
+  getCaseItem(id:string){
+    let item = this.cases.filter((e:any) => {
+      return e.id === id
+    })
+    if(item.length){
+      this.caseItem = item[0]
+    }
+    else{
+      this.caseItem = {}
+    }
+  }
+
   update(field?:string,isArray:boolean = false,caseItem?:any){
-    console.log(caseItem)
     if(!caseItem?.id){
       caseItem = this.caseItem
     }
@@ -248,13 +286,56 @@ export class CasesPage implements OnInit {
   // }
 
   shortMenu:any
+
+  addCase(){
+    this.toast.showLoader()
+    let casus = this.casesService.defaultCase('','')
+    this.firestore.create('cases',casus).then(()=>{
+      this.loadCases(()=>{
+        let item = this.cases.filter((e:any) => {
+          return e.created === casus.created
+        })
+        if(item.length){
+          this.caseItem = item[0]
+        }
+        else{
+          this.caseItem = {}
+        }
+        this.toast.hideLoader()
+      })
+    })
+  }
+
+  changeCategory(){
+    setTimeout(() => {
+      this.caseItem.openingMessage = this.categoryInfo(this.caseItem.conversation).reaction.content
+      this.update('openingMessage')
+      this.toast.show(this.translate.instant('cases.change_category_message'))
+    }, 100);
+  }
+
   async openAdd(){
     
     await this.modalService.selectItem('',this.categoriesList,(result:any)=>{
       if(result.data){
-        let casus = this.casesService.defaultCase(result.data.id,this.categoryInfo(result.data.id).openingMessage)
+        let casus = this.casesService.defaultCase(result.data.id,this.categoryInfo(result.data.id).reaction.content)
         
-        this.editCase(casus)
+        casus.openingMessage = this.categoryInfo(casus.conversation).reaction.content
+
+        console.log(casus)
+        this.firestore.create('cases',casus).then(()=>{
+          this.loadCases(()=>{
+            let item = this.cases.filter((e:any) => {
+              return e.created === casus.created
+            })
+            if(item.length){
+              this.caseItem = item[0]
+            }
+            else{
+              this.caseItem = {}
+            }
+          })
+        })
       }
     })
   }
@@ -350,6 +431,32 @@ export class CasesPage implements OnInit {
     this.selectMenuservice.selectedItem = undefined
   }
 
+  generateCasus(event:Event,caseItem:any){
+    event.preventDefault()
+    event.stopPropagation()
+    
+    caseItem.existing = true
+
+    this.modalService.generateCase({admin:true,conversationInfo:this.categoryInfo(this.caseItem.conversation),...caseItem}).then((res:any)=>{
+      console.log(res)
+      if(res && res.id){
+        delete res.admin
+        delete res.conversationInfo
+        delete res.existing
+        if(res.casus!=caseItem.casus){
+          res.translate = false
+        }
+        this.firestore.set('cases',res.id,res).then(()=>{
+          this.loadCases(()=>{
+            this.caseItem = this.cases.filter((e:any) => {
+              return e.id === res.id
+            })[0]
+          })
+        })
+      }
+    })
+    this.selectMenuservice.selectedItem = undefined
+  }
 
   deleteCase(){
     this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
@@ -526,7 +633,6 @@ export class CasesPage implements OnInit {
     else{
       id = caseItem.id
     }
-    console.log(caseItem)
     let list:any[] = []
     this.nav.langList.forEach((lang)=>{
       list.push({
@@ -541,11 +647,14 @@ export class CasesPage implements OnInit {
       value:this.translate.currentLang,
       optionKeys:list
     }],(result:any)=>{
-      console.log(result)
       if(result.data){
         this.firestore.update('cases',id!,{original_language:result.data[0].value,translate:false})
         setTimeout(() => {
-          this.firestore.update('cases',id!,{original_language:result.data[0].value,translate:true})
+          this.firestore.update('cases',id!,{original_language:result.data[0].value,translate:true}).then(()=>{
+            if(this.caseItem.id){
+              this.caseItem = {}
+            }
+          })
         }, 1000);
         this.toast.show('Translation started')
       }
@@ -804,7 +913,7 @@ export class CasesPage implements OnInit {
       // const imageUrl = responseData.imageUrl;
   
       // console.log("Image URL:", imageUrl);
-    }
+  }
   
 
     filteredCases: any[] = [];
@@ -1053,6 +1162,21 @@ export class CasesPage implements OnInit {
 
     }
 
+
+    editCasus(event:Event){
+      event.preventDefault()
+      event.stopPropagation()
+
+      this.modalService.editHtmlItem({value:this.caseItem.casus},(result:any)=>{
+        if(result.data && result.data.value!=this.caseItem.casus){
+          this.caseItem.casus = result.data.value
+          this.caseItem.translate = false
+          this.firestore.update('cases',this.caseItem.id,{casus:result.data.value,translate:false})
+        }
+      })
+
+    }
+
     addUseCase(){
       // let useCases:any = {
       //   "0PPq0Oerj0xmvQeAHv03":["self_develop","solve_problem"],
@@ -1280,4 +1404,49 @@ export class CasesPage implements OnInit {
       // this.firestore.update('cases',"zDzdeaUsNM3A7IqCt6jy",{useCases:useCases["zDzdeaUsNM3A7IqCt6jy"]})
     }
 
+
+    caseNotready(){
+      let check = 
+        this.caseItem?.title == '' || 
+        this.caseItem?.role == '' ||
+        this.caseItem?.user_info == '' ||
+        ! this.caseItem?.level ||
+        this.caseItem?.types?.length == 0 ||
+        !this.caseItem?.attitude ||
+        !this.caseItem?.steadfastness ||
+        this.caseItem?.conversation == '' ||
+        !this.caseItem?.translate ||
+        !this.caseItem?.order_rating ||
+        this.caseItem?.photo == '' ||
+        (
+          this.caseItem?.editable_by_user?.free_answer == true &&
+          this.caseItem?.free_question == ''
+        )
+
+        return check
+    }
+
+    caseReady(part:string){
+      let check = false
+      switch(part){
+        case 'title':
+          check = this.caseItem?.title && this.caseItem?.user_info
+          break;
+        case 'basics':
+          check = this.caseItem?.role && this.caseItem?.conversation && this.caseItem.types.length && this.caseItem?.level && this.caseItem?.attitude && this.caseItem?.steadfastness && this.caseItem?.order_rating
+          break;
+        case 'looks':
+          check = this.caseItem?.photo
+          break;
+        case 'settings':
+          check = this.caseItem.translate && this.caseItem?.open_to_user
+          break;
+        case 'input':
+          check = ((this.caseItem.openingMessage && this.caseItem.editable_by_user.openingMessage) || !this.caseItem.editable_by_user.openingMessage) && ((this.caseItem.editable_by_user.free_answer && this.caseItem?.free_question) || !this.caseItem.editable_by_user.free_answer)
+          break;
+        default:
+          check = false
+      }
+      return check
+    }
 }

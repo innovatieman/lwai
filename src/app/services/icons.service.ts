@@ -20,7 +20,7 @@ import {
   faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
-  faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip
+  faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -135,6 +135,7 @@ export class IconsService {
     faIcons,
     faImage,
     faIndent,
+    faInfinity,
     faInfo,
     faInfoCircle,
     faLandmark,
@@ -194,6 +195,7 @@ export class IconsService {
     faSyncAlt,
     faTag,
     faTasks,
+    faTh,
     faThermometerHalf,
     faThList,
     faThumbsDown,
@@ -217,6 +219,7 @@ export class IconsService {
     faVideoSlash,
     faWind,
     faWrench,
+    faLink,
     faLinkedin,
     faFacebook,
     faInstagram,

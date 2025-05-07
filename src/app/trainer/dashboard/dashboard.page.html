@@ -1,0 +1,40 @@
+<app-header page="trainer"></app-header>
+<main class="trainerPage">
+    <ion-toolbar class="buttonBar">
+      <div style="width:100%" center-hor flex>
+          <div style="max-width: 1350px;width:100%;padding:5px 15px 0px 15px">
+              <ion-row >
+                <ion-col size="2" noPadding>
+                  <ion-card pointer center class="topButton isActive" (click)="nav.go('trainer/dashboard')">
+                      <ion-card-title>Dashboard</ion-card-title>
+                  </ion-card>
+                </ion-col>
+                <ion-col size="2" noPadding>
+                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/cases')">
+                      <ion-card-title>Cases</ion-card-title>
+                  </ion-card>
+                </ion-col>
+                <ion-col size="2" noPadding>
+                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/info-items')">
+                      <ion-card-title>Kennis</ion-card-title>
+                  </ion-card>
+                </ion-col>
+                <ion-col size="2" noPadding>
+                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/modules')">
+                      <ion-card-title>Modules</ion-card-title>
+                  </ion-card>
+                </ion-col>
+                <ion-col size="2" noPadding>
+                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/trainings')">
+                      <ion-card-title>Trainingen</ion-card-title>
+                  </ion-card>
+                </ion-col>
+                <!-- <ion-col size="2" noPadding *ngIf="!trainerService.trainingItem.id">
+                  <div flex fullwidth center-ver style="padding:10px">
+                      <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" placeholder="Zoeken"  fullwidth noMargin noPadding></ion-searchbar>
+                  </div>
+                </ion-col> -->
+              </ion-row>
+          </div>
+      </div>
+    </ion-toolbar>

@@ -23,7 +23,7 @@ export class VoicesPage implements OnInit {
       emotion: this.test.emotion,
       text: this.test.text,
       language: this.test.language,
-
+      voiceId:'AyQGttFzg1EY7EIKkpHs'
     }
     console.log(obj)
     const response = await fetch(url, {

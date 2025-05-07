@@ -9,7 +9,7 @@
   </ion-button>
 </div>
 <div style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc('+(vh * 100)+'px - 175px)' : 'calc('+(vh * 100)+'px - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}">
-  <div *ngIf="options.closing" [innerHtml]="options.closing | sanitizeHtml" weight400 ></div>
+  <div *ngIf="options.closing" [innerHtml]="options.closing | convertAiTextToHtml | sanitizeHtml" weight400 ></div>
 
   <div singleLine></div>
 

@@ -1,5 +1,5 @@
 <app-header page="trainer"></app-header>
-<main>
+<main class="trainerPage">
     <!-- <ion-toolbar class="buttonBar">
         <ion-buttons slot="end">
           <ion-button fill="outline" color="light" (click)="add()">Nieuw</ion-button>
@@ -11,7 +11,7 @@
           <div style="max-width: 1350px;width:100%;padding:5px 15px 0px 15px">
               <ion-row >
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton" (click)="nav.go('trainer/courses/dashboard')" [ngStyle]="{'background': activeTab=='dashboard' ? 'var(--ion-color-primary)' : 'white'}">
+                  <ion-card pointer center class="topButton" (click)="nav.go('trainer/dashboard')" [ngStyle]="{'background': activeTab=='dashboard' ? 'var(--ion-color-primary)' : 'white'}">
                       <ion-card-title [ngStyle]="{'color': activeTab=='dashboard' ? 'var(--ion-color-primary-contrast)' : 'var(--ion-color-primary)'}">Dashboard</ion-card-title>
                   </ion-card>
                 </ion-col>
@@ -21,7 +21,7 @@
                     </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton" (click)="nav.go('trainer/courses/cases')" [ngStyle]="{'background': activeTab=='cases' ? 'var(--ion-color-primary)' : 'white'}">
+                  <ion-card pointer center class="topButton" (click)="nav.go('trainer/cases')" [ngStyle]="{'background': activeTab=='cases' ? 'var(--ion-color-primary)' : 'white'}">
                       <ion-card-title [ngStyle]="{'color': activeTab=='cases' ? 'var(--ion-color-primary-contrast)' : 'var(--ion-color-primary)'}">Cases</ion-card-title>
                   </ion-card>
                 </ion-col>
@@ -531,14 +531,364 @@
             
           </div>
 
+
+          <div *ngIf="itemIsSelected('caseItem')">
+            <ion-row noPadding *ngIf="caseItem?.id">
+              <ion-col [size]="media.smallDevice ? 12 : 7" noPadding>
+                  <ion-card basicPadding *ngIf="caseItem?.id" [ngStyle]="{'outline':caseReady('title') ? 'solid 2px var(--ion-color-primary)' : 'solid 2px var(--ion-color-warning)'}">
+                      <ion-card-header>
+                          <ion-card-title flex center-ver>
+                              <span weight600 titleIcon>{{'cases.title_and_info' | translate}}</span>
+                              <span class="spacer"></span>
+                              <fa-icon pointer titleIcon *ngIf="caseReady('title')" text-success font-24 [icon]="icon.get('faCheck')"></fa-icon>
+                              <fa-icon pointer titleIcon *ngIf="!caseReady('title')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')"></fa-icon>
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content>
+                          <ion-item lines="none" listCard>
+                              <ion-label position="floating">{{'cases.title' | translate}}</ion-label>
+                              <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
+                          </ion-item>
+                          <ion-item lines="none" listCard>
+                              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.user_info" (ionChange)="update('user_info')">
+                              <div slot="label">{{'cases.short_info' | translate}}</div>
+                              </ion-textarea>
+                          </ion-item>         
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+
+              <ion-col [size]="media.smallDevice ? 12 : 5" noPadding>
+                  <ion-card basicPadding [ngStyle]="{'outline':caseReady('settings') ? 'solid 2px var(--ion-color-primary)' : 'solid 2px var(--ion-color-warning)'}">
+                      <ion-card-header>
+                          <ion-card-title flex center-ver>
+                              <span weight600>{{'cases.settings' | translate}}</span>
+                              <div class="spacer"></div>
+                              <span style="color:rgba(0,0,0,0.4);text-transform:none" font-14>({{caseItem.id}})</span>
+                              <fa-icon pointer titleIcon *ngIf="caseReady('settings')" text-success font-24 [icon]="icon.get('faCheck')"></fa-icon>
+                              <fa-icon pointer titleIcon *ngIf="!caseReady('settings')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')"></fa-icon>
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content>
+                          
+                          <ion-item lines="none" listCard>
+                              <ion-toggle color="primary" [disabled]="true" [(ngModel)]="caseItem.translate">
+                                  {{'cases.translated' | translate}}
+                              </ion-toggle>
+                              <fa-icon slot="end" pointer titleIcon font-24 [icon]="icon.get('faGlobe')" (click)="startTranslation()"></fa-icon>
+                          </ion-item>
+
+                          <ion-item [disabled]="(caseNotready() && !caseItem.open_to_user)" lines="none" listCard>
+                              <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
+                                  {{'cases.open_for_users' | translate}}
+                              </ion-toggle>
+                          </ion-item>
+
+                          <ion-item lines="none" listCard>
+                              <ion-toggle color="primary" [(ngModel)]="caseItem.create_self" (ionChange)="update('create_self')">
+                                  {{'cases.self_create_case' | translate}}
+                              </ion-toggle>
+                          </ion-item>
+
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+            </ion-row>
+
+            <ion-row noPadding *ngIf="caseItem?.id">
+              <ion-col [size]="media.smallDevice ? 12 : 7" noPadding>
+                  <ion-card basicPadding [ngStyle]="{'outline':caseReady('basics') ? 'solid 2px var(--ion-color-primary)' : 'solid 2px var(--ion-color-warning)'}">
+                      <ion-card-header (click)="showBasics=!showBasics">
+                          <ion-card-title flex center-ver>
+                              <span weight600>{{'cases.basics' | translate}}</span>
+                              <span class="spacer"></span>
+                              <fa-icon pointer titleIcon *ngIf="caseReady('basics')" text-success font-24 [icon]="icon.get('faCheck')"></fa-icon>
+                              <fa-icon pointer titleIcon *ngIf="!caseReady('basics')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')"></fa-icon>
+                              <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': showBasics ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content *ngIf="showBasics">
+                          <ion-row>
+                              <ion-col size="8">
+                                  <ion-item lines="none" listCard>
+                                      <ion-label position="stacked">{{'conversation_technique' | translate}}</ion-label>
+                                      <ion-select interface="popover" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation');changeCategory()">
+                                          <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
+                                      </ion-select>
+                                  </ion-item>
+                              </ion-col>
+                              <ion-col size="4">
+                                  <ion-item lines="none" listCard>
+                                      <ion-label position="stacked">{{'cases.order_rating' | translate}}</ion-label>
+                                      <ion-input type="number" min="1" max="10" [(ngModel)]="caseItem.order_rating" (ionChange)="update('order_rating')"></ion-input>
+                                  </ion-item>
+                              </ion-col>
+                          </ion-row>
+
+                          <ion-item lines="none" listCard>
+                              <ion-label position="stacked">{{'cases.role' | translate}}</ion-label>
+                              <ion-input [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
+                          </ion-item>
+
+                          <ion-item lines="none" listCard (click)="selectTypes(caseItem.types)" class="ionItemTypes">
+                              <ion-label position="stacked">{{'cases.filter_typen' | translate}}</ion-label>
+                              <ion-row fullwidth>
+                                  <ion-col size="4" *ngFor="let type of caseItem.types">
+                                      <div class="typeItem">{{infoService.getConversationType('',type)[translate.currentLang]}}</div>
+                                  </ion-col>
+                              </ion-row>
+                          </ion-item>
+              
+                          <!-- <ion-item pointer lines="none" listCard class="ionItemTypes">
+                              <ion-label position="stacked">{{'tags' | translate}}</ion-label>
+                              <ion-input [(ngModel)]="caseItem.tag" (keydown.enter)="addTag()" (ionChange)="addTag()">
+                              <ion-button fill="solid" slot="end" [disabled]="!caseItem.tag" (click)="addTag()">
+                                  <fa-icon [icon]="icon.get('faPlus')"></fa-icon>
+                              </ion-button>
+                              </ion-input>
+                              <div>
+                                  <span *ngFor="let tag of caseItem.tags;let i = index">
+                                      <div class="typeItem" center-ver center-hor>
+                                          <span>{{tag | uppercase}}</span>
+                                          <fa-icon [icon]="icon.get('faTimes')" trash titleIcon (click)="removeTag(i)"></fa-icon>
+                                      </div>
+                                  </span>
+                              </div>
+                          </ion-item> -->
+
+                          <ion-item lines="none" listCard>
+                              <ion-label position="stacked">{{'standards.level' | translate}}</ion-label>
+                              <ion-select interface="popover" [(ngModel)]="caseItem.level" (ionChange)="update('level')">
+                                  <ion-select-option *ngFor="let level of [1,2,3,4,5]" [value]="level">{{level}}</ion-select-option>
+                              </ion-select>
+                          </ion-item>
+
+                          <ion-row>
+                              <ion-col [size]="media.smallDevice ? 12 : 12">
+                                  <ion-item lines="none" listCard>
+                                      <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
+                                          <ion-label style="font-size:14px" slot="start">{{'cases.attitude' | translate}}</ion-label>
+                                          <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
+                                      </ion-range>
+                                  </ion-item>
+                              </ion-col>
+                              <ion-col [size]="media.smallDevice ? 12 : 12">
+                                  <ion-item lines="none" listCard>
+                                      <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
+                                          <ion-label style="font-size:14px" slot="start">{{'cases.steadfastness' | translate}}</ion-label>
+                                          <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
+                                      </ion-range>
+                                  </ion-item>
+                              </ion-col> 
+                                  
+                          </ion-row>
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+
+              <ion-col [size]="media.smallDevice ? 12 : 5" noPadding>
+                  <ion-card basicPadding [ngStyle]="{'outline':caseReady('looks') ? 'solid 2px var(--ion-color-primary)' : 'solid 2px var(--ion-color-warning)'}">
+                      <ion-card-header (click)="showBasics=!showBasics">
+                          <ion-card-title flex center-ver>
+                              <span weight600>{{'cases.looks' | translate}}</span>
+                              <span class="spacer"></span>
+                              <fa-icon pointer titleIcon *ngIf="caseReady('looks')" text-success font-24 [icon]="icon.get('faCheck')"></fa-icon>
+                              <fa-icon pointer titleIcon *ngIf="!caseReady('looks')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')"></fa-icon>
+
+                              <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': showBasics ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content *ngIf="showBasics">
+                          <ion-card pointer class="caseAvatar" style="height:300px" (click)="selectAvatar($event)">
+                              <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
+                              </ion-card-content>
+                              <!-- <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
+                                  <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
+                              </ion-card-content> -->
+                              <div fullwidth center-ver center-hor class="btnImgChange">
+                                  <ion-button fill="solid" color="light" class="saveButton" noPointerEvents>
+                                      <span text-dark>
+                                          <fa-icon [icon]="icon.get('faImage')"></fa-icon>
+                                          {{'cases.photo' | translate}}
+                                      </span>
+                                  </ion-button>
+                                  <ion-button fill="solid" color="light" class="saveButton" (click)="selectStreamingAvatar($event)">
+                                      <span text-dark>
+                                          <fa-icon [icon]="icon.get('faVideo')"></fa-icon>
+                                          {{'cases.video' | translate}}
+                                      </span>
+                                  </ion-button>
+                              </div>
+                          </ion-card>
+                          <ion-item lines="none" listCard marginTop>
+                              <ion-label position="stacked"> {{'cases.photo' | translate}}</ion-label>
+                              <ion-input [(ngModel)]="caseItem.photo"></ion-input>
+                          </ion-item>
+
+                          <ion-row noPadding>
+                              <ion-col [size]="media.smallDevice ? 12 : 6" style="padding:0 5px 0 0">
+                                  <ion-item lines="none" listCard>
+                                      <ion-label position="stacked">{{'cases.age' | translate}}</ion-label>
+                                      <ion-input [(ngModel)]="caseItem.age"></ion-input>
+                                  </ion-item>
+                              </ion-col>
+                              <ion-col [size]="media.smallDevice ? 12 : 6" style="padding:0 0 0 5px">
+                                  <ion-item lines="none" listCard>
+                                      <ion-label position="stacked">{{'cases.gender' | translate}}</ion-label>
+                                      <ion-input [(ngModel)]="caseItem.gender"></ion-input>
+                                  </ion-item>
+                              </ion-col>
+                          </ion-row>
+                          
+                          <ion-item lines="none" listCard>
+                              <ion-label position="stacked">{{'cases.ethnicity' | translate}}</ion-label>
+                              <ion-input [(ngModel)]="caseItem.ethnicity"></ion-input>
+                          </ion-item>
+
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+
+            </ion-row>
+
+            <ion-row noPadding *ngIf="caseItem?.id" >
+              <ion-col size="12">
+                  <ion-card basicPadding [ngStyle]="{'outline': 'solid 2px var(--ion-color-primary)' }">
+                      <ion-card-header (click)="showCasus=!showCasus">
+                          <ion-card-title flex center-ver>
+                              <span weight600>{{'cases.case_content' | translate}}</span>
+                              <span class="spacer"></span>
+                              <ion-button class="saveButton" *ngIf="showCasus" color="warning" (click)="generateCasus($event,caseItem)" fill="outline" titleIcon>{{'cases.generate' | translate}}</ion-button>
+                              <ion-button class="saveButton" *ngIf="showCasus" fill="outline" (click)="editCasus($event)" titleIcon>{{'cases.write_yourself' | translate}}</ion-button>
+                              <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')"  [ngStyle]="{'transform': showCasus ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content *ngIf="showCasus">
+                          <!-- <div marginBottom>
+                              Hier een kort uitleg over hoe de casus werkt. 
+                          </div>  -->
+                          <div basicPadding borderRadius24 backgroundGlobal [innerHTML]="caseItem.casus ? (caseItem.casus | sanitizeHtml) : (translate.instant('cases.no_case_yet') | sanitizeHtml)"></div> 
+
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+            </ion-row>
+          
+            <ion-row noPadding *ngIf="caseItem?.id">
+              <ion-col size="12">
+                  <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}">
+                      <ion-card-header (click)="showUserOptions=!showUserOptions">
+                          <ion-card-title flex center-ver>
+                              <span weight600>{{'cases.user_options' | translate}}</span>
+                              <span class="spacer"></span>
+                              <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')"  [ngStyle]="{'transform': showUserOptions ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content *ngIf="showUserOptions">
+                          
+                          <ion-card-title flex center-ver marginTop marginBottom>
+                              <span weight600>{{'cases.input' | translate}}</span>
+                              <span class="spacer"></span>
+                          </ion-card-title>
+
+                          <ion-item lines="none" listCard fullwidth>
+                              <ion-label position="stacked" ></ion-label>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.openingMessage" (ionChange)="update('editable_by_user')" color="primary" weight600>{{'case_options.editable_openingMessage' | translate}}</ion-toggle>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.free_answer" (ionChange)="update('editable_by_user')" color="primary" weight600>{{'case_options.editable_free_answer' | translate}}</ion-toggle>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.goals.free" (ionChange)="update('editable_by_user')" color="primary" weight600>{{'conversation.goal' | translate}}</ion-toggle>
+                          </ion-item>
+
+                          
+                          <ion-card-title flex center-ver marginTop marginBottom>
+                              <span weight600>{{'cases.user_help' | translate}}</span>
+                              <span class="spacer"></span>
+                          </ion-card-title>
+                      
+                          <ion-item lines="none" listCard fullwidth>
+                              <ion-label position="stacked" ></ion-label>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.agents.choices"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_choices' | translate}}</ion-toggle>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.agents.facts"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_facts' | translate}}</ion-toggle>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.agents.background"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_background' | translate}}</ion-toggle>
+                              <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.agents.undo"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_undo' | translate}}</ion-toggle>
+                          </ion-item>
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+            </ion-row>
+
+            <ion-row noPadding *ngIf="caseItem?.id">
+              <ion-col size="12">
+              <ion-card basicPadding [ngStyle]="{'outline':caseReady('input') ? 'solid 2px var(--ion-color-primary)' : 'solid 2px var(--ion-color-warning)'}">
+                      <ion-card-header (click)="showUserInput=!showUserInput">
+                          <ion-card-title flex center-ver>
+                              <span weight600>{{'cases.user_input' | translate}}</span>
+                              <span class="spacer"></span>
+                              <fa-icon pointer titleIcon *ngIf="caseReady('input')" text-success font-24 [icon]="icon.get('faCheck')"></fa-icon>
+                              <fa-icon pointer titleIcon *ngIf="!caseReady('input')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')"></fa-icon>
+                              <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')"  [ngStyle]="{'transform': showUserInput ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+
+                          </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content *ngIf="showUserInput">
+
+                          <ion-item lines="none" listCard>
+                              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage" (ionChange)="update('openingMessage')">
+                              <div slot="label">{{'cases.opening_message' | translate}}</div>
+                              </ion-textarea>
+                          </ion-item>  
+
+                          <ion-item lines="none" listCard>
+                              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free" (ionChange)="update('goalsItems')">
+                              <div slot="label">{{'cases.goal_conversation' | translate}}</div>
+                              </ion-textarea>
+                          </ion-item>  
+
+                          <ion-card-title *ngIf="caseItem.editable_by_user.free_answer" flex center-ver marginTop marginBottom (click)="showUserInputMore=!showUserInputMore">
+                              <span weight600>{{'cases.free_questions' | translate}}</span>
+                              <span class="spacer"></span>
+                              <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': showUserInputMore ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                          </ion-card-title>
+
+                          <div *ngIf="showUserInputMore && caseItem.editable_by_user.free_answer">
+                              <ion-item lines="none" listCard>
+                                  <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question" (ionChange)="update('free_question')">
+                                  <div slot="label">{{'cases.free_question' | translate}}</div>
+                                  </ion-textarea>
+                              </ion-item>  
+
+                              <ion-item lines="none" listCard>
+                                  <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question2" (ionChange)="update('free_question2')">
+                                  <div slot="label">{{'cases.free_question' | translate}} 2</div>
+                                  </ion-textarea>
+                              </ion-item>  
+
+                              <ion-item lines="none" listCard>
+                                  <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question3" (ionChange)="update('free_question3')">
+                                  <div slot="label">{{'cases.free_question' | translate}} 3</div>
+                                  </ion-textarea>
+                              </ion-item>  
+
+                              <ion-item lines="none" listCard>
+                                  <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question4" (ionChange)="update('free_question4')">
+                                  <div slot="label">{{'cases.free_question' | translate}} 4</div>
+                                  </ion-textarea>
+                              </ion-item>  
+                          </div>
+
+                          
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+            </ion-row>
+          </div>
+
           <!-- case item -->
-          <ion-card basicPadding borderRadius24 fullwidth *ngIf="itemIsSelected('caseItem')">
+          <!-- <ion-card basicPadding borderRadius24 fullwidth *ngIf="itemIsSelected('caseItem')">
             <ion-card-header>
               <ion-card-title flex center-ver>
                   <ion-input style="font-size:1.25rem" weight700 type="text" (ionChange)="update('cases','title')" [(ngModel)]="caseItem.title"></ion-input>
                   <span class="spacer"></span>
-                  <!-- <fa-icon font-24 pointer titleIcon [icon]="icon.get('faPen')" (click)="editCaseAll()"></fa-icon>
-                  <fa-icon font-24 pointer titleIcon [icon]="icon.get('faTimes')" (click)="closeCase()"></fa-icon> -->
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
@@ -572,22 +922,12 @@
                         </ion-row>
                       </ion-item>
 
-                      <!-- <ion-item lines="none" listCard>
-                          <ion-label position="stacked">Avatar ID</ion-label>
-                          <ion-input [(ngModel)]="caseItem.avatarName" (ionChange)="update('cases','avatarName')"></ion-input>
-                      </ion-item>
-                      <ion-item lines="none" listCard>
-                          <ion-label position="stacked">Foto URL</ion-label>
-                          <ion-input [(ngModel)]="caseItem.photo" (ionChange)="update('cases','photo')"></ion-input>
-                      </ion-item> -->
                   </ion-col>
                   <ion-col size="4">
                       <ion-card pointer class="caseAvatar" (click)="selectAvatar($event)">
                         <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
                         </ion-card-content>
-                        <!-- <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
-                            <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
-                        </ion-card-content> -->
+
                         <div fullwidth center-ver center-hor class="btnImgChange">
                             <ion-button fill="solid" color="light" class="saveButton" noPointerEvents>
                                 <span text-dark>
@@ -640,16 +980,12 @@
                       
               </ion-row>
   
-              <!-- <div flex center-ver>
-                <span class="spacer"></span>
-                <ion-button color="danger" (click)="deleteCase(caseItem)" fill="solid">
-                  <fa-icon [icon]="icon.get('faTrashAlt')" font-16></fa-icon>
-                  Verwijderen
-                </ion-button>
-              </div> -->
               
             </ion-card-content>
-          </ion-card>
+          </ion-card> -->
+
+
+
 
           <!-- info item -->
           <ion-card basicPadding borderRadius24 fullwidth *ngIf="itemIsSelected('infoItem')">

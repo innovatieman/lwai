@@ -39,6 +39,8 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
           let credits = {
             total: 300,
             lastUpdated: admin.firestore.Timestamp.now(),
+            added:moment().unix(),
+            expires:moment().add(1,'year').unix(),
           };
           const deletedUsersRef = admin.firestore().collection('deletedUsers').doc(user.email)
           const deletedUsers = await deletedUsersRef.get()
@@ -231,7 +233,7 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   const email = data.email;
   const displayName = data.displayName || 'User';
 
-  const user = await admin.firestore().collection('users').where('email', '==', email).get();
+  const user:any = await admin.firestore().collection('users').where('email', '==', email).get();
   if (user.empty) {
     return new responder.Message('User not found', 404);
   }
@@ -257,7 +259,7 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   // Genereer de verificatielink
   const link = await admin.auth().generateEmailVerificationLink(email,actionCodeSettings);
 
-  console.log(`Generated link: ${link}`);
+  // console.log(`Generated link: ${link}`);
 
   // Haal de oobCode uit de gegenereerde link
   const urlParams = new URLSearchParams(link.split('?')[1]);
@@ -269,9 +271,13 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   const customLink = `https://conversation.alicialabs.com/verify?oobCode=${oobCode}`;
 
   // Dynamische gegevens voor de template
+  let template = 'verify_email';
+  if(data.template){
+    template = data.template
+  }
   const emailData = {
     to: email,
-    template: 'verify_email',
+    template: template,
     language: language,
     data: {
       name: displayName,
@@ -368,6 +374,22 @@ exports.editUserFilter = functions.region('europe-west1').https.onCall(async (da
   return new responder.Message('Success', 200);
 })
 
+exports.passwordChangeCustom = functions.region('europe-west1').https.onCall((data,context)=>{
+  return admin.auth().getUser(context.auth.uid)
+  .then(user=>{
+      return admin.auth().updateUser(user.uid,{
+          password:data.password
+      })
+  })
+  .then(()=>{
+      return new responder.Message('Wachtwoord gewijzigd')
+  })
+  .catch((err:any)=>{
+      return new responder.Message(err,err.code)
+  })
+})
+
+
 exports.verifyEmailInitCode = functions.region('europe-west1').https.onCall(async (data, context) => {
   const { email, code } = data;
 
@@ -406,12 +428,14 @@ exports.verifyEmailInitCode = functions.region('europe-west1').https.onCall(asyn
     return new responder.Message("user not found", 500);
   }
 
+  const oobCodePassword = await admin.auth().createCustomToken(userRecord.uid)
+
   // Zet emailVerified op true
   await admin.auth().updateUser(userRecord.uid, { emailVerified: true });
 
   // Verwijder de code
   await docRef.delete();
-  return new responder.Message("email verified", 200);
+  return new responder.Message({message:"email verified",oobCode:oobCodePassword}, 200);
 });
 
 exports.deleteSelf = functions.region('europe-west1').https.onCall(async (data, context) => {
@@ -441,12 +465,22 @@ exports.checkOffer = functions.region('europe-west1').https.onCall(async (data, 
 
   const offer = await admin.firestore().collection('specialCodes').doc(code).get()
   if(!offer.exists){
+    await admin.firestore().collection('users').doc(uid).collection('offers').doc(code).set({
+      code:code,
+      createdAt:Date.now(),
+      status:'not found',
+    })
     return new responder.Message('Offer not found', 404);
   }
 
   const offerData = offer.data()
 
   if(offerData?.expires && offerData?.expires < (Date.now()/1000)){
+    await admin.firestore().collection('users').doc(uid).collection('offers').doc(code).set({
+      code:code,
+      createdAt:Date.now(),
+      status:'expired'
+    })
     return new responder.Message('Offer expired', 500);
   }
 
@@ -462,9 +496,15 @@ exports.checkOffer = functions.region('europe-west1').https.onCall(async (data, 
   })
 
   if(offerData?.credits){
-    await admin.firestore().collection('users').doc(uid).collection('credits').doc('credits').update({
-      total:admin.firestore.FieldValue.increment(offerData.credits)
+    await admin.firestore().collection('users').doc(uid).collection('credits').add({
+      type:'offer',
+      offerCode:code,
+      total:offerData?.credits,
+      amount:offerData?.credits,
+      added:moment().unix(),
+      expires:moment().add(1,'year').unix(),
     })
+
   }
 
   return new responder.Message('Offer added', 200);

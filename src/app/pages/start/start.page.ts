@@ -18,7 +18,7 @@ import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
 import { tutorialService } from 'src/app/services/tutorial.service';
-
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-start',
@@ -44,7 +44,7 @@ export class StartPage implements OnInit {
   @ViewChild('progressCircle3Mobile',{static:false}) progressCircle3Mobile: any;
 
   [x:string]:any
-
+  selectedModule:any = null
   selectedConversation:any = null
   conversations$:any
   activeCategory:any = 'transformative' //null
@@ -96,8 +96,17 @@ export class StartPage implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'modules')){
+      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'modules' || params['tab'] == 'my_trainings')){
         this.showAll = params['tab']
+        if(params['case_types']&&params['case_types'] != 'create_self'){
+          this.showCreateSelf = false
+        }
+        else{
+          this.showCreateSelf = true
+        }
+        if(params['tab']=='my_trainings' && params['case_types']){
+          this.selectModule(params['case_types'])
+        }
       }
       else{
         this.showAll = ''
@@ -137,6 +146,10 @@ export class StartPage implements OnInit {
       //   this.searchTerm = searchTerm
       // }
       this.updateVisibleCases();
+    })
+    this.auth.coursesLoaded.subscribe((res)=>{
+      console.log('courses loaded', this.auth.activeCourses.length)
+      this.rf.detectChanges()
     })
     this.nav.changeLang.subscribe((res)=>{
       // if(location.href.indexOf('start')>-1){
@@ -616,18 +629,32 @@ export class StartPage implements OnInit {
       return item?.id || index;
     }
 
+    showCreateSelf:boolean = false;
     updateVisibleCases() {
       // | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterKey : 'level' : currentFilterLevels | filterSearch : searchTerm : false : ['title','tags']
+      
+      // console.log(this.cases.all)
 
       const filtered = this.caseFilterPipe.transform(
         this.cases.all,
         this.currentFilterTypes.types,
         this.currentFilterTypes.subjectTypes,
+        // []
         this.extraFilters.open_to_user
       );
     
+      let filteredTypes = []
+      for(let i = 0; i < filtered.length; i++){
+        if(!this.showCreateSelf && !filtered[i].create_self){
+          filteredTypes.push(filtered[i])
+        }
+        else if(this.showCreateSelf && filtered[i].create_self){
+          filteredTypes.push(filtered[i])
+        }
+      }
+
       const searched = this.filterSearchPipe.transform(
-        filtered,
+        filteredTypes,
         this.searchTerm,
         false,
         ['title','tags','user_info','id']
@@ -678,5 +705,88 @@ export class StartPage implements OnInit {
       this.updateVisibleCases();
     }
 
-    
-}
+  
+    selectModule(module:any){
+      console.log('select module',module)
+      let countCheck = 0
+      let check = setInterval(() => {
+        countCheck++
+        if(countCheck > 100){
+          clearInterval(check)
+        }
+        if(this.auth.activeCourses.length > 0){
+          clearInterval(check)
+          this.selectedModule = this.auth.getActiveCourse(module)
+          console.log('selected module',this.selectedModule)
+        }
+      }, 100);
+    }
+
+    modulesBreadCrumbs:any[] = []
+    trainingItem:any = null
+    item_id:string | null = null
+    selectSubModule(module:any){
+      console.log('select submodule',module)
+      this.modulesBreadCrumbs.push(module)
+    }
+
+    selectTrainingItem(item:any){
+      console.log('select item',item)
+      this.trainingItem = item
+    }
+
+    backBreadCrumbs(){
+      if(this.modulesBreadCrumbs.length > 0){
+        this.modulesBreadCrumbs.pop()
+      }
+      else{
+        this.selectedModule = {}
+      }
+    }
+
+    readInfoItem(){
+      let checked = false
+      for(let i = 0; i < this.selectedModule.basics.used_items.length; i++){
+        if(this.selectedModule.basics.used_items[i].id == this.trainingItem.id){
+          checked = true
+        }
+      }
+      if(!checked){
+        this.selectedModule.basics.used_items.push({id:this.trainingItem.id,read:moment().unix()})
+        this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',this.trainingItem.id,{read:moment().unix()})
+        .then((res)=>{
+          this.auth.getActiveCourses(this.auth.userInfo.uid)
+        })
+      }
+      this.trainingItem = null
+    }
+
+    itemIsFinished(item:any){
+      if(item.type=='infoItem'){
+        if(this.auth.getActiveCourse(this.selectedModule.id)?.basics?.used_items){
+          let items = this.auth.getActiveCourse(this.selectedModule.id).basics.used_items
+          if(!items){
+            items = []
+          }
+          for(let i = 0; i < items.length; i++){
+            if(items[i].id == item.id && items[i].read){
+              return true
+            }
+          }
+        }
+      }
+      else if(item.type=='case'){
+        let items = this.auth.getActiveCourse(this.selectedModule.id).basics.used_items
+        if(!items){
+          items = []
+        }
+        for(let i = 0; i < items.length; i++){
+          if(items[i].id == item.id && items[i].closed){
+            return true
+          }
+        }
+      }
+      return false
+    }
+
+  }

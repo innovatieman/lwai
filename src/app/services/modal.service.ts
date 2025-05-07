@@ -14,6 +14,7 @@ import { SelectManyPage } from '../components/modals/select-many/select-many.pag
 import { EvaluationPage } from '../components/modals/evaluation/evaluation.page';
 import { SelectImageLibraryPage } from '../components/modals/select-image-library/select-image-library.page';
 import { CaseinfoPage } from '../components/modals/caseinfo/caseinfo.page';
+import { GenerateCasePage } from '../components/modals/generate-case/generate-case.page';
 
 @Injectable({
   providedIn: 'root',
@@ -68,6 +69,22 @@ export class ModalService {
     return data || false; // Retourneert true of false
   }
 
+  async generateCase(caseItem: any): Promise<boolean> {
+    console.log(caseItem);
+    const modalItem = await this.modalController.create({
+      component: GenerateCasePage,
+      backdropDismiss: false,
+      componentProps: {
+        caseItem: caseItem,
+      },
+      cssClass: 'caseModal',
+    });
+
+    await modalItem.present();
+
+    const { data } = await modalItem.onWillDismiss();
+    return data || false; // Retourneert true of false
+  }
 
   public async showText(content:string,title?:string,video?:boolean,buttons?:any[],backdropDismiss?:boolean,callback?:any,btnsClass?:string,extraData?:any,image?:boolean){
     let options:any = {
@@ -246,6 +263,7 @@ export class ModalService {
   }
 
   async selectMany(obj:any,callback:Function){
+    console.log(obj)
     const modalItem = await this.modalController.create({
       component:SelectManyPage,
       componentProps:{

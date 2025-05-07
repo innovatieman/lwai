@@ -2,7 +2,7 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Auth, AuthProvider, getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of, Subscription } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { NavService } from '../services/nav.service';
@@ -35,7 +35,10 @@ export class AuthService {
   profile:any = {}
   skills:any = {impact:{score:0,prevScore:0},flow:{score:0,prevScore:0},logic:{score:0,prevScore:0}}
   credits:any = {total:0}
+  credits_unlimited_type:string = ''
+  creditsList:any[] = []
   creditsChanged:EventEmitter<boolean> = new EventEmitter<boolean>();
+  coursesLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
 
   skillsLevels:any = [0,100,200,400,800]
 
@@ -82,6 +85,8 @@ export class AuthService {
         this.getTutorials(user.uid)
         this.getCustomer(user.uid)
         this.getProfile(user.uid)
+        this.getActiveCourses(user.uid)
+
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
@@ -101,13 +106,42 @@ export class AuthService {
 
   }
 
+
   async getCredits(uid:string){
-    this.firestoreService.getSubDoc('users',uid,'credits','credits').subscribe((data:any)=>{
-      if(data.payload.data()&&this.credits.total != data.payload.data().total){
-        this.credits = data.payload.data()
+    this.firestoreService.querySub('users',uid,'credits','total',0,"!=").subscribe((data:any)=>{
+      if(data.length){
+        let total = 0
+        this.creditsList = []
+        data.map((doc:any) => {
+          let item = doc.payload.doc.data()
+          this.creditsList.push(item)
+          if(item.total){
+            total += item.total
+          }
+          if(item.type){
+            this.credits_unlimited_type = item.type
+          }
+        })
+        this.creditsList = this.creditsList.sort((a:any,b:any)=>{
+          return a.created - b.created
+        })
+        this.credits = {total:total}
+        this.creditsChanged.emit(true)
+      }
+      else{
+        this.credits = {total:0}
         this.creditsChanged.emit(true)
       }
     })
+
+
+
+    // this.firestoreService.getSubDoc('users',uid,'credits','credits').subscribe((data:any)=>{
+    //   if(data.payload.data()&&this.credits.total != data.payload.data().total){
+    //     this.credits = data.payload.data()
+    //     this.creditsChanged.emit(true)
+    //   }
+    // })
   }
 
   async getSkills(uid:string){
@@ -422,6 +456,26 @@ export class AuthService {
     })
   }
 
+  resetSubscription:Subscription | null = null
+  async ResetPWCustom(password: string,oobCode:string,callback:Function) {
+    try{
+      let user = await this.afAuth.signInWithCustomToken(oobCode)
+      
+      if(user){
+        this.resetSubscription = this.functions.httpsCallable('passwordChangeCustom')({password:password}).subscribe(response=>{
+          this.resetSubscription!.unsubscribe()
+          callback(response)
+        })
+      }
+      else{
+        callback({message:'geen geldige link'})
+      }
+    }
+    catch(e){
+      callback(e)
+    }
+  }
+
   // async registerWithGoogle() {
   //   const provider = new GoogleAuthProvider();
   //   try {
@@ -534,6 +588,7 @@ export class AuthService {
       .valueChanges({ idField: 'conversationId' }) // Voeg het ID toe aan elk document
       .subscribe((conversations) => {
         this.conversations$.next(conversations); // Update de BehaviorSubject
+        console.log('conversations',conversations)
       });
   }
 
@@ -603,44 +658,54 @@ export class AuthService {
       })
     }
   
-    getAllMyCourses(userId: string){
-      this.allCourses = [];
-      this.firestoreService.getSub('users', userId, 'courses').subscribe((courses) => {
-        this.allCourses = courses.map((course: any) => {
-          return { id: course.payload.doc.id, ...course.payload.doc.data() }
-        })
-      });
-    }
+    // getAllMyCourses(userId: string){
+    //   this.allCourses = [];
+    //   this.firestoreService.getSub('users', userId, 'courses').subscribe((courses) => {
+    //     this.allCourses = courses.map((course: any) => {
+    //       return { id: course.payload.doc.id, ...course.payload.doc.data() }
+    //     })
+    //   });
+    // }
 
     getActiveCourses(userId: string) {
       this.activeCourses = [];
-      this.firestoreService.querySub('users', userId, 'courses','status','active').subscribe((courses) => {
-        this.activeCourses = courses.map((course: any) => {
-          return { id: course.payload.doc.id, ...course.payload.doc.data() }
-        })
-      // Haal de activeCourseIds direct op uit this.userInfo
-      // const courseObservables = this.userInfo.activeCourseIds.map((courseId:string) =>
-      //   this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
-      // );
+      // this.firestoreService.querySub('users', userId, 'courses','status','active').subscribe((courses) => {
+      //   this.activeCourses = courses.map((course: any) => {
+      //     return { id: course.payload.doc.id, ...course.payload.doc.data() }
+      //   })
+        
+      // // Haal de activeCourseIds direct op uit this.userInfo
+      // // const courseObservables = this.userInfo.activeCourseIds.map((courseId:string) =>
+      // //   this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
+      // // );
     
-      // Combineer alle observables
-      // combineLatest(courseObservables).subscribe((courses:any) => {
-      //   const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
+      // // Combineer alle observables
+      // // combineLatest(courseObservables).subscribe((courses:any) => {
+      // //   const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
     
-      //   courses.forEach((course: any) => {
-      //     let item: any = course.payload.data();
-      //     if(item){
-      //       item.id = course.payload.id;
-      //       if (item.status === 'active' && !uniqueCourses.has(item.id)) {
-      //         uniqueCourses.set(item.id, item);
-      //       }
-      //     }
-      //   });
+      // //   courses.forEach((course: any) => {
+      // //     let item: any = course.payload.data();
+      // //     if(item){
+      // //       item.id = course.payload.id;
+      // //       if (item.status === 'active' && !uniqueCourses.has(item.id)) {
+      // //         uniqueCourses.set(item.id, item);
+      // //       }
+      // //     }
+      // //   });
     
-      //   // Converteer de unieke waarden naar een array
-      //   this.activeCourses = Array.from(uniqueCourses.values());
+      // //   // Converteer de unieke waarden naar een array
+      // //   this.activeCourses = Array.from(uniqueCourses.values());
+      // // });
       // });
-      });
+
+      this.functions.httpsCallable('getMyActiveTrainings')({}).subscribe((response:any)=>{
+        console.log(response)
+        if(response.status==200){
+          this.activeCourses = response.result
+          // this.coursesLoaded.emit(true)
+        }
+      })
+
     }
 
 
@@ -678,27 +743,48 @@ export class AuthService {
     // }
   
     getActiveCourse(courseId:string){
-      return this.allCourses.find((course) => course.id === courseId)
-      // return this.activeCourses.find((course) => course.id === courseId)
+      // return this.allCourses.find((course) => course.id === courseId)
+      return this.activeCourses.find((course) => course.id === courseId)
+    }
+
+    getTrainingItem(trainingId:string,itemId:string,breadCrumbs?:any,breadCrumbsLengthOffset?:number){
+      let training:any =  this.activeCourses.find((training) => training.id === trainingId)
+      if(itemId!=='breadCrumbs' && itemId!==''){
+        if(training?.allItems.find((item:any) => item.id === itemId)){
+          return training.allItems.find((item:any) => item.id === itemId)
+        }
+      }
+      else if(itemId==='breadCrumbs' && breadCrumbs.length){
+        if(!breadCrumbsLengthOffset){
+          breadCrumbsLengthOffset = 1
+        }
+        if(breadCrumbs[breadCrumbs.length-breadCrumbsLengthOffset!]){
+          return breadCrumbs[breadCrumbs.length-breadCrumbsLengthOffset]
+        }
+      }
+      if(!training){
+        training = {}
+      }
+      return training
     }
   
     publicCourses: any[] = [];
-    getPublicCourses(){
-      return this.firestoreService.queryDouble('active_courses','public',true,'==','status','active','==').subscribe((courses) => {
-        this.publicCourses = courses.map((course:any) => {
-          return { id: course.payload.doc.id, ...course.payload.doc.data() }
-        })
-        let checkInt = setInterval(() => {
-          if(this.infoService.conversation_types.length){
-            clearInterval(checkInt)
-            for(let i = 0; i < this.publicCourses.length; i++){
-              this.publicCourses[i].conversationTypes = this.infoService.getConversationType('',this.publicCourses[i].types,true)
-            }
-          }
-        }, 200);
-        // console.log(this.publicCourses)
-      })
-    }
+    // getPublicCourses(){
+    //   return this.firestoreService.queryDouble('active_courses','public',true,'==','status','active','==').subscribe((courses) => {
+    //     this.publicCourses = courses.map((course:any) => {
+    //       return { id: course.payload.doc.id, ...course.payload.doc.data() }
+    //     })
+    //     let checkInt = setInterval(() => {
+    //       if(this.infoService.conversation_types.length){
+    //         clearInterval(checkInt)
+    //         for(let i = 0; i < this.publicCourses.length; i++){
+    //           this.publicCourses[i].conversationTypes = this.infoService.getConversationType('',this.publicCourses[i].types,true)
+    //         }
+    //       }
+    //     }, 200);
+    //     // console.log(this.publicCourses)
+    //   })
+    // }
   
     getPublicCourse(courseId:string){
       return this.publicCourses.find((course) => course.id === courseId)
@@ -733,5 +819,22 @@ export class AuthService {
         }
       }, 2000);
     }
+
+    registerWithCode(code:string,callback?:Function){
+      console.log(code)
+      if(!code){
+        return
+      }
+      this.functions.httpsCallable('registerWithCode')({code:code}).subscribe((response:any)=>{
+        if(response.status==200){
+          this.toast.show('Code geaccepteerd')
+          this.getActiveCourses(this.userInfo.uid)
+        }
+        else{
+          this.toast.show('Code niet geldig')
+        }
+      })
+    }
+
 
 }

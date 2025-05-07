@@ -15,6 +15,7 @@ export class NavService {
   langList:string[] = ['en','nl']
   redirectUrl:any = null
   specialCode:string = ''
+  registrationCode:string = ''
   constructor(
     private navController: NavController,
     private translate: TranslateService,
@@ -25,6 +26,7 @@ export class NavService {
     let urlParams = new URLSearchParams(window.location.search);
     this.redirectUrl = urlParams.get('redirect');
     this.specialCode = urlParams.get('specialcode')||''
+    this.registrationCode = urlParams.get('registrationcode')||''
   }
 
   public go(page: string,backwards?: boolean){

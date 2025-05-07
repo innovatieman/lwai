@@ -36,6 +36,16 @@ export class FirestoreService {
     .catch(err => console.log(err, 'You do not have access!  - '+collection + ' => '+doc+' => ' + subcollection))
   }
 
+  createSubSub(collection:string,doc:string,subcollection:string,subDoc:string,subSubcollection:string,data:any,callback?:any){
+    return this.fire.collection(collection).doc(doc).collection(subcollection).doc(subDoc).collection(subSubcollection).add(data)
+    .then(response=> {
+      if(callback!=undefined){
+        callback(response)
+      }
+    })
+    .catch(err => console.log(err, 'You do not have access!  - '+collection + ' => '+doc+' => ' + subcollection + ' => ' + subDoc + ' => ' + subSubcollection))
+  }
+  
   setSub(collection:string,doc:string,subcollection:string,id:string,data:any,field?:string,callback?:any,isArrayOnPurpose?:boolean){
     if(data&&data.constructor&&data.constructor.toString().indexOf("Array") != -1&&!isArrayOnPurpose){
       let obj:any = {}
@@ -118,6 +128,19 @@ export class FirestoreService {
   updateSub(collection:string,doc:string,subcollection:string,subDoc:string,obj:any,errorCallback?:any){
  //  console.log("collection: ", collection);
     return this.fire.doc(collection+'/'+doc+'/'+subcollection+'/'+subDoc).update(obj)
+    .then(_=> {
+    })
+    .catch(err => {
+      if(errorCallback){
+        errorCallback()
+      }
+      else{
+      }
+    })
+  }
+
+  updateSubSub(collection:string,doc:string,subcollection:string,subDoc:string,subSubcollection:string,subSubDoc:string,obj:any,errorCallback?:any){
+    return this.fire.doc(collection+'/'+doc+'/'+subcollection+'/'+subDoc+'/'+subSubcollection+'/'+subSubDoc).update(obj)
     .then(_=> {
     })
     .catch(err => {
@@ -265,6 +288,9 @@ export class FirestoreService {
 
   getSubDoc(collection:string,doc:string,subcollection:string,subDoc:string){
     return this.fire.collection(collection).doc(doc).collection(subcollection).doc(subDoc).snapshotChanges()
+  }
+  getSubSubDoc(collection:string,doc:string,subcollection:string,subDoc:string,subSubCollection:string,subSubDoc:string){
+    return this.fire.collection(collection).doc(doc).collection(subcollection).doc(subDoc).collection(subSubCollection).doc(subSubDoc).snapshotChanges()
   }
   queryMultiple(collection:string,where:string,array:any,operator?:any){
     if(!operator){operator="in"}

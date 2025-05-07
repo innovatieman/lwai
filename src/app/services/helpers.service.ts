@@ -37,6 +37,17 @@ export class HelpersService {
     return sizes[this.media.screenSize]
   }
 
+  get cardSizeSmallPerc(){
+    const sizes:any = {
+      xs: '100%',
+      sm: '100%',
+      md: '50%',
+      lg: '33.33%',
+      xl: '33.33%'
+    }
+    return sizes[this.media.screenSize]
+  }
+
   countWords(text:string){
     if(!text){return 0}
     let arr = text.split(" ")
@@ -598,6 +609,15 @@ export class HelpersService {
      
   }
 
+  async copyToClipboard(text:string,callback?:any){
+    if(!text){return}
+    await navigator.clipboard.writeText(text);
+    if(callback){
+      callback()
+      return
+    }
+    return
+  }
 
 }
 

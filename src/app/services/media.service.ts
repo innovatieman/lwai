@@ -111,7 +111,7 @@ export class MediaService {
     }
  }
 
-  async selectAvatar(event:Event,callback:Function,withGeneration?:boolean){
+  async selectAvatar(event:Event,callback:Function,withGeneration?:boolean,withoutSelection?:boolean,location?:string){
     this.selectMenuservice.selectedItem = null
     let list = [
       {title:'Upload foto',icon:'faCloudUploadAlt',action:'upload'},
@@ -119,6 +119,9 @@ export class MediaService {
       {title:'Selecteer uit bibliotheek',icon:'faImage',action:'library'},
       {title:'Verwijder foto',icon:'faTrashAlt',action:'delete'},
     ]
+    if(withoutSelection){
+      list.splice(2,1)
+    }
     if(withGeneration){
       list.push({title:'Genereer avatar',icon:'faUserNinja',action:'generate'})
     }
@@ -142,7 +145,7 @@ export class MediaService {
       switch(this.selectMenuservice.selectedItem.action){
         case 'upload':
           this.selectedFile = await this.selectFile()
-          this.uploadImage(this.selectedFile,callback)
+          this.uploadImage(this.selectedFile,callback,location)
           break;
         case 'camera':
           const photoData = await this.takePhoto();
@@ -167,7 +170,7 @@ export class MediaService {
   }
   
   
-  async uploadImage(selectedFile:any,callback:Function){
+  async uploadImage(selectedFile:any,callback:Function,location?:string){
 
     if (this.selectedFile) {
       this.toast.showLoader()
@@ -178,7 +181,7 @@ export class MediaService {
         const base64String = (reader.result as string).split(',')[1];
 
         const callable = this.functions.httpsCallable('uploadImage');
-        callable({ fileData: base64String })
+        callable({ fileData: base64String, location: location })
           .subscribe({
             next: (response: any) => {
               this.toast.hideLoader()
@@ -196,14 +199,14 @@ export class MediaService {
     return null;
    }
 
-  async uploadPhoto(base64String:string,callback:Function){
+  async uploadPhoto(base64String:string,callback:Function,location?:string){
 
     if (base64String) {
       this.toast.showLoader()
       return new Promise<string>((resolve, reject) => {
 
         const callable = this.functions.httpsCallable('uploadPhoto');
-        callable({ fileData: base64String.replace(/^data:image\/png;base64,/, '') })
+        callable({ fileData: base64String.replace(/^data:image\/png;base64,/, '') , location: location })
           .subscribe({
             next: (response: any) => {
               this.toast.hideLoader()
@@ -406,7 +409,7 @@ export class MediaService {
     });
   }
 
-  async selectVideo(callback:Function) {
+  async selectVideo(callback:Function){
     this.selectedVideo = await this.selectVideoFile();
     if (this.selectedVideo) {
       console.log('Geselecteerde video:', this.selectedVideo.name);
@@ -450,6 +453,10 @@ export class MediaService {
   async shareCase(caseItem:any,event:any){
     event.preventDefault()
     event.stopPropagation()
+    console.log(caseItem)
+    if(!caseItem.id){
+      caseItem.id = caseItem.caseId
+    }
     if (navigator.share) {
       if(caseItem=='login'){
         await navigator.share({

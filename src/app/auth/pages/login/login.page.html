@@ -16,18 +16,24 @@
       <h2 *ngIf="!showPassWordReset">{{'page_login.welcome' | translate}}</h2>
       <p *ngIf="!showPassWordReset">{{'page_login.title' | translate}}</p>
 
-      <h2 *ngIf="showPassWordReset">{{'page_login.forgot_password' | translate}}</h2>
-      <p *ngIf="showPassWordReset">{{'page_login.forgot_password_message' | translate}}</p>
+      <h2 *ngIf="showPassWordReset&&!showResetPassword">{{'page_login.forgot_password' | translate}}</h2>
+      <p *ngIf="showPassWordReset&&!showResetPassword">{{'page_login.forgot_password_message' | translate}}</p>
 
-      <form [formGroup]="form" (submit)="!showPassWordReset ? login() : sendPasswordReset()">
+      <h2 *ngIf="showPassWordReset&&showResetPassword&&!oobCode" [innerHTML]="translateService.instant('page_login.title_verify')"></h2>
+      <p *ngIf="showPassWordReset&&showResetPassword&&!oobCode">{{'page_login.subtitle_verify' | translate}}</p>
 
-          <ion-item lines="none" class="fieldItem">
+      <h2 *ngIf="showPassWordReset&&oobCode">{{'page_login.title_new_password' | translate}}</h2>
+      <p *ngIf="showPassWordReset&&oobCode">{{'page_login.subtitle_new_password' | translate}}</p>
+
+      <form [formGroup]="form" (submit)="!showPassWordReset ? login() : (!oobCode ? sendPasswordReset() : resetPassword())">
+
+          <ion-item lines="none" class="fieldItem" *ngIf="!showResetPassword">
             <ion-label position="stacked">{{'page_login.email' | translate}}</ion-label>
             <ion-input type="email" formControlName="email"></ion-input>
           </ion-item>
 
-          <ion-item lines="none" class="fieldItem" *ngIf="!showPassWordReset">
-            <ion-label position="stacked">Wachtwoord</ion-label>
+          <ion-item lines="none" class="fieldItem" [ngStyle]="{'display':!showPassWordReset || oobCode ? 'block' : 'hidden'}" *ngIf="!showPassWordReset || oobCode">
+            <ion-label position="stacked">{{'page_login.password' | translate}}</ion-label>
             <ion-input type="password" *ngIf="!showPassword" formControlName="password">
               <ion-icon slot="end" name="eye" *ngIf="!showPassword" (click)="showPassword = true"></ion-icon>
             </ion-input>
@@ -42,14 +48,33 @@
           <!-- <label for="password">Wachtwoord</label>
           <ion-input type="password" formControlName="password" placeholder="••••••••"></ion-input> -->
         <!-- </div> -->
-        <div class="form-options">
+        <div class="form-options" *ngIf="!showResetPassword">
           <span class="spacer"></span>
           <span *ngIf="!showPassWordReset" class="showPassWordReset" (click)="forgotPassword()" pointer>{{'page_login.forgot_password' | translate}}</span>
           <span *ngIf="showPassWordReset" class="showPassWordReset" (click)="rememberPassword()" pointer>{{'page_login.remember_password' | translate}}</span>
         </div>
         <ion-button button type="submit" *ngIf="!showPassWordReset" class="saveButton" [disabled]="!form.valid">{{'page_login.login' | translate}}</ion-button>
-        <ion-button button type="submit" *ngIf="showPassWordReset" class="saveButton" [disabled]="!form.valid">{{'page_login.reset_password' | translate}}</ion-button>
+        <ion-button button type="submit" *ngIf="(showPassWordReset&&!showResetPassword) || oobCode" class="saveButton" [disabled]="!form.valid">{{'page_login.reset_password' | translate}}</ion-button>
       </form>
+      <div *ngIf="showResetPassword&&!oobCode">
+        <code-input marginBottom class="codeInput"
+              [isCodeHidden]="false"
+              [codeLength]="6"
+              (codeChanged)="onCodeChanged($event)"
+              (codeCompleted)="onCodeCompleted($event)">
+          </code-input>  
+          <div text-danger center weight500 marginBottom *ngIf="verifyCode.invalid">{{'page_wait_verify.code_invalid' | translate}}</div>
+          <div text-danger center weight500 marginBottom *ngIf="verifyCode.expired">{{'page_wait_verify.code_expired' | translate}}</div>
+          <!-- <div text-success center weight500 marginBottom *ngIf="verifyCode.valid">{{'page_wait_verify.code_valid' | translate}}</div> -->
+
+          <div *ngIf="!oobCode">
+            <ion-button (click)="resend()" fill="outline" color="medium" class="saveButton">{{'page_wait_verify.resend_code' | translate}}</ion-button>
+          </div>
+      </div>
+      <div flex marginTop *ngIf="showResetPassword">
+        <span class="spacer"></span>
+        <span *ngIf="showPassWordReset" class="showPassWordReset" (click)="rememberPassword()" pointer>{{'page_login.remember_password' | translate}}</span>
+      </div>
       <div *ngIf="!showPassWordReset">
         <p class="register-link">{{'page_login.no_account' | translate}} <span pointer (click)="nav.go('register')" class="showPassWordReset">{{'page_login.register' | translate}}</span></p>
         <p class="or">{{'page_login.continue_with' | translate}}</p>

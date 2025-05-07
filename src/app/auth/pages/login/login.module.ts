@@ -10,6 +10,7 @@ import { LoginPage } from './login.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+import { CodeInputModule } from 'angular-code-input';
 
 @NgModule({
   imports: [
@@ -20,7 +21,12 @@ import { TranslateModule } from '@ngx-translate/core';
     ComponentsModule,
     FontAwesomeModule,
     ReactiveFormsModule,
-    TranslateModule.forChild()
+    TranslateModule.forChild(),
+    CodeInputModule.forRoot({
+    codeLength: 6,
+    isCharsCode: true,
+    code: ''
+  }),
   ],
   declarations: [LoginPage]
 })

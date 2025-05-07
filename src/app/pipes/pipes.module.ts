@@ -22,6 +22,7 @@ import { ParseJSONPipe } from './parse-json.pipe';
 import { GroupByPipe } from './group-by.pipe';
 import { SearchManyPipe } from './search-many.pipe';
 import { CaseFilterPipe } from './case-filter.pipe';
+import { ConvertAiTextToHtmlPipe } from './convert-ai-text-to-html.pipe';
 
 
 @NgModule({
@@ -46,7 +47,8 @@ import { CaseFilterPipe } from './case-filter.pipe';
     ParseJSONPipe,
     GroupByPipe,
     SearchManyPipe,
-    CaseFilterPipe
+    CaseFilterPipe,
+    ConvertAiTextToHtmlPipe
   ],
   imports: [
     CommonModule
@@ -72,7 +74,8 @@ import { CaseFilterPipe } from './case-filter.pipe';
     ParseJSONPipe,
     GroupByPipe,
     SearchManyPipe,
-    CaseFilterPipe
+    CaseFilterPipe,
+    ConvertAiTextToHtmlPipe
   ],
   providers:[
     CleanHtmlPipe,

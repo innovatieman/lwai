@@ -87,7 +87,7 @@ export class EnlistPage implements OnInit {
   getCourseData(callback:Function){
     console.log('getting course data')
     if(!this.auth.publicCourses?.length){
-      this.auth.getPublicCourses()
+      // this.auth.getPublicCourses()
       let count = 0
       let checkInterval = setInterval(() => {
         if(this.auth.publicCourses?.length){

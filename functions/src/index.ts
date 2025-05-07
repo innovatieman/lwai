@@ -41,4 +41,6 @@ export * from './apis/stripe'
 export * from './processing/learnings'
 export * from './apis/social'
 export * from './processing/rendering'
+export * from './modules/participants'
+export * from './apis/segments'
 

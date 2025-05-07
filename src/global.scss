@@ -38,7 +38,7 @@
 
 
 html,body{
-    font-family: 'Plus Jakarta Sans';//'Roboto','Arial';
+    font-family: 'Plus Jakarta Sans','Roboto','Arial';
     font-size: 15px;
     color:var(--ion-color-dark);
     font-weight:400;
@@ -50,7 +50,7 @@ html,body{
 }
 
 h1, h2,h3{
-    font-family: 'Plus Jakarta Sans';//'Roboto','Arial';
+    font-family: 'Plus Jakarta Sans','Roboto','Arial';
     font-weight: 600;
     // color: black;
 }
@@ -204,6 +204,12 @@ ion-checkbox{
 [marginTop]{
     margin-top: 20px!important;
 }
+[marginLeft]{
+    margin-left: 10px!important;
+}
+[top10]{
+    top:10px
+}
 [autoScroll]{
     overflow: auto;
 }
@@ -302,8 +308,26 @@ ion-checkbox{
 [reorder]{
     cursor: grab;
 }
+[inline]{
+    display: inline;
+}
+[inline-block]{
+    display: inline-block;
+}
 [basicPadding]{
     padding: 15px;
+}
+[basicPaddingLeft]{
+    padding-left: 15px;
+}
+[basicPaddingRight]{
+    padding-right: 15px;
+}
+[basicPaddingTop]{
+    padding-top: 15px;
+}
+[basicPaddingBottom]{
+    padding-bottom: 15px;
 }
 [noPadding]{
     padding: 0;
@@ -401,6 +425,12 @@ ion-checkbox{
 [borderWarning],.borderWarning{
     border: solid 2px var(--ion-color-warning);
 }
+[borderRadius0]{
+    border-radius: 0px!important;
+}
+[borderRadius2]{
+    border-radius: 2px;
+}
 [borderRadius5]{
     border-radius: 5px;
 }
@@ -475,6 +505,9 @@ ion-checkbox{
 }
 [uppercase]{
     text-transform: uppercase;
+}
+[lowercase]{
+    text-transform: lowercase;
 }
 [noPointerEvents]{
     pointer-events: none;
@@ -587,6 +620,10 @@ ion-modal.evaluationModal{
     --width: 1000px;
     --max-width: 100%;
 }
+ion-modal.editHtmlModal{
+    --width: 1000px;
+    --max-width: 100%;
+}
 
 @media only screen and (max-width: 667px) {
     ion-modal.selectManyModal{
@@ -606,7 +643,7 @@ ion-modal.evaluationModal{
     }
 }
 
-ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal, ion-modal.evaluationModal {
+ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal, ion-modal.evaluationModal,ion-modal.editHtmlModal {
     --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
     --backdrop-opacity: var(--ion-backdrop-opacity, 0.32)!important;
     --border-radius:24px;
@@ -651,51 +688,7 @@ ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectM
         border-radius: 15px;
     }
 }
-ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal {
-    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
-    --backdrop-opacity: var(--ion-backdrop-opacity, 0.32)!important;
-    --border-radius:24px;
-    &.bottom {
-        align-items: flex-end;
-    }
 
-    --height: auto;
-
-    .ion-page {
-        position: relative;
-        display: block;
-        contain: content;
-        max-height: 100vh;
-        @media (max-width: 768px) {
-            max-height: 100%; // Voor mobiele apparaten
-        }
-        background: var(--background-global);
-        color: var(--color-global);
-        
-        h3{
-            color:var(--color-global);
-        }
-        .inner-content {
-            max-height: 80vh;
-            overflow: auto;
-            padding: 10px;
-        }
-        .inner-shadow{
-            box-shadow: 0px 0px 10px;
-            border-radius: 15px;
-        }
-        ion-card{
-            background: rgba(255, 255, 255, 0.1);
-            color:var(--color-global);
-            ion-card-title{
-                color:var(--color-global);
-            }
-        }
-    }
-    [role="dialog"]{
-        border-radius: 15px;
-    }
-}
 
 @media only screen and (max-width: 667px) {
     ion-modal.infoModal, ion-modal.show-modal {
@@ -1064,6 +1057,21 @@ main{
     justify-content: center;
     align-items: center;
   }
+  .deleteButtonCase{
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    z-index: 2;
+    background-color: white;
+    color: var(--color-global);
+    border-radius: 100%;
+    font-weight: 700;
+    width:40px;
+    height:40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .shareButtonLogin{
     position: absolute;
@@ -1081,3 +1089,74 @@ main{
     justify-content: center;
     align-items: center;
   }
+
+
+.trainerPage{
+
+    .topButton{
+        padding:10px;
+        border-radius: 24px;
+        margin: 10px;
+        box-shadow: none;
+        border:solid 1px #eaeaea;
+    }
+    .topButton:hover{
+        border:solid 1px var(--ion-color-primary);
+    }
+    .topButton.notActive{
+        background-color: var(--ion-color-primary-contrast);
+        color: var(--ion-color-primary);
+        ion-card-title{
+            color: var(--ion-color-primary);
+        }
+    }
+    .topButton.isActive{
+        background-color: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+        ion-card-title{
+            color: var(--ion-color-primary-contrast);
+        }
+    }
+
+    ion-searchbar{
+        --box-shadow: none;
+        --background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);
+        padding:0px;
+        --border-radius:24px;
+    }
+    
+}
+
+[moduleCard]{
+    // border-radius:0px;
+    height:200px;
+    .saveButton{
+        min-height: 40px!important;
+        --padding-start:20px!important;
+        --padding-end:20px!important;
+    }
+    ion-card-header{
+        padding:0px;
+    }
+    [images]{
+        max-width:33%;
+        width:33%;
+        [backgroundImage]{
+            height:67%
+        }
+        [button]{
+            height: 33%;
+            width:100%;
+            padding:10px;
+            text-align: center;
+        }
+    }
+    [content]{
+        max-width: 67%;
+        width: 67%;
+        padding: 10px;
+        // display: flex;
+        // flex-flow: column;
+        // justify-content: center;
+    }
+}

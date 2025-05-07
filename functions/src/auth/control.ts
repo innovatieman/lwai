@@ -78,7 +78,16 @@ async function setRole(email:string,role:string):Promise<void>{
     return admin.auth().setCustomUserClaims(user.uid,roleObj)
 }
 
-exports.getUserNameByEmail = functions.region('europe-west1').https.onCall((data,context)=>{
+exports.getUserNameByEmail = functions.region('europe-west1').https.onCall(async(data,context)=>{
+    const user = await admin.firestore().collection('users').doc(context.auth?.uid).get()
+    if(!user.exists){
+        return new responder.Message('Admin not found',404)
+    }
+    const userData = user.data()
+    if(!userData?.isAdmin){
+        return new responder.Message('Not authorized',403)
+    }
+    
     return getUserByEmail(data.email).then((user:any)=>{
         return new responder.Message(user)
     })
@@ -93,7 +102,11 @@ exports.getUserActivityByEmail = functions.region('europe-west1').https.onCall((
 async function getUserByEmail(email:string){
     try{
         const user = await admin.auth().getUserByEmail(email)
-        return user.displayName
+        return {
+            displayName:user.displayName,
+            email:user.email,
+            created:user.metadata.creationTime,
+        }
     }
     catch(err){
         return null

@@ -1,12 +1,13 @@
 <div header padding20 flex center-ver>
   <div class="title">
     <h3 class="subtitle-top" noMargin>
-      {{'conversation_start.the_case' | translate}} - 
+      {{'conversation_start.the_case' | translate}} 
+      <span *ngIf="step!=4"> - </span>
       <span *ngIf="step==0">De basis</span>
       <span *ngIf="step==1">Extra gegevens</span>
       <span *ngIf="step==2">De gesprekspartner</span>
       <span *ngIf="step==3">Samenvatting</span>
-      <span *ngIf="step==4 && !caseItem.admin">{{'conversation_start.case' | translate}}</span>
+      <!-- <span *ngIf="step==4 && !caseItem.admin">{{'conversation_start.case' | translate}}</span> -->
       <span *ngIf="step==5&&caseItem.id">{{'conversation_start.starting' | translate}}</span>
       <span *ngIf="step==5&&!caseItem.id">Start van het gesprek</span>
       <span *ngIf="step==6">Tot slot</span>
@@ -24,9 +25,9 @@
   <div class="modalIntro" *ngIf="step==1">Hoe meer informatie je hier geeft, des te beter wordt het gesprek gesimuleerd. Deze gegevens zijn niet verplicht</div>
   <div class="modalIntro" *ngIf="step==2">Geef aan hoe de gesprekspartner zich opstelt en hoe de gesprekspartner er uit ziet.</div>
   <div class="modalIntro" *ngIf="step==3">Controleer of je casus zo goed is geinterpreteerd, of pas het nog aan.</div>
-  <div class="modalIntro" *ngIf="step==4">
+  <!-- <div class="modalIntro" *ngIf="step==4">
     <span>{{'conversation_start.goal_instructions' | translate}}</span> <span *ngIf="caseItem.freeAnswer">{{'conversation_start.free_question_instructions' | translate}}</span>
-  </div>
+  </div> -->
   <div class="modalIntro" *ngIf="step==5&&caseItem.id">{{'conversation_start.starting_instructions' | translate}}</div>
   <div class="modalIntro" *ngIf="step==5&&!caseItem.id">Geef aan hoe het gesprek standaard begonnen kan worden. De gesprekspartner zal hierop direct reageren als begin van het gesprek.</div>
   <div class="modalIntro" *ngIf="step==6">Geef aan welke gegevens een gebruiker nog kan aanpassen als de casus gestart wordt. Als je niets aanzet, zal de casus gelijk starten wanneer deze wordt geselecteerd.<br>Wanneer er een element wordt aangezet t.b.v. de casus, zal de gebruiker ook de AI kunnen gebruiken om deze opnieuw samen te vatten. Anders niet.</div>
@@ -332,15 +333,41 @@
               </ion-range>
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.phases_goal'"></fa-icon>
             </ion-item>
-
+<!-- 
             <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer">
               <ion-label position="stacked">
                 <h1>{{caseItem.free_question}}</h1>
               </ion-label>
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer">
               </ion-textarea>
-            </ion-item>
-            
+            </ion-item> -->
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer"></ion-textarea>
+            </div>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question2" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question2 | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer2"></ion-textarea>
+            </div>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question3" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question3 | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer3"></ion-textarea>
+            </div>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question4" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question4 | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer4"></ion-textarea>
+            </div>
+
+            <div *ngIf="(showGoal.free&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.free&&!caseItem.admin)" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="translate.instant('conversation_start.goal_instructions') | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free"></ion-textarea>
+            </div>
+
+<!--             
             <ion-item lines="none" listCard fullwidth *ngIf="(showGoal.free&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.free&&!caseItem.admin)">
               <ion-label position="stacked">
                 <h1>{{'conversation_start.goal' | translate}}</h1>
@@ -348,8 +375,7 @@
               </ion-label>
               <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free">
               </ion-textarea>
-              <!-- <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.free_goal'"></fa-icon> -->
-            </ion-item>        
+            </ion-item>         -->
 
 
           </ion-col>
@@ -369,17 +395,21 @@
   <ion-card basicPadding basicRadius *ngIf="step==5" class="mainCard">
     <ion-card-content>
 
-        <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage">
+      <div *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage" fullwidth marginBottom>
+        <div *ngIf="caseItem.admin" weight600 font-18 [innerHtml]="translate.instant('conversation_start.opening') | sanitizeHtml"></div>
+        <div *ngIf="!caseItem.admin" weight600 font-18 [innerHtml]="translate.instant('conversation_start.opening_user') | sanitizeHtml"></div>
+        <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage"></ion-textarea>
+      </div>
+
+        <!-- <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage">
           <ion-label position="stacked">
             <h1 style="margin-top:0" *ngIf="caseItem.admin">{{'conversation_start.opening' | translate}}</h1>
             <h1 style="margin-top:0" *ngIf="!caseItem.admin">{{'conversation_start.opening_user' | translate}}</h1>
-            <!-- <p *ngIf="caseItem.id">Hoe wil je het gesprek beginnen?</p> -->
             <p *ngIf="!caseItem.id">wat is het standaard begin van de casus?</p>
           </ion-label>
           <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage">
           </ion-textarea>
-          <!-- <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.opening_message'"></fa-icon> -->
-        </ion-item>
+        </ion-item> -->
     </ion-card-content>
     <!-- <div flex center-ver>
       <ion-button color="secondary" class="saveButton" (click)="slide(4,true)">Terug</ion-button>

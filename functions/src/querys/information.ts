@@ -2,6 +2,7 @@ import admin from '../firebase'
 import * as functions from 'firebase-functions/v1';
 import * as responder from '../utils/responder'
 
+const db = admin.firestore()
 exports.get_public_info = functions.region('europe-west1').https.onCall((data:any,context:any)=>{
     if(!context.auth){
       return new responder.Message('Not authorized',401)
@@ -101,6 +102,72 @@ async function fieldIsAuthorized(collection:string,doc:string,field:string,subCo
 
 }
 
+exports.getConversationsByDateRange = functions.region('europe-west1').https.onCall(
+  async (data, context) => {
+
+    const user = await db.collection('users').doc(context.auth?.uid).get()
+      if(!user.exists){
+        console.log("User not found")
+          return new responder.Message('Admin not found',404)
+      }
+      const userData = user.data()
+      if(!userData?.isAdmin){
+          console.log("Admin not found")
+          return new responder.Message('Not authorized',403)
+      }
+
+    const { startDate, endDate } = data;
+
+    if (!startDate || !endDate) {
+      return new responder.Message("Both startDate and endDate are required.",500)
+    }
+
+    const start = Number(startDate);
+    const end = Number(endDate);
+
+    if (isNaN(start) || isNaN(end)) {
+      return new responder.Message("startDate and endDate must be valid Unix timestamps (in milliseconds).",500)
+    }
+
+    try {
+      const results: {
+        documentId: string;
+        parentId: string;
+        content: any;
+      }[] = [];
+
+      // Get all users
+      const usersSnapshot = await db.collection("users").get();
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+
+        const conversationsSnapshot = await db
+          .collection("users")
+          .doc(userId)
+          .collection("conversations")
+          .where("closed", ">=", start)
+          .where("closed", "<=", end)
+          .get();
+
+        conversationsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          results.push({
+            documentId: doc.id,
+            parentId: userId,
+            content: data,
+          });
+        });
+      }
+
+      return new responder.Message(results,200)
+
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      return new responder.Message("Error fetching conversations: " + error,500)
+    }
+  }
+);
 
 // exports.admin_get_conversation = functions.region('europe-west1').https.onCall(async (data:any,context:any)=>{
 //     if(!context.auth){
@@ -238,3 +305,34 @@ exports.admin_get_all_conversations_from_user = functions.region('europe-west1')
 
     
   });
+
+exports.admin_get_all_offers_from_all_users = functions.region('europe-west1').https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return { error: 'Not authorized', code: 401 };
+    }
+
+    // check if admin
+    const userSnapshot = await admin.firestore().collection('users').doc(context.auth.uid).get();
+    if (!userSnapshot.exists) {
+      return { error: 'User not found', code: 404 };
+    }
+    const userData = userSnapshot.data();
+    if (!userData?.isAdmin) {
+      return { error: 'User not authorized', code: 401 };
+    }
+    // get all documents in the groupcollection "offers"
+    try {
+        const snapshot = await admin.firestore().collectionGroup('offers').get();
+        // get de doc data en Id
+        const offers = snapshot.docs.map(doc => {
+            return { id: doc.id, data: doc.data(), userId: doc.ref.parent.parent?.id};
+        })
+
+        return { success: true, data: offers };
+    }
+    catch (error) {
+        console.error('Error fetching offers:', error);
+        return { error: 'Failed to fetch offers', code: 500 };
+    }
+
+})

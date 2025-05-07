@@ -195,12 +195,18 @@ export class InputFieldsPage implements OnInit {
       }
       if(this.fields[i].type=='file'){
         noWaiting = false
+        console.log('file',this.fileField)
         if(this.fileField.name){
+          console.log('hier ook')
           await this.uploadFile(this.fileField,(response:any)=>{
             this.fields[i].value = response.result.url
             this.toast.hideLoader()
             this.modalController.dismiss(this.fields)
+            noWaiting = true
           })
+        }
+        else{
+          noWaiting = true
         }
       }
     }
