@@ -18,6 +18,10 @@ export class TutorialsPage implements OnInit {
   tutorial:any = {}
   showSteps:boolean = false
   attachToOnOptions:any = ["","auto","auto-start","auto-end","top","top-start","top-end","bottom","bottom-start","bottom-end","right","right-start","right-end","left","left-start","left-end"]
+  extraFilters: any = {
+    desktop: [true],
+    mobile: [false],
+  }
 
   constructor(
     private firestore:FirestoreService,
@@ -54,6 +58,14 @@ export class TutorialsPage implements OnInit {
   }
 
   add(){
+    let newTutorial = JSON.parse(JSON.stringify(this.tutorialService.defaultTutorial))
+    this.firestore.create('tutorials', newTutorial,(result:any)=>{
+      setTimeout(() => {
+        this.toast.hideLoader()
+        let tutorial = this.tutorialService.getTutorialById(result.id)
+        this.select(tutorial)
+      }, 300);
+    })
 
   }
 
@@ -71,6 +83,15 @@ export class TutorialsPage implements OnInit {
     this.firestore.update('tutorials', this.tutorial.id, obj)
   }
 
+  deleteTutorial(){
+    this.modalService.showConfirmation(this.translate.instant('confirmation_questions_delete')).then((result:boolean)=>{
+      if(result){
+        this.firestore.delete('tutorials',this.tutorial.id).then(()=>{
+          this.tutorial = {}
+        })
+      }
+    })
+  }
 
   editHtml(text:string,step_index:number){
     this.modalService.editHtmlItem({value:text},(result:any)=>{
@@ -169,4 +190,25 @@ export class TutorialsPage implements OnInit {
      
   }
 
+  check(event:any){
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  toggleFilter(filter:any,value:any){
+    console.log(filter,value)
+    if(!this.extraFilters[filter]){
+      this.extraFilters[filter] = []
+    }
+    if(this.extraFilters[filter].indexOf(value) > -1){
+      this.extraFilters[filter].splice(this.extraFilters[filter].indexOf(value),1)
+    }
+    else{
+      this.extraFilters[filter].push(value)
+    }
+  }
+  filterActive(filter:any,value:any){
+    return this.extraFilters[filter]?.indexOf(value) > -1
+  }
+  
 }

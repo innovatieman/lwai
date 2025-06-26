@@ -123,3 +123,48 @@ exports.uploadFile = functions.region("europe-west1").https.onCall(async (data, 
     return new responder.Message("Upload mislukt", 500);
   }
 });
+
+exports.uploadInfoItemFiles = functions.region("europe-west1").runWith({memory:'2GB'}).https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const { fileData, contentType, fileExtension = "bin" } = data;
+
+  if (!fileData || !contentType) {
+    throw new functions.https.HttpsError("invalid-argument", "Bestand of contentType ontbreekt");
+  }
+
+  try {
+    const bucket = storage.bucket('lwai-3bac8.firebasestorage.app');
+    const extension = fileExtension.replace(/[^a-z0-9]/gi, '').toLowerCase();
+    const uniqueFileName = `user_files/${context.auth.uid}_${Date.now()}.${extension}`;
+    const file = bucket.file(uniqueFileName);
+
+    const buffer = Buffer.from(fileData, "base64");
+
+    // Bestand direct opslaan zonder conversie
+    await file.save(buffer, {
+      metadata: {
+        contentType,
+      },
+    });
+
+    // Maak het bestand openbaar
+    await file.makePublic();
+    // Genereer een openbare URL
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${uniqueFileName}`;
+
+    // Maak een tijdelijke (signed) URL voor 7 dagen
+    // const [signedUrl] = await file.getSignedUrl({
+    //   action: 'read',
+    //   expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 dagen
+    // });
+
+    return new responder.Message({ url: publicUrl });
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    return new responder.Message("Upload mislukt", 500);
+  }
+});

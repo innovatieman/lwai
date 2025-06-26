@@ -15,6 +15,7 @@ export class PhotoGeneratorPage implements OnInit {
   @ViewChild('selectScript', { static: false }) selectScript!: IonSelect;
   [x: string]: any;
   images:any = []
+  selectedImages:any = []
 
   genders:any = ['Male','Female','Non-binary']
   // ethnicitys:any = ['Northern African','Central African','Southern African' , 'Asian', 'Caucasian', 'Hispanic',' Middle Eastern', 'Native American', 'Mixed-race']
@@ -124,7 +125,7 @@ export class PhotoGeneratorPage implements OnInit {
   }
 
   loadImages(){
-    this.firestore.get('ai-avatars').subscribe((images:any)=>{
+    this.firestore.get('avatars').subscribe((images:any)=>{
       this.images = images.map((e:any) => {
         return { ...e.payload.doc.data(), id:e.payload.doc.id }
       })
@@ -145,7 +146,8 @@ export class PhotoGeneratorPage implements OnInit {
     let url = 'https://generateandstoreimage-p2qcpa6ahq-ew.a.run.app'
 
     if(this.source=='Runware'){
-      url = 'https://generateandstoreimagerunway-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/generateAndStoreAvatars'
+      // url = 'https://generateandstoreimagerunway-p2qcpa6ahq-ew.a.run.app'
     }
     
     let obj:any = {
@@ -308,7 +310,8 @@ export class PhotoGeneratorPage implements OnInit {
     let url = 'https://generateandstoreimage-p2qcpa6ahq-ew.a.run.app'
     
     if(this.source=='Runware'){
-      url = 'https://generateandstoreimagerunway-p2qcpa6ahq-ew.a.run.app'
+      url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/generateAndStoreAvatars'
+      // url = 'https://generateandstoreimagerunway-p2qcpa6ahq-ew.a.run.app'
     }
 
     let obj = {
@@ -398,7 +401,7 @@ No text, lines, or other elements should be present in the image besides the por
     ],true,((response:any)=>{
       console.log(response)
       if(response?.data=='delete'){
-        this.firestore.delete('ai-avatars',image.id)
+        this.firestore.delete('avatars',image.id)
       }
     }),'',{},true)
   }
@@ -441,7 +444,31 @@ No text, lines, or other elements should be present in the image besides the por
         obj.gender_ethnicity[image.gender+'_'+image.ethnicity].push(image)
       }
     })
-    console.log(obj)
+    // console.log(obj)
+  }
+
+
+  selectImages(){
+    console.log(this.images)
+    let emotion = 'Sad'
+
+    for(let i=0;i<this.images.length;i++){
+      let image = this.images[i]
+      if(image.emotion ==emotion){
+        this.selectedImages.push(image)
+      }
+    }
+
+    console.log(this.selectedImages)
+
+  }
+
+  removeSelectedImages(){
+    // this.selectedImages.forEach((image:any)=>{
+    //   this.firestore.delete('ai-avatars',image.id)
+    // })
+    // this.selectedImages = []
+    // this.toast.show('Selected images removed',3000,'bottom')
   }
 
 

@@ -20,7 +20,8 @@ import {
   faHandPointDown,faHandPointUp,faExpandAlt,faCompressAlt,faIcons,faSuitcase,faCameraRetro,faGrinTongue,faBan,faMinus,
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
-  faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink
+  faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink, faDatabase,
+  faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -30,7 +31,7 @@ import {
 
 import {
   faLinkedin,faFacebook,faInstagram,faTwitter,faYoutube,faWhatsapp,faTiktok,
-  faTelegram,faSignalMessenger,faXTwitter
+  faTelegram,faSignalMessenger,faXTwitter,faVimeo
 } from '@fortawesome/free-brands-svg-icons'
 
 import { UserService } from './user.service';
@@ -93,6 +94,7 @@ export class IconsService {
     faCopy,
     faCreditCard,
     faCrow,
+    faDatabase,
     faDog,
     faDownload,
     faDoorOpen,
@@ -110,9 +112,13 @@ export class IconsService {
     faFastBackward,
     faFileAlt,
     faFileExcel,
+    faFileExport,
+    faFileImport,
     faFilter,
     faFistRaised,
+    faFolderPlus,
     faGavel,
+    faGift,
     faGlasses,
     faGlobe,
     faGlobeEurope,
@@ -139,12 +145,16 @@ export class IconsService {
     faInfo,
     faInfoCircle,
     faLandmark,
+    faLevelUp,
+    faLightbulb,
     faList,
     faLock,
     faMap,
     faMapPin,
     faMeh,
     faMicrophone,
+    faMicrophoneAlt,
+    faMicrophoneAltSlash,
     faMinus,
     faMinusCircle,
     faMobileAlt,
@@ -214,9 +224,11 @@ export class IconsService {
     faUserGraduate,
     faUserNinja,
     faUsers,
+    faUsersCog,
     faUserShield,
     faVideo,
     faVideoSlash,
+    faVimeo,
     faWind,
     faWrench,
     faLink,

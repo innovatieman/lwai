@@ -118,7 +118,7 @@ export class FilterKeyPipe implements PipeTransform {
           else if(array[i][key]==value){
             nwArr.push(array[i])
           }
-          else if(array[i][key].indexOf(value)>-1){
+          else if(array[i][key]?.indexOf(value)>-1){
             nwArr.push(array[i])
           }
         }
@@ -168,9 +168,32 @@ export class FilterKeyPipe implements PipeTransform {
               }
             }
             else{
-              for(let j=0;j<array[i][key].length;j++){
-                if(value.indexOf(array[i][key][j])>-1 || array[i][key][j]=='all'){
-                  nwArr.push(array[i])
+              if(!array[i][key] && value.indexOf('all')>-1){
+                nwArr.push(array[i])
+              }
+              else if(!array[i][key] && value.indexOf('empty')>-1){
+                nwArr.push(array[i])
+              }
+              else if(!array[i][key] && value.indexOf(false)>-1){
+                nwArr.push(array[i])
+              }
+              else if(array[i][key] && typeof array[i][key]=='string' && value.indexOf(array[i][key])>-1){
+                nwArr.push(array[i])
+              }
+              else if(array[i][key] && typeof array[i][key]=='boolean' && value.indexOf(array[i][key])>-1){
+                nwArr.push(array[i])
+              }
+              else if(array[i][key] && typeof array[i][key]=='number' && value.indexOf(array[i][key])>-1){
+                nwArr.push(array[i])
+              }
+              else if(array[i][key] && typeof array[i][key]=='object' && value.indexOf('all')>-1){
+                nwArr.push(array[i])
+              }
+              else if(array[i][key]?.length){
+                for(let j=0;j<array[i][key].length;j++){
+                  if(value.indexOf(array[i][key][j])>-1 || array[i][key][j]=='all'){
+                    nwArr.push(array[i])
+                  }
                 }
               }
             }

@@ -4,9 +4,25 @@
     overflow-y: auto;  // Activeer verticale scroll wanneer nodig
     padding-right: 10px;  // Optionele padding voor scrollbalk
 }
+.selectColumn {
+    max-height: calc(var(--vh, 1vh) * 100 - 121px);
+    padding-bottom: 20px;
+}
 .avatarImage{
-    height: 200px;
-    width:100%;
+  height: 200px;
+  width:100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .title{
+    font-size: 36px;
+    text-transform: uppercase;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    // margin-bottom: 10px;
+  }
 }
 .cardButton{
     --border-color:#eaeaea;
@@ -98,6 +114,38 @@
     bottom: 20px;
 }
 
+.activeItem{
+  background-color: var(--ion-color-primary);
+  ion-item{
+    --background:none;
+    --color: white;
+    div{
+      --color: white;
+    }
+    fa-icon{
+      color:white;
+    }
+  }
+  ion-card-title{
+    color: white;
+  }
+}
+.notActiveItem{
+  background-color: white;
+  ion-item{
+    --background-hover: none;
+  }
+  ion-card-title{
+    color: var(--ion-color-primary);
+  }
+}
+.notActiveItem:hover{
+  background: var(--background-global);
+  ion-item{
+    --background: var(--background-global);
+  }
+}
+
 [moduleCard]{
   height: calc(100% - 0px);
   // width: calc(100% - 0px);
@@ -151,3 +199,55 @@
 }
 // .noStyle:focus-visible{
 // }
+.codePart{
+  background:rgba(var(--ion-color-success-rgb),0.2)
+}
+.successPart{
+  background:rgba(var(--ion-color-success-rgb),0.2)
+}
+.warningPart{
+  background:rgba(var(--ion-color-warning-rgb),0.2)
+}
+.inputAmount{
+  text-align: center;
+  border: solid 2px var(--ion-color-primary);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 100%;
+  // --padding-start: 20px;
+  // padding-left: 60px;
+}
+
+.selectedModule{
+    --background: var(--ion-color-primary);
+    ion-label{
+        color:var(--ion-color-primary-contrast);
+    }
+}
+
+.typeItem{
+    padding: 5px 10px;
+    border-radius: 16px;
+    background-color: var(--ion-color-primary);
+    color:var(--ion-color-primary-contrast);
+    font-size: 14px;
+    text-align: center;
+    margin: 5px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.tagItemMobile{
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 16px;
+  background-color: var(--ion-color-secondary-contrast);
+  color: var(--ion-color-secondary);
+  border:solid 1px var(--ion-color-secondary);
+  font-size: 14px;
+  text-align: center;
+  margin: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}

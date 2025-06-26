@@ -1,0 +1,108 @@
+<app-header page="admin"></app-header>
+
+<main>
+  <div basicPadding>
+    <ion-row noPadding>
+      <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
+        
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+          <ion-item detail="false" lines="none" button (click)="newMail()" class="itemButton" noMargin>
+            <div font-20 weight700>Nieuw bericht</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faPlus')"></fa-icon>
+          </ion-item>    
+        </div>
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+          <ion-item detail="false" lines="none" button (click)="startMailFlow()" class="itemButton" noMargin>
+            <div font-20 weight700>Start mail flow</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faEnvelope')"></fa-icon>
+          </ion-item>    
+        </div>
+      </ion-col>
+
+      <ion-col [size]="media.smallDevice ? 12 : 9" class="contentColumn">
+        <ion-card *ngFor="let mail of allMails" fullwidth marginBottom borderRadius16>
+          <ion-card-header (click)="mail.showMail = !mail.showMail">
+            <ion-card-title flex center-ver>
+              <div>
+                <div weight700 font-18 style="margin-bottom:10px;">Dag {{mail.days}}: {{ mail.title }}</div>
+                <div font-16>{{mail.information}}</div>
+              </div>
+              <div class="spacer"></div>
+              <div class="flowType" [ngClass]="mail.flow">{{mail.flow}}</div>
+              <ion-toggle marginLeft color="primary" [ngModel]="mail.active" (click)="toggleActive(mail,$event)"></ion-toggle>
+              <fa-icon marginLeft [icon]="icon.get('faPen')" (click)="editMail(mail,$event)"></fa-icon>
+              <fa-icon chevron marginLeft [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': mail.showMail ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+            
+            </ion-card-title>
+            <ion-card-title flex center-ver borderPrimary borderRadius16 basicPadding marginTop>
+              <ion-row>
+                <ion-col size="12" wight700>
+                  Uitgesloten bij:
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.has_training" (click)="toggleExclude(mail, 'has_training', $event)">
+                    Met Training
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.has_organisation" (click)="toggleExclude(mail, 'has_organisation', $event)">
+                    Met Organisatie
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.has_conversation" (click)="toggleExclude(mail, 'has_conversation', $event)">
+                    Gesprek gevoerd
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.is_customer" (click)="toggleExclude(mail, 'is_customer', $event)">
+                    Is een klant
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.has_no_training" (click)="toggleExclude(mail, 'has_no_training', $event)">
+                    Geen training
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.has_no_organisation" (click)="toggleExclude(mail, 'has_no_organisation', $event)">
+                    Geen organisatie
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.has_no_conversation" (click)="toggleExclude(mail, 'has_no_conversation', $event)">
+                    Gesprek niet gevoerd
+                  </ion-toggle>
+                </ion-col>
+                <ion-col size="3">
+                  <ion-toggle labelPlacement="end" justify="start" color="primary" [ngModel]="mail.exclude.is_no_customer" (click)="toggleExclude(mail, 'is_no_customer', $event)">
+                    Is geen klant
+                  </ion-toggle>
+                </ion-col>
+              </ion-row>
+
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="mail.showMail" borderPrimary borderRadius16 basicPadding style="margin:0 15px 15px 15px">
+            <div class="mailItem">
+              <span class="mailLabel">Aan:</span>
+              <span class="mailValue">Gebruiker</span>
+            </div>
+            <div class="mailItem">
+              <span class="mailLabel">Onderwerp:</span>
+              <span class="mailValue">{{mail.subject}}</span>
+            </div>
+            <div class="mailItem">
+              <span class="mailLabel">Van:</span>
+              <span class="mailValue">{{mail.from}}</span>
+            </div>
+            <div class="mailBody" basicPadding>
+              <p [innerHTML]="mail.body"></p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </div>
+</main>

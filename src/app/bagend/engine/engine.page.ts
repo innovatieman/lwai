@@ -127,8 +127,8 @@ export class EnginePage implements OnInit {
   ]
   
   fieldOptionsFormat:any = [
-    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator']},
-    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator']},
+    {field:'format',label:'Format',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator','knowledge_summarizer','close_analyst']},
+    {field:'instructions',label:'Extra Instructions',type:'textarea',agents:['reaction','feedback','phases','choices','facts','close','goals','case_prompter','background','phase_creator','skills','levels','translator','knowledge_summarizer','close_analyst']},
   ]
   
   fieldOptionsList:any = [

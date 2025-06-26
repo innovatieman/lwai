@@ -11,6 +11,15 @@
             {{counter}}
           </div>
         </div>
+        <div *ngIf="!auth.activeCourses?.length&&!auth.myOrganisationsList?.length&&step!=0&&!media.smallDevice" center marginTop>
+          <ion-button class="saveButton" fill="outline" color="primary" (click)="stopVideo();nav.go('start/cases/search')">{{'page_wait_verify.skip_intro' | translate}}</ion-button>
+        </div>
+        <div *ngIf="auth.activeCourses?.length" center marginTop>
+          <ion-button class="saveButton" fill="outline" color="primary" (click)="stopVideo();nav.go('start/my_trainings')">{{'page_wait_verify.direct_my_trainings' | translate}}</ion-button>
+        </div>
+        <div *ngIf="auth.myOrganisationsList?.length && !auth.activeCourses?.length" center marginTop>
+          <ion-button class="saveButton" fill="outline" color="primary" (click)="stopVideo();nav.go('start/my_organisation')">{{'page_wait_verify.direct_my_organisation' | translate}}</ion-button>
+        </div>
       </ion-col>
       <ion-col [size]="media.smallDevice || step==7 ? 12 : 5" basicPadding>
 
@@ -29,8 +38,9 @@
           <div text-success center weight500 marginBottom *ngIf="verifyCode.valid">{{'page_wait_verify.code_valid' | translate}}</div>
           <div center>
             <ion-button class="saveButton" color="dark" fill="outline" (click)="resend()">{{'page_wait_verify.resend' | translate}}</ion-button>
+            <ion-button marginTop class="saveButton" color="medium" style="opacity: 0.6;" fill="outline" (click)="verifyOption()">{{'page_wait_verify.verify_option_button' | translate}}</ion-button>
           </div>
-          <div basicPadding italic align-center *ngIf="emailResend">{{emailResend}}</div>
+          <div basicPadding italic align-center *ngIf="emailResend &&!showVerifyOption">{{emailResend}}</div>
         </div>
 
         <div *ngIf="step==1&&!loading">
@@ -38,7 +48,7 @@
           <div font-18 marginBottom align-center>{{'page_wait_verify.step_1_text' | translate}}</div>
           
           <h3 font-20 weight700 style="margin-left:15px">{{'page_wait_verify.first_name' | translate}}</h3>
-          <ion-item  noBackground lines="none" class="fieldItem" style="--padding-start:0;" marginBottom>
+          <ion-item detail="false"  noBackground lines="none" class="fieldItem" style="--padding-start:0;" marginBottom>
             <ion-input class="saveButton" borderRadius24 [placeholder]="translate.instant('first_name')" type="text" [(ngModel)]="displayName" (ionBlur)="updateName()"></ion-input>
           </ion-item>
 
@@ -152,7 +162,7 @@
           <div>
             <ion-row class="selectColumn" flex center-hor style="padding-right:0px">
               <ng-container *ngIf="!media.smallDevice">
-                <ion-col [size]="helper.cardSize" *ngFor="let caseItem of suggestionCases | maxLength:2;let i = index">
+                <ion-col [size]="helper.cardSize" *ngFor="let caseItem of suggestionCases | maxLength:((auth.activeCourses?.length || auth.myOrganisationsList?.length) ? 1 : 2);let i = index">
                     <ion-card [id]="'case_card'+i" noPadding pointer fullheight class="'caseItem" (click)="showCaseInfo(caseItem)">
                         <ion-card-content noPadding fullHeight>
                             <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
@@ -191,6 +201,44 @@
                       <div center flex center-ver center-hor>  
 
                           <ion-button class="saveButton cardButton" fill="outline" size="small">{{'page_wait_verify.skip_suggestion_button' | translate}}</ion-button>
+                      </div>
+                  </ion-card-content>
+
+                  </ion-card>
+                </ion-col>
+
+                <ion-col [size]="helper.cardSize" *ngIf="auth.activeCourses?.length">
+                  <ion-card noPadding pointer fullheight class="'caseItem skipSuggestion" flex center-ver center-hor (click)="stopVideo();nav.go('start/my_trainings')">
+                    <ion-card-content noPadding fullHeight>
+                      <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(' + auth.activeCourses[0]?.photo + ')'}"></div>
+                      <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                          <ion-card-header>
+                              <ion-card-title font-18 weight600>{{auth.activeCourses[0]?.title}}</ion-card-title>
+                              <ion-card-subtitle font-14 weight400>{{'page_wait_verify.direct_my_trainings' | translate}}</ion-card-subtitle>
+                          </ion-card-header>
+                      </div>
+                      <div center flex center-ver center-hor>  
+
+                          <ion-button class="saveButton cardButton" fill="outline" size="small">{{'page_wait_verify.step_7_title' | translate}}</ion-button>
+                      </div>
+                  </ion-card-content>
+
+                  </ion-card>
+                </ion-col>
+
+                <ion-col [size]="helper.cardSize" *ngIf="!auth.activeCourses?.length && auth.myOrganisationsList">
+                  <ion-card noPadding pointer fullheight class="'caseItem skipSuggestion" flex center-ver center-hor (click)="stopVideo();nav.go('start/my_organisation')">
+                    <ion-card-content noPadding fullHeight>
+                      <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(' + auth.mySelectedOrganisation.logo + ')'}" style="background-size: contain"></div>
+                      <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                          <ion-card-header>
+                              <ion-card-title font-18 weight600>{{auth.mySelectedOrganisation.name}}</ion-card-title>
+                              <ion-card-subtitle font-14 weight400>{{'page_wait_verify.direct_my_organisation' | translate}}</ion-card-subtitle>
+                          </ion-card-header>
+                      </div>
+                      <div center flex center-ver center-hor>  
+
+                          <ion-button class="saveButton cardButton" fill="outline" size="small">{{'page_wait_verify.step_7_title' | translate}}</ion-button>
                       </div>
                   </ion-card-content>
 
@@ -256,17 +304,21 @@
 
         </div>
 
+        <div *ngIf="!auth.activeCourses?.length&&!auth.myOrganisationsList?.length&&step!=0&&media.smallDevice&&step!=0&&step!=7" center marginTop>
+          <ion-button class="saveButton" fill="outline" color="primary" (click)="stopVideo();nav.go('start/cases/search')">{{'page_wait_verify.skip_intro' | translate}}</ion-button>
+        </div>
+
         <!-- <div style="background:white;border-radius:24px;box-shadow:0 0 10px 0 rgba(0, 0, 0, 0.2)" basicPadding *ngIf="!allSaved">
           <h2 align-center>{{'page_wait_verify.success' | translate}}</h2>
           <div marginBottom align-center>{{'page_wait_verify.question_title' | translate}}</div>
           
           <h3 font-20 weight700 style="margin-left:15px">{{'page_wait_verify.first_name' | translate}}</h3>
-          <ion-item lines="none" class="fieldItem" style="--padding-start:0;" marginBottom>
+          <ion-item detail="false" lines="none" class="fieldItem" style="--padding-start:0;" marginBottom>
             <ion-input class="saveButton" borderRadius24 [placeholder]="translate.instant('first_name')" type="text" [(ngModel)]="displayName" (ionBlur)="updateName()"></ion-input>
           </ion-item>
 
             <h3 font-20 weight700 style="margin-left:15px">{{'languages.country' | translate}}</h3>
-            <ion-item lines="none" class="fieldItem" style="--padding-start:0;" (click)="showCountryPicker()">
+            <ion-item detail="false" lines="none" class="fieldItem" style="--padding-start:0;" (click)="showCountryPicker()">
               <div class="select">
                 <ion-thumbnail slot="start" *ngIf="auth.userInfo?.country" style="--size:30px;width:35px;height:25px;">
                   <img [src]="countries.country(auth.userInfo.country).flag">

@@ -3,7 +3,7 @@ import admin from '../firebase'
 import moment from 'moment'
 import * as responder from '../utils/responder'
 
-exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
+exports.userRegister = functions.region('europe-west1').runWith({memory:'1GB'}).auth.user().onCreate(
     (user:any,context:any)=>{
       let firstName = ''
       if(user.displayName){
@@ -38,8 +38,10 @@ exports.userRegister = functions.region('europe-west1').auth.user().onCreate(
           };
           let credits = {
             total: 300,
+            amount: 300,
             lastUpdated: admin.firestore.Timestamp.now(),
             added:moment().unix(),
+            created:moment().unix(),
             expires:moment().add(1,'year').unix(),
           };
           const deletedUsersRef = admin.firestore().collection('deletedUsers').doc(user.email)
@@ -119,45 +121,45 @@ exports.userRemove = functions.region('europe-west1').auth.user().onDelete(
     }
 );
 
-exports.sendVerificationEmail = functions.region('europe-west1').auth.user().onCreate(async (user) => {
-  console.log('not anymore')
-  return
-  const email = user.email;
-  const displayName = user.displayName || 'User';
+// exports.sendVerificationEmail = functions.region('europe-west1').auth.user().onCreate(async (user) => {
+//   console.log('not anymore')
+//   return
+//   const email = user.email;
+//   const displayName = user.displayName || 'User';
 
-  if (user.emailVerified) {
-    console.log(`Skipping verification email for verified user: ${email}`);
-    return; // Geen verificatiemail sturen als al geverifieerd
-  }
+//   if (user.emailVerified) {
+//     console.log(`Skipping verification email for verified user: ${email}`);
+//     return; // Geen verificatiemail sturen als al geverifieerd
+//   }
   
-  const actionCodeSettings = {
-    url: 'https://conversation.alicialabs.com/verify', // Gebruik je eigen domein of localhost
-  };
+//   const actionCodeSettings = {
+//     url: 'https://conversation.alicialabs.com/verify', // Gebruik je eigen domein of localhost
+//   };
 
-  // Genereer de verificatielink
-  const link = await admin.auth().generateEmailVerificationLink(email,actionCodeSettings);
+//   // Genereer de verificatielink
+//   const link = await admin.auth().generateEmailVerificationLink(email,actionCodeSettings);
 
-  // Haal de oobCode uit de gegenereerde link
-  const urlParams = new URLSearchParams(link.split('?')[1]);
-  const oobCode = urlParams.get('oobCode');
+//   // Haal de oobCode uit de gegenereerde link
+//   const urlParams = new URLSearchParams(link.split('?')[1]);
+//   const oobCode = urlParams.get('oobCode');
 
-  // Bouw de aangepaste verificatielink
-  const customLink = `https://conversation.alicialabs.com/verify?oobCode=${oobCode}`;
+//   // Bouw de aangepaste verificatielink
+//   const customLink = `https://conversation.alicialabs.com/verify?oobCode=${oobCode}`;
 
-  // Dynamische gegevens voor de template
-  const emailData = {
-    to: email,
-    template: 'verify_email',
-    language: 'nl',
-    data: {
-      name: displayName,
-      verificationLink: customLink
-    }
-  };
+//   // Dynamische gegevens voor de template
+//   const emailData = {
+//     to: email,
+//     template: 'verify_email',
+//     language: 'nl',
+//     data: {
+//       name: displayName,
+//       verificationLink: customLink
+//     }
+//   };
 
-  // Voeg de e-mail toe aan de Firestore collectie
-  await admin.firestore().collection('emailsToProcess').add(emailData);
-});
+//   // Voeg de e-mail toe aan de Firestore collectie
+//   await admin.firestore().collection('emailsToProcess').add(emailData);
+// });
 
 
 exports.sendVerificationEmailLanguage = functions.region('europe-west1').firestore.document('user_languages/{userId}')
@@ -182,6 +184,18 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
   });
 
   displayName = user.displayName || '';
+
+  const participantsRef = admin.firestore().collectionGroup('participants')
+  const employeesRef = admin.firestore().collectionGroup('employees')
+  
+  const participantsSnapshot = await participantsRef.where('email', '==', email).get();
+  const employeesSnapshot = await employeesRef.where('email', '==', email).get();
+  if (!participantsSnapshot.empty || !employeesSnapshot.empty) {
+      await admin.auth().updateUser(user.uid,{emailVerified:true})
+      console.log(`Skipping verification email for verified user: ${email}`);
+      return
+  }
+
 
   if (user.emailVerified) {
     console.log(`Skipping verification email for verified user: ${email}`);
@@ -214,12 +228,15 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
   // Dynamische gegevens voor de template
   const emailData = {
     to: email,
+    bcc: 'logging@alicialabs.com',
     template: 'verify_email',
     language: language,
     data: {
       name: displayName,
       verificationLink: customLink,
-      code: code
+      code: code,
+      userId: user.uid,
+      emailId: 'verification'
     }
   };
 
@@ -229,7 +246,7 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
   await admin.firestore().collection('user_languages').doc(change.id).delete();
 });
 
-exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(async (data, context) => {
+exports.reSendVerificationEmail = functions.region('europe-west1').runWith({memory:'512MB'}).https.onCall(async (data, context) => {
   const email = data.email;
   const displayName = data.displayName || 'User';
 
@@ -277,12 +294,15 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   }
   const emailData = {
     to: email,
+    bcc: 'logging@alicialabs.com',
     template: template,
     language: language,
     data: {
       name: displayName,
       verificationLink: customLink,
-      code: code
+      code: code,
+      userId: context.auth?.uid || '',
+      emailId: 're-verification'
     }
   };
 
@@ -294,6 +314,19 @@ exports.reSendVerificationEmail = functions.region('europe-west1').https.onCall(
   
   return new responder.Message('Success', 200);
 });
+
+exports.confirmMyEmail = functions.region('europe-west1').https.onCall(async (data,context)=>{
+  if(!context.auth){
+    return new responder.Message('Not authorized', 500);
+  }
+  const uid = context.auth.uid
+  if(!uid){
+    return new responder.Message('Not authorized', 500);
+  }
+  await admin.auth().updateUser(uid,{emailVerified:true})
+  
+  return new responder.Message('Success', 200);
+})
 
 exports.editUserName = functions.region('europe-west1').https.onCall(async (data,context)=>{
   const displayName = data.displayName
@@ -502,6 +535,7 @@ exports.checkOffer = functions.region('europe-west1').https.onCall(async (data, 
       total:offerData?.credits,
       amount:offerData?.credits,
       added:moment().unix(),
+      created:moment().unix(),
       expires:moment().add(1,'year').unix(),
     })
 

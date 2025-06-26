@@ -72,11 +72,19 @@ exports.getMyActiveTrainings = functions
           if (!trainingDoc.exists) return null;
 
           const trainingData:any = {
+            status_access: training.status || 'pending', // <-- status uit participant_training
             id: trainingDoc.id,
             ...trainingDoc.data(),
             basics: training, // <-- alles uit participant_training
             trainer_id: training.trainer_id,
           };
+
+          if(trainingData.available_date && trainingData.available_date > moment().format('YYYY-MM-DD')){
+            return null; // Training is nog niet beschikbaar
+          }
+          if(trainingData.available_till && trainingData.available_till < moment().format('YYYY-MM-DD')){
+            return null; // Training is verlopen
+          }
 
           const trainerDoc = await admin
             .firestore()
@@ -104,7 +112,29 @@ exports.getMyActiveTrainings = functions
 
     const enrichedTrainings = await loadTrainingsWithItems(validTrainings);
 
-    return new responder.Message(enrichedTrainings, 200);
+    let allTrainings: any[] = [];
+    for (let i = 0; i < enrichedTrainings.length; i++) {
+      let training:any = {}
+      if( enrichedTrainings[i].status_access!='pending'){
+        training = {...enrichedTrainings[i] };
+      }
+      else{
+        training = {
+          id: enrichedTrainings[i].id,
+          title: enrichedTrainings[i].title,
+          user_info: enrichedTrainings[i].user_info,
+          trainer_id: enrichedTrainings[i].trainer_id,
+          trainer: enrichedTrainings[i].trainer,
+          status_access: enrichedTrainings[i].status_access,
+          available_date: enrichedTrainings[i].available_date,
+          available_till: enrichedTrainings[i].available_till,
+          photo: enrichedTrainings[i].photo,
+        };
+      }
+      allTrainings.push(training);
+    }
+
+    return new responder.Message(allTrainings, 200);
   });
 
 exports.createTrainingCode = functions
@@ -158,6 +188,7 @@ exports.registerWithCode = functions
   const trainerId = code.trainerId;
   const trainingId = code.trainingId;
   const email = context.auth.token.email;
+  const displayName = data.displayName || '';
   const created = code.created;
   if(!trainerId||!trainingId||!email||!created){
     return { error: 'Invalid Code', code: 400 };
@@ -172,6 +203,13 @@ exports.registerWithCode = functions
   if (!trainingDoc.exists) {
     return { error: 'Training not found', code: 404 };
   }
+  const trainingData = trainingDoc.data();
+  let status = 'pending'
+  const participantsRef = await trainingRef.collection('participants')
+  const participantDocs = await participantsRef.get();
+  if(trainingData.allow_automatic_approval && trainingData.status=='published' && (participantDocs.empty || participantDocs.docs.length < trainingData.amount_participants)){
+    status = 'active';
+  }
   await db.collection('participant_trainings')
     .doc(email)
     .collection('trainings')
@@ -179,7 +217,54 @@ exports.registerWithCode = functions
     .set({
       trainer_id: trainerId,
       entered:moment().unix(),
+      status: status,
     })
+  await trainingRef.collection('participants')
+    .add({
+      email: email,
+      status: status,
+      displayName: displayName || '',
+      created: Date.now(),
+    });
+
+    // db.collection('emailsToSend').add({
+    //     to: 'trainer@innovatieman.nl',
+    //     template: 'welcome',
+    //     data:{
+    //       name: 'Marky',
+    //     },
+    //     language: 'nl'
+    //   })
+
+    const trainerRef = admin
+    .firestore()
+    .collection('trainers')
+    .doc(trainerId);
+    const trainerDoc = await trainerRef.get();
+    if (trainerDoc.exists) {
+      const trainerData = trainerDoc.data();
+  
+      db.collection('emailsToProcess').add({
+        template: 'free',
+        to:trainerData.email,
+        data: {
+          content:`${trainerData.name || ''},<br><br>
+          Er is een nieuwe deelnemer geregistreerd voor je training "${trainingDoc.data().title}".<br><br>
+          <table>
+          <tr><td>Deelnemer:</td><td>${displayName || email}</td></tr>
+          <tr><td>Email:</td><td>${email}</td></tr>
+          <tr><td>Geregistreerd:</td><td>${moment(created).format('DD-MM-YYYY HH:mm')}</td></tr>
+          <tr><td>Status:</td><td>${trainingData.allow_automatic_approval ? 'Actief' : 'In afwachting van goedkeuring'}</td></tr>
+          </table><br>
+          Je kunt de deelnemer vinden in je dashboard.<br><br>
+          <a style="background:#2b6cf5;color:white;padding:10px 20px;border-radius:24px;font-size:18px;font-weight:600;text-decoration:none" href="https://conversation.alicialabs.com/trainer/trainings">Naar je trainingen</a><br>
+          `,
+          subject: 'Nieuwe deelnemer voor training '+ trainingDoc.data().title,
+        },
+        subject: 'Nieuwe deelnemer voor training',
+        language:'nl'
+      })
+    }
 
     return new responder.Message('registered', 200);
 })
@@ -309,48 +394,201 @@ function readJWT(token: string) {
     return null;
   }
 }
-  // Snellere en betere loadModulesWithItems
-  // async function loadModulesWithItems(modulesData: any[]) {
-  //   return Promise.all(
-  //     modulesData.map(async (module) => {
-  //       if (!module.items || module.items.length === 0) {
-  //         module.items = [];
-  //         return module;
-  //       }
-  
-  //       // Maak Firestore refs lijst voor batch
-  //       const refs = module.items.map((item:any) => {
-  //         if (item.type === 'case') {
-  //           return admin.firestore()
-  //             .collection('trainers')
-  //             .doc(module.trainer_id)
-  //             .collection('cases')
-  //             .doc(item.id);
-  //         } else if (item.type === 'infoItem') {
-  //           return admin.firestore()
-  //             .collection('trainers')
-  //             .doc(module.trainer_id)
-  //             .collection('infoItems')
-  //             .doc(item.id);
-  //         } else {
-  //           return null; // onherkenbaar type
-  //         }
-  //       }).filter((ref:any) => ref !== null);
-  
-  //       // Batch ophalen van alle refs
-  //       const itemDocs = await Promise.all(refs.map((ref:any) => ref.get()));
-  
-  //       module.items = itemDocs.map((docSnap, index) => {
-  //         if (!docSnap.exists) return null;
-  
-  //         return {
-  //           id: docSnap.id,
-  //           ...docSnap.data(),
-  //           originalType: module.items[index].type // Behoud type info
-  //         };
-  //       }).filter(item => item !== null); // Filter lege
-  
-  //       return module;
-  //     })
-  //   );
-  // }
+
+exports.addEmployeesOrganisation = functions
+  .region('europe-west1')
+  .runWith({ memory: '1GB' }).firestore
+  .document("trainers/{trainerId}/employees/{employeeId}")
+  .onCreate(async (snap, context) => {
+    const data = snap.data();
+    if(data?.status!='active') return;
+    if(!data?.email) return;
+    if(!data?.created) return;
+    const employeeId = context.params.employeeId;
+    const trainerId = context.params.trainerId;
+
+    admin.firestore().collection("participant_organisations")
+      .doc(data.email)
+      .collection("organisations")
+      .doc(trainerId)
+      .set({
+        id: trainerId,
+        organisation_id: trainerId,
+        employee_id: employeeId,
+        status: data.status,
+        created: data.created,
+      })
+})
+
+exports.deleteEmployeesOrganisation = functions
+  .region('europe-west1')
+  .runWith({ memory: '1GB' }).firestore
+  .document("trainers/{trainerId}/employees/{employeeId}")
+  .onDelete(async (snap, context) => {
+    const data = snap.data();
+    const trainerId = context.params.trainerId;
+    const email = data.email;
+    let ref = admin.firestore()
+    .collection("participant_organisations")
+    .doc(email)
+    .collection("organisations")
+    .doc(trainerId)
+    const doc = await ref.get();
+    if(!doc.exists) return;
+    admin.firestore()
+      .collection("participant_organisations")
+      .doc(email)
+      .collection("organisations")
+      .doc(trainerId).delete()
+  })
+
+exports.updateStatusEmployeeOrganisation = functions
+  .region('europe-west1')
+  .runWith({ memory: '1GB' }).firestore
+  .document("trainers/{trainerId}/employees/{employeeId}")
+  .onUpdate(async (snap, context) => {
+    if(!snap.after.exists) return;
+    if(!snap.before.exists) return;
+    const data = snap.after.data();
+    const trainerId = context.params.trainerId;
+    const employeeId = context.params.employeeId;
+    const email = data.email;
+    const status = data.status;
+    if(data?.status=='active'){
+      admin.firestore()
+        .collection("participant_organisations")
+        .doc(email)
+        .collection("organisations")
+        .doc(trainerId)
+        .set({
+          id: trainerId,
+          employee_id: employeeId,
+          organisation_id: trainerId,
+          status: status,
+          created: data.created,
+        })
+    }
+    else{
+      admin.firestore()
+        .collection("participant_organisations")
+        .doc(email)
+        .collection("organisations")
+        .doc(trainerId)
+        .delete()
+    }
+  }
+);
+
+exports.getMyActiveOrganisationsTrainings = functions
+  .region('europe-west1')
+  .runWith({ memory: '1GB' })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return { error: 'Not authorized', code: 401 };
+    }
+
+    const email = context.auth.token.email;
+    const organisationsRef = admin
+      .firestore()
+      .collection('participant_organisations')
+      .doc(email)
+      .collection('organisations');
+
+    const organisationsSnap = await organisationsRef.get();
+
+    if (organisationsSnap.empty) {
+      return new responder.Message([], 200);
+    }
+
+    const organisationsList = organisationsSnap.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+    }));
+
+    // haal info van de door user verwerkte items per training op via subcollectie items per training
+    const itemsPromises = organisationsList.map(async (organisation: any) => {
+      const itemsRef = admin
+        .firestore()
+        .collection('participant_organisations')
+        .doc(email)
+        .collection('organisations')
+        .doc(organisation.id)
+        .collection('items');
+      const itemsSnap = await itemsRef.get();
+      if (itemsSnap.empty) {
+        organisation.used_items = [];
+        return organisation;
+      }
+      const itemsList = itemsSnap.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      organisation.used_items = itemsList;
+      // klaar
+      return organisation;
+    });
+    // Wacht tot alle items zijn opgehaald
+    await Promise.all(itemsPromises);
+
+    // Haal alle trainings + trainers parallel op
+    // console.log('Organisations List:', organisationsList);
+    const organisationsData = await Promise.all(
+      organisationsList.map(async (organisation: any) => {
+        try {
+
+          const trainingsRef = admin
+            .firestore()
+            .collection('trainers')
+            .doc(organisation.id)
+            .collection('trainings')
+            .where('status', '==', 'published')
+            .where('publishType', '==', 'organisation')
+
+          const trainingsSnap = await trainingsRef.get();
+          if (trainingsSnap.empty) return null;
+          const trainingsList = trainingsSnap.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id,
+            basics: organisation,
+            trainer_id: doc.ref.parent.parent.id, // Trainer ID uit de parent van de training
+          }));
+
+          const validTrainings = trainingsList.filter((training: any) => {
+            if(training.available_date && training.available_date > moment().format('YYYY-MM-DD')){
+              return false; // Training is nog niet beschikbaar
+            }
+            if(training.available_till && training.available_till < moment().format('YYYY-MM-DD')){
+              return false; // Training is verlopen
+            }
+            return true; // Training is geldig
+          });
+          if (validTrainings.length === 0) return null; 
+          const enrichedTrainings = await loadTrainingsWithItems(validTrainings);
+
+          const organisationRef = admin
+            .firestore()
+            .collection('trainers')
+            .doc(organisation.id);
+          const organisationDoc = await organisationRef.get();
+          if (!organisationDoc.exists) return null;
+          const organisationData = organisationDoc.data();
+
+          return {
+            id: organisation.id,
+            name: organisationData.name || '',
+            logo: organisationData.logo || '',
+            trainings: enrichedTrainings,
+          };
+        } catch (err) {
+          console.error(`Fout bij ophalen organisatie ${organisation.id}:`, err);
+          return null;
+        }
+      })
+    );
+    const validOrganisations = organisationsData.filter(o => o !== null);
+    if (validOrganisations.length === 0) {
+      return new responder.Message([], 200);
+    }
+    return new responder.Message(validOrganisations, 200);  
+
+  });

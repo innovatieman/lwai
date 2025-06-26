@@ -16,12 +16,12 @@
 
   <ion-list id="inbox-list" *ngIf="!customMenu && media.smallDevice && auth.userInfo.isConfirmed">
     <div *ngFor="let p of appPages; let i = index">
-      <ion-item pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
+      <ion-item detail="false" pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" *ngIf="shouldShowPage(p) && p.url">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
       </ion-item> 
     </div>
-      <ion-item pointer (click)="openFeedback();popoverController.dismiss()" lines="none" detail="false">
+      <ion-item detail="false" pointer (click)="openFeedback();popoverController.dismiss()" lines="none">
         <fa-icon [icon]="icon.get('faComment')" slot="start"></fa-icon>
         <ion-label>{{ 'menu.feedback' | translate }}</ion-label>
       </ion-item> 
@@ -29,13 +29,13 @@
 
   <ion-list id="inbox-list" *ngIf="!customMenu && !media.smallDevice && auth.userInfo.isConfirmed">
     <div *ngFor="let p of accountPages; let i = index">
-      <ion-item pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" detail="false" *ngIf="shouldShowPage(p) && p.url">
+      <ion-item detail="false" pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" *ngIf="shouldShowPage(p) && p.url">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
       </ion-item> 
     </div>
     <div>
-      <ion-item pointer (click)="openFeedback();popoverController.dismiss()" lines="none" detail="false">
+      <ion-item detail="false" pointer (click)="openFeedback();popoverController.dismiss()" lines="none">
         <fa-icon [icon]="icon.get('faComment')" slot="start"></fa-icon>
         <ion-label>{{ 'menu.feedback' | translate }}</ion-label>
       </ion-item> 
@@ -48,7 +48,7 @@
         <ion-card class="customMenuItem" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
           <ion-row>
             <ion-col size="4">
-              <div *ngIf="p.image" class="menuItemImage" [ngStyle]="{'background-image':'url(' + p.image + ')'}"></div>
+              <div *ngIf="p.image" class="menuItemImage" [ngStyle]="{'background-image':'url(' + p.image + ')','background-size': p.logo ? 'contain' : 'cover'}"></div>
               <div *ngIf="p.icon" class="menuItemIcon">
                 <fa-icon [icon]="icon.get(p.icon)"></fa-icon>
               </div>
@@ -81,7 +81,7 @@
 
   <div *ngIf="customMenu&&listShape&&!shareMenu">
     <ion-list>
-      <ion-item lines="none" button *ngFor="let p of appPages; let i = index let first = first;let last=last" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
+      <ion-item detail="false" lines="none" button *ngFor="let p of appPages; let i = index let first = first;let last=last" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
         <!-- <ion-icon *ngIf="p.icon" [name]="p.icon" slot="start"></ion-icon> -->
         <fa-icon *ngIf="p.icon" [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ p.title }}</ion-label>
@@ -119,17 +119,17 @@
   
   <!-- <ion-accordion-group *ngIf="isAuthenticated&&isAdmin">
     <ion-accordion value="administrator">
-      <ion-item slot="header" >
+      <ion-item detail="false" slot="header" >
         <ion-label>Admin opties</ion-label>
       </ion-item>
   
       <ion-list slot="content">
         <div auto-hide="false" *ngFor="let p of editPages; let i = index">
-          <ion-item (click)="popoverController.dismiss()" routerDirection="forward" [routerLink]="[p.url]" lines="none" detail="false" [class.selected]="getMainUrl(router.url)==p.url" *ngIf="p.url">
+          <ion-item detail="false" (click)="popoverController.dismiss()" routerDirection="forward" [routerLink]="[p.url]" lines="none" [class.selected]="getMainUrl(router.url)==p.url" *ngIf="p.url">
             <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item> 
-          <ion-item style="cursor: pointer;" routerDirection="forward" (click)="execute(p.function);popoverController.dismiss()" lines="none" detail="false" *ngIf="!p.url">
+          <ion-item detail="false" style="cursor: pointer;" routerDirection="forward" (click)="execute(p.function);popoverController.dismiss()" lines="none" *ngIf="!p.url">
             <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
             <ion-label>{{ p.title }}</ion-label>
           </ion-item>

@@ -48,6 +48,10 @@ export class SelectManyPage implements OnInit {
     
   }
 
+  preventBubble(event:any){
+    event.stopPropagation()
+  }
+  
   dismiss(obj?:any) {
     if(obj){
       this.modalController.dismiss(obj);

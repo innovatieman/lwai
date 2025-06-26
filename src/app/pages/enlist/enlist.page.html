@@ -42,7 +42,7 @@
           
           <h3>Programma</h3>
 
-            <ion-item *ngFor="let item of courseData.itemIds;let item_index=index" class="subItem" lines="none">
+            <ion-item detail="false" *ngFor="let item of courseData.itemIds;let item_index=index" class="subItem" lines="none">
                 <ion-thumbnail slot="start">
                   <img [src]="getItem(item.id).photo" *ngIf="getItem(item.id).photo&&getItem(item.id).type!='video'" />
                   <img src="assets/img/alicia_background.webp" *ngIf="!getItem(item.id).photo&&getItem(item.id).type!='video'" />
@@ -101,7 +101,7 @@
               <ion-button class="saveButton" expand="block" color="primary" (click)="enlist()" *ngIf="courseData.price==0" marginBottom>Aan de slag</ion-button>
               <!-- <ion-button class="saveButton" expand="block" color="primary" (click)="enlist()" *ngIf="courseData.currency=='CREDITS'&&auth.userInfo?.credits>=courseData.price" marginBottom>Aan de slag</ion-button> -->
               <ion-button expand="block" fill="clear" color="medium" (click)="showCode=!showCode">Ik heb een toegangscode</ion-button>
-              <ion-item borderMedium borderRadius16 lines="none" class="noPadding" *ngIf="showCode">
+              <ion-item detail="false" borderMedium borderRadius16 lines="none" class="noPadding" *ngIf="showCode">
                 <ion-label position="stacked">Toegangscode</ion-label>
                 <ion-input  type="text" [(ngModel)]="code"></ion-input>
               </ion-item>

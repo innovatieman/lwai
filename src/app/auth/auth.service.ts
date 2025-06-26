@@ -22,6 +22,7 @@ import { CountriesService } from '../services/countries.service';
 export class AuthService {
   user$: Observable<firebase.User | null>;
   userRoles$: Observable<{ isAdmin: boolean, isConfirmed:boolean } | null>;
+  organisations$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Organisaties als Observable
   customer:any = {}
   tutorials:any = {tutorials:{}}
   userInfo:any = {}
@@ -31,21 +32,29 @@ export class AuthService {
   subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
   private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
   activeCourses: any[] = [];
+  organisationTrainings: any[] = [];
   allCourses: any[] = [];
   profile:any = {}
   skills:any = {impact:{score:0,prevScore:0},flow:{score:0,prevScore:0},logic:{score:0,prevScore:0}}
   credits:any = {total:0}
   credits_unlimited_type:string = ''
   creditsList:any[] = []
+  organisations:any[] = []
+  latestVersion:any = {}
+  myTrainingsList:any[] = []
+  myOrganisationsList:any[] = []
+  mySelectedOrganisation:any = {}
+  isEmployee:boolean = false
   creditsChanged:EventEmitter<boolean> = new EventEmitter<boolean>();
   coursesLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
+  employeeLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
 
   skillsLevels:any = [0,100,200,400,800]
 
   constructor(
     private nav: NavService,
     private toast: ToastService,
-    private afAuth: AngularFireAuth,
+    public afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
     private firestoreService: FirestoreService,
     private functions: AngularFireFunctions,
@@ -78,14 +87,15 @@ export class AuthService {
       if (user) {
         this.loadSubscriptions(user.uid);
         this.loadConversations(user.uid);
-        // this.loadCourses(user.uid);
-        // console.log('getting credits')
+        this.loadOrganisations(user.uid)
         this.getCredits(user.uid)
         this.getSkills(user.uid)
         this.getTutorials(user.uid)
         this.getCustomer(user.uid)
         this.getProfile(user.uid)
-        this.getActiveCourses(user.uid)
+        this.getActiveCourses(user)
+        this.getVersion()
+        this.getMyOrganisations(user)
 
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
@@ -106,6 +116,31 @@ export class AuthService {
 
   }
 
+  getVersion(){
+    this.firestoreService.getDoc('versions','latest').subscribe((data:any)=>{
+      if(data?.payload?.data()){
+        this.latestVersion = data.payload.data()
+      }
+      else{
+        this.latestVersion = {}
+      }
+    })
+  }
+
+  get newVersionAvailable():boolean{
+    if(this.latestVersion?.version && this.latestVersion?.version != environment.version){
+      let convertedVersion = this.latestVersion.version.split('.').map((num:string) => parseInt(num, 10));
+      let currentVersion = environment.version.split('.').map((num:string) => parseInt(num, 10));
+      // Vergelijk de versies
+      if (convertedVersion[0] > currentVersion[0] || 
+          (convertedVersion[0] === currentVersion[0] && convertedVersion[1] > currentVersion[1]) || 
+          (convertedVersion[0] === currentVersion[0] && convertedVersion[1] === currentVersion[1] && convertedVersion[2] > currentVersion[2])) {
+          return true
+      }
+      return false
+    }
+    return false
+  }
 
   async getCredits(uid:string){
     this.firestoreService.querySub('users',uid,'credits','total',0,"!=").subscribe((data:any)=>{
@@ -118,7 +153,7 @@ export class AuthService {
           if(item.total){
             total += item.total
           }
-          if(item.type){
+          if(item.type && item.type == 'unlimited-chat'){
             this.credits_unlimited_type = item.type
           }
         })
@@ -127,6 +162,7 @@ export class AuthService {
         })
         this.credits = {total:total}
         this.creditsChanged.emit(true)
+        // console.log('credits',this.credits)
       }
       else{
         this.credits = {total:0}
@@ -142,6 +178,23 @@ export class AuthService {
     //     this.creditsChanged.emit(true)
     //   }
     // })
+  }
+
+  openStripeDashboard(){
+    // this.nav.goto(this.auth.customer.stripeLink,true)
+    this.toast.showLoader('Opening Stripe dashboard')
+    this.functions.httpsCallable('createStripePortalSession')({}).subscribe((response:any)=>{
+      if(response?.url){
+        this.toast.hideLoader()
+        window.location.href = response?.url;
+      }
+      else{
+        this.toast.hideLoader()
+        this.toast.show('Error opening Stripe dashboard')
+        console.log(response)
+      }
+      
+    })
   }
 
   async getSkills(uid:string){
@@ -438,8 +491,6 @@ export class AuthService {
   }
 
   resendEmailVerification(callback?:Function){
-    // this.toast.showLoader()
-    console.log({email:this.userInfo.email,displayName:this.userInfo.displayName})
     this.functions.httpsCallable('reSendVerificationEmail')({email:this.userInfo.email,displayName:this.userInfo.displayName}).subscribe((response:any)=>{
       this.toast.hideLoader()
       if(callback){
@@ -517,17 +568,20 @@ export class AuthService {
 
 
   // Uitloggen
-  async logout(): Promise<void> {
+  async logout(location?:any): Promise<void> {
+    if(!location){
+      location = '/login';
+    }
     try {
       await this.afAuth.signOut();
       this.userInfo = {}
-      this.nav.go('/login');
+      this.nav.go(location);
       setTimeout(() => {
         window.location.reload();
       }, 100);
     } catch (error) {
       console.error('Logout error:', error);
-      this.toast.show('Uitloggen mislukt');
+      this.toast.show('logout failed');
     }
   }
 
@@ -566,6 +620,13 @@ export class AuthService {
     );
   }
 
+  isOrgAdmin(): Observable<boolean> {
+    return this.organisations$.pipe(
+      map((orgs) => orgs.length > 0) // Retourneer true als de gebruiker een organisatie admin is
+    );
+  }
+  
+
   isConfirmed(): Observable<boolean> {
     return this.userRoles$.pipe(
       map((roles) => roles?.isConfirmed ?? false) // Retourneer true als de gebruiker confirmed is
@@ -588,7 +649,7 @@ export class AuthService {
       .valueChanges({ idField: 'conversationId' }) // Voeg het ID toe aan elk document
       .subscribe((conversations) => {
         this.conversations$.next(conversations); // Update de BehaviorSubject
-        console.log('conversations',conversations)
+        // console.log('conversations',conversations)
       });
   }
 
@@ -608,6 +669,46 @@ export class AuthService {
   getCourses(): Observable<any[]> {
     return this.courses$.asObservable();
   }
+
+
+  public loadOrganisations(userId: string) {
+    this.firestore
+      .collection(`trainers/`).ref.where('admins', 'array-contains', userId)//.where('type','==','organisation')
+      .get()
+      .then((querySnapshot) => {
+        this.organisations = []
+        querySnapshot.forEach((doc) => {
+          let item:any = doc.data()
+          item.id = doc.id
+          this.organisations.push(item)
+        });
+        this.organisations = this.organisations.sort((a:any,b:any)=>{
+          return a.name.localeCompare(b.name)
+        })
+        this.organisations$.next(this.organisations); // Update de BehaviorSubject
+        // console.log(this.organisations)
+        if(this.organisations.length==1){
+          this.nav.changeOrganisation(this.organisations[0].id)
+        }
+        else if(localStorage.getItem('organisationId')){
+          for(let i=0;i<this.organisations.length;i++){
+            if(this.organisations[i].id == localStorage.getItem('organisationId')){
+               this.nav.changeOrganisation(this.organisations[i].id)
+            }
+          }
+        }
+        else if(!this.nav.activeOrganisationId && this.organisations.length){
+          this.nav.changeOrganisation(this.organisations[0].id)
+        }
+        
+
+      })
+  }
+
+
+  // getOrganisation(id:string){
+  //   return this.organisations.find((org:any) => org.id == id)
+  // }
 
 
   public loadSubscriptions(userId: string) {
@@ -645,7 +746,7 @@ export class AuthService {
         map((subscriptions) =>
           subscriptions.some((sub) => sub.status === 'active' && sub.type === type)
         )
-      );
+      ) || this.organisations.length
     }
   
     async upgradeSubscription(type:string,paymentMethod:string,callback:Function){
@@ -667,7 +768,7 @@ export class AuthService {
     //   });
     // }
 
-    getActiveCourses(userId: string) {
+    getActiveCourses(user: any,callback?:Function,unsubscribe?:boolean) {
       this.activeCourses = [];
       // this.firestoreService.querySub('users', userId, 'courses','status','active').subscribe((courses) => {
       //   this.activeCourses = courses.map((course: any) => {
@@ -697,17 +798,116 @@ export class AuthService {
       // //   this.activeCourses = Array.from(uniqueCourses.values());
       // // });
       // });
-
-      this.functions.httpsCallable('getMyActiveTrainings')({}).subscribe((response:any)=>{
-        console.log(response)
-        if(response.status==200){
-          this.activeCourses = response.result
-          // this.coursesLoaded.emit(true)
+      const participantSubscription = this.firestoreService.getSub('participant_trainings', user.email, 'trainings').subscribe((trainings:any)=>{
+        this.myTrainingsList = trainings.map((training:any) => {
+          return { id: training.payload.doc.id, ...training.payload.doc.data() }
+        }
+        ).sort((a:any,b:any)=>{
+          return a.start - b.start
+        })
+        if(this.myTrainingsList.length){
+          this.functions.httpsCallable('getMyActiveTrainings')({}).subscribe((response:any)=>{
+            // console.log(response)
+            if(unsubscribe){
+              participantSubscription.unsubscribe()
+            }
+            if(response.status==200){
+              this.activeCourses = response.result
+              if(callback){
+                callback()
+              }
+              // this.coursesLoaded.emit(true)
+            }
+          })
         }
       })
 
+
+      // this.functions.httpsCallable('getMyActiveTrainings')({}).subscribe((response:any)=>{
+      //   console.log(response)
+      //   if(response.status==200){
+      //     this.activeCourses = response.result
+      //     // this.coursesLoaded.emit(true)
+      //   }
+      // })
+
     }
 
+    getMyOrganisations(user: any,callback?:Function,unsubscribe?:boolean) {
+      this.activeCourses = [];
+      
+      const employeeSubscription = this.firestoreService.getSub('participant_organisations', user.email, 'organisations').subscribe((organisations:any)=>{
+        // console.log(organisations)
+        this.myOrganisationsList = organisations.map((organisation:any) => {
+          return { id: organisation.payload.doc.id, ...organisation.payload.doc.data() }
+        }
+        ).sort((a:any,b:any)=>{
+          return a.start - b.start
+        })
+        // console.log(this.myOrganisationsList)
+        if(this.myOrganisationsList.length){
+          this.isEmployee = true
+          this.employeeLoaded.emit(true)
+          this.functions.httpsCallable('getMyActiveOrganisationsTrainings')({}).subscribe((response:any)=>{
+            if(unsubscribe){
+              employeeSubscription.unsubscribe()
+            }
+            if(response.status==200){
+              this.organisationTrainings = response.result
+              if(this.organisationTrainings.length==1){
+                this.mySelectedOrganisation = this.organisationTrainings[0]
+              }
+              else if(localStorage.getItem('organisationTrainingId')){
+                for(let i=0;i<this.organisationTrainings.length;i++){
+                  if(this.organisationTrainings[i].id == localStorage.getItem('organisationTrainingId')){
+                    this.mySelectedOrganisation = this.organisationTrainings[i]
+                  }
+                }
+              }
+              else if(!this.mySelectedOrganisation.id && this.organisationTrainings.length){
+                this.mySelectedOrganisation = this.organisationTrainings[0]
+              }
+              if(callback){
+                callback()
+              }
+              // this.coursesLoaded.emit(true)
+            }
+          })
+        }
+        else{
+          this.isEmployee = false
+          this.employeeLoaded.emit(false)
+        }
+      })
+
+
+      // this.functions.httpsCallable('getMyActiveTrainings')({}).subscribe((response:any)=>{
+      //   console.log(response)
+      //   if(response.status==200){
+      //     this.activeCourses = response.result
+      //     // this.coursesLoaded.emit(true)
+      //   }
+      // })
+
+    }
+
+    getTraining(trainingId:string){
+      // return this.allCourses.find((course) => course.id === trainingId)
+      return this.activeCourses.find((course) => course.id === trainingId)
+    }
+
+    readJWT(token:string){
+      var base64Url = token.split('.')[1];
+      if(!base64Url){
+        return null
+      }
+      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+      // return JSON.parse(atob(token.split('.')[1]));
+    }
 
     // getActiveCourses(userId: string) {
     //   this.activeCourses = [];
@@ -742,13 +942,38 @@ export class AuthService {
     //   });
     // }
   
-    getActiveCourse(courseId:string){
+    getActiveCourse(courseId:string,organisation?:boolean): any {
+      if(!organisation){
+        return this.activeCourses.find((course) => course.id === courseId)
+      }
+      else if(organisation){
+        if(!this.mySelectedOrganisation || !this.mySelectedOrganisation.trainings){
+          return null
+        }
+        return this.mySelectedOrganisation.trainings.find((course:any) => course.id === courseId)
+      }
       // return this.allCourses.find((course) => course.id === courseId)
-      return this.activeCourses.find((course) => course.id === courseId)
     }
 
-    getTrainingItem(trainingId:string,itemId:string,breadCrumbs?:any,breadCrumbsLengthOffset?:number){
-      let training:any =  this.activeCourses.find((training) => training.id === trainingId)
+    getTrainingItem(trainingId:string,itemId:string,breadCrumbs?:any,breadCrumbsLengthOffset?:number,organisation?:boolean): any {
+      let training:any =  {}
+      if(!organisation){
+        training = this.activeCourses.find((training) => training.id === trainingId)
+      }
+      else if(organisation&&this.mySelectedOrganisation?.trainings){
+        if(!this.mySelectedOrganisation.trainings.length){
+          return {}
+        }
+        if(!trainingId){
+          trainingId = this.mySelectedOrganisation.trainings[0].id
+        }
+        for(let i=0;i<this.mySelectedOrganisation.trainings.length;i++){
+          if(this.mySelectedOrganisation.trainings[i].id == trainingId){
+            training = this.mySelectedOrganisation.trainings[i]
+            break
+          }
+        }
+      }
       if(itemId!=='breadCrumbs' && itemId!==''){
         if(training?.allItems.find((item:any) => item.id === itemId)){
           return training.allItems.find((item:any) => item.id === itemId)
@@ -769,22 +994,7 @@ export class AuthService {
     }
   
     publicCourses: any[] = [];
-    // getPublicCourses(){
-    //   return this.firestoreService.queryDouble('active_courses','public',true,'==','status','active','==').subscribe((courses) => {
-    //     this.publicCourses = courses.map((course:any) => {
-    //       return { id: course.payload.doc.id, ...course.payload.doc.data() }
-    //     })
-    //     let checkInt = setInterval(() => {
-    //       if(this.infoService.conversation_types.length){
-    //         clearInterval(checkInt)
-    //         for(let i = 0; i < this.publicCourses.length; i++){
-    //           this.publicCourses[i].conversationTypes = this.infoService.getConversationType('',this.publicCourses[i].types,true)
-    //         }
-    //       }
-    //     }, 200);
-    //     // console.log(this.publicCourses)
-    //   })
-    // }
+
   
     getPublicCourse(courseId:string){
       return this.publicCourses.find((course) => course.id === courseId)
@@ -821,17 +1031,25 @@ export class AuthService {
     }
 
     registerWithCode(code:string,callback?:Function){
-      console.log(code)
       if(!code){
+        if(callback){
+            callback(null)
+        }
         return
       }
-      this.functions.httpsCallable('registerWithCode')({code:code}).subscribe((response:any)=>{
+      this.functions.httpsCallable('registerWithCode')({code:code.trim(),displayName:this.userInfo.displayName}).subscribe((response:any)=>{
         if(response.status==200){
-          this.toast.show('Code geaccepteerd')
+          // this.toast.show('Code geaccepteerd')
           this.getActiveCourses(this.userInfo.uid)
+          if(callback){
+            callback(response)
+          }
         }
         else{
-          this.toast.show('Code niet geldig')
+          // this.toast.show('Code niet geldig')
+          if(callback){
+            callback(response)
+          }
         }
       })
     }

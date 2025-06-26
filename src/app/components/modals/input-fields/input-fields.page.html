@@ -9,8 +9,10 @@
         <!-- <h3 style="padding: 15px;color:var(--ion-color-secondary)" font-title>{{title}}</h3> -->
         <div style="padding: 0 15px;color:var(--color-global);margin-top:20px;line-height:1.5;margin-bottom:20px;" *ngIf="text" [innerHtml]="text | sanitizeHtml">{{text}}</div>
         <div style="padding:15px 0px;background-color:white;border-radius:16px;margin-bottom:10px" *ngIf="fields.length>0">
-          <ion-item pointer lines="full" *ngFor="let field of fields;let index=index" [ngClass]="{'pointer':field.type==='date'}" (click)="field.type==='date' ? selectDate(field.value,index,null,field.min,field.max) : (field.type==='selectModal' ? selectItem(field.options,index,field.title,field.translate) :  doNothing())">
+          <ion-item detail="false" pointer lines="full" *ngFor="let field of fields;let index=index" [ngClass]="{'pointer':field.type==='date'}" (click)="field.type==='date' ? selectDate(field.value,index,null,field.min,field.max) : (field.type==='selectModal' ? selectItem(field.options,index,field.title,field.translate) :  doNothing())">
             
+            <ion-label position="stacked" class="maxLength" *ngIf="field.type=='html' && field.maxLength">{{field.value?.length || 0}} / {{field.maxLength}}</ion-label>
+
             <ion-thumbnail slot="start" *ngIf="field.lang" style="--size:30px;width:35px;height:25px;position: relative;top:5px">
               <img [src]="'./assets/img/'+field.value+'.png'" [alt]="field.value">
             </ion-thumbnail>
@@ -59,7 +61,7 @@
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&!field.lang&&field.keyvalue" relative style="top:-10px">{{helpers[field.keyvalue](field.value)}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&!field.translate&&field.lang&&field.value" relative style="top:-10px">{{'language_'+field.value | translate}}</ion-text>
             <ion-text *ngIf="field.type==='selectModal'&&field.translate" relative style="top:-10px">{{field.value | translate}}</ion-text>
-            <ion-textarea *ngIf="field.type==='textarea'" style="padding-left: 0 !important;" rows="6"  type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" [placeholder]="field.placeholder ? field.placeholder : ''"></ion-textarea>
+            <ion-textarea *ngIf="field.type==='textarea'" style="padding-left: 0 !important;" [rows]="field.rows || 6"  type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" [placeholder]="field.placeholder ? field.placeholder : ''"></ion-textarea>
             
             <ion-toggle *ngIf="field.type==='toggle'" style="color:var(--color-global)" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value">
               {{field.title}}
@@ -76,7 +78,6 @@
               <h3 style="color:var(--ion-color-primary);padding:0!important" font-title>{{field.title}}</h3>
             </div>
 
-
             <quill-editor *ngIf="!showHtml&&field.type=='html'" [(ngModel)]="field.value" [modules]="configModules"></quill-editor>
             <ion-toolbar *ngIf="showHtml" style="padding-left:10px;">
               <ion-buttons slot="start">
@@ -86,7 +87,7 @@
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
-            <textarea *ngIf="showHtml&&field.type=='html'" class="pureHtml" [(ngModel)]="data.value"></textarea>
+            <textarea *ngIf="showHtml&&field.type=='html'" class="pureHtml" [(ngModel)]="field.value"></textarea>
 
           </ion-item>
         </div>
@@ -98,6 +99,13 @@
           <ion-button btnNormal *ngIf="extraData&&extraData.delete" color="danger" (click)="deleteItem()" >
             {{'buttons.delete' | translate}}
           </ion-button>
+
+          <div *ngIf="extraData&&extraData.buttons">
+            <ion-button [ngStyle]="{'margin-right': !last ? '8px' : '0'}" *ngFor="let button of extraData.buttons;let last = last" [fill]="button.fill ? button.fill : 'clear'" btnNormal [color]="button.color" (click)="button.action ? action(button.action) : doNothing()" >
+              {{button.title | translate}}
+            </ion-button>
+          </div>
+
           <span class="spacer"></span>
           <ion-button btnNormal color="tertiary" (click)="save()" >
             {{'buttons.ok' | translate}}

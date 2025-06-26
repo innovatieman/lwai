@@ -22,6 +22,10 @@ ion-grid.mainGrid {
     overflow-y: auto;  // Activeer verticale scroll wanneer nodig
     padding-right: 10px;  // Optionele padding voor scrollbalk
 }
+.selectColumn {
+    max-height: calc(var(--vh, 1vh) * 100 - 121px);
+    padding-bottom: 20px;
+}
 .avatarImage{
     height: 200px;
     width:100%;
@@ -82,7 +86,7 @@ ion-grid.mainGrid {
 }
 .ImageDeleteButton{
     position: absolute;
-    right: 15px;
+    left: 15px;
     top: 15px;
     z-index: 2;
     font-size: 24px;

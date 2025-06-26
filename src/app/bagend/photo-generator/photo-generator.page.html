@@ -4,6 +4,27 @@
     <ion-row>
       <ion-col size="3">
 
+
+        
+
+          <!-- <ion-card button noPadding borderRadius24 backgroundSecondary (click)="selectImages()">
+            <ion-card-header center>
+              <ion-card-title text-light weight700>Select Images</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+
+          <ion-card button noPadding borderRadius24 backgroundTertiary (click)="selectedImages = []">
+            <ion-card-header center>
+              <ion-card-title weight700>Clear selection</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+
+          <ion-card button noPadding borderRadius24 backgroundDanger (click)="removeSelectedImages()">
+            <ion-card-header center>
+              <ion-card-title text-light weight700>Remove Selected Images</ion-card-title>
+            </ion-card-header>
+          </ion-card> -->
+
           <ion-card button noPadding borderRadius24 backgroundPrimary (click)="create()">
             <ion-card-header center>
               <ion-card-title text-light weight700>Create image</ion-card-title>
@@ -42,7 +63,7 @@
               <ion-card-title (click)="sorting()" weight700>Source</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="source" fullwidth>
-              <ion-item *ngFor="let s of sources" lines="none">
+              <ion-item detail="false" *ngFor="let s of sources" lines="none">
                 <ion-radio [value]="s">{{s}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -53,7 +74,7 @@
               <ion-card-title weight700>Gender</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="gender" fullwidth>
-              <ion-item *ngFor="let g of genders" lines="none">
+              <ion-item detail="false" *ngFor="let g of genders" lines="none">
                 <ion-radio [value]="g">{{g}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -64,7 +85,7 @@
               <ion-card-title weight700>Age</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="age" fullwidth>
-              <ion-item *ngFor="let a of ages" lines="none">
+              <ion-item detail="false" *ngFor="let a of ages" lines="none">
                 <ion-radio [value]="a">{{a}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -75,7 +96,7 @@
               <ion-card-title weight700>Ethnicities</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="ethnicity" fullwidth>
-              <ion-item *ngFor="let e of ethnicitys" lines="none">
+              <ion-item detail="false" *ngFor="let e of ethnicitys" lines="none">
                 <ion-radio [value]="e">{{e}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -86,7 +107,7 @@
               <ion-card-title weight700>Emotions</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="emotion" fullwidth>
-              <ion-item *ngFor="let e of emotions" lines="none">
+              <ion-item detail="false" *ngFor="let e of emotions" lines="none">
                 <ion-radio [value]="e">{{e}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -97,7 +118,7 @@
               <ion-card-title weight700>Styles</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="style" fullwidth>
-              <ion-item *ngFor="let s of styles" lines="none">
+              <ion-item detail="false" *ngFor="let s of styles" lines="none">
                 <ion-radio [value]="s">{{s}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -108,7 +129,7 @@
               <ion-card-title weight700>Occupations</ion-card-title>
             </ion-card-header>
             <ion-radio-group [(ngModel)]="occupation" fullwidth>
-              <ion-item *ngFor="let o of occupations" lines="none">
+              <ion-item detail="false" *ngFor="let o of occupations" lines="none">
                 <ion-radio [value]="o">{{o}}</ion-radio><br />
               </ion-item>
             </ion-radio-group>
@@ -118,8 +139,12 @@
 
       <ion-col size="9">
         <ion-row>
-          {{images.length}} Foto's
-          <!-- <ion-col size="2" *ngFor="let image of images | sortBy: 1 : 'timestamp'">
+          <!-- {{images.length}} Foto's -->
+          <ion-col size="2" *ngFor="let image of images | sortBy: 1 : 'timestamp'">
+            <img [src]="image.url" style="box-shadow:0 0 7px rgba(0,0,0,0.4);border-radius:24px;" (click)="enlarge(image)" pointer/>
+          </ion-col>
+
+          <!-- <ion-col size="2" *ngFor="let image of selectedImages | sortBy: 1 : 'timestamp'">
             <img [src]="image.url" style="box-shadow:0 0 7px rgba(0,0,0,0.4);border-radius:24px;" (click)="enlarge(image)" pointer/>
           </ion-col> -->
         </ion-row>

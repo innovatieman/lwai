@@ -27,12 +27,12 @@
 
       <form [formGroup]="form" (submit)="!showPassWordReset ? login() : (!oobCode ? sendPasswordReset() : resetPassword())">
 
-          <ion-item lines="none" class="fieldItem" *ngIf="!showResetPassword">
+          <ion-item detail="false" lines="none" class="fieldItem" *ngIf="!showResetPassword">
             <ion-label position="stacked">{{'page_login.email' | translate}}</ion-label>
             <ion-input type="email" formControlName="email"></ion-input>
           </ion-item>
 
-          <ion-item lines="none" class="fieldItem" [ngStyle]="{'display':!showPassWordReset || oobCode ? 'block' : 'hidden'}" *ngIf="!showPassWordReset || oobCode">
+          <ion-item detail="false" lines="none" class="fieldItem" [ngStyle]="{'display':!showPassWordReset || oobCode ? 'block' : 'hidden'}" *ngIf="!showPassWordReset || oobCode">
             <ion-label position="stacked">{{'page_login.password' | translate}}</ion-label>
             <ion-input type="password" *ngIf="!showPassword" formControlName="password">
               <ion-icon slot="end" name="eye" *ngIf="!showPassword" (click)="showPassword = true"></ion-icon>

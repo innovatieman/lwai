@@ -38,6 +38,7 @@ const creditsCost:any = {
   goal: 3,
   soundToText:2,
   skills: 3,
+  generateImage: 5,
 }
 
 // firebase deploy --only functions:chatAI,functions.choicesAI,functions.factsAI,functions.backgroundAI,functions.phasesAI,functions.feedbackAI,functions.closingAI,functions.promptChecker,functions.casePrompt,functions.goal,functions.soundToText,functions.skillsAI
@@ -1822,7 +1823,7 @@ exports.generateAndStoreImageRunway = onRequest(
       prompt = body.prompt;
     }
 
-    console.log(prompt);
+    // console.log(prompt);
 
     const ethnicities = ['African', 'Asian', 'Caucasian', 'Hispanic',' Middle Eastern', 'Native American', 'Mixed-race'];
     const randomEthnicity = ethnicities[Math.floor(Math.random() * ethnicities.length)];
@@ -1853,12 +1854,21 @@ exports.generateAndStoreImageRunway = onRequest(
 
 
     try {
+      let width = 1024;
+      let height = 1024;
+      if(body.size=='landscape'){
+        width = 1024;
+        height = 640;
+      } else if(body.size=='portrait'){
+        width = 640;
+        height = 1024;
+      }
 
       const runware = new Runware({ apiKey: config.runware_api_key });
       const images = await runware.requestImages({
         positivePrompt: prompt,
-        width: 1024,
-        height: 1024,
+        width: width,
+        height: height,
         model: 'runware:100@1',
         numberResults: 2,
         outputType: "URL",
@@ -1891,6 +1901,171 @@ exports.generateAndStoreImageRunway = onRequest(
   }
 );
 
+exports.generateAndStoreAvatars = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" ,runWith: {memory: '4GB'} },
+  async (req: any, res: any) => {
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-cache");
+
+    const body = req.body;
+
+    if (!body.userId) {
+      console.log("Missing required parameters in request body");
+      res.status(400).send("Missing required parameters: userId or prompt");
+      return;
+    }
+
+    let prompt = `
+      A centered portrait of a 
+      [age] 
+      [gender] 
+      [ethnicity] 
+      [occupation],
+      who looks [emotion].
+      The person is positioned in the center of the frame.
+      The person’s hairstyle, clothing, and any accessories are chosen creatively by the AI.  
+      The background is soft, neutral, and simple (e.g., soft gray or light beige).  
+      The face is well-lit with a natural expression, and the portrait is in a [style].  
+      No text, lines, or other elements should be present in the image besides the portrait.
+`
+    if(body.prompt){
+      prompt = body.prompt;
+    }
+
+    // console.log(prompt);
+
+    const ethnicities = ['African', 'Asian', 'Caucasian', 'Hispanic',' Middle Eastern', 'Native American', 'Mixed-race'];
+    const randomEthnicity = ethnicities[Math.floor(Math.random() * ethnicities.length)];
+    const gender = ['male, female', 'non-binary'];
+    const randomGender = gender[Math.floor(Math.random() * gender.length)];
+    const age = ['Child', 'Teenager', 'Young adult', 'Middle-aged', 'Senior', 'Elderly'];
+    const randomAge = age[Math.floor(Math.random() * age.length)];
+    const style = ['photo-realistic', 'Disney-style illustration', 'anime-style illustration'];
+    const randomStyle = style[Math.floor(Math.random() * style.length)];
+    const emotions = ['Happy', 'Sad', 'Angry', 'Surprised', 'Neutral', 'Disgusted', 'Fearful'];
+    const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+
+
+    const selectedAge = body.age || randomAge;
+    const selectedGender = body.gender || randomGender;
+    const selectedEthnicity = body.ethnicity || randomEthnicity;
+    const selectedOccupation = body.occupation || 'Person';
+    const selectedStyle = body.style || randomStyle;
+    const selectedEmotion = body.emotion || randomEmotion;
+
+
+    prompt = prompt.replace('[age]', selectedAge)
+    prompt = prompt.replace('[gender]', selectedEthnicity)
+    prompt = prompt.replace('[ethnicity]', selectedGender)
+    prompt = prompt.replace('[occupation]', selectedOccupation)
+    prompt = prompt.replace('[style]', selectedStyle)
+    prompt = prompt.replace('[emotion]', selectedEmotion)
+
+
+    try {
+      let width = 1024;
+      let height = 1024;
+      if(body.size=='landscape'){
+        width = 1024;
+        height = 640;
+      } else if(body.size=='portrait'){
+        width = 640;
+        height = 1024;
+      }
+
+      const runware = new Runware({ apiKey: config.runware_api_key });
+      const images = await runware.requestImages({
+        positivePrompt: prompt,
+        width: width,
+        height: height,
+        model: 'runware:100@1',
+        numberResults: 1,
+        outputType: "URL",
+        outputFormat: "WEBP",
+      })
+
+      let imageInfo = {
+        userId: body.userId,
+        gender: selectedGender,
+        age: selectedAge,
+        style: selectedStyle,
+        occupation: selectedOccupation,
+        emotion: selectedEmotion,
+        ethnicity: selectedEthnicity,
+        akool:false,
+        runway:true
+      }
+
+      const url = await saveImages(images[0].imageURL,imageInfo,'','avatars');
+      // await saveImages(images[1].imageURL,imageInfo,'','avatars');
+
+      // console.log("Afbeelding opgeslagen:", publicUrl);
+      res.status(200).send({ status: 'image saved' ,imageURL:url});
+
+    } catch (error) {
+      console.error("Error generating or saving image:", error);
+      res.status(500).send("Error generating or saving image");
+    }
+  }
+);
+
+exports.generateAndStoreImageCasesTrainers = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" ,runWith: {memory: '4GB'} },
+  async (req: any, res: any) => {
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-cache");
+
+    const body = req.body;
+
+    if (!body.userId || !body.prompt) {
+      console.log("Missing required parameters in request body");
+      res.status(400).send("Missing required parameters: userId or prompt");
+      return;
+    }
+
+    let prompt = `
+      A centered portrait of a 
+      [age] 
+      [gender] 
+      [ethnicity] 
+      [occupation],
+      who looks [emotion].
+      The person is positioned in the center of the frame.
+      The person’s hairstyle, clothing, and any accessories are chosen creatively by the AI.  
+      The background is soft, neutral, and simple (e.g., soft gray or light beige).  
+      The face is well-lit with a natural expression, and the portrait is in a [style].  
+      No text, lines, or other elements should be present in the image besides the portrait.
+`
+    if(body.prompt){
+      prompt = body.prompt;
+    }
+
+    try {
+
+      const runware = new Runware({ apiKey: config.runware_api_key });
+      const images = await runware.requestImages({
+        positivePrompt: prompt,
+        width: 1024,
+        height: 1024,
+        model: 'runware:100@1',
+        numberResults: 1,
+        outputType: "URL",
+        outputFormat: "WEBP",
+      })
+
+      const url = await saveImageTrainer(images[0].imageURL,body.userId);
+  
+      await updateCredits(body.userId, creditsCost['generateImage'])
+
+      // console.log("Afbeelding opgeslagen:", publicUrl);
+      res.status(200).send({ status: 'image saved' ,imageURL:url});
+
+    } catch (error) {
+      console.error("Error generating or saving image:", error);
+      res.status(500).send("Error generating or saving image");
+    }
+  }
+);
 
 // exports.analyzeCaseLevel = functions.region('europe-west1')
 //   .runWith({memory:'1GB'}).firestore
@@ -2582,6 +2757,9 @@ exports.translateCase = functions
         },
         level_explanation: caseDataNew.level_explanation || "",
         free_question: caseDataNew.free_question || "",
+        free_question2: caseDataNew.free_question2 || "",
+        free_question3: caseDataNew.free_question3 || "",
+        free_question4: caseDataNew.free_question4 || "",
       };
 
       // Haal instructies en formats op parallel
@@ -2660,6 +2838,9 @@ exports.translateCase = functions
           newCaseItem.goalsItems.free = translatedItem.output.goalsItems.free;
           newCaseItem.level_explanation = translatedItem.output.level_explanation;
           newCaseItem.free_question = translatedItem.output.free_question;
+          newCaseItem.free_question2 = translatedItem.output.free_question2;
+          newCaseItem.free_question3 = translatedItem.output.free_question3;
+          newCaseItem.free_question4 = translatedItem.output.free_question4;
           newCaseItem.original_language = caseDataNew.original_language;
           newCaseItem.language = lang;
           delete newCaseItem.translate;
@@ -2938,8 +3119,11 @@ exports.createPhasesOnCreate = functions.region('europe-west1')
   
 });
 
-async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string){
+async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string,collection?:string): Promise<string> {
 
+  if(!collection){
+    collection = 'ai-avatars';
+  }
   let imageData:any;
   console.log('imageInfo: ' + imageUrl);
   console.log('imageInfo: ' + JSON.stringify(imageInfo));
@@ -2983,7 +3167,7 @@ async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string){
 
   const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
-  await admin.firestore().collection('ai-avatars').add({
+  await admin.firestore().collection(collection).add({
     // userId: imageInfo.userId,
     url: publicUrl,
     timestamp: moment().unix(),
@@ -2998,6 +3182,37 @@ async function saveImages(imageUrl:string,imageInfo:any,accessToken?:string){
 
   return publicUrl;
 }
+
+
+async function saveImageTrainer(imageUrl:string,userId:any){
+
+  let imageData:any;
+    
+  imageData = await axios.get(
+    imageUrl, 
+    { responseType: 'arraybuffer' });
+
+  console.log('start imagebuffer')
+  const imageBuffer = Buffer.from(imageData.data, "binary");
+  const webpBuffer = await sharp(imageBuffer).webp().toBuffer();
+  console.log('start filename')
+  const fileName = `generated-images-cases/${Date.now()}_${userId}.webp`;
+  const bucket = storage.bucket('lwai-3bac8.firebasestorage.app');
+  const file = bucket.file(fileName);
+
+  await file.save(webpBuffer, {
+    metadata: {
+      contentType: "image/webp",
+    },
+  });
+
+  await file.makePublic();
+
+  const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
+  return publicUrl;
+}
+
 
 
 async function initializeConversation(body:any): Promise<any[]> {

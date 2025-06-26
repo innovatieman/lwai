@@ -18,6 +18,8 @@ import { addDoc, collection, onSnapshot } from 'firebase/firestore';
 import { MediaService } from 'src/app/services/media.service';
 import { CountriesService } from 'src/app/services/countries.service';
 import { LevelsService } from 'src/app/services/levels.service';
+import { AccountService } from 'src/app/services/account.service';
+import { ConversationService } from 'src/app/services/conversation.service';
 
 
 @Component({
@@ -26,30 +28,25 @@ import { LevelsService } from 'src/app/services/levels.service';
   styleUrls: ['./account.page.scss'],
 })
 export class AccountPage implements OnInit {
-  // @ViewChild('progressCircle1',{static:false}) progressCircle1: any;
-  // @ViewChild('progressCircle2',{static:false}) progressCircle2: any;
-  // @ViewChild('progressCircle3',{static:false}) progressCircle3: any;
+
   activeTab = 'basics';
   [x:string]:any
-  account:any = {}
+  // account:any = {}
   subscriptions$: any;
   hasActiveSubscription: boolean = false;
   conversations$: any;
   courses$: any;
   activeSubscriptionTypes: any; 
-  // creditsOptions:any = [
-  //   {title:'10 credits',amount:10},
-  //   {title:'20 credits',amount:20},
-  //   {title:'50 credits',amount:50},
-  //   {title:'100 credits',amount:100},
-  // ]
+  showOfferCode:boolean = false;
+  offerCode: string = '';
   payments: any;
-  products: any;
+  // products: any;
   products_unlimited: any;
   customers: any;
   subscriptionsStripe: any;
   db: any;
-  isAdmin: boolean = false;
+  
+  // isAdmin: boolean = false;
   menuItems:any=[
     {title:this.translate.instant('page_account.account'),tab:'basics',icon:'faUser'},
     // {title:'Mijn profiel',tab:'profile',icon:'faSlidersH'},
@@ -79,14 +76,16 @@ export class AccountPage implements OnInit {
     private route:ActivatedRoute,
     public media:MediaService,
     public countries:CountriesService,
-    public levelService:LevelsService
+    public levelService:LevelsService,
+    public accountService:AccountService,
+    private conversationService:ConversationService
   ) { }
 
   ngOnInit() {
-
-    this.auth.isAdmin().subscribe((admin) => {
-      this.isAdmin = admin;
-    });
+    this.accountService.ngOnInit()
+    // this.auth.isAdmin().subscribe((admin) => {
+    //   this.isAdmin = admin;
+    // });
     this.route.params.subscribe(params=>{
       if(params['tab']){
         this.activeTab = params['tab']
@@ -103,16 +102,16 @@ export class AccountPage implements OnInit {
         
     })
     let countInterval = 0
-    let interval = setInterval(()=>{
-      this.account = JSON.parse(JSON.stringify(this.auth.userInfo))
-      if(this.account.email){
-        clearInterval(interval)
-      }
-      countInterval++
-      if(countInterval > 100){
-        clearInterval(interval)
-      }
-    },200)
+    // let interval = setInterval(()=>{
+    //   this.account = JSON.parse(JSON.stringify(this.auth.userInfo))
+    //   if(this.account.email){
+    //     clearInterval(interval)
+    //   }
+    //   countInterval++
+    //   if(countInterval > 100){
+    //     clearInterval(interval)
+    //   }
+    // },200)
 
     this.db = this.firestore.firestore;
     this.subscriptions$ = this.auth.getSubscriptions();
@@ -123,57 +122,11 @@ export class AccountPage implements OnInit {
     this.auth.hasActiveSubscription().subscribe((active) => {
       this.hasActiveSubscription = active;
     });
-    // let app
-    // try {
-    //   app = getApp(); // ✅ Probeer de bestaande Firebase-app op te halen
-    // } catch (error) {
-    //   console.warn('Firebase app niet gevonden, initialiseren...', error);
-    //   app = initializeApp(environment.firebase); // 🚀 Initialiseer Firebase als het nog niet gebeurd is
-    // }
-    // this.payments = getStripePayments(app, {
-    //   productsCollection: "products",
-    //   customersCollection: "customers",
-    // })
-    // console.log(this.payments)
-    // const app = getApp();
-    // this.payments = getStripePayments(app, {
-    //   productsCollection: "products",
-    //   customersCollection: "customers",
-    // })
-    this.fetchProducts()
+
+    // this.fetchProducts()
     this.fetchSubscriptionsStripe()
 
-    // this.setupProgressCircles()
-    // this.collectStripeProducts()
   }
-
-
-  // setupProgressCircles(){
-  //   let count = 0
-  //   let check:any = {}
-  //   for(let i = 0; i<4;i++){
-  //     check[i] = setInterval(()=>{
-  //       count++
-  //       if(count>500){
-  //         clearInterval(check[i])
-  //       }
-  //       if( this['progressCircle'+i]?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
-  //         clearInterval(check[i])
-  //         this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', '-50px');
-  //         this['progressCircle'+i]?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', '-50px');
-
-  //         setTimeout(() => {
-  //           const tspanElements:any = document.querySelectorAll('tspan');
-  //           tspanElements.forEach((tspan:any, index:number) => {
-  //               tspan.setAttribute('y', 125); // Verhoog met 10
-  //           });            
-  //         }, 500);
-
-  //       }
-  //     }, 20);
-  //   }
-  // }
-
 
 
   async collectStripeProducts() {
@@ -183,7 +136,7 @@ export class AccountPage implements OnInit {
     //   customersCollection: "customers",
     // })
     // console.log(this.payments)
-    this.fetchProducts()
+    // this.fetchProducts()
   }
 
   changeTab(tab:string){
@@ -192,30 +145,30 @@ export class AccountPage implements OnInit {
 
   }
 
-  async fetchProducts() {
-    this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
-      this.products = products.map((product:any)=>{
-        let item = {
-          id: product.payload.doc.id,
-          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
-          conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
-          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
-          ...product.payload.doc.data()
-        }
-        //get subcollection prices
-        this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
-          item.prices = prices.map((price:any)=>{
-            return {
-              id: price.payload.doc.id,
-              ...price.payload.doc.data()
-            }
-          })
-        })
-        return item
-      })
-      console.log(this.products)
-    })
-  }
+  // async fetchProducts() {
+  //   this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
+  //     this.products = products.map((product:any)=>{
+  //       let item = {
+  //         id: product.payload.doc.id,
+  //         credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+  //         conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
+  //         title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
+  //         ...product.payload.doc.data()
+  //       }
+  //       //get subcollection prices
+  //       this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+  //         item.prices = prices.map((price:any)=>{
+  //           return {
+  //             id: price.payload.doc.id,
+  //             ...price.payload.doc.data()
+  //           }
+  //         })
+  //       })
+  //       return item
+  //     })
+  //     console.log(this.products)
+  //   })
+  // }
 
   // async fetchProducts_unlimited() {
   //   this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
@@ -277,6 +230,7 @@ export class AccountPage implements OnInit {
       success_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
       cancel_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
       automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
       metadata: {
         userId: user.uid
       },
@@ -342,14 +296,14 @@ export class AccountPage implements OnInit {
         })
         return item
       })
-      console.log(this.subscriptionsStripe)
+      // console.log(this.subscriptionsStripe)
     })
   }
 
   updateAccount(){
-    if(this.account.displayName){
+    if(this.accountService.account.displayName){
       this.toast.showLoader(this.translate.instant('messages.busy_saving'))
-      this.functions.httpsCallable('editUserName')({displayName:this.account.displayName}).subscribe((response:any)=>{
+      this.functions.httpsCallable('editUserName')({displayName:this.accountService.account.displayName}).subscribe((response:any)=>{
         if(response.status==200){
           this.toast.show(this.translate.instant('messages.saved'),3000,'bottom')
         }
@@ -364,7 +318,7 @@ export class AccountPage implements OnInit {
   updatePreference(){
     
     let obj:any =  {
-      preferences:JSON.parse(JSON.stringify(this.account.preferences))
+      preferences:JSON.parse(JSON.stringify(this.accountService.account.preferences))
     }
     this.firestoreService.update('users',this.auth.userInfo.uid,obj)
   }
@@ -375,6 +329,7 @@ export class AccountPage implements OnInit {
     }
     localStorage.setItem('continueConversation',"true")
     localStorage.setItem('conversation',JSON.stringify(conversation))
+    this.conversationService.originUrl = location.pathname.substring(1);
     this.nav.go('conversation/'+conversation.caseId)
   }
 
@@ -413,96 +368,81 @@ export class AccountPage implements OnInit {
   }
 
 
-  openStripeDashboard(){
-    // this.nav.goto(this.auth.customer.stripeLink,true)
-    this.toast.showLoader('Opening Stripe dashboard')
-    this.functions.httpsCallable('createStripePortalSession')({}).subscribe((response:any)=>{
-      if(response?.url){
-        this.toast.hideLoader()
-        window.location.href = response?.url;
-      }
-      else{
-        this.toast.hideLoader()
-        this.toast.show('Error opening Stripe dashboard')
-        console.log(response)
-      }
-      
-    })
-  }
+  
 
   selectingCountry:boolean = false
-  showCountryPicker(){
-    if(this.selectingCountry){
-      return
-    }
-    this.selectingCountry = true
-    let list = JSON.parse(JSON.stringify(this.countries.list))
-    for(let i = 0; i<list.length;i++){
-      list[i].title = list[i].country,
-      list[i].value= list[i].code
-      list[i].flag = 'assets/flags/'+list[i].code.toLowerCase()+'.svg'
-    }
-    list.unshift(this.countries.country(this.auth.userInfo.country))
+  // showCountryPicker(){
+  //   if(this.selectingCountry){
+  //     return
+  //   }
+  //   this.selectingCountry = true
+  //   let list = JSON.parse(JSON.stringify(this.countries.list))
+  //   for(let i = 0; i<list.length;i++){
+  //     list[i].title = list[i].country,
+  //     list[i].value= list[i].code
+  //     list[i].flag = 'assets/flags/'+list[i].code.toLowerCase()+'.svg'
+  //   }
+  //   list.unshift(this.countries.country(this.auth.userInfo.country))
 
 
 
-    this.modalService.selectItem('',list,(result:any)=>{
-      this.selectingCountry = false
-      if(result.data){
-        this.functions.httpsCallable('editUserCountry')({country:result.data.value}).subscribe((response:any)=>{
-          this.toast.show(this.translate.instant('languages.country_changed'))
-        })
-      }
-    },null,this.translate.instant('languages.select_country'))
-  }
+  //   this.modalService.selectItem('',list,(result:any)=>{
+  //     this.selectingCountry = false
+  //     if(result.data){
+  //       this.functions.httpsCallable('editUserCountry')({country:result.data.value}).subscribe((response:any)=>{
+  //         this.toast.show(this.translate.instant('languages.country_changed'))
+  //       })
+  //     }
+  //   },null,this.translate.instant('languages.select_country'))
+  // }
 
-  async editLang(){
-    let list:any[] = []
-    this.nav.langList.forEach((lang)=>{
-      list.push({
-        value:lang,
-        title:this.translate.instant('languages.'+lang),
-        icon:'faGlobeEurope'
-      })
-    })
-    this.modalService.selectItem('',list,(result:any)=>{
-      this.selectingCountry = false
-      if(result.data){
-        this.functions.httpsCallable('editUserLang')({language:result.data.language}).subscribe((response:any)=>{
-          this.toast.show(this.translate.instant('languages.language_changed'))
-        })
-      }
-    },null,this.translate.instant('languages.select_language'))
+  // async editLang(){
+  //   let list:any[] = []
+  //   this.nav.langList.forEach((lang)=>{
+  //     list.push({
+  //       value:lang,
+  //       title:this.translate.instant('languages.'+lang),
+  //       icon:'faGlobeEurope'
+  //     })
+  //   })
+  //   this.modalService.selectItem('',list,(result:any)=>{
+  //     this.selectingCountry = false
+  //     if(result.data){
+  //       this.functions.httpsCallable('editUserLang')({language:result.data.language}).subscribe((response:any)=>{
+  //         this.toast.show(this.translate.instant('languages.language_changed'))
+  //       })
+  //     }
+  //   },null,this.translate.instant('languages.select_language'))
    
-  }
+  // }
 
-  editCurrency(){
-    let list:any[] = []
-    this.countries.currencyNames.forEach((currency)=>{
-      list.push({
-        value:currency.code,
-        title:currency.title,
-      })
-    })
-    this.modalService.selectItem('',list,(result:any)=>{
-      if(result.data){
-        this.toast.showLoader()
-        this.functions.httpsCallable('editUserCurrency')({currency:result.data.value}).subscribe((response:any)=>{
-          this.toast.hideLoader()
-          this.toast.show(this.translate.instant('currency.currency_changed'))
-        })
-      }
-    },null,this.translate.instant('currency.select_currency'))
-  }
+  // editCurrency(){
+  //   let list:any[] = []
+  //   this.countries.currencyNames.forEach((currency)=>{
+  //     list.push({
+  //       value:currency.code,
+  //       title:currency.title,
+  //     })
+  //   })
+  //   this.modalService.selectItem('',list,(result:any)=>{
+  //     if(result.data){
+  //       this.toast.showLoader()
+  //       this.functions.httpsCallable('editUserCurrency')({currency:result.data.value}).subscribe((response:any)=>{
+  //         this.toast.hideLoader()
+  //         this.toast.show(this.translate.instant('currency.currency_changed'))
+  //       })
+  //     }
+  //   },null,this.translate.instant('currency.select_currency'))
+  // }
 
-  updateFilter(){
-    console.log(this.currentFilterTypes)
-    this.toast.showLoader(this.translate.instant('messages.busy_saving'))
-    this.functions.httpsCallable('editUserFilter')({filter:this.currentFilterTypes}).subscribe((response:any)=>{
-      this.toast.hideLoader()
-      this.toast.show(this.translate.instant('messages.saved'))
-    })
-  }
+  // updateFilter(){
+  //   console.log(this.currentFilterTypes)
+  //   this.toast.showLoader(this.translate.instant('messages.busy_saving'))
+  //   this.functions.httpsCallable('editUserFilter')({filter:this.currentFilterTypes}).subscribe((response:any)=>{
+  //     this.toast.hideLoader()
+  //     this.toast.show(this.translate.instant('messages.saved'))
+  //   })
+  // }
 
   filterTypes(){
     let filter: any = {
@@ -567,7 +507,7 @@ export class AccountPage implements OnInit {
   }
 
   deleteAccount(){
-    if(this.isAdmin){
+    if(this.accountService.isAdmin){
       this.toast.show(this.translate.instant('page_account.delete_account_admin'))
       return
     }
@@ -607,6 +547,25 @@ export class AccountPage implements OnInit {
       console.log(response)
       if(response.data){
         this.buy(product)
+      }
+    })
+  }
+
+  checkOffer(){
+    if(!this.offerCode){
+      return
+    }
+    this.toast.showLoader()
+    this.functions.httpsCallable('checkOffer')({code:this.offerCode}).subscribe((response:any)=>{
+      this.toast.hideLoader()
+      console.log(response)
+      this.offerCode = ''
+      this.showOfferCode = false
+      if(response.status==200){
+        this.toast.show(this.translate.instant('page_account.offer_code_success'))
+      }
+      else{
+        this.toast.show(this.translate.instant('page_account.offer_code_failure'))
       }
     })
   }

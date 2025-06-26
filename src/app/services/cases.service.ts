@@ -173,6 +173,10 @@ export class CasesService {
           openingMessage: doc.translation?.openingMessage || doc.openingMessage,
           goalsItem: doc.translation?.goalsItem || doc.goalsItem,
           level_explanation: doc.translation?.level_explanation || doc.level_explanation,
+          free_question: doc.translation?.free_question || doc.free_question || '',
+          free_question2: doc.translation?.free_question2 || doc.free_question2 || '',
+          free_question3: doc.translation?.free_question3 || doc.free_question3 || '',
+          free_question4: doc.translation?.free_question4 || doc.free_question4 || '',
         }));
         if (callback) {
           callback();

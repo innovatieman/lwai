@@ -11,22 +11,22 @@
             <ion-card-title>Test</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <ion-item lines="none" listCard marginBottom >
+            <ion-item detail="false" lines="none" listCard marginBottom >
               <ion-label position="stacked">Tekst</ion-label>
               <ion-textarea noBorders [autoGrow]="true" rows="4" [(ngModel)]="test.text"></ion-textarea>
             </ion-item>
 
-            <ion-item lines="none" listCard marginBottom>
+            <ion-item detail="false" lines="none" listCard marginBottom>
               <ion-label position="stacked">Emotie</ion-label>
               <ion-textarea noBorders [autoGrow]="true" rows="4" [(ngModel)]="test.emotion"></ion-textarea>
             </ion-item>
 
-            <ion-item lines="none" listCard marginBottom>
+            <ion-item detail="false" lines="none" listCard marginBottom>
               <ion-label position="stacked">Taal</ion-label>
               <ion-input [(ngModel)]="test.language"></ion-input>
             </ion-item>
 
-            <ion-item lines="none" listCard marginBottom>
+            <ion-item detail="false" lines="none" listCard marginBottom>
               <ion-label position="stacked">Taal</ion-label>
               <div flex center-ver>
                 <ion-button (click)="test.model = 'eleven_multilingual_v2'" fill="solid" [color]="test.model == 'eleven_multilingual_v2' ? 'primary' : 'light'">Default</ion-button>

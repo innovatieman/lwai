@@ -1,0 +1,22 @@
+.avatarImage{
+    height: 200px;
+    width:100%;
+}
+.avatarSmall{
+    width: 100px;
+    min-width: 100px;
+    height: 100px;
+    border-radius: 10px!important;
+}
+
+.creditButton{
+    --border-color:black;//var(--ion-color-primary);
+    --color:var(--ion-color-primary);
+    // margin-right:20px;
+    margin-left:10px;
+    --padding-start: 10px !important;
+    --padding-end: 10px !important;
+}
+.creditButton:hover{
+    --background:none;
+}

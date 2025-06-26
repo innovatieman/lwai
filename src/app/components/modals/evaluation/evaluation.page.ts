@@ -170,29 +170,13 @@ export class EvaluationPage implements OnInit {
     if(this.options.conversation.messages){
       conversationLength = (this.options.conversation.messages.length -1) /2
     }
-    let score = conversationLength - 10
-    if(score < 0){
-      score = 0
-    }
+    let score = 0 //conversationLength - 10
+    // if(score < 0){
+    //   score = 0
+    // }
     let difficultyMultiplier = 1
     const userLevel = this.auth.skillsLevel(this.auth.skills[skill].score)
     const conversationLevel = this.options.conversation_level
-
-    if(userLevel == conversationLevel){
-      difficultyMultiplier = 1
-    }
-    else if(conversationLevel - userLevel == 1){
-      difficultyMultiplier = 1.5
-    }
-    else if(conversationLevel - userLevel == -1){
-      difficultyMultiplier = 0.5
-    }
-    else if(conversationLevel - userLevel >= 2){
-      difficultyMultiplier = 2
-    }
-    else if(conversationLevel - userLevel <= -2){
-      difficultyMultiplier = 0
-    }
 
     this.skillScore[skill].prevScore = this.auth.skills[skill].score
     let performanceBonus = this.performanceBonus[this.options.skills.evaluation[this.helper.capitalizeNames(skill)].score]
@@ -201,11 +185,47 @@ export class EvaluationPage implements OnInit {
       goalBonus = this.options.skills.goal_bonus
     }
 
+    if(userLevel == conversationLevel){
+      difficultyMultiplier = 1
+    }
+    else if(conversationLevel - userLevel == 1){
+      if(performanceBonus < 0){
+        difficultyMultiplier = 0.5
+      }
+      else{
+        difficultyMultiplier = 1.5
+      }
+    }
+    else if(conversationLevel - userLevel == -1){
+      if(performanceBonus < 0){
+        difficultyMultiplier = 1.5
+      }
+      else{
+        difficultyMultiplier = 0.5
+      }
+    }
+    else if(conversationLevel - userLevel >= 2){
+      if(performanceBonus < 0){
+        difficultyMultiplier = 0
+      }
+      else{
+        difficultyMultiplier = 2
+      }
+    }
+    else if(conversationLevel - userLevel <= -2){
+      if(performanceBonus < 0){
+        difficultyMultiplier = 2
+      }
+      else{
+        difficultyMultiplier = 0
+      }
+    }
+
     if(conversationLength >= 5){
       score += performanceBonus
+      score *= difficultyMultiplier
+      score += goalBonus
     }
-    score *= difficultyMultiplier
-    score += goalBonus
     return score
   }
 

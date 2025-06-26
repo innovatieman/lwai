@@ -4,9 +4,14 @@
       <div backgroundImage class="avatarImage" style="max-height:50%" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
       <div *ngIf="caseItem.avatarName" class="videoAvatarBadge">{{'cases.badge_video' | translate}}</div>
       <div center >
-          <ion-card-header>
+        
+        <div *ngIf="caseItem.type!='product'&&isTrainer" class="shareButtonCase copyCaseTrainer" pointer (click)="copyItemAsTrainer(caseItem,$event)">
+            <ion-icon name="copy-outline" font-22></ion-icon>
+        </div>
+        
+        <ion-card-header>
               <ion-card-title marginBottom font-18 weight600>{{caseItem.title}}</ion-card-title>
-              <ion-card-subtitle font-14 weight400 [innerHTML]="caseItem.user_info | sanitizeHtml"></ion-card-subtitle>
+              <ion-card-subtitle font-14 weight400 style="text-transform:none" [innerHTML]="caseItem.user_info | sanitizeHtml"></ion-card-subtitle>
           </ion-card-header>
           <div *ngIf="!caseItem.avatarName&&caseItem.type!='product'" class="shareButtonCase" pointer (click)="media.shareCase(caseItem,$event)">
             <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
@@ -14,7 +19,7 @@
         </div>
       </div>
       <div class="spacer"></div>
-      <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type!='product'">
+      <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type!='product'&&caseItem.type!='public_case'">
         
         <ion-button class="saveButton creditButton" fill="outline" size="small">
           <div>
@@ -30,6 +35,17 @@
         
         <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.cancel' | translate}}</ion-button>
         <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss(caseItem)">{{'buttons.buy_for' | translate}} {{(caseItem.price / 100) | currency : (caseItem.currency | uppercase) }}</ion-button>
+      </div>
+
+      <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type=='public_case'">
+        <ion-button class="saveButton creditButton" fill="outline" size="small">
+          <div>
+            <div>{{caseItem.level}}</div>
+            <div font-12 text-medium>{{'cases.level' | translate}}</div>
+          </div>
+        </ion-button>
+        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.back' | translate}}</ion-button>
+        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss(true)">{{'buttons.try_self' | translate}}</ion-button>
       </div>
 
   </ion-card-content>

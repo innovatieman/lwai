@@ -1,4 +1,6 @@
 import * as functions from 'firebase-functions/v1';
+const { onDocumentDeleted } = require("firebase-functions/v2/firestore");
+import { FirestoreEvent } from "firebase-functions/v2/firestore";
 import admin from '../firebase'
 import * as responder from '../utils/responder'
 
@@ -10,6 +12,21 @@ exports.deleteConversationSubCollection = functions.region('europe-west1')
   await deleteSubcollections(docPath);
 });
 
+exports.deleteTrainingsSubCollections = onDocumentDeleted(
+  {
+    region: "europe-west1",
+    memory: "1GiB",
+    document: "trainers/{trainerId}/trainings/{trainingId}", // pas dit pad aan indien nodig
+  },
+  async (event: FirestoreEvent<admin.firestore.DocumentData>) => {
+    const docPath = event.data?.ref.path;
+
+    if (!docPath) {
+      return;
+    }
+    await deleteSubcollections(docPath);
+  }
+);
 
 exports.activeCoursesCreateItem = functions.region('europe-west1')
 .firestore
@@ -113,15 +130,15 @@ exports.activeCoursesCreateItem = functions.region('europe-west1')
   }
 });
 
-async function deleteSubcollections(docPath:any) {
-  const subcollections = await admin.firestore().doc(docPath).listCollections();
+async function deleteSubcollections(docPath: string): Promise<void> {
+  const docRef = admin.firestore().doc(docPath);
+  const subcollections = await docRef.listCollections();
 
   for (const subcollection of subcollections) {
     const snapshot = await subcollection.get();
+
     const batch = admin.firestore().batch();
-
-    snapshot.docs.forEach((doc:any) => batch.delete(doc.ref));
-
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
 
     for (const doc of snapshot.docs) {

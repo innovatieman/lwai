@@ -23,55 +23,55 @@
             <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
 
                 <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
-                    <!-- <ion-item lines="none" button (click)="getCaseCsv()" class="itemButton" *ngIf="!caseItem?.id">
+                    <!-- <ion-item detail="false" lines="none" button (click)="getCaseCsv()" class="itemButton" *ngIf="!caseItem?.id">
                       <div font-20 weight700>Laad cases van CSV</div>
                       <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="importCases()" class="itemButton" *ngIf="!caseItem?.id" style="margin-bottom:50px;">
+                    <ion-item detail="false" lines="none" button (click)="importCases()" class="itemButton" *ngIf="!caseItem?.id" style="margin-bottom:50px;">
                         <div font-20 weight700>Verwerk cases van CSV</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
                       </ion-item> -->
-                    <ion-item lines="none" button (click)="view='list';maxCases=2000" class="itemButton" *ngIf="view=='cards'&&!caseItem?.id">
+                    <ion-item detail="false" lines="none" button (click)="view='list';maxCases=2000" class="itemButton" *ngIf="view=='cards'&&!caseItem?.id">
                         <div font-20 weight700>{{'cases.show_as_list' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faList')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="view='cards';maxCases=15" class="itemButton" *ngIf="view=='list'&&!caseItem?.id">
+                    <ion-item detail="false" lines="none" button (click)="view='cards';maxCases=15" class="itemButton" *ngIf="view=='list'&&!caseItem?.id">
                         <div font-20 weight700>{{'cases.show_as_cards' | translate}} ({{filteredCases.length}})</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faAddressCard')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="addCase()" class="itemButton" *ngIf="!caseItem?.id">
+                    <ion-item detail="false" lines="none" button (click)="addCase()" class="itemButton" *ngIf="!caseItem?.id">
                         <div font-20 weight700>{{'cases.new_case' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="getBackups('cases','cases')" class="itemButton" *ngIf="!caseItem?.id">
+                    <ion-item detail="false" lines="none" button (click)="getBackups('cases','cases')" class="itemButton" *ngIf="!caseItem?.id">
                         <div font-20 weight700>{{'cases.load_backups' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faCloudUploadAlt')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="firestore.backup('cases','cases',cases)" *ngIf="backupService.activebackups!='cases'&&!caseItem?.id" class="itemButton">
+                    <ion-item detail="false" lines="none" button (click)="firestore.backup('cases','cases',cases)" *ngIf="backupService.activebackups!='cases'&&!caseItem?.id" class="itemButton">
                         <div font-20 weight700>{{'cases.create_backups' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faCloudDownloadAlt')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="returnBackup(caseItem)" *ngIf="showBackups&&caseItem?.id" class="itemButton">
+                    <ion-item detail="false" lines="none" button (click)="returnBackup(caseItem)" *ngIf="showBackups&&caseItem?.id" class="itemButton">
                         <div font-20 weight700 text-warning>{{'restore_case' | translate}}</div>
                         <fa-icon font-24 slot="end" text-warning [icon]="icon.get('faRedoAlt')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'&&!caseItem?.id" class="itemButton">
+                    <ion-item detail="false" lines="none" button (click)="hideBackups()" *ngIf="backupService.activebackups=='cases'&&!caseItem?.id" class="itemButton">
                         <div font-20 weight700>{{'cases.hide_backups' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faTimes')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="exportCases()" *ngIf="!caseItem?.id" class="itemButton">
+                    <ion-item detail="false" lines="none" button (click)="exportCases()" *ngIf="!caseItem?.id" class="itemButton">
                         <div font-20 weight700>{{'cases.export_csv' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faDownload')"></fa-icon>
                     </ion-item>
-                    <ion-item lines="none" button (click)="caseItem = {}" class="itemButton" *ngIf="caseItem?.id">
+                    <ion-item detail="false" lines="none" button (click)="caseItem = {}" class="itemButton" *ngIf="caseItem?.id">
                       <div font-20 weight700>{{'buttons.back' | translate}}</div>
                       <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
                     </ion-item>
-                    <!-- <ion-item lines="none" button (click)="editCase(caseItem,true)" class="itemButton" *ngIf="caseItem?.id">
+                    <!-- <ion-item detail="false" lines="none" button (click)="editCase(caseItem,true)" class="itemButton" *ngIf="caseItem?.id">
                       <div font-20 weight700>Bewerk uitgebreid</div>
                       <fa-icon font-24 slot="end" [icon]="icon.get('faPen')"></fa-icon>
                     </ion-item> -->
-                    <ion-item lines="none" button (click)="deleteCase()" class="itemButton" *ngIf="caseItem?.id">
+                    <ion-item detail="false" lines="none" button (click)="deleteCase()" class="itemButton" *ngIf="caseItem?.id">
                       <div font-20 weight700 text-danger>{{'cases.remove_case' | translate}}</div>
                       <fa-icon font-24 slot="end" text-danger [icon]="icon.get('faTrashAlt')"></fa-icon>
                     </ion-item>
@@ -83,12 +83,12 @@
 
                 <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!caseItem?.id">
                     <div *ngFor="let type of infoService.conversation_types | sortBy: -1 : 'order'">
-                        <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="type.selected = !type.selected;onFiltersChanged();">
+                        <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="type.selected = !type.selected;onFiltersChanged();">
                             <ion-checkbox slot="start" [(ngModel)]="type.selected" noPointerEvents></ion-checkbox>
                             <ion-label>{{ type[translate.currentLang] }}</ion-label>
                         </ion-item>
                         <div *ngIf="type.selected" class="innerSelectCase">
-                            <ion-item lines="none" font-18 weight400 noMargin class="selectCaseItem innerSelectCaseItem" *ngFor="let subject of type.subjects" (click)="subject.selected = !subject.selected;onFiltersChanged()">
+                            <ion-item detail="false" lines="none" font-18 weight400 noMargin class="selectCaseItem innerSelectCaseItem" *ngFor="let subject of type.subjects" (click)="subject.selected = !subject.selected;onFiltersChanged()">
                                 <ion-checkbox slot="start" [(ngModel)]="subject.selected" noPointerEvents></ion-checkbox>
                                 <ion-label>{{ subject[translate.currentLang] }}</ion-label>
                             </ion-item>
@@ -97,33 +97,45 @@
                 </div>
 
                 <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!caseItem?.id" marginBottom>
-                    <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('open_to_user',true);onFiltersChanged()">
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('open_to_user',true);onFiltersChanged()">
                         <ion-checkbox slot="start" [checked]="filterActive('open_to_user',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>{{'cases.open_for_users' | translate}}</ion-label>
                     </ion-item>
-                    <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('open_to_user',false);onFiltersChanged()">
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('open_to_user',false);onFiltersChanged()">
                         <ion-checkbox slot="start" [checked]="filterActive('open_to_user',false)" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>{{'cases.closed_for_users' | translate}}</ion-label>
                     </ion-item>
                 </div>
 
+                <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!caseItem?.id" marginBottom>
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('create_self',true);onFiltersChanged()">
+                        <ion-checkbox slot="start" [checked]="filterActive('create_self',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
+                        <ion-label>{{'cases.self_create_case' | translate}}</ion-label>
+                    </ion-item>
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('create_self',false);onFiltersChanged()">
+                        <ion-checkbox slot="start" [checked]="filterActive('create_self',false)" noPointerEvents (click)="check($event)"></ion-checkbox>
+                        <ion-label>{{'cases.no_self_create_case' | translate}}</ion-label>
+                    </ion-item>
+                </div>
+
+
                 <!-- <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!caseItem?.id" marginBottom>
-                    <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('photo','notEmpty');onFiltersChanged()">
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('photo','notEmpty');onFiltersChanged()">
                         <ion-checkbox slot="start" [checked]="filterActive('photo','notEmpty')" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>Heeft een foto</ion-label>
                     </ion-item>
-                    <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('photo','empty');onFiltersChanged()">
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('photo','empty');onFiltersChanged()">
                         <ion-checkbox slot="start" [checked]="filterActive('photo','empty')" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>Heeft geen foto</ion-label>
                     </ion-item>
                 </div> -->
 
                 <!-- <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!caseItem?.id" marginBottom>
-                    <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('free_question','notEmpty');onFiltersChanged()">
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('free_question','notEmpty');onFiltersChanged()">
                         <ion-checkbox slot="start" [checked]="filterActive('free_question','notEmpty')" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>Heeft een open vraag</ion-label>
                     </ion-item>
-                    <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('free_question','empty');onFiltersChanged()">
+                    <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('free_question','empty');onFiltersChanged()">
                         <ion-checkbox slot="start" [checked]="filterActive('free_question','empty')" noPointerEvents (click)="check($event)"></ion-checkbox>
                         <ion-label>Heeft geen open vraag</ion-label>
                     </ion-item>
@@ -198,6 +210,7 @@
                                     <th (dblclick)="toggleSortList('conversation')">Type <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='conversation'"></fa-icon></th>
                                     <th (dblclick)="toggleSortList('title')">Titel <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='title'"></fa-icon></th>
                                     <!-- <th (dblclick)="toggleSortList('role')">Role <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='role'"></fa-icon></th> -->
+                                    <th (dblclick)="toggleSortList('user_info')">Beschrijving <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='user_info'"></fa-icon></th>
                                     <th (dblclick)="toggleSortList('open_to_users')">Open voor Users <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='open_to_users'"></fa-icon></th>
                                     <th (dblclick)="toggleSortList('openingMessage')">Opening Message <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='openingMessage'"></fa-icon></th>
                                     <th (dblclick)="toggleSortList('translate')">Vertaald <fa-icon [icon]="icon.get('faSort')" *ngIf="listSortBy=='translate'"></fa-icon></th>
@@ -209,6 +222,7 @@
                                 <tr *ngFor="let caseItem of visibleCases | sortBy: listOrder : listSortBy" >
                                     <td>{{caseItem.conversation}}</td>
                                     <td pointer (dblclick)="editInput(caseItem,'title')">{{caseItem.title}}</td>
+                                    <td>{{caseItem.user_info}}</td>
                                     <!-- <td pointer (dblclick)="editInput(caseItem,'role')">{{caseItem.role}}</td> -->
                                     <td>
                                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user',false,caseItem)"></ion-toggle>
@@ -240,11 +254,11 @@
                                     </ion-card-title>
                                 </ion-card-header>
                                 <ion-card-content>
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-label position="floating">{{'cases.title' | translate}}</ion-label>
                                         <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="caseItem.title"></ion-input>
                                     </ion-item>
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.user_info" (ionChange)="update('user_info')">
                                         <div slot="label">{{'cases.short_info' | translate}}</div>
                                         </ion-textarea>
@@ -265,21 +279,20 @@
                                     </ion-card-title>
                                 </ion-card-header>
                                 <ion-card-content>
-                                    
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-toggle color="primary" [disabled]="true" [(ngModel)]="caseItem.translate">
                                             {{'cases.translated' | translate}}
                                         </ion-toggle>
                                         <fa-icon slot="end" pointer titleIcon font-24 [icon]="icon.get('faGlobe')" (click)="startTranslation()"></fa-icon>
                                     </ion-item>
 
-                                    <ion-item [disabled]="showBackups || (caseNotready() && !caseItem.open_to_user)" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups || (caseNotready() && !caseItem.open_to_user)" lines="none" listCard>
                                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
                                             {{'cases.open_for_users' | translate}}
                                         </ion-toggle>
                                     </ion-item>
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-toggle color="primary" [(ngModel)]="caseItem.create_self" (ionChange)="update('create_self')">
                                             {{'cases.self_create_case' | translate}}
                                         </ion-toggle>
@@ -305,7 +318,7 @@
                                 <ion-card-content *ngIf="showBasics">
                                     <ion-row>
                                         <ion-col size="8">
-                                            <ion-item lines="none" listCard>
+                                            <ion-item detail="false" lines="none" listCard>
                                                 <ion-label position="stacked">{{'cases.conversation_technique' | translate}}</ion-label>
                                                 <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation');changeCategory()">
                                                     <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
@@ -313,28 +326,35 @@
                                             </ion-item>
                                         </ion-col>
                                         <ion-col size="4">
-                                            <ion-item lines="none" listCard>
+                                            <ion-item detail="false" lines="none" listCard>
                                                 <ion-label position="stacked">{{'cases.order_rating' | translate}}</ion-label>
                                                 <ion-input type="number" min="1" max="10" [(ngModel)]="caseItem.order_rating" (ionChange)="update('order_rating')"></ion-input>
                                             </ion-item>
                                         </ion-col>
                                     </ion-row>
 
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">{{'cases.role' | translate}}</ion-label>
                                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard (click)="selectTypes(caseItem.types)" class="ionItemTypes">
+                                    <ion-item detail="false" lines="none" listCard (click)="selectTypes(caseItem.types)" class="ionItemTypes">
                                         <ion-label position="stacked">{{'cases.filter_types' | translate}}</ion-label>
-                                        <ion-row fullwidth>
+                                        <div>
+                                            <span *ngFor="let type of caseItem.types;let i = index">
+                                                <div class="typeItem" center-ver center-hor>
+                                                    <span>{{infoService.getConversationType('',type)[translate.currentLang]}}</span>
+                                                </div>
+                                            </span>
+                                        </div>
+                                        <!-- <ion-row fullwidth>
                                             <ion-col size="4" *ngFor="let type of caseItem.types">
                                                 <div class="typeItem">{{infoService.getConversationType('',type)[translate.currentLang]}}</div>
                                             </ion-col>
-                                        </ion-row>
+                                        </ion-row> -->
                                     </ion-item>
                         
-                                    <ion-item pointer lines="none" listCard class="ionItemTypes">
+                                    <ion-item detail="false" pointer lines="none" listCard class="ionItemTypes">
                                         <ion-label position="stacked">{{'tags' | translate}}</ion-label>
                                         <ion-input [(ngModel)]="caseItem.tag" (keydown.enter)="addTag()" (ionChange)="addTag()">
                                         <ion-button fill="solid" slot="end" [disabled]="!caseItem.tag" (click)="addTag()">
@@ -351,7 +371,7 @@
                                         </div>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">{{'standards.level' | translate}}</ion-label>
                                         <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.level" (ionChange)="update('level')">
                                             <ion-select-option *ngFor="let level of [1,2,3,4,5]" [value]="level">{{level}}</ion-select-option>
@@ -360,7 +380,7 @@
 
                                     <ion-row>
                                         <ion-col [size]="media.smallDevice ? 12 : 12">
-                                            <ion-item [disabled]="showBackups" lines="none" listCard>
+                                            <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                                 <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
                                                     <ion-label style="font-size:14px" slot="start">{{'cases.attitude' | translate}}</ion-label>
                                                     <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
@@ -368,7 +388,7 @@
                                             </ion-item>
                                         </ion-col>
                                         <ion-col [size]="media.smallDevice ? 12 : 12">
-                                            <ion-item [disabled]="showBackups" lines="none" listCard>
+                                            <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                                 <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
                                                     <ion-label style="font-size:14px" slot="start">{{'cases.steadfastness' | translate}}</ion-label>
                                                     <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
@@ -416,27 +436,27 @@
                                             </ion-button>
                                         </div>
                                     </ion-card>
-                                    <ion-item lines="none" listCard marginTop>
+                                    <ion-item detail="false" lines="none" listCard marginTop>
                                         <ion-label position="stacked"> {{'cases.photo' | translate}}</ion-label>
                                         <ion-input [(ngModel)]="caseItem.photo"></ion-input>
                                     </ion-item>
 
                                     <ion-row noPadding>
                                         <ion-col [size]="media.smallDevice ? 12 : 6" style="padding:0 5px 0 0">
-                                            <ion-item lines="none" listCard>
+                                            <ion-item detail="false" lines="none" listCard>
                                                 <ion-label position="stacked">{{'cases.age' | translate}}</ion-label>
                                                 <ion-input [(ngModel)]="caseItem.age"></ion-input>
                                             </ion-item>
                                         </ion-col>
                                         <ion-col [size]="media.smallDevice ? 12 : 6" style="padding:0 0 0 5px">
-                                            <ion-item lines="none" listCard>
+                                            <ion-item detail="false" lines="none" listCard>
                                                 <ion-label position="stacked">{{'cases.gender' | translate}}</ion-label>
                                                 <ion-input [(ngModel)]="caseItem.gender"></ion-input>
                                             </ion-item>
                                         </ion-col>
                                     </ion-row>
                                     
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">{{'cases.ethnicity' | translate}}</ion-label>
                                         <ion-input [(ngModel)]="caseItem.ethnicity"></ion-input>
                                     </ion-item>
@@ -487,7 +507,7 @@
                                         <span class="spacer"></span>
                                     </ion-card-title>
 
-                                    <ion-item lines="none" listCard fullwidth>
+                                    <ion-item detail="false" lines="none" listCard fullwidth>
                                         <ion-label position="stacked" ></ion-label>
                                         <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.openingMessage" (ionChange)="update('editable_by_user')" color="primary" weight600>{{'case_options.editable_openingMessage' | translate}}</ion-toggle>
                                         <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.free_answer" (ionChange)="update('editable_by_user')" color="primary" weight600>{{'case_options.editable_free_answer' | translate}}</ion-toggle>
@@ -500,7 +520,7 @@
                                         <span class="spacer"></span>
                                     </ion-card-title>
                                 
-                                    <ion-item lines="none" listCard fullwidth>
+                                    <ion-item detail="false" lines="none" listCard fullwidth>
                                         <ion-label position="stacked" ></ion-label>
                                         <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.agents.choices"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_choices' | translate}}</ion-toggle>
                                         <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.agents.facts"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_facts' | translate}}</ion-toggle>
@@ -527,13 +547,13 @@
                                 </ion-card-header>
                                 <ion-card-content *ngIf="showUserInput">
     
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage" (ionChange)="update('openingMessage')">
                                         <div slot="label">{{'cases.opening_message' | translate}}</div>
                                         </ion-textarea>
                                     </ion-item>  
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free" (ionChange)="update('goalsItems')">
                                         <div slot="label">{{'cases.goal_conversation' | translate}}</div>
                                         </ion-textarea>
@@ -546,25 +566,25 @@
                                     </ion-card-title>
 
                                     <div *ngIf="showUserInputMore && caseItem.editable_by_user.free_answer">
-                                        <ion-item [disabled]="showBackups" lines="none" listCard>
+                                        <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                             <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question" (ionChange)="update('free_question')">
                                             <div slot="label">{{'cases.free_question' | translate}}</div>
                                             </ion-textarea>
                                         </ion-item>  
         
-                                        <ion-item [disabled]="showBackups" lines="none" listCard>
+                                        <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                             <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question2" (ionChange)="update('free_question2')">
                                             <div slot="label">{{'cases.free_question' | translate}} 2</div>
                                             </ion-textarea>
                                         </ion-item>  
         
-                                        <ion-item [disabled]="showBackups" lines="none" listCard>
+                                        <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                             <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question3" (ionChange)="update('free_question3')">
                                             <div slot="label">{{'cases.free_question' | translate}} 3</div>
                                             </ion-textarea>
                                         </ion-item>  
         
-                                        <ion-item [disabled]="showBackups" lines="none" listCard>
+                                        <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                             <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question4" (ionChange)="update('free_question4')">
                                             <div slot="label">{{'cases.free_question' | translate}} 4</div>
                                             </ion-textarea>
@@ -573,7 +593,7 @@
     
                                     
                                 </ion-card-content>
-                            </ion-card>
+                        </ion-card>
                         </ion-col>
                     </ion-row>
 
@@ -590,14 +610,14 @@
                         <ion-card-content>
                             <ion-row>
                                 <ion-col [size]="media.smallDevice ? 12 : 8">
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">Gespreks techniek</ion-label>
                                         <ion-select interface="popover" [disabled]="showBackups" [(ngModel)]="caseItem.conversation" (ionChange)="update('conversation')">
                                             <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.title}}</ion-select-option>
                                         </ion-select>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard (click)="selectTypes(caseItem.types)" class="ionItemTypes">
+                                    <ion-item detail="false" lines="none" listCard (click)="selectTypes(caseItem.types)" class="ionItemTypes">
                                         <ion-label position="stacked">Typen</ion-label>
                                         <ion-row fullwidth>
                                             <ion-col size="4" *ngFor="let type of caseItem.types">
@@ -606,12 +626,12 @@
                                         </ion-row>
                                     </ion-item>
                         
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">Rol</ion-label>
                                         <ion-input [disabled]="showBackups" [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">photo</ion-label>
                                         <ion-input [disabled]="true" [(ngModel)]="caseItem.photo"></ion-input>
                                     </ion-item>
@@ -641,19 +661,19 @@
                             </ion-row>
                             <ion-row>
                                 <ion-col size="6">
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
                                             Open voor Users
                                         </ion-toggle>
                                     </ion-item>
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-toggle color="primary" [(ngModel)]="caseItem.create_self" (ionChange)="update('create_self')">
                                             Zelf maak casus
                                         </ion-toggle>
                                     </ion-item>
                                     
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label>
                                             Level 
                                             <span titleIcon *ngIf="caseItem.level">{{caseItem.level}}</span>
@@ -663,7 +683,7 @@
                                         <fa-icon pointer slot="end" *ngIf="caseItem.level_explanation" [icon]="icon.get('faInfoCircle')" (click)="modalService.showText(caseItem.level_explanation,'Verklaring Level')"></fa-icon>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">age</ion-label>
                                         <ion-input [(ngModel)]="caseItem.age"></ion-input>
                                     </ion-item>
@@ -671,26 +691,26 @@
                                 </ion-col>
 
                                 <ion-col size="6">
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
                                             <ion-label style="font-size:14px" slot="start">Attitude</ion-label>
                                             <ion-label style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
                                         </ion-range>
                                     </ion-item>
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
                                             <ion-label style="font-size:14px" slot="start">Steadfastness</ion-label>
                                             <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
                                         </ion-range>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">gender</ion-label>
                                         <ion-input [(ngModel)]="caseItem.gender"></ion-input>
                                     </ion-item>
 
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">ethnicity</ion-label>
                                         <ion-input [(ngModel)]="caseItem.ethnicity"></ion-input>
                                     </ion-item>
@@ -698,7 +718,7 @@
                                 </ion-col>
 
                                 <ion-col size="6">
-                                    <ion-item pointer lines="none" listCard class="ionItemTypes">
+                                    <ion-item detail="false" pointer lines="none" listCard class="ionItemTypes">
                                         <ion-label position="stacked">Tags</ion-label>
                                         <ion-input [(ngModel)]="caseItem.tag" (keydown.enter)="addTag()" (ionChange)="addTag()">
                                         <ion-button fill="solid" slot="end" [disabled]="!caseItem.tag" (click)="addTag()">
@@ -717,7 +737,7 @@
                                 </ion-col>
 
                                 <ion-col size="6">
-                                    <ion-item lines="none" listCard>
+                                    <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">Hoe hoog op de lijst moet deze case staan</ion-label>
                                         <ion-input type="number" min="1" max="10" [(ngModel)]="caseItem.order_rating" (ionChange)="update('order_rating')"></ion-input>
                                     </ion-item>
@@ -726,43 +746,43 @@
                                 <ion-col size="12">
                                     
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.user_info" (ionChange)="update('user_info')">
                                         <div slot="label">Korte informatie voor de gebruiker</div>
                                         </ion-textarea>
                                     </ion-item>         
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question" (ionChange)="update('free_question')">
                                         <div slot="label">Vrije vraag</div>
                                         </ion-textarea>
                                     </ion-item>  
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question2" (ionChange)="update('free_question2')">
                                         <div slot="label">Vrije vraag 2</div>
                                         </ion-textarea>
                                     </ion-item>  
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question3" (ionChange)="update('free_question3')">
                                         <div slot="label">Vrije vraag 3</div>
                                         </ion-textarea>
                                     </ion-item>  
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="1" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_question4" (ionChange)="update('free_question4')">
                                         <div slot="label">Vrije vraag 4</div>
                                         </ion-textarea>
                                     </ion-item>  
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage" (ionChange)="update('openingMessage')">
                                         <div slot="label">Opening van gesprek</div>
                                         </ion-textarea>
                                     </ion-item>  
 
-                                    <ion-item [disabled]="showBackups" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups" lines="none" listCard>
                                         <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.casus" (ionChange)="update('casus')">
                                         <div slot="label">Casus</div>
                                         </ion-textarea>
@@ -776,7 +796,7 @@
                     </ion-card> -->
                 
                 </ion-col>
-                <ion-infinite-scroll (ionInfinite)="loadMore($event)">
+                <ion-infinite-scroll *ngIf="filteredCases.length > visibleCases.length" (ionInfinite)="loadMore($event)">
                     <ion-infinite-scroll-content></ion-infinite-scroll-content>
                 </ion-infinite-scroll>
             </ion-content>

@@ -36,7 +36,7 @@
     <ion-card-content class="detailColumn">
       <ion-row>
           <ion-col size="12">
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.role">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.role">
               <ion-label position="stacked">
                 <h1>Titel casus*</h1>
                 <p>Geef de casus een titel?</p>
@@ -45,7 +45,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.title'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.role">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.role">
               <ion-label position="stacked">
                 <h1>Rol*</h1>
                 <p>Welke rol moet de gesprekspartner (AI) aannemen</p>
@@ -54,7 +54,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.role'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.description">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.description">
               <ion-label position="stacked">
                 <h1>Casus / issue</h1>
                 <p>Beschrijf de casus / issue. Zo gedetailleerd mogelijk.</p>
@@ -64,7 +64,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.description'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.description">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.description">
               <ion-label position="stacked">
                 <h1>Rol van de gebruiker</h1>
                 <p>Beschrijf vanuit welke rol de gebruiker het gesprek aangaat.</p>
@@ -74,7 +74,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.user_role'"></fa-icon>
             </ion-item>
               
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.function">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.function">
               <ion-label position="stacked">
                 <h1>Functie</h1>
                 <p>Wat is de functie van de persoon en welke rol vervult deze in relatie tot het probleem?</p>
@@ -84,7 +84,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.function'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.vision">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.vision">
               <ion-label position="stacked">
                 <h1>Visie</h1>
                 <p>Hoe kijkt deze persoon tegen het issue/ de casus aan?</p>
@@ -94,7 +94,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.vision'"></fa-icon>
             </ion-item>
               
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.interests">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.interests">
               <ion-label position="stacked">
                 <h1>Belangen</h1>
                 <p>Wat is voor deze persoon belangrijk in relatie tot het probleem? Heeft hij/zij specifieke vragen en/of zorgen?</p>
@@ -121,7 +121,7 @@
       <ion-row>
           <ion-col size="12">
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.communicationStyle">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.communicationStyle">
               <ion-label position="stacked">
                 <h1>Communicatiestijl</h1>
                 <p>Hoe ervaar jij de communicatiestijl van deze persoon?</p>
@@ -132,7 +132,7 @@
             </ion-item>
 
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.externalFactors">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.externalFactors">
               <ion-label position="stacked">
                 <h1>Externe factoren</h1>
                 <p>Zijn er externe factoren die van invloed zijn op de houding van de persoon?</p>
@@ -142,7 +142,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.external_factors'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.history">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.history">
               <ion-label position="stacked">
                 <h1>Historie</h1>
                 <p>Zijn er andere onderwerpen waar je deze persoon recent over hebt gesproken? Zo ja, waarover en hoe verliepen deze?</p>
@@ -171,7 +171,7 @@
       <ion-row>
           <ion-col size="8">
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin">
               <ion-label position="stacked">
                 <h1>Avatar Id</h1>
                 <p>Wat is de Avatar Id</p>
@@ -180,7 +180,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.avatar_name'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin">
               <ion-label position="stacked">
                 <h1>Foto</h1>
                 <p>Wat is de Avatar Foto (voeg hier een url toe)</p>
@@ -203,7 +203,7 @@
       <ion-row>
           <ion-col size="12">
 
-              <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.attitude">
+              <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.attitude">
                   <ion-label position="stacked" >
                       <h1>Houding</h1>
                       <p>Hoe is de kwaliteit van jouw relatie met deze persoon?</p>
@@ -217,7 +217,7 @@
                   <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.attitude'"></fa-icon>
               </ion-item>
 
-              <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.steadfastness">
+              <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.steadfastness">
                   <ion-label position="stacked" >
                       <h1>Standvastig</h1>
                       <p>Hoe standvastig is deze persoon (0% = Vindt alles wat jij vindt, 100% = Zal nooit iets anders vinden)</p>
@@ -248,7 +248,7 @@
       <ion-row>
           <ion-col size="12">
 
-            <ion-item lines="none" listCard>
+            <ion-item detail="false" lines="none" listCard>
               <ion-label position="stacked" marginBottom>
                 <h1>Samenvatting</h1>
                 <p>Onze AI specialist vat hieronder jouw input samen, zodat je ziet hoe deze wordt geinterpreteerd. Als je nog aanpassingen wilt doen, dan kan dat hier.</p>
@@ -273,7 +273,7 @@
     <ion-card-content class="detailColumn">
       <ion-row>
           <ion-col size="12" noPadding>
-            <!-- <ion-item lines="none" listCard fullwidth *ngIf="caseItem.admin||caseItem.editable_by_user.max_time">
+            <!-- <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin||caseItem.editable_by_user.max_time">
               <ion-label position="stacked" >
                   <h1>Tijd</h1>
                   <p>Hoe lang mag het gesprek maximaal duren?</p>
@@ -284,7 +284,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.max_time'"></fa-icon>
             </ion-item> -->
 
-            <ion-item lines="none" listCard fullwidth *ngIf="caseItem.admin">
+            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin">
               <ion-label position="stacked" >
                   <h1>Doel</h1>
                   <p>Wil je een specifiek doel instellen voor het gesprek? Als niet, dan is het gesprek al een doel op zich.</p>
@@ -294,7 +294,7 @@
             </ion-item>
 
 
-            <ion-item lines="none" listCard fullwidth *ngIf="caseItem.admin&&caseItem.goal">
+            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin&&caseItem.goal">
               <ion-label position="stacked" >
                   <h1>Welke doelen?</h1>
                   <p>Welke doelen wil je allemaal instellen? En hoeveel moeten er dan gehaald worden</p>
@@ -310,7 +310,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.goals'"></fa-icon>
             </ion-item>
               
-            <ion-item lines="none" listCard fullwidth *ngIf="(showGoal.attitude&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.attitude&&!caseItem.admin)">
+            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="(showGoal.attitude&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.attitude&&!caseItem.admin)">
               <ion-label position="stacked" >
                   <h1>Houding</h1>
                   <p>Bij welke houding van de gesprekspartner is het doel behaald </p>
@@ -322,7 +322,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.attitude_goal'"></fa-icon>
             </ion-item>
 
-            <ion-item lines="none" listCard fullwidth *ngIf="(showGoal.phases&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.phases&&!caseItem.admin)">
+            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="(showGoal.phases&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.phases&&!caseItem.admin)">
               <ion-label position="stacked" marginBottom>
                   <h1>Fases</h1>
                   <p>Hoe ver moeten de fases zijn gevorderd om het gesprek succesvol te laten zijn.</p>
@@ -334,7 +334,7 @@
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.phases_goal'"></fa-icon>
             </ion-item>
 <!-- 
-            <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer">
+            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer">
               <ion-label position="stacked">
                 <h1>{{caseItem.free_question}}</h1>
               </ion-label>
@@ -368,7 +368,7 @@
             </div>
 
 <!--             
-            <ion-item lines="none" listCard fullwidth *ngIf="(showGoal.free&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.free&&!caseItem.admin)">
+            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="(showGoal.free&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.free&&!caseItem.admin)">
               <ion-label position="stacked">
                 <h1>{{'conversation_start.goal' | translate}}</h1>
                 <p>{{'conversation_start.goal_instructions' | translate}}</p>
@@ -401,7 +401,7 @@
         <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage"></ion-textarea>
       </div>
 
-        <!-- <ion-item lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage">
+        <!-- <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage">
           <ion-label position="stacked">
             <h1 style="margin-top:0" *ngIf="caseItem.admin">{{'conversation_start.opening' | translate}}</h1>
             <h1 style="margin-top:0" *ngIf="!caseItem.admin">{{'conversation_start.opening_user' | translate}}</h1>
@@ -424,12 +424,12 @@
     <ion-card-content>
 
       <div *ngFor="let editable of caseItem.editable_by_user | keyvalue">
-        <ion-item lines="none" listCard fullwidth *ngIf="editable.key!='goals'&&editable.key!='agents'&&editable.key!='max_time'">
+        <ion-item detail="false" lines="none" listCard fullwidth *ngIf="editable.key!='goals'&&editable.key!='agents'&&editable.key!='max_time'">
           <ion-toggle noMargin [(ngModel)]="editable.value" color="primary" weight600>{{'case_options.editable_'+editable.key | translate}}</ion-toggle>
         </ion-item>
       </div>
 
-      <ion-item lines="none" listCard fullwidth>
+      <ion-item detail="false" lines="none" listCard fullwidth>
         <ion-label position="stacked" >
           <h1 noMargin>Doelen</h1>
         </ion-label>
@@ -438,7 +438,7 @@
         <ion-toggle noMargin fullwidth [(ngModel)]="caseItem.editable_by_user.goals.free" color="primary">Vrije tekst</ion-toggle>
       </ion-item>
 
-      <ion-item lines="none" listCard fullwidth>
+      <ion-item detail="false" lines="none" listCard fullwidth>
         <ion-label position="stacked" >
           <h1 noMargin>Agents</h1>
         </ion-label>

@@ -23,8 +23,8 @@
                 <ion-card-title>{{item[translate.currentLang]}}</ion-card-title>
               </ion-card-header>
               <ion-card-content>
-                <ion-item noMargin noBackground lines="none" *ngFor="let subItem of item[properties.subList]" (click)="subItem.selected = !subItem.selected">
-                  <ion-checkbox mode="md" slot="start" [(ngModel)]="subItem.selected"></ion-checkbox>
+                <ion-item detail="false" noMargin noBackground lines="none" *ngFor="let subItem of item[properties.subList]" (click)="subItem.selected = !subItem.selected">
+                  <ion-checkbox mode="md" slot="start" [(ngModel)]="subItem.selected" (click)="preventBubble($event)"></ion-checkbox>
                   <ion-label>{{subItem[translate.currentLang]}}</ion-label>
                 </ion-item>
               </ion-card-content>

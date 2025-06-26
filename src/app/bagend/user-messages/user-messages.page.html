@@ -4,22 +4,22 @@
     <ion-row>
         <ion-col size="3" style="padding-top:15px">
           <div style="background:white;padding:10px 0px;border-radius:16px" marginBottom>
-            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterReadMessages(false)">
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterReadMessages(false)">
                 <ion-checkbox slot="start" [checked]="filterReadIsActive(false)" noPointerEvents></ion-checkbox>
                 <ion-label>Niet gelezen berichten</ion-label>
             </ion-item>
-            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterReadMessages(true)">
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterReadMessages(true)">
               <ion-checkbox slot="start" [checked]="filterReadIsActive(true)" noPointerEvents></ion-checkbox>
               <ion-label>Gelezen berichten</ion-label>
           </ion-item>
           </div>
 
           <div style="background:white;padding:10px 0px;border-radius:16px" marginBottom>
-            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterArchivedMessages(false)">
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterArchivedMessages(false)">
                 <ion-checkbox slot="start" [checked]="filterArchivedIsActive(false)" noPointerEvents></ion-checkbox>
                 <ion-label>Nieuwe berichten</ion-label>
             </ion-item>
-            <ion-item lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterArchivedMessages(true)">
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilterArchivedMessages(true)">
               <ion-checkbox slot="start" [checked]="filterArchivedIsActive(true)" noPointerEvents></ion-checkbox>
               <ion-label>Gearchiveerde berichten</ion-label>
             </ion-item>

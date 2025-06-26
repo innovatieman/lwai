@@ -1,0 +1,74 @@
+<app-header page="account"></app-header>
+<main>
+  <ion-grid>
+    <ion-row *ngIf="media.smallDevice" style="height:52px;">
+      <app-menu-mobile></app-menu-mobile>
+    </ion-row>
+
+    <ion-row>
+      <ion-col *ngIf="!media.smallDevice" [size]="3" class="selectColumn" style="padding-top:15px;">
+        <!-- <div *ngIf="media.screenSize=='xs'">
+
+
+          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" (click)="nav.go('marketplace/manual')" [ngClass]="{'activeTab':activeTab=='manual'}">
+            <fa-icon [icon]="icon.get('faPlus')" ></fa-icon>
+          </ion-card>
+
+        </div> -->
+          
+          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" >
+  
+            <ion-item detail="false" lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}">
+              <div font-20 weight700>{{'page_account.dashboard' | translate}}</div>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faHome')"></fa-icon>
+            </ion-item>
+  
+          </div>
+
+          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}" >
+  
+            <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/manual')" class="itemButton" [detail]="false">
+              <div font-20 weight700>{{'marketplace.add_training' | translate}}</div>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faPlus')"></fa-icon>
+            </ion-item>
+  
+          </div>
+
+          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.activeCourses?.length" class="notActiveItem">
+            <ion-item detail="false" lines="none" button (click)="nav.go('start/my_trainings/')" class="itemButton">
+                <div font-20 weight700>{{'buttons.my_trainings' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faGraduationCap')"></fa-icon>
+            </ion-item>
+          </div>
+
+
+
+
+      </ion-col>
+
+      <ion-col [size]="media.smallDevice ? 12 : 9" class="detailColumn" center-left>
+        <ion-card basicPadding *ngIf="activeTab=='manual'">
+            <ion-card-header>
+                <ion-card-title flex center-ver>
+                    <span weight600 titleIcon>{{'marketplace.add_training' | translate}}</span>
+                    <span class="spacer"></span>
+                </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div marginBottom>{{'marketplace.code_input' | translate}}</div>
+              <ion-item marginBottom detail="false" lines="none" listCard>
+                  <ion-label position="stacked">{{'marketplace.code' | translate}}</ion-label>
+                  <ion-input style="margin-left:10px" weight700 type="text"  [(ngModel)]="newTrainingCode"></ion-input>
+              </ion-item> 
+              <div flex center-ver>
+                <div class="spacer"></div>
+                <ion-button class="saveButton" [disabled]="!newTrainingCode" (click)="addManualTraining()">
+                  <span>{{'buttons.submit' | translate}}</span>
+                </ion-button>
+              </div>
+            </ion-card-content>
+        </ion-card>
+      </ion-col>  
+    </ion-row>
+  </ion-grid>
+</main>

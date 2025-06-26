@@ -94,8 +94,7 @@ h3{
         // page-break-inside: 
         // page-break-after: always!important;
     }
-    div {
-      }
+
 }
 
 ion-card-title{
@@ -103,6 +102,7 @@ ion-card-title{
 }
 ion-item{
     --background:white;
+    --color: var(--color-global);
     ion-label{
         --color:var(--color-global)!important;
     }
@@ -146,6 +146,15 @@ ion-checkbox{
 }
 [font-28]{
     font-size: 28px;
+}
+[font-30]{
+    font-size: 30px;
+}
+[font-48]{
+    font-size: 48px;
+}
+[font-80]{
+    font-size: 80px;
 }
 [weight700]{
     font-weight: 700!important;
@@ -207,6 +216,9 @@ ion-checkbox{
 [marginLeft]{
     margin-left: 10px!important;
 }
+[marginRight]{
+    margin-right: 10px!important;
+}
 [top10]{
     top:10px
 }
@@ -240,6 +252,9 @@ ion-checkbox{
 [center-left]{
     justify-content: flex-start;
     text-align: left;
+}
+[flex-align-right]{
+    align-items: flex-end;
 }
 [flex-align-left]{
     align-items: flex-start;
@@ -282,7 +297,10 @@ ion-checkbox{
     background: var(--background-global);
     --background: var(--background-global)
 }
-
+[noBackground]{
+    background: none!important;
+    --background: none!important;
+}
 [listCard]{
     background: var(--background-global);
     --background: var(--background-global);
@@ -427,21 +445,27 @@ ion-checkbox{
 }
 [borderRadius0]{
     border-radius: 0px!important;
+    --border-radius: 0px!important;
 }
 [borderRadius2]{
     border-radius: 2px;
+    --border-radius: 2px;
 }
 [borderRadius5]{
     border-radius: 5px;
+    --border-radius: 5px;
 }
 [borderRadius10]{
     border-radius: 10px;
+    --border-radius: 10px;
 }
 [borderRadius16]{
     border-radius: 16px;
+    --border-radius: 16px;
 }
 [borderRadius24]{
     border-radius: 24px;
+    --border-radius: 24px;
 }
 [borderShadow]{
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3)!important;
@@ -453,6 +477,10 @@ ion-checkbox{
     margin: 15px 15px;
     opacity: 0.4;
 }
+[border-bottom]{
+    border-bottom: solid 2px var(--ion-color-secondary);
+}
+
 [trash]{
     color: var(--ion-color-danger);
 }
@@ -488,6 +516,18 @@ ion-checkbox{
 [backgroundTertiary]{
     background-color: var(--ion-color-tertiary);
     color:var(--ion-color-tertiary-contrast);
+}
+[backgroundDanger]{
+    background-color: var(--ion-color-danger);
+    color:var(--ion-color-danger-contrast);
+}
+[backgroundSuccess]{
+    background-color: var(--ion-color-success);
+    color:var(--ion-color-success-contrast);
+}
+[backgroundWarning]{
+    background-color: var(--ion-color-warning);
+    color:var(--ion-color-warning-contrast);
 }
 [listCardTop],.listCardTop{
     border-bottom-left-radius: 0px;
@@ -552,6 +592,11 @@ app-header{
     border-style: solid;
 }
 
+.mycomponent-wider-popover
+{
+  --width: 95%;
+  --max-width: 800px;
+}
 
 
 video{
@@ -757,13 +802,29 @@ main{
     --background:white;
     color:var(--color-global);
     max-height: calc(100% - 51px);
-    // border-bottom-left-radius: 16px;
-    // border-bottom-right-radius: 16px;
+}
+.buttonBarMobile{
+    position: fixed;
+    z-index:15;
+    top:52px;
+    left:0;
+    width: 100%;
+    height: 100%;
+    max-height: calc(100% - 52px);
+    pointer-events: none;
+}
+.buttonBarMobileBackground{
+    background: var(--background-global);
+    position: fixed;
+    z-index:13;
+    top:51px;
+    left:0;
+    width: 100%;
+    height: 65px;
 }
 .buttonBarMargin{
     margin-top: 70px;
 }
-
 
 .selectColumn{
     max-height:calc(100%);
@@ -960,6 +1021,19 @@ main{
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
+    max-width: calc(100% - 30px);
+}
+
+.infoIconPhoto{
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    background: white;
+    border-radius: 100%;
+    height: 24px;
+    line-height: 24px;
+    width: 24px;
+    font-size: 24px;
 }
 
 .tutorialPop{
@@ -1057,6 +1131,12 @@ main{
     justify-content: center;
     align-items: center;
   }
+
+  .copyCaseTrainer{
+    right:initial;
+    left: 15px;
+}
+
   .deleteButtonCase{
     position: absolute;
     left: 15px;
@@ -1159,4 +1239,13 @@ main{
         // flex-flow: column;
         // justify-content: center;
     }
+}
+
+.backArrowModule{
+    transition: all 0.3s;
+    position: relative;
+    left:0px;
+}
+.backArrowModule:hover{
+    left:-10px;
 }

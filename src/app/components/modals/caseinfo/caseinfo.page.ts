@@ -1,11 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { AuthService } from 'src/app/auth/auth.service';
 import { NavService } from 'src/app/services/nav.service';
 import { InfoModalPage } from '../info-modal/info-modal.page';
 import { ConversationStartPage } from '../conversation-start/conversation-start.page';
 import { MediaService } from 'src/app/services/media.service';
 import { TranslateService } from '@ngx-translate/core';
+import { FirestoreService } from 'src/app/services/firestore.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { MenuPage } from '../../menu/menu.page';
+import { SelectMenuService } from 'src/app/services/select-menu.service';
 
 @Component({
   selector: 'app-caseinfo',
@@ -14,18 +18,28 @@ import { TranslateService } from '@ngx-translate/core';
 })
 export class CaseinfoPage implements OnInit {
   @Input() caseItem:any ={}
+  isTrainer:boolean = false
   constructor(
     public modalController:ModalController,
+    public popoverController:PopoverController,
     public nav:NavService,
     public auth:AuthService,
     public media:MediaService,
-    private translate:TranslateService
+    private translate:TranslateService,
+    private firestore:FirestoreService,
+    private toast:ToastService,
+    public selectMenuservice:SelectMenuService,
   ) { }
 
   ngOnInit() {
-    console.log(this.caseItem)
+    // console.log(this.caseItem)
+
+    this.auth.hasActive('trainer').subscribe((trainer)=>{
+      this.isTrainer = trainer
+    })
   }
 
+  
   noCredits(){
     this.showInfo({
       title:this.translate.instant('credits.no_credits'),
@@ -87,6 +101,56 @@ export class CaseinfoPage implements OnInit {
   
       const { data } = await modalItem.onWillDismiss();
       return data || false; // Retourneert true of false
+    }
+
+    shortMenu:any
+    async copyItemAsTrainer(item:any,event:Event){
+      event.stopPropagation()
+      console.log(item)
+      for(let key in item){
+        if(item[key] == undefined){
+          item[key] = ''
+        }
+      }
+      if(this.auth.organisations.length==1){
+        this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',item).then((res:any)=>{
+          this.toast.show(this.translate.instant('cases.case_copied_to_trainer'))
+        })
+      }
+      else{
+        let list = []
+        for(let i=0;i<this.auth.organisations.length;i++){
+          list.push({
+            title:this.auth.organisations[i].name,
+            icon:this.auth.organisations[i].logo ? '' :'faStar',
+            image:this.auth.organisations[i].logo ? this.auth.organisations[i].logo : '',
+            // url:'/trainer/trainings',
+            id:this.auth.organisations[i].id,
+            value:this.auth.organisations[i].id,
+          })
+        }
+    
+        this.shortMenu = await this.popoverController.create({
+          component: MenuPage,
+          componentProps:{
+            customMenu:true,
+            pages:list
+          },
+          cssClass: 'customMenu',
+          event: event,
+          translucent: false,
+          reference:'trigger',
+        });
+        this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+        await this.shortMenu.present();
+        await this.shortMenu.onWillDismiss().then((result:any)=>{
+          if(this.selectMenuservice.selectedItem){
+            this.firestore.createSub('trainers',this.selectMenuservice.selectedItem.id,'cases',item).then((res:any)=>{
+                this.toast.show(this.translate.instant('cases.case_copied_to_trainer'))
+              })
+          }
+        })
+      }
     }
 
 }

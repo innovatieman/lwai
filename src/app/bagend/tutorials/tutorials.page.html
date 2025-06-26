@@ -7,19 +7,35 @@
       <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
 
         <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
-          <ion-item lines="none" button (click)="tutorial={}" class="itemButton" *ngIf="tutorial?.id">
+          <ion-item detail="false" lines="none" button (click)="tutorial={}" class="itemButton" *ngIf="tutorial?.id">
             <div font-20 weight700>Terug</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
           </ion-item>
-          <ion-item lines="none" button (click)="add()" class="itemButton" *ngIf="!tutorial?.id">
+          <ion-item detail="false" lines="none" button (click)="add()" class="itemButton" *ngIf="!tutorial?.id">
             <div font-20 weight700>Nieuwe tutorial</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
-          <ion-item lines="none" button (click)="copy()" class="itemButton" *ngIf="tutorial?.id">
+          <ion-item detail="false" lines="none" button (click)="copy()" class="itemButton" *ngIf="tutorial?.id">
             <div font-20 weight700>Kopieer tutorial</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
           </ion-item>
+          <ion-item detail="false" lines="none" button (click)="deleteTutorial()" class="itemButton" *ngIf="tutorial?.id">
+            <div font-20 weight700>Verwijder tutorial</div>
+            <fa-icon font-24 slot="end" trash [icon]="icon.get('faTrashAlt')"></fa-icon>
+          </ion-item>
         </div>
+
+        <!-- <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!tutorial?.id" marginBottom>
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('desktop',true)">
+                <ion-checkbox slot="start" [checked]="filterActive('desktop',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
+                <ion-label>Desktop</ion-label>
+            </ion-item>
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('mobile',true)">
+                <ion-checkbox slot="start" [checked]="filterActive('mobile',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
+                <ion-label>Mobiel</ion-label>
+            </ion-item>
+        </div> -->
+
       </ion-col>
 
 
@@ -41,21 +57,21 @@
             <ion-card-content>
                 <ion-row>
                     <ion-col [size]="6">
-                      <ion-item lines="none" listCard marginBottom>
+                      <ion-item detail="false" lines="none" listCard marginBottom>
                         <ion-label style="font-weight:700;font-size:22px" position="stacked">Page</ion-label>
                         <ion-input [(ngModel)]="tutorial.page" (ionChange)="update('page')"></ion-input>
                       </ion-item>
                     </ion-col>
                     <ion-col [size]="6">
 
-                      <ion-item lines="none" listCard marginBottom>
+                      <ion-item detail="false" lines="none" listCard marginBottom>
                         <ion-label style="font-weight:700;font-size:22px" position="stacked">Trigger</ion-label>
                         <ion-input [(ngModel)]="tutorial.trigger" (ionChange)="update('trigger')"></ion-input>
                       </ion-item>
                     </ion-col>
 
                     <ion-col [size]="6">
-                      <ion-item lines="none" listCard marginBottom>
+                      <ion-item detail="false" lines="none" listCard marginBottom>
                         <ion-toggle color="primary" [(ngModel)]="tutorial.desktop" (ionChange)="update('desktop')">
                             Voor desktop
                         </ion-toggle>
@@ -63,7 +79,7 @@
                     </ion-col>
 
                     <ion-col [size]="6">
-                      <ion-item lines="none" listCard marginBottom>
+                      <ion-item detail="false" lines="none" listCard marginBottom>
                         <ion-toggle color="primary" [(ngModel)]="tutorial.mobile" (ionChange)="update('mobile')">
                             Voor mobiel
                         </ion-toggle>
@@ -95,7 +111,7 @@
                             </ion-card-header>
                             <ion-card-content>
                               
-                              <ion-item lines="none" listCard marginBottom>
+                              <ion-item detail="false" lines="none" listCard marginBottom>
                                 <ion-label style="font-weight:700;font-size:22px" position="stacked">Locatie</ion-label>
                                 <ion-label position="stacked">Koppeling met element</ion-label>
                                 <ion-input placeholder="Geen koppeling" [(ngModel)]="step.attachTo.element" (ionChange)="update('steps',true)"></ion-input>
@@ -108,7 +124,7 @@
                               </ion-toggle>
                               </ion-item>
 
-                              <ion-item lines="none" listCard marginBottom>
+                              <ion-item detail="false" lines="none" listCard marginBottom>
                                 <ion-label style="font-weight:700;font-size:22px" position="stacked">Title</ion-label>
                                 <ion-input [(ngModel)]="step.title" (ionChange)="update('steps',true)"></ion-input>
                               </ion-item>
@@ -168,7 +184,7 @@
                               <div>
                                 <ion-row>
                                   <ion-col [size]="media.smallDevice ? 12 : 6" *ngFor="let button of tutorialService.allButtons">
-                                    <ion-item lines="none" listCard >
+                                    <ion-item detail="false" lines="none" listCard >
                                       <ion-toggle color="primary" [(ngModel)]="step.buttons[button.id]" (ionChange)="update('steps')">
                                         {{button.text}} {{button.nextMove}}
                                       </ion-toggle>
@@ -176,7 +192,7 @@
 
                                   </ion-col>
                                   <ion-col [size]="media.smallDevice ? 12 : 6">
-                                    <ion-item lines="none" listCard >
+                                    <ion-item detail="false" lines="none" listCard >
                                       <ion-toggle color="primary" [(ngModel)]="step.cancelIcon.enabled" (ionChange)="update('steps')">
                                         Cancel kruisje zichtbaar
                                       </ion-toggle>
@@ -186,7 +202,7 @@
                                 </ion-row>
                                 <ion-row>
                                   <ion-col [size]="12">
-                                    <ion-item lines="none" listCard marginBottom>
+                                    <ion-item detail="false" lines="none" listCard marginBottom>
                                       <ion-label style="font-weight:700;font-size:22px" position="stacked">actie na klik op volgende</ion-label>
                                       <ion-input [(ngModel)]="step.onhide" (ionChange)="update('steps',true)"></ion-input>
                                     </ion-item>
@@ -210,7 +226,7 @@
         </div>
         
         <div *ngIf="!tutorial.id">
-          <ion-card borderRadius24 [ngClass]="{'borderSuccess' : tutorial.active,'borderWarning' : !tutorial.active}" *ngFor="let tutorial of tutorialService.allTutorials" cardItem basicPadding pointer (click)="select(tutorial)">
+          <ion-card borderRadius24 [ngClass]="{'borderSuccess' : tutorial.active,'borderWarning' : !tutorial.active}" *ngFor="let tutorial of tutorialService.allTutorials | sortBy : -1 : 'title'" cardItem basicPadding pointer (click)="select(tutorial)">
             <ion-card-header>
               <ion-card-title>{{tutorial.title}}</ion-card-title>
               <ion-card-subtitle>{{tutorial.page}} - {{tutorial.trigger}}</ion-card-subtitle>

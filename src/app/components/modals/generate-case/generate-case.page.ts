@@ -8,6 +8,8 @@ import { InfoService } from 'src/app/services/info.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { InputFieldsPage } from '../input-fields/input-fields.page';
+import { TrainerService } from 'src/app/services/trainer.service';
+import { InfoModalPage } from '../info-modal/info-modal.page';
 
 @Component({
   selector: 'app-generate-case',
@@ -18,6 +20,8 @@ export class GenerateCasePage implements OnInit {
   @Input() caseItem:any = {}
   step = -1
   promptChecked:boolean = false
+  showExtraQuestions:boolean = false
+  showOtherCommunicationStyle:boolean = false
   showGoal:any = {
     attitude: false,
     phases: false,
@@ -28,7 +32,54 @@ export class GenerateCasePage implements OnInit {
     0: ['role'],
     1: [],
     2: [],
+    3: [],
   }
+
+  specificQuestions:any = {
+    "application":2,
+    "assessment":2,
+    "client":2,
+    "coaching":1,
+    "complaint_conversation":2,
+    "conflict":2,
+    "consultation":1,
+    "customer":2,
+    "debate":2,
+    "feedback":2,
+    "introduction":2,
+    "negotiation":2,
+    "personal":2,
+    "sales":2,
+    "transformative":2,
+    "deep":2,
+    "work":2,
+  }
+  specificQuestionsOutput:any=[]
+  
+  communicationSkills:any = [
+    {id:'blunt',selected:false},
+    {id:'long_winded',selected:false},
+    {id:'interested',selected:false},
+    {id:'reserved',selected:false},
+    {id:'friendly',selected:false},
+    {id:'neutral',selected:false},
+    {id:'angry',selected:false},
+    {id:'upset',selected:false},
+    {id:'scared',selected:false},
+    {id:'unsure',selected:false},
+    {id:'confident',selected:false},
+    {id:'directive',selected:false},
+    {id:'compliant',selected:false},
+    {id:'hesitant',selected:false},
+    {id:'intimidating',selected:false},
+    {id:'aggressive',selected:false},
+    {id:'in_love',selected:false},
+    {id:'rejecting',selected:false},
+    {id:'wait_and_see',selected:false},
+    // {id:'other',selected:false},
+  ]
+
+
   constructor(
     public modalCtrl:ModalController,
     public icon:IconsService,
@@ -37,7 +88,9 @@ export class GenerateCasePage implements OnInit {
     public translate:TranslateService,
     public info:InfoService,
     public auth:AuthService,
-    
+    public infoService:InfoService,
+    public trainerService:TrainerService,
+    private modalController: ModalController,
   ) { }
 
   ngOnInit() {
@@ -54,13 +107,23 @@ export class GenerateCasePage implements OnInit {
           undo:true,
         }
       }
+      if(!this.caseItem.category_specifics){
+        this.caseItem.category_specifics = {}
+      }
+      if(!this.caseItem.communicationSkills){
+        for(let i=0;i<this.communicationSkills.length;i++){
+          if(this.caseItem.communicationSkills?.includes(this.communicationSkills[i].id)){
+            this.communicationSkills[i].selected = true
+          }
+        }
+      }
 
       if(this.caseItem.openingMessage){
         this.caseItem.openingMessage = this.caseItem.openingMessage.replace('[name]',this.auth.userInfo.displayName).replace('[naam]',this.auth.userInfo.displayName).replace('[role]',this.caseItem.role).replace('[rol]',this.caseItem.role)
       }
 
       this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
-      console.log(this.caseItem)
+      this.getSpecificQuestions(this.caseItem.conversation)
     }
     else{
       this.modalCtrl.dismiss()
@@ -83,6 +146,8 @@ export class GenerateCasePage implements OnInit {
     this.slide(0,false,true)
   }
 
+  doNothing(){}
+
   async slide(nr:number,back?:boolean,start?:boolean){
     this.toast.hideTooltip()
     let checkNr = nr-1
@@ -100,7 +165,7 @@ export class GenerateCasePage implements OnInit {
     }
 
     if(this.caseItem.id && !this.showStep(nr)){
-      if(nr==2){
+      if(nr==3){
         this.close()
         return
       }
@@ -119,7 +184,7 @@ export class GenerateCasePage implements OnInit {
     
     this.step = nr
     // this.promptChecked = true
-    if(nr === 2){
+    if(nr === 3){
       if((!this.caseItem.admin&&!this.caseItem.editable_by_user.casus&&!this.changesMade())){
         if(back){
           this.slide(2,true)
@@ -132,9 +197,6 @@ export class GenerateCasePage implements OnInit {
         if(!this.promptChecked&&!this.caseItem.casus&&!this.inputEmpty()&&!this.caseItem.existing){
           this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
           if(!this.caseItem.admin){
-            // let text = this.generateReadableText()
-            // let output = await this.getPromptOpenAI(text)
-            // this.caseItem.casus = output
             this.promptChecked = true
           }
           else{
@@ -178,80 +240,97 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
 
   close(){
     this.toast.hideTooltip()
+    let communicationSkills = []
+    for(let i=0;i<this.communicationSkills.length;i++){
+      if(this.communicationSkills[i].selected){
+        communicationSkills.push(this.communicationSkills[i].id)
+      }
+    }
+    this.caseItem.communicationSkills = communicationSkills
     this.modalCtrl.dismiss(this.caseItem)
   }
 
   generateReadableText(): string {
+    console.log('generateReadableText',this.caseItem)
     if (!this.caseItem) {
       return "Er is geen case-informatie beschikbaar.";
     }
   
     let readableText = `
-      **Case Details**:
+      **${this.translate.instant('generate_case.case_details')}**:
   
-      **Rol:** ${this.caseItem.role || "Niet ingevuld"}
-      _Wie is de gesprekspartner in deze casus en wordt dus gespeeld door de AI-assistent?_
-  
+      **${this.translate.instant('generate_case.role')}:** ${this.caseItem.role}
+      _${this.translate.instant('generate_case.role_question')}_
+
       `
-      if(this.caseItem.description){
-        readableText += `**Beschrijving:** ${this.caseItem.description}
-        _Beschrijf de casus / issue. Zo gedetailleerd mogelijk._
-  
-        `
-      }
-      if(this.caseItem.user_role){
-        readableText += `Rol Gebruiker: ${this.caseItem.user_role}
-        _Beschrijf vanuit welke rol de gebruiker het gesprek aangaat._
+      
+      if(this.caseItem.name_ai){
+        readableText += this.translate.instant('generate_case.name_ai') + `: ${this.caseItem.name_ai}
+         _${this.translate.instant('generate_case.name_ai_question')}_
   
         ` 
+      }
 
-      }
-      if(this.caseItem.function){
-        readableText += `**Functie:** ${this.caseItem.function}
-        _Wat is de functie van de persoon en welke rol vervult deze in relatie tot het probleem?_
+      if(this.caseItem.user_role){
+        readableText += this.translate.instant('generate_case.role_user') + `: ${this.caseItem.user_role}
+         _${this.translate.instant('generate_case.role_user_question')}_
   
+        ` 
+      }
+
+      if(this.caseItem.category_specifics){
+        if(this.caseItem.category_specifics[0]){
+          readableText += `**${this.translate.instant('generate_case.specifics.'+this.caseItem.conversation+'_question_1')}:** ${this.caseItem.category_specifics[0]}
+          _${this.translate.instant('generate_case.specifics.'+this.caseItem.conversation+'_help_1')}_
+  
+          `
+        }
+        if(this.caseItem.category_specifics[1]){
+          readableText += `**${this.translate.instant('generate_case.specifics.'+this.caseItem.conversation+'_question_2')}:** ${this.caseItem.category_specifics[1]}
+          _${this.translate.instant('generate_case.specifics.'+this.caseItem.conversation+'_help_2')}_
+  
+          `
+        }
+      }
+      
+      let selected = []
+      for(let j=0;j<this.communicationSkills.length;j++){
+        if(this.communicationSkills[j].selected){
+            selected.push(this.translate.instant('generate_case.communication_style.'+this.communicationSkills[j].id))
+        }
+      }
+      if(this.caseItem.other_communication_style){
+        selected.push(this.caseItem.other_communication_style)
+      }
+      if(selected.length>0){
+        readableText += `**${this.translate.instant('generate_case.communication_style')}:** ${selected.join(', ')}
+        _${this.translate.instant('generate_case.communication_style_question')}_
+
         `
       }
-      if(this.caseItem.vision){
-        readableText += `**Visie:** ${this.caseItem.vision}
-        _Hoe kijkt deze persoon tegen het issue/de casus aan?_
-  
-        `
-      }
-      if(this.caseItem.interests){
-        readableText += `**Interesses:** ${this.caseItem.interests}
-        _Wat is voor deze persoon belangrijk in relatie tot het probleem? Heeft deze specifieke vragen en/of zorgen?_
-  
-        `
-      }
-      if(this.caseItem.communicationStyle){
-        readableText += `**Communicatiestijl:** ${this.caseItem.communicationStyle}
-        _Hoe ervaar jij de communicatiestijl van deze persoon?_
-  
-        `
-      }
+
       if(this.caseItem.externalFactors){
-        readableText += `**Externe factoren:** ${this.caseItem.externalFactors}
-        _Zijn er externe factoren die van invloed zijn op de houding van de persoon?_
+        
+        readableText += `**${this.translate.instant('generate_case.external_factors_title')}:** ${this.caseItem.externalFactors}
+        _${this.translate.instant('generate_case.external_factors_')}_
   
         `
       }
       if(this.caseItem.history){
-        readableText += `**Historie:** ${this.caseItem.history}
-        _Zijn er andere onderwerpen waar je deze persoon recent over hebt gesproken? Zo ja, waarover en hoe verliepen deze?_
-  
+        readableText += `**${this.translate.instant('generate_case.history_title')}:** ${this.caseItem.history}
+        _${this.translate.instant('generate_case.history_')}_  
         `
+
       }
       if(this.caseItem.attitude){
-        readableText += `**Houding:** ${this.caseItem.attitude}
-        _Hoe is de kwaliteit van jouw relatie met deze persoon?_
-  
+        readableText += `**${this.translate.instant('generate_case.attitude')}:** ${this.infoService.getAttitude(this.caseItem.attitude).title}
+        _${this.translate.instant('generate_case.attitude_question')}_
+
         `
       }
       if(this.caseItem.steadfastness){
-        readableText += `**Standvastigheid:** ${this.caseItem.steadfastness}
-        _Hoe standvastig is deze persoon (0% = Vindt alles wat jij vindt, 100% = Zal nooit iets anders vinden)?_
-
+        readableText += `**${this.translate.instant('generate_case.steadfastness')}:** ${this.caseItem.steadfastness || 50}
+        _${this.translate.instant('generate_case.steadfastness_question')}_
         `
       }
   
@@ -259,9 +338,10 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
   }
 
   async getPromptOpenAI(input: string) {
+    this.toast.showLoader(this.translate.instant('generate_case.generating_case'))
     this.promptChecked = false
     try {
-      const response = await fetch("https://case-prompt-p2qcpa6ahq-ew.a.run.app", {
+      const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/case_prompt_gemini", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -276,6 +356,8 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
   
       if (!response.ok) {
         console.error("Request failed:", response.status, response.statusText);
+        this.toast.hideLoader()
+        this.toast.show(this.translate.instant('error_messages.error'),3000,'middle')
         return;
       }
   
@@ -283,6 +365,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
       let data = await response.json();
       data.content = data.content.split('```html').join('').split('```').join('').split('html').join('')
       // console.log("Complete response:", data.content); // De volledige tekst in één keer
+      this.toast.hideLoader()
       return data.content;
     } catch (error) {
       console.error("Error tijdens fetch:", error);
@@ -290,16 +373,20 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
     }
   }
 
-  async rebuildPrompt(){
+  async rebuildPrompt(nextSlide?:boolean){
     if(this.inputEmpty()){
       this.toast.show(this.translate.instant('error_messages.no_input'),3000,'middle')
       return
     }
     this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
     let text = this.generateReadableText()
+    console.log('text',text)
     let output = await this.getPromptOpenAI(text)
     this.caseItem.casus = output
     this.promptChecked = true
+    if(nextSlide){
+      this.slide(3)
+    }
   }
 
   errorMessage(item:string){
@@ -337,15 +424,17 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
     
     if(
       this.caseItem.role !== this.caseItemOriginal.role||
-      this.caseItem.description !== this.caseItemOriginal.description||
-      this.caseItem.function !== this.caseItemOriginal.function||
-      this.caseItem.vision !== this.caseItemOriginal.vision||
-      this.caseItem.interests !== this.caseItemOriginal.interests||
+      this.caseItem.name_ai !== this.caseItemOriginal.naam_ai||
+      this.caseItem.role_user !== this.caseItemOriginal.role_user||
       this.caseItem.communicationStyle !== this.caseItemOriginal.communicationStyle||
       this.caseItem.externalFactors !== this.caseItemOriginal.externalFactors||
       this.caseItem.history !== this.caseItemOriginal.history||
-      this.caseItem.attitude !== this.caseItemOriginal.attitude||
-      this.caseItem.steadfastness !== this.caseItemOriginal.steadfastness
+      (this.caseItem.category_specifics &&
+        (
+          this.caseItem.category_specifics[1] !== this.caseItemOriginal.category_specifics[1] ||
+          this.caseItem.category_specifics[2] !== this.caseItemOriginal.category_specifics[2]
+        )
+      )
     ){
       changed = true
     }
@@ -355,10 +444,14 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
     let empty = true
     if(
       this.caseItem.role||
-      this.caseItem.description||
-      this.caseItem.function||
-      this.caseItem.vision||
-      this.caseItem.interests||
+      this.caseItem.name_ai||
+      this.caseItem.role_user||
+      (this.caseItem.category_specifics &&
+        (
+          this.caseItem.category_specifics[1] ||
+          this.caseItem.category_specifics[2]
+        )
+      )||
       this.caseItem.communicationStyle||
       this.caseItem.externalFactors||
       this.caseItem.history
@@ -368,6 +461,70 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
     return empty
   }
 
+  showTipInfo(name:string){
+    console.log(name)
+  }
 
 
+
+  getSpecificQuestions(category:string){
+    let questions = this.specificQuestions[category]
+    let questionList = []
+    for(let i=0;i<questions;i++){
+      let question = {
+        question: this.translate.instant('generate_case.specifics.'+category+'_question_'+(i+1)),
+        help: this.translate.instant('generate_case.specifics.'+category+'_help_'+(i+1)),
+      }
+      if(question.help === 'generate_case.specifics.'+category+'_help_'+(i+1)){
+        question.help = ''
+      }
+      questionList.push(question)
+    }
+    this.specificQuestionsOutput = questionList
+  }
+
+  public async showText(content:string,title?:string,video?:boolean,buttons?:any[],backdropDismiss?:boolean,callback?:any,btnsClass?:string,extraData?:any,image?:boolean){
+    let options:any = {
+      content:content,
+      title:title,
+      video:video,
+      buttons:buttons,
+      btnsClass:btnsClass,
+      extraData:extraData,
+      image:image
+    }
+    
+    
+    if(backdropDismiss==undefined){options.backdropDismiss = true}
+    this.showInfo(options,callback)
+  }
+
+  public async showInfo(options:any,callback?:any){
+      if(options.backdropDismiss==undefined){options.backdropDismiss = true}
+      const modalItem = await this.modalController.create({
+        component:InfoModalPage,
+        componentProps:{
+          options:options
+        },
+        backdropDismiss:options.backdropDismiss,
+        cssClass:'infoModal',
+      })
+      if(callback){
+        modalItem.onWillDismiss().then(data=>{
+          callback(data)
+        })
+      }
+      return await modalItem.present()
+    }
+
+    activateOtherCommunicationStyle(){
+      this.showOtherCommunicationStyle = true
+      setTimeout(() => {
+        let input:any = document.querySelector('#otherCommunicationStyle')
+        console.log('input',input)
+        if(input){
+          input.setFocus()
+        }
+      }, 100);
+    }
 }

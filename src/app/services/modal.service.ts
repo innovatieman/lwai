@@ -53,7 +53,7 @@ export class ModalService {
   }
 
   async showConversationStart(caseItem: any): Promise<boolean> {
-    console.log(caseItem);
+    // console.log(caseItem);
     const modalItem = await this.modalController.create({
       component: ConversationStartPage,
       backdropDismiss: false,
@@ -218,6 +218,7 @@ export class ModalService {
         data:data,
       },
       cssClass:'editHtmlModal',
+      backdropDismiss:false,
     })
     modalItem.onWillDismiss().then(data=>{
       callback(data)

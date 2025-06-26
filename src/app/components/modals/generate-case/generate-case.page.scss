@@ -81,5 +81,21 @@ ion-item{
 }
 [listCard]{
     border-radius: 12px;
-    font-size: 15px;;
+    font-size: 15px;
+}
+ion-input[listCard],ion-textarea[listCard]{
+    --padding-start: 15px;
+    --padding-end: 15px;
+}
+
+.selectItem{
+    display:inline-block;
+    border:solid 1px var(--color-global);
+    font-weight: 500;
+    border-radius:16px;
+    font-size: 16px;
+    padding:8px 15px;
+    margin:10px;
+    cursor: pointer;
+    text-align: center;
 }

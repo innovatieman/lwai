@@ -26,19 +26,19 @@
       <ion-select [(ngModel)]="rate.value" style="border-radius:24px" interface="popover">
         <ion-select-option *ngFor="let option of rate.options" [value]="option">{{option}}</ion-select-option>
       </ion-select>
-      <!-- <ion-item lines="none" > -->
+      <!-- <ion-item detail="false" lines="none" > -->
         <ion-input *ngIf="rate.value=='other'" [(ngModel)]="rate.other" style="border-radius:24px;border: solid 1px;--padding-start: 15px;--padding-end: 15px;"></ion-input>
       <!-- </ion-item> -->
     </div>
 
     <div *ngIf="rate.type=='radio'">
       <ion-radio-group [(ngModel)]="rate.value">
-        <ion-item *ngFor="let option of rate.options" lines="none" style="display:flex;align-items:center;height:28px;">
+        <ion-item detail="false" *ngFor="let option of rate.options" lines="none" style="display:flex;align-items:center;height:28px;">
           <!-- <ion-label>{{option.text}}</ion-label> -->
           <ion-radio mode="md" slot="start" labelPlacement="end" [value]="option.value">{{option.text}}</ion-radio>
         </ion-item>
       </ion-radio-group>
-      <ion-item lines="none" *ngIf="rate.value=='other'">
+      <ion-item detail="false" lines="none" *ngIf="rate.value=='other'">
         <ion-input [(ngModel)]="rate.other" style="border-radius:24px;border: solid 1px;--padding-start: 15px;--padding-end: 15px;"></ion-input>
       </ion-item>
     </div>

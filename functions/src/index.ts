@@ -43,4 +43,10 @@ export * from './apis/social'
 export * from './processing/rendering'
 export * from './modules/participants'
 export * from './apis/segments'
+export * from './payment/affiliates'
+export * from './maintenance/backup'
+export * from './modules/organisation'
+export * from './querys/cases'
+export * from './apis/knowledge'
+
 

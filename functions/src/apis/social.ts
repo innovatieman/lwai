@@ -42,7 +42,7 @@ const db = admin.firestore();
 //   .pubsub
 //   .schedule('1 7 * * *')
 //   .timeZone('Europe/Amsterdam')
-//   .onRun(async (): Promise<null> => {
+//   .onRun(async (): Promise<null> => 
 //     const imapConfig: any = {
 //       user: "social_writer@alicialabs.com",
 //       password: "oijno[poi4325fer$%frg",
@@ -452,7 +452,11 @@ exports.handleAiInboundEmail = onRequest(
             try{
 
                 if (response && response.choices && response.choices.length > 0) {
-                    const responseData = response.choices[0].message.content.split('```json').join('').split('```').join('')
+                    let responseData = response.choices[0].message.content.split('```json').join('').split('```').join('').trim()
+                    if(responseData.substring(0, 1)!='{'){
+                        let firstAccolade = responseData.indexOf('{');
+                        responseData = responseData.substring(firstAccolade);
+                    }
                     const jsonResponse = JSON.parse(responseData);
                     jsonResponse.status = 'text created';
                     output = jsonResponse;
@@ -834,7 +838,7 @@ return await openai.chat.completions.create({
     model: openAiModal,
     messages: messages,
     temperature: temperature,
-    max_tokens: 10000,
+    max_tokens: 16000,
     stream: false,
 });
 }
@@ -939,7 +943,7 @@ function sendVerification(medium:string,content:string,email:string,displayName:
         data: {
             name: displayName,
             medium: medium,
-            content: content,
+            content: content.split('\n').join('<br>'),
             buttons: buttons,
         }
       };

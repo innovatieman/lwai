@@ -1,26 +1,34 @@
 import * as functions from 'firebase-functions/v1';
-const { PredictionServiceClient } = require('@google-cloud/aiplatform');
-
 import { db } from "../firebase";
+import {createVertex } from '@ai-sdk/google-vertex';
+import { FieldValue } from 'firebase-admin/firestore';
 
-const vertexClient = new PredictionServiceClient({
-  apiEndpoint: 'europe-west1-aiplatform.googleapis.com',
-});
+const vertexEmbedding = createVertex({ project: "lwai-3bac8", location: "europe-west1" });
+const embeddingModel = vertexEmbedding.textEmbeddingModel('text-embedding-005'); // of 'text-embedding-005'
 
-// Gemini embedding helper
+// const { PredictionServiceClient } = require('@google-cloud/aiplatform');
+
+
+// const vertexClient = new PredictionServiceClient({
+//   apiEndpoint: 'europe-west1-aiplatform.googleapis.com',
+// });
+
+
 async function generateGeminiEmbedding(text:string) {
 
-    const [response] = await vertexClient.predict({
-        endpoint: 'projects/lwai-3bac8/locations/europe-west1/publishers/google/models/text-embedding-004',
-        instances: [{ content: text }],
-        parameters: {}
-      });
-    
-      return response.predictions[0].embeddings.values;
+  const result = await embeddingModel.doEmbed({
+      values: [text]
+    });
+  return result.embeddings[0];
 }
 
 // Opslaan in segments
 async function saveSegment(segmentData:any) {
+  for( const key of Object.keys(segmentData)) {
+    if (segmentData[key] === undefined) {
+      segmentData[key] = null; // Zet undefined velden op null
+    }
+  }
   await db.collection('segments').add(segmentData);
 }
 
@@ -34,19 +42,20 @@ async function documentsExist(userId:string, conversationId:string) {
 
 // Hoofdverwerkingsfunctie
 async function processConversation(userId:string, conversationId:string) {
-  console.log(`Start verwerking voor conversation: ${conversationId}`);
+  // console.log(`Start verwerking voor conversation: ${conversationId}`);
 
   const closeSnap = await db.collection('users').doc(userId).collection('conversations').doc(conversationId).collection('close').limit(1).get();
   const skillsSnap = await db.collection('users').doc(userId).collection('conversations').doc(conversationId).collection('skills').limit(1).get();
   const feedbackSnap = await db.collection('users').doc(userId).collection('conversations').doc(conversationId).collection('feedback').orderBy('timestamp').get()
-
+  const caseSnap = await db.collection('users').doc(userId).collection('conversations').doc(conversationId).get();
 
   const closeDoc = closeSnap.docs[0];
   const skillsDoc = skillsSnap.docs[0];
+  const caseDoc = caseSnap.data();
 
   // --------- Verwerk CLOSE ----------
   const closeContent = closeDoc.data().content.replace(/<[^>]+>/g, ''); // HTML tags strippen
-  console.log('Lengte closeContent:', closeContent.length);
+  // console.log('Lengte closeContent:', closeContent.length);
   const closeEmbedding = await generateGeminiEmbedding(closeContent);
 
   await saveSegment({
@@ -56,14 +65,17 @@ async function processConversation(userId:string, conversationId:string) {
     timestamp: closeDoc.data().timestamp || Date.now(),
     content: closeContent,
     role: closeDoc.data().role || 'assistant',
-    embedding: closeEmbedding,
+    embedding: FieldValue.vector(closeEmbedding),
+    caseId: caseDoc.caseId || null,
+    caseTitle: caseDoc.title || null,
+    trainerId: caseDoc.trainerId || null,
+    trainingId: caseDoc.trainingId || null,
   });
 
   console.log('Close segment opgeslagen');
 
   // --------- Verwerk SKILLS ----------
   const skillsContent = JSON.parse(skillsDoc.data().content).summary;
-  console.log('Lengte skillsContent:', skillsContent.length);
   const skillsEvaluation = JSON.parse(skillsDoc.data().content).evaluation;
   const goalBonus = JSON.parse(skillsDoc.data().content).goal_bonus;
 
@@ -78,7 +90,11 @@ async function processConversation(userId:string, conversationId:string) {
     evaluation: skillsEvaluation,
     goal_bonus: goalBonus,
     role: skillsDoc.data().role || 'assistant',
-    embedding: skillsEmbedding,
+    embedding: FieldValue.vector(skillsEmbedding),
+    caseId: caseDoc.caseId || null,
+    caseTitle: caseDoc.title || null,
+    trainerId: caseDoc.trainerId || null,
+    trainingId: caseDoc.trainingId || null,
   });
 
   console.log('Skills segment opgeslagen');
@@ -100,8 +116,12 @@ async function processConversation(userId:string, conversationId:string) {
       timestamp: fbDoc.data().timestamp || Date.now(),
       content: feedbackText,
       role: fbDoc.data().role || 'modal',
-      cipher: feedbackData.cipher,
-      embedding: feedbackEmbedding,
+      cipher: feedbackData.feedbackCipher || null,
+      embedding: FieldValue.vector(feedbackEmbedding),
+      caseId: caseDoc.caseId || null,
+      caseTitle: caseDoc.title || null,
+      trainerId: caseDoc.trainerId || null,
+      trainingId: caseDoc.trainingId || null,
     });
 
     feedbackOrder = feedbackOrder + 1
@@ -113,7 +133,7 @@ async function processConversation(userId:string, conversationId:string) {
 
 // --- Firestore Triggers ---
 
-exports.onCloseCreated = functions.region('europe-west1').runWith({memory:'1GB'}).firestore
+exports.onCloseCreated = functions.region('europe-west1').runWith({memory:'2GB'}).firestore
   .document('users/{userId}/conversations/{conversationId}/close/{closeId}')
   .onCreate(async (snap:any, context:any) => {
     const { userId, conversationId } = context.params;
@@ -127,7 +147,7 @@ exports.onCloseCreated = functions.region('europe-west1').runWith({memory:'1GB'}
     await processConversation(userId, conversationId);
   });
 
-exports.onSkillsCreated = functions.region('europe-west1').runWith({memory:'1GB'}).firestore
+exports.onSkillsCreated = functions.region('europe-west1').runWith({memory:'2GB'}).firestore
   .document('users/{userId}/conversations/{conversationId}/skills/{skillsId}')
   .onCreate(async (snap:any, context:any) => {
     const { userId, conversationId } = context.params;

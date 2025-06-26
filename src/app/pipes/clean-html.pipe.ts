@@ -16,6 +16,7 @@ export class CleanHtmlPipe implements PipeTransform {
       .split('<p><br></p>').join('<br>')
       .split('</p><br><p>').join('<br><br>')
       .split('</p><p>').join('<br>')
+      .split('&nbsp;').join(' ')
 
     return value
   }

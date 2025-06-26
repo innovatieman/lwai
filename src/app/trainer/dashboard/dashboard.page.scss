@@ -1,0 +1,236 @@
+.btnImgChange{
+    position: absolute;
+    text-align: center;
+    bottom: 20px;
+}
+.selectColumn {
+    max-height: calc(var(--vh, 1vh) * 100 - 121px);
+    padding-bottom: 20px;
+}
+.activeItem{
+    background-color: var(--ion-color-primary);
+    ion-item{
+      --background:none;
+      --color: white;
+      div{
+        --color: white;
+      }
+      fa-icon{
+        color:white;
+      }
+    }
+    ion-card-title{
+      color: white;
+    }
+  }
+  .notActiveItem{
+    background-color: white;
+    ion-item{
+      --background-hover: none;
+    }
+    ion-card-title{
+      color: var(--ion-color-primary);
+    }
+  }
+  .notActiveItem:hover{
+    background: var(--background-global);
+    ion-item{
+      --background: var(--background-global);
+    }
+  }
+
+
+
+[avatarIcon]{
+  font-size: 180px;
+}
+.subTag{
+  font-size: 14px;
+  background-color: var(--ion-color-secondary);
+  color: var(--ion-color-secondary-contrast);
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin:10px;
+  display: inline-block;
+  text-align: center;
+}
+ion-note{
+  color:var(--color-global);
+}
+// .progressCircle{
+  svg{
+      margin: -50px 0px;
+  }
+// }
+.avatarImage{
+height: 200px;
+width:100%;
+display: flex;
+justify-content: center;
+align-items: center;
+.title{
+  font-size: 36px;
+  text-transform: uppercase;
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  // margin-bottom: 10px;
+}
+}
+
+.caseItem{
+box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.3);
+margin-bottom: 20px;
+
+}
+.activeItem{
+  background-color: var(--ion-color-primary);
+  ion-item{
+    --background:none;
+    --color: white;
+    div{
+      --color: white;
+    }
+    fa-icon{
+      color:white;
+    }
+  }
+}
+.notActiveItem{
+  background-color: white;
+  ion-item{
+    --background-hover: none;
+  }
+}
+.notActiveItem:hover{
+  background: var(--background-global);
+  ion-item{
+    --background: var(--background-global);
+  }
+}
+
+
+
+.fieldItem{
+  border-radius:5px;
+  padding:15px 0px;
+  // margin-bottom:20px;
+  --padding-start: 10px;
+  .select{
+      background: var(--background-light);
+      min-height:16px;
+      border:solid 1px rgba(0, 0, 0, 0.1);
+      --padding-start:10px;
+      --padding-end:10px;
+      --padding-top:7px;
+      --padding-bottom:7px;
+      color:#5C6F84;
+      width: 100%;
+      height: 100%;
+      border-radius: 32px;
+      padding: 0px 30px;
+      line-height: 40px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      ion-thumbnail,fa-icon{
+          margin-right: 10px;
+      }
+      .text{
+          font-size: 16px;
+          font-weight: 600;
+      }
+  }
+
+}
+
+
+.selectCaseItem{
+ion-checkbox{
+    --size:24px;
+}
+}
+.innerSelectCaseItem{
+padding-left: 20px;
+}
+
+
+.creditsCard:hover{
+transform: scale(1.05);
+}
+.creditsCardUnlimited{
+background-color: var(--ion-color-warning);
+--background: var(--ion-color-warning);
+  ion-list{
+  background: var(--ion-color-warning);
+  --background: var(--ion-color-warning);
+  ion-item{
+    --background: var(--ion-color-warning);
+    --color: var(--ion-color-warning-contrast);
+  }
+}
+}
+.creditsCard{
+box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
+border-radius: 16px;
+transition: all 0.3s;
+.miniHeader{
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  margin-bottom: 10px;
+  margin-top:20px;
+}
+.header{
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--ion-color-secondary);
+  margin-bottom: 10px;
+}
+.logo{
+  margin-bottom: 15px;
+  img{
+    max-height: 100px;
+  }
+}
+.credits{
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  margin-bottom: 10px;
+  letter-spacing: -2px;
+}
+.list{
+  margin-bottom: 20px;
+  h2{
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ion-color-secondary);
+    margin-bottom: 10px;
+  }
+  p{
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ion-color-secondary);
+    text-align: center;
+    // margin-bottom: 10px;
+  }
+}
+.extra_info{
+  margin-top:10px;
+  font-size: 14px;
+  font-style: italic;
+  cursor: pointer;
+}
+}
+.credits_how_button{
+  font-weight: 500;
+  // text-align: center;
+  margin-top: 10px;
+  text-decoration: underline;
+  cursor: pointer;
+}

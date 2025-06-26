@@ -18,16 +18,16 @@
         <ion-card  basicPadding noBackground font-16 noPadding noMargin>
           <ion-radio-group  [(ngModel)]="editingType" (ionChange)="changeEditType()">
             <div flex center-ver>
-              <ion-item lines="none" noBackground>
+              <ion-item detail="false" lines="none" noBackground>
                 <ion-radio labelPlacement="end" justify="start" value="content">Content</ion-radio>
                 <!-- <ion-label>Content</ion-label> -->
               </ion-item>
-              <ion-item lines="none" noBackground>
+              <ion-item detail="false" lines="none" noBackground>
                 <ion-radio labelPlacement="end" justify="start" value="format">Format</ion-radio>
                 <!-- <ion-label>Format</ion-label> -->
               </ion-item>
             </div>
-            <ion-item lines="none" noBackground>
+            <ion-item detail="false" lines="none" noBackground>
               <ion-radio labelPlacement="end" justify="start" value="attitudes">Attitudes</ion-radio>
               <!-- <ion-label>Format</ion-label> -->
             </ion-item>
@@ -181,24 +181,24 @@
               <ion-card-content *ngIf="activeAgent.id!='main'&&activeAgent.id!='phaseList'&&activeItem.id!='formats'&&activeItem.id!='attitudes'&&activeItem.id!='positions'">
                 
                 <div class="fieldItem" *ngFor="let field of fieldOptions | filterKey : 'agents' : ['all',activeAgent.id]">
-                  <ion-item listCard lines="none" *ngIf="field.type=='text' && activeItem[activeAgent.id]">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='text' && activeItem[activeAgent.id]">
                     <ion-label position="stacked">{{field.label}}</ion-label>
                     <ion-input type="text" rows="4" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
                   </ion-item>
     
-                  <ion-item listCard lines="none" *ngIf="field.type=='number' && activeItem[activeAgent.id] ">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='number' && activeItem[activeAgent.id] ">
                     <ion-label position="stacked">{{field.label}}</ion-label>
                     <ion-input type="number" rows="4" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
                   </ion-item>
     
-                  <ion-item listCard *ngIf="field.type=='range' && activeItem[activeAgent.id] " lines="none">
+                  <ion-item detail="false" listCard *ngIf="field.type=='range' && activeItem[activeAgent.id] " lines="none">
                     <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="activeItem[activeAgent.id][field.field]" (ionChange)="update(field.field)">
                         <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
                         <ion-label style="font-size:18px" slot="end">{{activeItem[activeAgent.id][field.field]}}</ion-label>
                     </ion-range>
                   </ion-item>
     
-                  <ion-item listCard lines="none" *ngIf="field.type=='textarea' && activeItem[activeAgent.id]">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='textarea' && activeItem[activeAgent.id]">
                     <ion-label position="stacked" *ngIf="!firstInputlabels[field.field]">{{field.label}}</ion-label>
                     <ion-label position="stacked" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</ion-label>
                     <quill-editor *ngIf="!showHtml&&!field.notHtml" [(ngModel)]="activeItem[activeAgent.id][field.field]" [modules]="configModules" (onEditorCreated)="startEditor($event)" (onBlur)="update(field.field,null,true)"></quill-editor>
@@ -220,7 +220,7 @@
                   
                 </div>
 
-                <ion-item listCard *ngIf="activeItem[activeAgent.id] && activeItem.id!='main'" style="margin-top:15px" lines="none">
+                <ion-item detail="false" listCard *ngIf="activeItem[activeAgent.id] && activeItem.id!='main'" style="margin-top:15px" lines="none">
                   <ion-range [min]="0" [step]="1" [max]="1" [pin]="false" [snaps]="true"  color="primary" [(ngModel)]="activeItem[activeAgent.id]['overwrite']" (ionChange)="update('overwrite')">
                     <ion-label [ngStyle]="{'font-size':activeItem[activeAgent.id]['overwrite'] ? '12px' : '18px','opacity':activeItem[activeAgent.id]['overwrite'] ? '0.6' : '1'}" slot="start">Voeg informatie toe aan main agent</ion-label>
                     <ion-label [ngStyle]="{'font-size':!activeItem[activeAgent.id]['overwrite'] ? '12px' : '18px','opacity':!activeItem[activeAgent.id]['overwrite'] ? '0.6' : '1'}" slot="end">Overschrijf main agent</ion-label>
@@ -233,17 +233,17 @@
 
               <ion-card-content *ngIf="activeAgent.id=='main'&&activeItem.id!='formats'&&activeItem.id!='attitudes'&&activeItem.id!='positions'">
                 <div class="fieldItem" *ngFor="let field of fieldOptions | filterKey : 'agents' : [activeAgent.id] | filterKey : 'categories' : [activeItem.id]">
-                  <ion-item listCard lines="none" *ngIf="field.type=='text' && activeItem">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='text' && activeItem">
                     <ion-label position="stacked">{{field.label}}</ion-label>
                     <ion-input type="text" rows="4" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)"></ion-input>
                   </ion-item>
     
-                  <ion-item listCard lines="none" *ngIf="field.type=='number' && activeItem ">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='number' && activeItem ">
                     <ion-label position="stacked">{{field.label}}</ion-label>
                     <ion-input type="number" rows="4" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)"></ion-input>
                   </ion-item>
     
-                  <ion-item listCard *ngIf="field.type=='range' && activeItem " lines="none">
+                  <ion-item detail="false" listCard *ngIf="field.type=='range' && activeItem " lines="none">
                     <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="activeItem[field.field]" (ionChange)="update(field.field)">
                         <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
                         <ion-label style="font-size:18px" slot="end">{{activeItem[field.field]}}</ion-label>
@@ -251,7 +251,7 @@
                   </ion-item>
     
     
-                  <ion-item listCard lines="none" *ngIf="field.type=='textarea' && activeItem">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='textarea' && activeItem">
                     <ion-label position="stacked" *ngIf="!firstInputlabels[field.field]">{{field.label}}</ion-label>
                     <ion-label position="stacked" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</ion-label>
                     <quill-editor *ngIf="!showHtml" [(ngModel)]="activeItem[field.field]" [modules]="configModules" (onEditorCreated)="startEditor($event)" (onBlur)="update(field.field,null,true)"></quill-editor>
@@ -289,18 +289,18 @@
                     <fa-icon [icon]="icon.get('faPlus')" titleIcon style="font-size:30px" (click)="addPhase()"></fa-icon>
                   </ion-card-title>
                   <ion-card class="fieldItem" basicPadding *ngFor="let phase of activeItem.phaseList;let phase_index = index;let first = first;let last = last">
-                    <ion-item listCard listCardTop lines="none">
+                    <ion-item detail="false" listCard listCardTop lines="none">
                       <ion-input font-16 weight600 placeholder="Phase title" [(ngModel)]="phase.title" (ionChange)="update('phaseList')"></ion-input>
                       <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" *ngIf="!first" (click)="movePhase(phase_index,-1)"></fa-icon>
                       <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')"  *ngIf="!last" (click)="movePhase(phase_index,1)"></fa-icon>
                       <fa-icon slot="end" pointer [icon]="icon.get('faTrashAlt')" trash (click)="removePhase(phase_index)"></fa-icon>
                     </ion-item>
-                    <ion-item listCard listCardCenter lines="none" class="shortItem">
+                    <ion-item detail="false" listCard listCardCenter lines="none" class="shortItem">
                       <ion-label position="stacked">Short title</ion-label>
                       <ion-input type="text" [(ngModel)]="phase.short" (ionChange)="update('phaseList')">
                       </ion-input>
                     </ion-item>
-                    <ion-item listCard listCardBottom lines="none">
+                    <ion-item detail="false" listCard listCardBottom lines="none">
                       <ion-textarea labelPlacement="floating" [autoGrow]="true" [(ngModel)]="phase.description" (ionChange)="update('phaseList')">
                         <div slot="label">Description</div>
                       </ion-textarea>
@@ -313,18 +313,18 @@
                     <fa-icon [icon]="icon.get('faPlus')" titleIcon style="font-size:30px" (click)="addPhase('phaseExplanation')"></fa-icon>
                   </ion-card-title>
                   <ion-card class="fieldItem" basicPadding *ngFor="let phase of activeItem.phaseExplanation;let phase_index = index;let first = first;let last = last">
-                    <ion-item listCard listCardTop lines="none">
+                    <ion-item detail="false" listCard listCardTop lines="none">
                       <ion-input font-16 weight600 placeholder="Phase title" [(ngModel)]="phase.title" (ionChange)="update('phaseExplanation')"></ion-input>
                       <fa-icon slot="end" pointer [icon]="icon.get('faArrowUp')" *ngIf="!first" (click)="movePhase(phase_index,-1,'phaseExplanation')"></fa-icon>
                       <fa-icon slot="end" pointer [icon]="icon.get('faArrowDown')" *ngIf="!last" (click)="movePhase(phase_index,1,'phaseExplanation')"></fa-icon>
                       <fa-icon slot="end" pointer [icon]="icon.get('faTrashAlt')" trash (click)="removePhase(phase_index,'phaseExplanation')"></fa-icon>
                     </ion-item>
-                    <ion-item listCard listCardCenter lines="none" class="shortItem">
+                    <ion-item detail="false" listCard listCardCenter lines="none" class="shortItem">
                       <ion-label position="stacked">Short title</ion-label>
                       <ion-input type="text" [(ngModel)]="phase.short" (ionChange)="update('phaseExplanation')">
                       </ion-input>
                     </ion-item>
-                    <ion-item listCard listCardBottom lines="none">
+                    <ion-item detail="false" listCard listCardBottom lines="none">
                       <ion-textarea labelPlacement="floating" [autoGrow]="true" [(ngModel)]="phase.explanation" (ionChange)="update('phaseExplanation')">
                         <div slot="label">Explanation</div>
                       </ion-textarea>
@@ -337,24 +337,24 @@
 
               <ion-card-content *ngIf="activeItem.id=='formats' && activeAgent.id!='main' && activeAgent.id!='phaseList'">
                 <div class="fieldItem" *ngFor="let field of fieldOptionsFormat | filterKey : 'agents' : [activeAgent.id]">
-                  <ion-item listCard lines="none" *ngIf="field.type=='text' && activeItem">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='text' && activeItem">
                     <ion-label position="stacked">{{field.label}}</ion-label>
                     <ion-input type="text" rows="4" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
                   </ion-item>
     
-                  <ion-item listCard lines="none" *ngIf="field.type=='number' && activeItem ">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='number' && activeItem ">
                     <ion-label position="stacked">{{field.label}}</ion-label>
                     <ion-input type="number" rows="4" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)"></ion-input>
                   </ion-item>
     
-                  <ion-item listCard *ngIf="field.type=='range' && activeItem " lines="none">
+                  <ion-item detail="false" listCard *ngIf="field.type=='range' && activeItem " lines="none">
                     <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)">
                         <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
                         <ion-label style="font-size:18px" slot="end">{{activeItem[field.field]}}</ion-label>
                     </ion-range>
                   </ion-item>
     
-                  <ion-item listCard lines="none" *ngIf="field.type=='textarea' && activeItem">
+                  <ion-item detail="false" listCard lines="none" *ngIf="field.type=='textarea' && activeItem">
                     <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="activeItem.items[activeAgent.id][field.field]" (ionChange)="update(field.field)">
                       <div slot="label">{{field.label}}</div>
                     </ion-textarea>
@@ -373,17 +373,17 @@
               <ion-card-content *ngIf="activeItem.id=='attitudes'||activeItem.id=='positions'">
                 <ion-card basicPadding *ngFor="let item of activeItem.items | sortBy : -1 : 'level' ">
                   <div class="fieldItem" *ngFor="let field of fieldOptionsList">
-                    <ion-item listCard lines="none" *ngIf="field.type=='text' && activeItem">
+                    <ion-item detail="false" listCard lines="none" *ngIf="field.type=='text' && activeItem">
                       <ion-label position="stacked">{{field.label}}</ion-label>
                       <ion-input type="text" rows="4" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)"></ion-input>
                     </ion-item>
       
-                    <ion-item listCard lines="none" *ngIf="field.type=='number' && activeItem ">
+                    <ion-item detail="false" listCard lines="none" *ngIf="field.type=='number' && activeItem ">
                       <ion-label position="stacked">{{field.label}}</ion-label>
                       <ion-input type="number" rows="4" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)"></ion-input>
                     </ion-item>
       
-                    <ion-item listCard *ngIf="field.type=='range' && activeItem " lines="none">
+                    <ion-item detail="false" listCard *ngIf="field.type=='range' && activeItem " lines="none">
                       <ion-range [min]="field.min" [step]="field.step" [max]="field.max" [pin]="true"  color="primary" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)">
                           <ion-label style="font-size:14px" slot="start">{{field.label}}</ion-label>
                           <ion-label style="font-size:18px" slot="end">{{activeItem[field.field]}}</ion-label>
@@ -391,7 +391,7 @@
                     </ion-item>
       
       
-                    <ion-item listCard lines="none" *ngIf="field.type=='textarea' && activeItem">
+                    <ion-item detail="false" listCard lines="none" *ngIf="field.type=='textarea' && activeItem">
                       <ion-textarea rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="item[field.field]" (ionChange)="update(field.field,item)">
                         <div slot="label">{{field.label}}</div>
                       </ion-textarea>

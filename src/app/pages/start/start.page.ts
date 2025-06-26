@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IonInfiniteScroll } from '@ionic/angular';
+import { IonInfiniteScroll, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { theme } from 'highcharts';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -19,6 +19,9 @@ import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
 import { tutorialService } from 'src/app/services/tutorial.service';
 import * as moment from 'moment';
+import { ConversationService } from 'src/app/services/conversation.service';
+import { MenuPage } from 'src/app/components/menu/menu.page';
+import { SelectMenuService } from 'src/app/services/select-menu.service';
 
 @Component({
   selector: 'app-start',
@@ -26,9 +29,8 @@ import * as moment from 'moment';
   styleUrls: ['./start.page.scss'],
 })
 export class StartPage implements OnInit {
+  @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
   @HostListener('window:resize', ['$event'])
-    @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
-  
   onResize(){
     this.media.setScreenSize()
     this.rf.detectChanges()
@@ -91,21 +93,25 @@ export class StartPage implements OnInit {
     private filterSearchPipe: FilterSearchPipe,
     private caseFilterPipe: CaseFilterPipe,
     private filterKeyPipe: FilterKeyPipe,
-    public badges:BadgesService
+    public badges:BadgesService,
+    private conversationService:ConversationService,
+    private popoverController:PopoverController,
+    private selectMenuservice:SelectMenuService
   ) { }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'modules' || params['tab'] == 'my_trainings')){
+      if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'my_trainings' || params['tab'] == 'my_organisation')){
         this.showAll = params['tab']
-        if(params['case_types']&&params['case_types'] != 'create_self'){
+        console.log(params['case_types'],params['case_types'] != 'create_self')
+        if(!params['case_types']||params['case_types'] != 'create_self'){
           this.showCreateSelf = false
         }
         else{
           this.showCreateSelf = true
         }
-        if(params['tab']=='my_trainings' && params['case_types']){
-          this.selectModule(params['case_types'])
+        if((params['tab']=='my_trainings' || params['tab'] == 'my_organisation') && params['case_types']){
+          this.selectModule(params['case_types'],params['tab'] == 'my_organisation')
         }
       }
       else{
@@ -117,7 +123,7 @@ export class StartPage implements OnInit {
         }, 2000);
       }
       setTimeout(() => {
-        // console.log('trigger tutorial')
+        console.log('trigger tutorial onload',location.pathname.substring(1))
         if(this.media.smallDevice){
           this.tutorial.triggerTutorial(location.pathname.substring(1),'onload_mobile')
         }
@@ -126,25 +132,17 @@ export class StartPage implements OnInit {
         }
       }, 1000);
     });
+    // this.auth.userInfo$.subscribe(userInfo => {
+    //   if (userInfo) {
+    //   }
+    // });
 
     this.conversations$ = this.auth.getConversations();
-    this.auth.userInfo$.subscribe(userInfo => {
-      if (userInfo) {
-        // this.auth.getActiveCourses(this.auth.userInfo.uid)
-        // this.auth.getPublicCourses()
-        // this.levels[this.auth.userLevel-1].selected = true
-      }
-    });
     this.setupProgressCircles()
     this.infoService.conversationTypesLoaded.subscribe((res)=>{
       this.updateVisibleCases()
     })
     this.cases.casesLoaded.subscribe((res)=>{
-      // let urlParams = new URLSearchParams(window.location.search);
-      // let searchTerm = urlParams.get('searchTerm');
-      // if(searchTerm){
-      //   this.searchTerm = searchTerm
-      // }
       this.updateVisibleCases();
     })
     this.auth.coursesLoaded.subscribe((res)=>{
@@ -152,9 +150,7 @@ export class StartPage implements OnInit {
       this.rf.detectChanges()
     })
     this.nav.changeLang.subscribe((res)=>{
-      // if(location.href.indexOf('start')>-1){
         location.reload()
-      // }
     })
     let urlParams = new URLSearchParams(window.location.search);
     let searchTerm = urlParams.get('searchTerm');
@@ -169,9 +165,14 @@ export class StartPage implements OnInit {
 
   ngAfterViewInit(){
     this.updateVisibleCases();
+    this.reloadMenu();
   }
 
-
+  reloadMenu(){
+    setTimeout(() => {
+      this.nav.reloadMenu.emit(true)
+    }, 10);
+  }
 
   showAnimatedScore() {
     this.showScoreImpact = true;
@@ -281,7 +282,7 @@ export class StartPage implements OnInit {
 
         }
 
-        if( this['progressCircle'+i+'Mobile']?.elRef?.nativeElement?.firstChild.querySelector('text').children[0]){
+        if( this['progressCircle'+i+'Mobile']?.elRef?.nativeElement?.firstChild?.querySelector && this['progressCircle'+i+'Mobile']?.elRef?.nativeElement?.firstChild?.querySelector('text').children[0]){
           clearInterval(check[i])
           this['progressCircle'+i+'Mobile']?.elRef.nativeElement.firstChild?.style.setProperty('margin-top', progressCirclesOffset.margin);
           this['progressCircle'+i+'Mobile']?.elRef.nativeElement.firstChild?.style.setProperty('margin-bottom', progressCirclesOffset.marginBottom);
@@ -356,11 +357,20 @@ export class StartPage implements OnInit {
       event.preventDefault()
       event.stopPropagation()
     }
-    console.log('start conversation',caseItem)
+    // console.log('start conversation',caseItem)
     if(caseItem.translation){
       caseItem.role = caseItem.translation.role
       if(caseItem.translation.free_question){
         caseItem.free_question = caseItem.translation.free_question
+      }
+      if(caseItem.translation.free_question2){
+        caseItem.free_question2 = caseItem.translation.free_question2
+      }
+      if(caseItem.translation.free_question3){
+        caseItem.free_question3 = caseItem.translation.free_question3
+      }
+      if(caseItem.translation.free_question4){
+        caseItem.free_question4 = caseItem.translation.free_question4
       }
     }
     this.modalService.showConversationStart(caseItem).then((res)=>{
@@ -380,7 +390,14 @@ export class StartPage implements OnInit {
     this.nav.go('conversation/'+conversation.caseId)
   }
 
-  showCaseInfo(caseItem:any){
+  showCaseInfo(caseItem:any, logo?:string,training?:any){
+    if(logo){
+      caseItem.logo = logo
+    }
+    if(training){
+      caseItem.trainingId = training.id
+      caseItem.trainerId = training.trainer_id
+    }
     this.modalService.showCaseInfo(caseItem)
   }
   // get activeConversation():any{
@@ -393,6 +410,43 @@ export class StartPage implements OnInit {
   //     }
   //   })
   //   return conversation
+  // }
+
+  isActiveConversation(conversation:any):boolean{
+    let active = false
+    this.conversations$.forEach((e:any) => {
+      for(let i = 0; i < e.length; i++){
+        if(e[i].caseId == conversation.id && !e[i].closed){
+          // console.log('active conversation',e[i])
+          active = true
+        }
+      }
+    })
+    return active
+  }
+
+  continueConversationFrom(item: any) {
+  this.conversations$.subscribe((conversations:any) => {
+    for (let conv of conversations) {
+      if (conv.caseId === item.id && !conv.closed) {
+        this.conversationService.originUrl = location.pathname.substring(1);
+        this.continueConversation(conv);
+        return;
+      }
+    }
+  });
+}
+
+  // getConversationToContinue(conversation:any):any{
+  //   this.conversations$.forEach((e:any) => {
+  //     for(let i = 0; i < e.length; i++){
+  //       console.log('check conversation',e[i],conversation)
+  //       if(e[i].caseId == conversation.id && !e[i].closed){
+  //         console.log('found conversation to continue',e[i])
+  //         return e[i]
+  //       }
+  //     }
+  //   })
   // }
 
   get activeConversationsIds():any{
@@ -467,9 +521,7 @@ export class StartPage implements OnInit {
   removeActiveConversation(event:Event,activeConversation:any){
     event.stopPropagation()
     this.modalService.showConfirmation(this.translate.instant('page_account.delete_cases_confirm')).then((res)=>{
-      console.log(res)
       if(res){
-        console.log('users',this.auth.userInfo.uid,'conversations',activeConversation.conversationId)
         this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',activeConversation.conversationId)
       }
     })
@@ -483,7 +535,7 @@ export class StartPage implements OnInit {
   // sendTestMail(){
   //   this.firestore.create('emailsToProcess',
   //     {
-  //       to: 'test-3w79bed5p@srv1.mail-tester.com',
+  //       to: 'trainer@innovatieman.nl',
   //       template: 'welcome',
   //       data:{
   //         name: 'Marky',
@@ -629,6 +681,9 @@ export class StartPage implements OnInit {
       return item?.id || index;
     }
 
+    doNothing(){
+
+    }
     showCreateSelf:boolean = false;
     updateVisibleCases() {
       // | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterKey : 'level' : currentFilterLevels | filterSearch : searchTerm : false : ['title','tags']
@@ -645,7 +700,7 @@ export class StartPage implements OnInit {
     
       let filteredTypes = []
       for(let i = 0; i < filtered.length; i++){
-        if(!this.showCreateSelf && !filtered[i].create_self){
+        if(!this.showCreateSelf){
           filteredTypes.push(filtered[i])
         }
         else if(this.showCreateSelf && filtered[i].create_self){
@@ -672,11 +727,26 @@ export class StartPage implements OnInit {
       if (this.infiniteScroll) {
         this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
       }
-      setTimeout(() => {
-        if (this.infiniteScroll) {
-          this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
-        }
-      }, 400);
+      // setTimeout(() => {
+      //   if (this.infiniteScroll) {
+      //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
+      //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+      //   }
+      // }, 400);
+
+      // setTimeout(() => {
+      //   if (this.infiniteScroll) {
+      //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
+      //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+      //   }
+      // }, 1000);
+
+      // setTimeout(() => {
+      //   if (this.infiniteScroll) {
+      //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
+      //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+      //   }
+      // }, 1500);
       this.updateCaseSuggestions();
 
     }
@@ -706,18 +776,28 @@ export class StartPage implements OnInit {
     }
 
   
-    selectModule(module:any){
-      console.log('select module',module)
+    selectModule(module:any,organisation?:boolean){
+      // console.log('select module',module,organisation)
       let countCheck = 0
       let check = setInterval(() => {
         countCheck++
         if(countCheck > 100){
           clearInterval(check)
         }
-        if(this.auth.activeCourses.length > 0){
-          clearInterval(check)
-          this.selectedModule = this.auth.getActiveCourse(module)
-          console.log('selected module',this.selectedModule)
+        if(!organisation){
+
+          if(this.auth.activeCourses.length > 0){
+            clearInterval(check)
+            this.selectedModule = this.auth.getActiveCourse(module)
+            // console.log('selected module',this.selectedModule)
+          }
+        }
+        else{
+          if(this.auth.mySelectedOrganisation?.id){
+            clearInterval(check)
+            this.selectedModule = this.auth.getActiveCourse(module,true)
+            console.log('selected module',this.selectedModule)
+          }
         }
       }, 100);
     }
@@ -726,12 +806,12 @@ export class StartPage implements OnInit {
     trainingItem:any = null
     item_id:string | null = null
     selectSubModule(module:any){
-      console.log('select submodule',module)
+      // console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)
     }
 
     selectTrainingItem(item:any){
-      console.log('select item',item)
+      // console.log('select item',item)
       this.trainingItem = item
     }
 
@@ -741,10 +821,33 @@ export class StartPage implements OnInit {
       }
       else{
         this.selectedModule = {}
+        this.nav.go('start/'+this.showAll)
       }
     }
 
-    readInfoItem(){
+    scrollItemsToTop() {
+      let chatDiv:any
+      setTimeout(() => {
+        chatDiv = document.getElementById('mainContent');
+            chatDiv.scrollTop = 0;//chatDiv.scrollHeight;
+      }, 50);
+    }
+
+    countActiveItems(items:any){
+      if(!items || items.length == 0){
+        return 0
+      }
+      let count = 0
+      for(let i = 0; i < items.length; i++){
+        if(this.itemAvailable(this.auth.getTrainingItem(this.selectedModule.id,items[i].id)) && !this.itemIsFinished(this.auth.getTrainingItem(this.selectedModule.id,items[i].id))){
+          count++
+        }
+      }
+      return count
+    }
+
+
+    readInfoItem(organisation?:boolean){
       let checked = false
       for(let i = 0; i < this.selectedModule.basics.used_items.length; i++){
         if(this.selectedModule.basics.used_items[i].id == this.trainingItem.id){
@@ -753,18 +856,27 @@ export class StartPage implements OnInit {
       }
       if(!checked){
         this.selectedModule.basics.used_items.push({id:this.trainingItem.id,read:moment().unix()})
-        this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',this.trainingItem.id,{read:moment().unix()})
-        .then((res)=>{
-          this.auth.getActiveCourses(this.auth.userInfo.uid)
-        })
+        if(!organisation){
+          this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',this.trainingItem.id,{read:moment().unix()})
+          .then((res)=>{
+            console.log('read item',this.trainingItem.id)
+            // this.auth.getActiveCourses(this.auth.userInfo.uid)
+          })
+        }
+        else{
+          this.firestore.setSubSub('participant_organisations',this.auth.userInfo.email,'organisations',this.auth.mySelectedOrganisation.id,'items',this.trainingItem.id,{read:moment().unix()})
+          .then((res)=>{
+            // this.auth.getMyOrganisations(this.auth.userInfo.uid,()=>{},true)
+          })
+        }
       }
       this.trainingItem = null
     }
 
-    itemIsFinished(item:any){
+    itemIsFinished(item:any,organisation?:boolean){
       if(item.type=='infoItem'){
-        if(this.auth.getActiveCourse(this.selectedModule.id)?.basics?.used_items){
-          let items = this.auth.getActiveCourse(this.selectedModule.id).basics.used_items
+        if(this.auth.getActiveCourse(this.selectedModule.id,organisation)?.basics?.used_items){
+          let items = this.auth.getActiveCourse(this.selectedModule.id,organisation).basics.used_items
           if(!items){
             items = []
           }
@@ -776,7 +888,10 @@ export class StartPage implements OnInit {
         }
       }
       else if(item.type=='case'){
-        let items = this.auth.getActiveCourse(this.selectedModule.id).basics.used_items
+        let items = []
+        if(this.auth.getActiveCourse(this.selectedModule.id,organisation)?.basics){
+          items = this.auth.getActiveCourse(this.selectedModule.id,organisation).basics.used_items
+        }
         if(!items){
           items = []
         }
@@ -789,4 +904,72 @@ export class StartPage implements OnInit {
       return false
     }
 
+    itemAvailable(item:any){
+      if(!item.available_date && !item.available_till){
+        return true
+      }
+      if(item.available_date && moment(item.available_date).isAfter(moment())){
+        return false
+      }
+      if(item.available_till && item.available_till < moment().format('YYYY-MM-DD')){
+        return false
+      }
+      return true;
+    }
+
+    gotoOrganisation(event?:any,organisationId?:any){
+      if(event){
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      if(!organisationId){
+        this.nav.go('start/my_organisation/');this.onFiltersChanged();this.selectedModule={}
+      }
+      else{
+        this.auth.mySelectedOrganisation = this.auth.organisationTrainings.find(org => org.id === organisationId);
+        localStorage.setItem('organisationTrainingId', this.auth.mySelectedOrganisation.id);
+        this.nav.go('start/my_organisation');this.onFiltersChanged();this.selectedModule={}
+      }
+    }
+
+    shortMenu:any;
+    async selectOrganisation(event?:any){
+      if(event){
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      let list = []
+      console.log('select organisation',this.auth.organisationTrainings)
+      for(let i=0;i<this.auth.organisationTrainings.length;i++){
+        list.push({
+          title:this.auth.organisationTrainings[i].name,
+          icon:this.auth.organisationTrainings[i].logo ? '' :'faGripHorizontal',
+          image:this.auth.organisationTrainings[i].logo ? this.auth.organisationTrainings[i].logo : '',
+          id:this.auth.organisationTrainings[i].id,
+          value:this.auth.organisationTrainings[i].id,
+          logo:this.auth.organisationTrainings[i].logo !=undefined,
+        })
+      }
+  
+      this.shortMenu = await this.popoverController.create({
+        component: MenuPage,
+        componentProps:{
+          customMenu:true,
+          pages:list
+        },
+        cssClass: 'customMenu',
+        event: event,
+        translucent: false,
+        reference:'trigger',
+      });
+      this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+      await this.shortMenu.present();
+      await this.shortMenu.onWillDismiss().then((result:any)=>{
+        // console.log(this.selectMenuservice.selectedItem)
+        if(this.selectMenuservice.selectedItem){
+          this.gotoOrganisation(event,this.selectMenuservice.selectedItem.id)
+        }
+      })
+    }
+    
   }

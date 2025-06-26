@@ -100,7 +100,7 @@ export class ToastService {
 
 
   public async selectDate(date:any,callback:Function,showTime?:boolean|null,extraData?:any){
-    const modal = await this.modalController.create({
+    const modalItem = await this.modalController.create({
       component:SelectDatePage,
       componentProps:{
         date:date,
@@ -109,7 +109,7 @@ export class ToastService {
       },
       cssClass:'inputFieldsModal',
     })
-    modal.onWillDismiss().then(result=>{
+    modalItem.onWillDismiss().then(result=>{
       callback(result.data)
       // if(result.data){
       //   callback(moment(result.data))
@@ -118,7 +118,7 @@ export class ToastService {
       //   callback()
       // }
     })
-    return await modal.present()
+    return await modalItem.present()
   }
   
   

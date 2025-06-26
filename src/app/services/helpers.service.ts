@@ -16,6 +16,17 @@ export class HelpersService {
 
   doNothing(){}
 
+  get cardSizeLarge(){
+    const sizes:any = {
+      xs: 12,
+      sm: 6,
+      md: 4,
+      lg: 3,
+      xl: 12/5
+    }
+    return sizes[this.media.screenSize]
+  }
+
   get cardSize(){
     const sizes:any = {
       xs: 12,
@@ -30,6 +41,17 @@ export class HelpersService {
     const sizes:any = {
       xs: 12,
       sm: 12,
+      md: 6,
+      lg: 4,
+      xl: 4
+    }
+    return sizes[this.media.screenSize]
+  }
+
+  get cardSizeMedium(){
+    const sizes:any = {
+      xs: 12,
+      sm: 6,
       md: 6,
       lg: 4,
       xl: 4
@@ -243,17 +265,23 @@ export class HelpersService {
     return array.indexOf(value) === index;
   }
 
-  capitalizeNames(str:string){
+  capitalizeNames(str:string,changeOnlyFirstLetter?:boolean) {
+    if(changeOnlyFirstLetter){
+      str = str.charAt(0).toUpperCase() + str.slice(1); 
+      return str
+    }
     let splitStr:any = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
         splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
     }
     splitStr = splitStr.join(' ');
-    splitStr = str.toLowerCase().split('-');
-    for (var i = 0; i < splitStr.length; i++) {
-        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+    if(str.includes('-')){
+      splitStr = str.toLowerCase().split('-');
+      for (var i = 0; i < splitStr.length; i++) {
+          splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+      }
+      splitStr = splitStr.join('-');
     }
-    splitStr = splitStr.join('-');
     return splitStr
  }
 
@@ -617,6 +645,14 @@ export class HelpersService {
       return
     }
     return
+  }
+
+  createNumberList(start:number, end:number): number[] {
+    const list: number[] = [];
+    for (let i = start; i <= end; i++) {
+      list.push(i);
+    }
+    return list;
   }
 
 }

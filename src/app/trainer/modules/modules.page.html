@@ -1,32 +1,32 @@
 <app-header page="trainer"></app-header>
 <main class="trainerPage">
-    <ion-toolbar class="buttonBar">
+    <ion-toolbar class="buttonBar" *ngIf="!media.smallDevice">
       <div style="width:100%" center-hor flex>
           <div style="max-width: 1350px;width:100%;padding:5px 15px 0px 15px">
               <ion-row >
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/dashboard')">
-                      <ion-card-title>Dashboard</ion-card-title>
+                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/dashboard')">
+                      <ion-card-title>{{'dashboard.organisation' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/cases')">
-                      <ion-card-title>Cases</ion-card-title>
+                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/cases')">
+                      <ion-card-title>{{'standards.cases' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/info-items')">
-                      <ion-card-title>Kennis</ion-card-title>
+                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/info-items')">
+                      <ion-card-title>{{'buttons.knowledge' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton isActive" (click)="nav.go('trainer/modules')">
-                      <ion-card-title>Modules</ion-card-title>
+                  <ion-card pointer center class="topButton isActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/modules')">
+                      <ion-card-title>{{'standards.modules' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="nav.go('trainer/trainings')">
-                      <ion-card-title>Trainingen</ion-card-title>
+                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/trainings')">
+                      <ion-card-title>{{'standards.trainings' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding *ngIf="!trainerService.moduleItem.id">
@@ -38,59 +38,90 @@
           </div>
       </div>
     </ion-toolbar>
-
+    <div *ngIf="media.smallDevice" class="buttonBarMobile">
+      <app-menu-mobile (action)="useAction($event)" [pageParam]="setPageParam()"></app-menu-mobile>
+      <app-menu-mobile [subMenu]="true" [options]="setOptionsParam()" (action)="useAction($event)"></app-menu-mobile>
+    </div>
+    <div *ngIf="media.smallDevice" class="buttonBarMobileBackground"></div>
   <ion-grid>
     
 
 
-    <ion-row style="height:calc(100% - 75px)" [ngStyle]="{'margin-top': media.smallDevice ? '106px' : '60px'}">
+    <ion-row style="height:calc(100% - 75px)" [ngStyle]="{'margin-top': media.smallDevice ? '60px' : '60px'}">
 
-        <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
+        <ion-col *ngIf="!media.smallDevice" [size]="media.smallDevice ? 12 : 3" class="selectColumn">
 
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.moduleItem?.id">
-            <ion-item lines="none" button (click)="addModule()" class="itemButton"  noMargin>
-                <div font-20 weight700>{{'cases.new_module' | translate}}</div>
-                <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
-            </ion-item>
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="trainerService.trainerInfo.logo">
+              <div fullwidth style="height:100px">
+                  <img [src]="trainerService.trainerInfo.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
+              </div> 
           </div>
 
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainerInfo.logo">
+              <div fullwidth style="height:100px">
+                  <div font-30 flex center-ver center-hor fullheight weight700 uppercase>{{trainerService.trainerInfo.name}}</div>
+              </div> 
+          </div>
+          
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.moduleItem?.id">
+            <ion-item detail="false" lines="none" button (click)="addModule()" class="itemButton"  noMargin>
+                <div font-20 weight700>{{'cases.new_module' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faPlus')"></fa-icon>
+            </ion-item>
+          </div>
+          
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.moduleItem?.id&& allTags().length">
+            <h2 font-20 weight700 style="margin:10px 0px;padding-left:15px">{{'cases.tags' | translate}}</h2>
+            <div *ngFor="let tag of allTags()">
+                <ion-item detail="false" pointer [ngClass]="{'selectedModule':tagSelected(tag)}" lines="none" font-18 weight500 noMargin (click)="toggleTag(tag)">
+                    <ion-label>{{ tag | capitalize }}</ion-label>
+                    <fa-icon slot="end" text-light [icon]="icon.get('faTimes')" *ngIf="tagSelected(tag)"></fa-icon>
+                </ion-item>
+            </div>
+          </div>
+
+
           <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id">
-            <ion-item lines="none" button (click)="back()" class="itemButton" noMargin>
+            <ion-item detail="false" lines="none" button (click)="back()" class="itemButton" noMargin>
               <div font-20 weight700>{{'buttons.back' | translate}}</div>
               <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
             </ion-item>
-          </div>
-
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id">
-            <ion-item lines="none" button (click)="copyModule()" class="itemButton"  noMargin>
+            
+            <ion-item detail="false" lines="none" button (click)="copyModule()" class="itemButton"  noMargin>
               <div font-20 weight700>{{'modules.copy_module' | translate}}</div>
               <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
             </ion-item>
-          </div>
-
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id">
-            <ion-item lines="none" button (click)="deleteModule(trainerService.moduleItem)" class="itemButton"  noMargin>
+          
+            <ion-item detail="false" lines="none" button (click)="deleteModule(trainerService.moduleItem)" class="itemButton"  noMargin>
               <div font-20 weight700>{{'modules.delete_module' | translate}}</div>
               <fa-icon font-24 slot="end" trash [icon]="icon.get('faTrashAlt')"></fa-icon>
             </ion-item>
+          
+          </div>
+
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id">
+            <ion-item detail="false" lines="none" button (click)="example()" class="itemButton"  noMargin>
+                <div font-20 weight700>{{'cases.check_example' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faEye')"></fa-icon>
+            </ion-item>         
           </div>
 
         <!-- <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id" [ngClass]="{'activeMenuItem':showPart=='items'}">
-          <ion-item lines="none" button (click)="showPart='items'" class="itemButton"  noMargin >
+          <ion-item detail="false" lines="none" button (click)="showPart='items'" class="itemButton"  noMargin >
             <div font-20 weight700>{{'cases.items' | translate}}</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
         </div> -->
 
         <!-- <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id" [ngClass]="{'activeMenuItem':showPart=='participants'}">
-          <ion-item lines="none" button (click)="showPart='participants'" class="itemButton" noMargin >
+          <ion-item detail="false" lines="none" button (click)="showPart='participants'" class="itemButton" noMargin >
             <div font-20 weight700>{{'cases.participants' | translate}}</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
         </div>
 
         <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id" [ngClass]="{'activeMenuItem':showPart=='credits'}">
-          <ion-item lines="none" button (click)="showPart='credits'" class="itemButton" noMargin >
+          <ion-item detail="false" lines="none" button (click)="showPart='credits'" class="itemButton" noMargin >
             <div font-20 weight700>{{'standards.credits' | translate}}</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
@@ -104,7 +135,7 @@
             <ion-row>
               <ion-col [size]="helpers.cardSizeSmall" *ngFor="let item of visibleItems" relative marginBottom>
 
-                <ion-card noPadding pointer fullheight caseCard>
+                <ion-card noPadding pointer fullheight caseCard (contextmenu)="onRightClick($event,item)">
                   <ion-card-content noPadding fullHeight>
                       <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
                       <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -180,14 +211,16 @@
                         <ion-card-title flex center-ver>
                             <span weight600 titleIcon>{{'cases.title_and_info' | translate}}</span>
                             <span class="spacer"></span>
-                            <fa-icon pointer titleIcon *ngIf="moduleReady('title')" text-success font-24 [icon]="icon.get('faCheck')"></fa-icon>
-                            <fa-icon pointer titleIcon *ngIf="!moduleReady('title')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')"></fa-icon>
+                            <fa-icon pointer titleIcon *ngIf="moduleReady('title')" text-success font-24 [icon]="icon.get('faCheck')" (click)="modalService.showText(translate.instant(translate.instant('cases.all_fields_filled')),translate.instant('buttons.complete'))"></fa-icon>
+                            <fa-icon pointer titleIcon *ngIf="!moduleReady('title')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')" (click)="showFieldsStatus('title',$event)"></fa-icon>
+                            <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('module_title_user_info','cases.title_and_info',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                            <fa-icon pointer titleIcon *ngIf="media.smallDevice" font-24 [icon]="icon.get('faTimes')" (click)="back();reloadMenu()"></fa-icon>
                         </ion-card-title>
                     </ion-card-header>
                     <ion-card-content>
                       <ion-row noPadding>
                         <ion-col [size]="media.smallDevice ? 12 : 8">
-                          <ion-item lines="none" listCard>
+                          <ion-item detail="false" lines="none" listCard>
                             <ion-label position="floating">{{'cases.title' | translate}}</ion-label>
                             <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="trainerService.moduleItem.title"></ion-input>
                           </ion-item>
@@ -201,6 +234,7 @@
                         
                       <ion-card pointer marginBottom marginTop class="caseAvatar" (click)="selectAvatar($event)" [ngStyle]="{'height':trainerService.moduleItem.photo ? '300px' : '150px','background':'var(--background-global)'}">
                         <ion-card-content backgroundImage noPadding *ngIf="trainerService.moduleItem" [ngStyle]="{'background-image': trainerService.moduleItem.photo ? 'url(' + trainerService.moduleItem.photo + ')' : 'none'}">
+                          <fa-icon class="infoIconPhoto" pointer titleIcon font-24 (click)="trainerService.tooltip('module_title_photo','cases.photo',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                         </ion-card-content>
                         <div fullwidth center-ver center-hor class="btnImgChange">
                             <ion-button fill="solid" color="light" class="saveButton" noPointerEvents>
@@ -212,11 +246,36 @@
                         </div>
                       </ion-card>
 
-                      <ion-item lines="none" listCard>
+                      <ion-item detail="false" lines="none" listCard marginBottom>
                           <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="trainerService.moduleItem.user_info" (ionChange)="update('user_info')">
                           <div slot="label">{{'cases.short_info' | translate}}</div>
+                          <fa-icon slot="end" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('module_user_info','cases.short_info',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                           </ion-textarea>
-                      </ion-item>         
+                      </ion-item>     
+                      
+                      
+                      <ion-item detail="false" pointer lines="none" listCard class="ionItemTypes">
+                          <ion-label position="stacked">{{'cases.tags' | translate}}</ion-label>
+                          <input id="txtautocomplete" class="native-input sc-ion-input-md" list="txtautocompletelist" style="min-height:40px;" [(ngModel)]="trainerService.moduleItem.tag" (keydown.enter)="addTag()">
+                          <ion-button fill="solid" slot="end" [disabled]="!trainerService.moduleItem.tag" (click)="addTag()" style="position:relative;top:20px;width:36px;height:36px;font-size:18px;left:-30px">
+                            <fa-icon [icon]="icon.get('faPlus')"></fa-icon>
+                          </ion-button>
+                          <ion-button id="button1" fill="clear" slot="end" 
+                            style="opacity:0">
+                            <datalist id="txtautocompletelist">
+                                <option *ngFor="let tag of allTags()">{{tag}}</option>
+                            </datalist>
+                          </ion-button>
+                          <fa-icon slot="end" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('module_tags','cases.tags',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                          <div fullwidth style="padding-bottom: 10px;">
+                              <span *ngFor="let tag of trainerService.moduleItem.tags;let i = index">
+                                  <div class="typeItem" center-ver center-hor>
+                                      <span>{{tag | uppercase}}</span>
+                                      <fa-icon [icon]="icon.get('faTimes')" trash titleIcon (click)="removeTag(i)"></fa-icon>
+                                  </div>
+                              </span>
+                          </div>
+                      </ion-item>
                     </ion-card-content>
                 </ion-card>
             </ion-col>
@@ -229,16 +288,45 @@
                 <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}">
                   <ion-card-header>
                     <ion-card-title flex center-ver>
-                        <span weight600 titleIcon>{{'cases.items' | translate}}</span>
-                        <span class="spacer"></span>
-                        <fa-icon pointer titleIcon font-22 [icon]="icon.get('faPlus')" (click)="addItemToModule($event)"></fa-icon>
+                      <!-- <fa-icon pointer *ngIf="trainerService.breadCrumbs.length>1" text-primary font-24 [icon]="icon.get('faArrowLeft')" (click)="backBreadCrumbs()"></fa-icon> -->
+                      <span weight600 titleIcon>{{'cases.items' | translate}}</span>
+                      <span class="spacer"></span>
+                      <fa-icon pointer titleIcon font-22 [icon]="icon.get('faPlus')" (click)="addItemToModule($event)"></fa-icon>
+                      <fa-icon pointer titleIcon *ngIf="!moduleReady('content')" text-warning font-24 [icon]="icon.get('faExclamationTriangle')" (click)="showFieldsStatus('content',$event)"></fa-icon>
+                      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('module_elements','cases.items',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                     </ion-card-title>
                   </ion-card-header>
                   <ion-card-content>
 
+                  
                       <div dndDropzone (dndDrop)="dropHandler($event)" class="card-container">
 
                         <div dndPlaceholderRef></div>
+
+                        <div *ngIf="trainerService.breadCrumbs.length>1" class="card-wrapper" style="top:-10px;" [ngStyle]="{'width':'calc('+helpers.cardSizeSmallPerc+' - 32px)'}" relative>
+                          
+                           <ion-card class="backArrowModule" pointer noBackground noPadding fullheight noMargin flex center-ver center-hor (click)="backBreadCrumbs()">
+                            <fa-icon font-80 weight700 [icon]="icon.get('faArrowLeft')"></fa-icon>
+                          </ion-card>
+                          
+                          <!-- <ion-card noPadding pointer fullheight caseCard (click)="backBreadCrumbs()">
+                              <ion-card-content noPadding fullHeight>
+                                  <div backgroundImage class="avatarImage" *ngIf="trainerService.getModuleItem(trainerService.breadCrumbs[trainerService.breadCrumbs.length-2].item.id).photo" [ngStyle]="{'background-image': 'url(' + trainerService.getModuleItem(trainerService.breadCrumbs[trainerService.breadCrumbs.length-2].item.id).photo + ')'}"></div>
+                                  <div backgroundImage class="avatarImage" *ngIf="!trainerService.getModuleItem(trainerService.breadCrumbs[trainerService.breadCrumbs.length-2].item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                                  <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                                      <ion-card-header>
+                                          <ion-card-title font-18 weight600>{{'buttons.back_to' | translate}}</ion-card-title>
+                                          <ion-card-subtitle font-14 weight400>{{trainerService.getModuleItem(trainerService.breadCrumbs[trainerService.breadCrumbs.length-2].item.id).title}}</ion-card-subtitle>
+                                      </ion-card-header>
+                                  </div>
+                                  <div center flex center-ver center-hor>
+                                      <ion-button class="saveButton cardButton" fill="outline" size="small">{{'buttons.back' | translate}}</ion-button>
+                                  </div>
+                              </ion-card-content>
+                          </ion-card>
+                          <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule></ion-card>
+                          <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule2></ion-card> -->
+                        </div>
 
                         <div *ngFor="let item of trainerService.moduleItem.items; let i = index"
                               [dndDraggable]="item"
@@ -252,8 +340,8 @@
                               <div backgroundImage class="avatarImage" *ngIf="!trainerService.getCase(item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
                               <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                                 <ion-card-header>
-                                  <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
-                                  <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                                  <ion-card-title font-18 weight600>{{trainerService.getCase(item.id).title}}</ion-card-title>
+                                  <ion-card-subtitle font-14 weight400>{{trainerService.getCase(item.id).user_info | maxLength : 60 : true}}</ion-card-subtitle>
                                 </ion-card-header>
                               </div>
                               <div center flex center-ver center-hor>
@@ -272,8 +360,8 @@
                               <div backgroundImage class="avatarImage" *ngIf="!trainerService.getInfoItem(item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
                               <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                                 <ion-card-header>
-                                  <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
-                                  <ion-card-subtitle font-14 weight400>{{item.description | maxLength : 60 : true}}</ion-card-subtitle>
+                                  <ion-card-title font-18 weight600>{{trainerService.getInfoItem(item.id).title}}</ion-card-title>
+                                  <ion-card-subtitle font-14 weight400>{{trainerService.getInfoItem(item.id).description | maxLength : 60 : true}}</ion-card-subtitle>
                                 </ion-card-header>
                               </div>
                               <div center flex center-ver center-hor>

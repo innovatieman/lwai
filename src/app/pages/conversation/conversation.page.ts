@@ -23,6 +23,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from 'src/app/services/toast.service';
 import { tutorialService } from 'src/app/services/tutorial.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import * as moment from 'moment';
 // import { HeyGenApiService } from 'src/app/services/heygen.service';
 
 highchartsMore(Highcharts);
@@ -44,11 +45,12 @@ export class ConversationPage implements OnInit {
   position:any = { x: this.media.screenWidth - 210, y: 10 }; // Startpositie van de div
 
   private gesture!: Gesture;
-
+  hideDisclaimer:boolean = false;
   Highcharts: typeof Highcharts = Highcharts;
   chartConstructor: string = 'chart';
   updateSubscription:Subscription = new Subscription()
   activeStream:boolean = false; 
+  showLastMessage:boolean = false;
   chartOptions: Highcharts.Options = {
     chart: {
       type: 'gauge',
@@ -190,7 +192,19 @@ export class ConversationPage implements OnInit {
     // });
   }
 
+  firstMessagesLoaded:boolean = false;
   ngOnInit() {
+
+    if(localStorage.getItem('hideDisclaimer')){
+      let hideDisclaimer = localStorage.getItem('hideDisclaimer')
+      if(moment.unix(hideDisclaimer?parseInt(hideDisclaimer):0).isAfter(moment().subtract(14, 'days'))){
+        this.hideDisclaimer = true
+      }
+      else{
+        this.hideDisclaimer = false
+        localStorage.removeItem('hideDisclaimer')
+      }
+    }
 
     this.conversation.activeStream.subscribe((active:boolean)=>{
       // console.log(active)
@@ -203,9 +217,26 @@ export class ConversationPage implements OnInit {
       }
     })
 
+    this.conversation.analysisReady.subscribe((ready:boolean)=>{
+      // console.log('analysis ready',ready)
+      this.firstMessagesLoaded = true
+      this.rf.detectChanges()
+      if(ready){
+        this.busyAnalyzing = false
+      }
+      else{
+        this.busyAnalyzing = true
+      }
+    })
+
     this.conversation.updateAchievements.subscribe((newGoal:any)=>{
       this.completeGoal()
     })
+
+    // this.conversation.subCollectionUpdated.subscribe((data:any)=>{
+    //   console.log('subCollectionUpdated',data)
+    //   this.rf.detectChanges()
+    // })
 
     this.tutorial.action.subscribe((action:any)=>{
       let actions = action.split('.')
@@ -217,7 +248,12 @@ export class ConversationPage implements OnInit {
     this.route.params.subscribe(params=>{
 
       if(!params['case']){
-        this.nav.go('start')
+        if(this.conversation.originUrl){
+          this.nav.go(this.conversation.originUrl)
+        }
+        else{
+          this.nav.go('start')
+        }
         return
       }
       this.updateSubscription = this.conversation.update.subscribe(()=>{
@@ -225,11 +261,15 @@ export class ConversationPage implements OnInit {
           if(this.chart?.series&&this.chart?.series[0]){
             const series = this.chart.series[0]; 
             series.setData([this.conversation.attitude], true);
+            this.conversation.reloadAttitude();
             this.rf.detectChanges();
           }
         }, 300);
         
-        if(this.conversation.activeConversation.video_on){
+        if(this.conversation.activeConversation.voice_on){
+          this.interaction = 'voice'
+        }
+        else if(this.conversation.activeConversation.video_on){
           this.interaction = 'combination'
         }
         else{
@@ -378,6 +418,9 @@ export class ConversationPage implements OnInit {
           if(this.cases.single(caseItem).avatarName){
             this.interaction = 'combination'
           }
+          if(this.cases.single(caseItem).voiceId){
+            this.interaction = 'voice'
+          }
           setTimeout(() => {
             if (this.draggableElement) {
               this.createDragGesture();
@@ -399,6 +442,9 @@ export class ConversationPage implements OnInit {
       this.conversation.startConversation(caseItem)
       if(caseItem.avatarName){
         this.interaction = 'combination'
+      }
+      if(caseItem.voiceId){
+        this.interaction = 'voice'
       }
     }
   }
@@ -428,10 +474,13 @@ export class ConversationPage implements OnInit {
     return
   }
 
+  ionViewWillEnter() {
+    this.conversation.messages = [];
+  }
+
   ionViewDidEnter(){
     if(localStorage.getItem('continueConversation')){
       localStorage.removeItem('continueConversation')
-      console.log('continue')
       this.continueConversation()
     }
     else if(!this.started && !localStorage.getItem('activatedCase')){
@@ -449,6 +498,9 @@ export class ConversationPage implements OnInit {
   }
 
   sendQuestion(){
+    if(!this.question || this.question.trim()==''){
+      return
+    }
     this.conversation.tempTextUser=this.question;
     this.question='';
     setTimeout(() => {
@@ -471,6 +523,7 @@ export class ConversationPage implements OnInit {
 
   continueConversation(){
     // console.log('continue')
+    this.conversation.firstLoadMessages = false;
     if(!localStorage.getItem('conversation')){
       return
     }
@@ -478,10 +531,17 @@ export class ConversationPage implements OnInit {
     
     this.createDragGesture();
 
-
     let conversation = JSON.parse(localStorage.getItem('conversation')||'{}')
+    console.log('continue conversation',conversation)
     if(conversation.avatarName){
       this.interaction = 'combination'
+    }
+    if(conversation.voiceId){
+      this.interaction = 'voice'
+      if(conversation.voice_on){
+        this.conversation.voiceActive = true
+        console.log('voice active')
+      }
     }
     this.conversation.loadConversation(conversation.conversationId,conversation,true)
     
@@ -550,8 +610,13 @@ export class ConversationPage implements OnInit {
   }
 
   endConversation(){
+    // console.log('end conversation',this.conversation.originUrl)
     if(this.conversation.activeConversation.closed){
-      if(this.conversation.activeConversation.courseId){
+      if(this.conversation.originUrl){
+        this.nav.go(this.conversation.originUrl)
+        return
+      }
+      else if(this.conversation.activeConversation.courseId){
         this.nav.go('course/'+this.conversation.activeConversation.courseId)
         return
       }
@@ -585,7 +650,16 @@ export class ConversationPage implements OnInit {
         fill:'solid',
         full:true
 
-      }]
+      },
+      {
+        text:this.translate.instant('conversation.delete_conversation'),
+        value:'delete',
+        color:'medium',
+        fill:'clear',
+        full:true,
+        fullWidth:true
+      }
+    ]
     ).then(response=>{
       
       if(response=='end'){
@@ -593,13 +667,49 @@ export class ConversationPage implements OnInit {
         this.conversation.closeConversation(()=>{
         })
       }
+      else if(response=='delete'){
+        this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then((confirmed:boolean)=>{
+          if(confirmed){
+            if(this.conversation.originUrl){
+              this.nav.go(this.conversation.originUrl)
+              this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId).then(()=>{
+                console.log('conversation deleted')
+              })
+              return
+            }
+            else if(this.conversation.activeConversation.courseId){
+              this.nav.go('course/'+this.conversation.activeConversation.courseId)
+              this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId).then(()=>{
+                console.log('conversation deleted')
+              })
+              return
+            }
+            else{
+              this.nav.go('start')
+              this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId).then(()=>{
+                console.log('conversation deleted')
+              })
+              return
+            }
+
+            
+          }
+        })
+
+      }
       else if(response=='pause'){
-        if(this.conversation.activeConversation.courseId){
+        console.log('originUrl',this.conversation.originUrl)
+        if(this.conversation.originUrl){
+          this.nav.go(this.conversation.originUrl)
+          return
+        }
+        else if(this.conversation.activeConversation.courseId){
           this.nav.go('course/'+this.conversation.activeConversation.courseId)
           return
         }
         else{
           this.nav.go('start')
+          return
         }
       }
     })
@@ -659,7 +769,12 @@ export class ConversationPage implements OnInit {
         // console.log('clearing interval')
         clearInterval(closeInterval)
         this.toast.show(this.translate.instant('conversation.end_error'))
-        this.nav.go('start')
+        if(this.conversation.originUrl){
+          this.nav.go(this.conversation.originUrl)
+        }
+        else{
+          this.nav.go('start')
+        }
         return
       }
       // console.log(this.conversation?.activeConversation?.close,this.conversation?.activeConversation?.skills)
@@ -724,7 +839,10 @@ export class ConversationPage implements OnInit {
               return
             }
             else{
-              if(firstTime){
+              if(this.conversation.originUrl){
+                this.nav.go(this.conversation.originUrl)
+              }
+              else if(firstTime){
                 // localStorage.setItem('showNewScore','true')
                 this.nav.go('start/score')
               }
@@ -740,7 +858,7 @@ export class ConversationPage implements OnInit {
     }, 200);
 
   }
-  
+  busyAnalyzing:boolean = true
   conversationHasBeenAnalyzed(){
     return (this.conversation?.activeConversation?.close&&this.conversation?.activeConversation?.close[0] && this.conversation?.activeConversation?.skills&&this.conversation?.activeConversation?.skills[0])
   }
@@ -792,6 +910,28 @@ export class ConversationPage implements OnInit {
       this.firestore.updateSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId,{video_on:true})
       let tempConversation = JSON.parse(localStorage.getItem('conversation')||'{}')
       tempConversation.video_on = true
+      localStorage.setItem('conversation',JSON.stringify(tempConversation))
+    }
+
+  }
+
+  toggleVoice(off?:boolean){
+    console.log(this.interaction)
+    if(this.interaction=='voice' || off){
+      this.conversation.messages = JSON.parse(JSON.stringify(this.conversation.activeConversation.messages)) 
+      this.conversation.voiceActive = false
+      this.firestore.updateSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId,{voice_on:false})
+      let tempConversation = JSON.parse(localStorage.getItem('conversation')||'{}')
+      tempConversation.voice_on = false
+      localStorage.setItem('conversation',JSON.stringify(tempConversation))
+      this.interaction = 'chat'
+    }
+    else if(this.interaction=='chat'){
+      this.interaction = 'voice'
+      this.firestore.updateSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId,{voice_on:true})
+      let tempConversation = JSON.parse(localStorage.getItem('conversation')||'{}')
+      tempConversation.voice_on = true
+      this.conversation.voiceActive = true
       localStorage.setItem('conversation',JSON.stringify(tempConversation))
     }
 
@@ -1122,6 +1262,7 @@ export class ConversationPage implements OnInit {
         count++
         if(count>150){
           this.toast.show(this.translate.instant('conversation.choices_error'))
+          this.analyzing = false
           clearInterval(interval)
         }
         if(!this.conversation.isLoading('choices')){
@@ -1136,21 +1277,21 @@ export class ConversationPage implements OnInit {
     }, 300);
   }
 
-  showFeedbackModal(index:number){
+  showFeedbackModal(index:number,messageId:string){
     // {content:conversation.getFeedbackChat(index,'feedback'),title:'Feedback',feedback:{type:'feedback',conversationId:conversation.activeConversation.conversationId,caseId:conversation.activeConversation.caseId}}
 
-    console.log(this.conversation.getFeedbackChat(index,'id'))
+    // console.log(this.conversation.getFeedbackChat(index,'id',messageId))
 
     this.modalService.showInfo(
       {
-        content:this.conversation.getFeedbackChat(index,'feedback'),
+        content:this.conversation.getFeedbackChat(index,'feedback',messageId),
         title:this.translate.instant('feedback.title'),
         feedback:{
           type:'feedback',
           conversationId:this.conversation.activeConversation.conversationId,
           caseId:this.conversation.activeConversation.caseId,
           userId:this.auth.userInfo.uid,
-          feedbackId:this.conversation.getFeedbackChat(index,'id')
+          feedbackId:this.conversation.getFeedbackChat(index,'id',messageId)
         }
       }
     )
@@ -1207,5 +1348,10 @@ export class ConversationPage implements OnInit {
             this.toast.show(this.translate.instant('menu.feedback_sent'))
           }
         })
+    }
+
+    hideDisclaimerText(){
+      this.hideDisclaimer = true
+      localStorage.setItem('hideDisclaimer', moment().unix().toString());
     }
 }

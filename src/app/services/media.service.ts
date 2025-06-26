@@ -118,6 +118,7 @@ export class MediaService {
       {title:'Maak een foto',icon:'faCameraRetro',action:'camera'},
       {title:'Selecteer uit bibliotheek',icon:'faImage',action:'library'},
       {title:'Verwijder foto',icon:'faTrashAlt',action:'delete'},
+      
     ]
     if(withoutSelection){
       list.splice(2,1)
@@ -125,6 +126,8 @@ export class MediaService {
     if(withGeneration){
       list.push({title:'Genereer avatar',icon:'faUserNinja',action:'generate'})
     }
+    list.push({title:'Download foto',icon:'faDownload',action:'download'})
+
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
       componentProps:{
@@ -162,6 +165,9 @@ export class MediaService {
           break;
         case 'generate':
           callback('generate')
+          break;
+        case 'download':
+           callback('download')
           break;
         default:
           break;
@@ -262,6 +268,72 @@ export class MediaService {
     });
   }
 
+  percentageUploadingFile:number = 0
+  selectAnyFile(maxSizeMB:number,callback:Function){
+    this.selectedFile = null
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '*'; // Alle bestanden toestaan
+    input.style.display = 'none';
+
+    const maxSize = maxSizeMB * 1024 * 1024; // Omrekenen naar bytes
+    
+    document.body.appendChild(input);
+    input.click();
+
+    input.addEventListener('change', () => {
+      if (input.files && input.files.length > 0) {
+        this.selectedFile = input.files[0];
+        // 📌 Bestandsgrootte controleren
+        if (this.selectedFile.size > maxSize) {
+          this.toast.show(`${this.translate.instant('error_messages.invalid_file_size')} ${maxSizeMB} MB`,6000);
+          callback(null)
+          return
+        } else {
+          // this.toast.show('Upload gestart',2000,'bottom')
+          callback(this.selectedFile)
+        }
+      } else {
+        callback(null)
+      }
+      document.body.removeChild(input); // Verwijder input na selectie
+    });
+
+    input.addEventListener('cancel', () => {
+      callback(null)
+      document.body.removeChild(input);
+    });
+  }
+
+  async uploadAnyFile(selectedFile:any,callback:Function,location?:string){
+
+    if (this.selectedFile) {
+      this.toast.showLoader()
+      return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile!);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        const fileExtension = selectedFile.name.split('.').pop() || 'bin'; // Standaard naar 'bin' als er geen extensie is
+        console.log(fileExtension)
+        const callable = this.functions.httpsCallable('uploadInfoItemFiles');
+        callable({ fileData: base64String, location: location, fileExtension: fileExtension, contentType: selectedFile.type })
+          .subscribe({
+            next: (response: any) => {
+              this.toast.hideLoader()
+              callback(response)
+            },
+            error: (error) => {
+              this.toast.hideLoader()
+              reject(error)
+            },
+          });
+        };
+        reader.onerror = (error) => reject(error);
+      });
+    }
+    return null;
+   }
 
   async takePhoto(): Promise<string | null> {
     return new Promise(async (resolve, reject) => {
@@ -454,10 +526,11 @@ export class MediaService {
     event.preventDefault()
     event.stopPropagation()
     console.log(caseItem)
-    if(!caseItem.id){
+    if(!caseItem.id&&caseItem.caseId){
       caseItem.id = caseItem.caseId
     }
-    if (navigator.share) {
+    if (navigator.share&&this.platform.is('mobile')) {
+      console.log('Sharing via Web Share API');
       if(caseItem=='login'){
         await navigator.share({
           title:  this.translate.instant('share.basic_title'),
@@ -477,7 +550,7 @@ export class MediaService {
         this.showShareMenu(event,'https://www.alicialabs.com/',this.translate.instant('share.basic_site'),this.translate.instant('share.basic_title'))
       }
       else{
-        this.showShareMenu(event,`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`,this.translate.instant('share.basic_text_case').replace('[case_title]',caseItem.title).replace('[case_user_info]',caseItem.user_info).replace('[case_link]',`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`),this.translate.instant('share.basic_title'))
+        this.showShareMenu(event,`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`,this.translate.instant('share.basic_text_case').replace('[case_title]',caseItem.title).replace('[case_user_info]',caseItem.user_info).replace('[case_link]',`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`).replaceAll('\n','%0D%0A'),this.translate.instant('share.basic_title'))
       }
     }
   }
@@ -492,7 +565,7 @@ export class MediaService {
         icon: 'faEnvelope',
         background: '#D44638',
         color: '#FFFFFF',
-        link: 'mailto:?body={{text}}&subject={{title}}'
+        link: 'mailto:?subject={{title}}&body=%0D%0A%0D%0A{{text}}'
       },
       {
         type: 'whatsapp',
@@ -502,22 +575,22 @@ export class MediaService {
         color: '#FFFFFF',
         link: 'https://wa.me/?text={{text}}'
       },
-      {
-        type: 'facebook',
-        title: 'Facebook',
-        icon: 'faFacebook',
-        background: '#1877F2',
-        color: '#FFFFFF',
-        link: 'https://www.facebook.com/sharer/sharer.php?u={{text}}'
-      },
-      {
-        type: 'x',
-        title: 'X',
-        icon: 'faXTwitter',
-        background: '#000000',
-        color: '#FFFFFF',
-        link: 'https://x.com/intent/tweet?text={{text}}'
-      },
+      // {
+      //   type: 'facebook',
+      //   title: 'Facebook',
+      //   icon: 'faFacebook',
+      //   background: '#1877F2',
+      //   color: '#FFFFFF',
+      //   link: 'https://www.facebook.com/sharer/sharer.php?u={{text}}'
+      // },
+      // {
+      //   type: 'x',
+      //   title: 'X',
+      //   icon: 'faXTwitter',
+      //   background: '#000000',
+      //   color: '#FFFFFF',
+      //   link: 'https://x.com/intent/tweet?text={{text}}'
+      // },
       {
         type: 'linkedin',
         title: 'LinkedIn',
@@ -560,6 +633,7 @@ export class MediaService {
     
     if(this.selectMenuservice.selectedItem?.link){
       let link = this.selectMenuservice.selectedItem.link
+      console.log(link)
       if(link.includes('{{text}}')){
         link = link.replace('{{text}}',text)
       }
@@ -572,10 +646,20 @@ export class MediaService {
       window.open(link, '_blank');
     }
     else if(this.selectMenuservice.selectedItem?.copy){
+      text = text.replaceAll('%0D%0A','\n')
       navigator.clipboard.writeText(text).then(() => {
         this.toast.show(this.translate.instant('share.copied'),2000)
       });
     }
+  }
+
+  isYoutubeUrl(url:string){
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    return youtubeRegex.test(url);
+  }
+  isVimeoUrl(url:string){
+    const vimeoRegex = /^(https?:\/\/)?(www\.)?(vimeo\.com)\/.+$/;
+    return vimeoRegex.test(url);
   }
 
 }

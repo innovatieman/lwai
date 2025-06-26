@@ -8,15 +8,16 @@
     <fa-icon [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
   </ion-button>
 </div>
-<div *ngIf="!options.video&&options.content&&!options.image" [innerHtml]="options.content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc('+(vh * 100)+'px'+' - 40px)' : 'calc('+(vh * 100)+'px'+' - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}"></div>
+<div *ngIf="!options.video&&options.content&&(!options.image||options.image_up)&&!options.image_only_once" [innerHtml]="options.content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc('+(vh * 100)+'px'+' - 40px)' : 'calc('+(vh * 100)+'px'+' - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}"></div>
 <div *ngIf="options.video" class="inner-content">
   <div class="video-container">
     <iframe [src]="options.content | sanitizeHtml : 'urlResource'" (load)="hideLoader()" frameborder="0" ></iframe>
   </div>
 </div>
-<div *ngIf="options.image">
-  <img [src]="options.content" style="width:100%;border-radius:24px;" />
+<div *ngIf="options.image" style="text-align:center;">
+  <img [src]="options.image" style="border-radius:24px;" [ngStyle]="{'width': options.image_width,'max-width':options.image_max_width}" />
 </div>
+<div *ngIf="!options.video&&options.content&&(!options.image||options.image_under)" [innerHtml]="options.content | sanitizeHtml" weight400 style="padding:10px;overflow: scroll;line-height:1.6;margin: 0 30px;border-radius:24px;" [ngStyle]="{'max-height':media.smallDevice ? 'calc('+(vh * 100)+'px'+' - 40px)' : 'calc('+(vh * 100)+'px'+' - 175px)','margin-bottom': options.buttons ? '0px' : '30px','border' : options.extraData?.textBorder ? 'solid 1px' : 'none'}"></div>
 <div flex *ngIf="options.buttons" style="padding:20px;justify-content: flex-end;" [ngClass]="{'flex-column':options.btnsClass==='flex-column'}">
   <span [ngClass]="{'spacer':!last}" *ngFor="let btn of options.buttons;let last = last">
   <ion-button class="saveButton" [color]="btn.color" [innerHTML]="btn.text" (click)="modalCtrl.dismiss(btn.value)" [fill]="btn.fill ? btn.fill : 'solid'" [ngClass]="{'fullwidth':options.btnsClass==='flex-column'}"></ion-button>

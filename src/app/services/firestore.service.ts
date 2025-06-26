@@ -46,6 +46,27 @@ export class FirestoreService {
     .catch(err => console.log(err, 'You do not have access!  - '+collection + ' => '+doc+' => ' + subcollection + ' => ' + subDoc + ' => ' + subSubcollection))
   }
   
+  createSubSubAsync(
+    collection: string,
+    doc: string,
+    subcollection: string,
+    subDoc: string,
+    subSubcollection: string,
+    data: any
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.createSubSub(
+        collection,
+        doc,
+        subcollection,
+        subDoc,
+        subSubcollection,
+        data,
+        (res: any) => resolve(res)  // geef het response object terug
+      );
+    });
+  }
+
   setSub(collection:string,doc:string,subcollection:string,id:string,data:any,field?:string,callback?:any,isArrayOnPurpose?:boolean){
     if(data&&data.constructor&&data.constructor.toString().indexOf("Array") != -1&&!isArrayOnPurpose){
       let obj:any = {}

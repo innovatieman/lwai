@@ -9,7 +9,9 @@ export class CleanReactionPipe implements PipeTransform {
     if(!value){
       return '';
     }
-    
+    if(!value.includes('reaction:')){
+      return this.clearStringChars(value);
+    }
     let tempValue = value.split(', reaction:')
     tempValue.splice(0,1)
     return this.clearStringChars(tempValue.join(', reaction:'))

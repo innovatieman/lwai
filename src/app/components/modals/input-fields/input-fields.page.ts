@@ -22,6 +22,7 @@ export class InputFieldsPage implements OnInit {
   @Input() fields:any[]= [];
   @Input() extraData:any
   @Input() data:any
+  [x: string]: any;
   configModules={
     toolbar: {
       container:[
@@ -57,7 +58,7 @@ export class InputFieldsPage implements OnInit {
   }
 
   ngOnInit() {
-
+    this.showEditor();
   }
 
   triggerFileInputClick() {
@@ -103,6 +104,9 @@ export class InputFieldsPage implements OnInit {
   doNothing(){
     //Do nothing
   }
+  action(action:string){
+    this[action]()
+  }
 
   async showConfirmation(message: string): Promise<boolean> {
     const modalItem = await this.modalController.create({
@@ -119,15 +123,18 @@ export class InputFieldsPage implements OnInit {
   }
 
   async deleteItem(){
+    
     const modalItem = await this.modalController.create({
       component:ConfirmationModalComponent,
       componentProps:{
-        message:this.translate.instant('confirmation_questions_delete'),
+        message:this.translate.instant('confirmation_questions.delete'),
       },
     })
-    modalItem.onWillDismiss().then((data:any)=>{
-      if(data?.confirmed){
-        this.modalController.dismiss('delete')
+    modalItem.onWillDismiss().then((result:any)=>{
+      if(result.data?.confirmed){
+        setTimeout(() => {
+          this.modalController.dismiss('delete')
+        }, 1000);
       }
     })
     return await modalItem.present()
@@ -169,19 +176,26 @@ export class InputFieldsPage implements OnInit {
   }
 
   async save(){
-    this.toast.showLoader()
+    
     let noWaiting = true
     for (let i=0;i<this.fields.length;i++) {
       if(this.fields[i].required&&!this.fields[i].value){
+        this.toast.hideLoader()
         this.toast.show('* '+ this.translate.instant('error_messages.required'),null,'middle')
         return
       }
       if(this.fields[i].pattern && this.fields[i].value){
         let reg = new RegExp(this.fields[i].pattern)
         if(!reg.test(this.fields[i].value)){
+          this.toast.hideLoader()
           this.toast.show(this.fields[i].title + ' ' + this.translate.instant('error_messages.invalid_input'),null,'middle')
           return
         }
+      }
+      if(this.fields[i].maxLength && this.fields[i].value?.length>this.fields[i].maxLength){
+        this.toast.hideLoader()
+        this.toast.show(this.fields[i].title + ' ' + this.translate.instant('error_messages.max_length_exceeded', { maxLength: this.fields[i].maxLength }), null, 'middle')
+        return
       }
       if(this.fields[i].type=='html'){
         this.fields[i].value = this.fields[i].value
@@ -192,12 +206,13 @@ export class InputFieldsPage implements OnInit {
           .split('<p><br></p>').join('<br>')
           .split('</p><br><p>').join('<br><br>')
           .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
       }
       if(this.fields[i].type=='file'){
         noWaiting = false
         console.log('file',this.fileField)
         if(this.fileField.name){
-          console.log('hier ook')
+          this.toast.showLoader()
           await this.uploadFile(this.fileField,(response:any)=>{
             this.fields[i].value = response.result.url
             this.toast.hideLoader()
@@ -211,8 +226,8 @@ export class InputFieldsPage implements OnInit {
       }
     }
     if(noWaiting){
-      this.toast.hideLoader()
       this.modalController.dismiss(this.fields)
+      // this.toast.hideLoader()
     }
     
   }
@@ -257,17 +272,20 @@ export class InputFieldsPage implements OnInit {
         htmlBtn.innerHTML = 'HTML'
         htmlBtn.style.width = '50px'
         htmlBtn.addEventListener('click', (event:any)=> {
-          this.data.value = this.data.value
-          .split('</ol><p><br></p><p>').join('</ol>')
-          .split('</p><p><br></p><ol>').join('<ol>')
-          .split('</ul><p><br></p><p>').join('</ul>')
-          .split('</p><p><br></p><ul>').join('<ul>')
-          .split('<p><br></p>').join('<br>')
-          .split('</p><br><p>').join('<br><br>')
-          .split('</p><p>').join('<br>')
-          .split('&nbsp;').join(' ')
-
-          this.showHtml = true 
+          for(let i=0;i<this.fields.length;i++){
+            if(this.fields[i].type=='html'){
+              this.fields[i].value = this.fields[i].value
+              .split('</ol><p><br></p><p>').join('</ol>')
+              .split('</p><p><br></p><ol>').join('<ol>')
+              .split('</ul><p><br></p><p>').join('</ul>')
+              .split('</p><p><br></p><ul>').join('<ul>')
+              .split('<p><br></p>').join('<br>')
+              .split('</p><br><p>').join('<br><br>')
+              .split('</p><p>').join('<br>')
+              .split('&nbsp;').join(' ')
+              this.showHtml = true 
+            }
+          }
         });
       },300)
     },100)
@@ -290,4 +308,8 @@ export class InputFieldsPage implements OnInit {
 
    }
 
+   standards_generate_photo(){
+    this.fields[0].value = this.translate.instant('cases.generate_photo_standard_input')
+    this.fields[1].value = this.translate.instant('cases.generate_photo_standard_instructions')
+   }
 }

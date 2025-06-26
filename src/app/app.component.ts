@@ -25,7 +25,6 @@ export class AppComponent {
     if(!environment.log_on){
       this.toggleConsole.disableConsole();
     }
-
     this.nav.setLang()
 
     this.listenForUpdates();

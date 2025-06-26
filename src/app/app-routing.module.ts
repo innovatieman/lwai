@@ -45,6 +45,10 @@ const routes: Routes = [
     loadChildren: () => import('./auth/pages/login/login.module').then( m => m.LoginPageModule)
   },
   {
+    path: 'unsubscribe',
+    loadChildren: () => import('./pages/unsubscribe/unsubscribe.module').then( m => m.UnsubscribePageModule)
+  },
+  {
     path: 'bagend/cases',
     loadChildren: () => import('./bagend/cases/cases.module').then( m => m.CasesPageModule),
     canActivate: [AdminGuard],
@@ -183,6 +187,11 @@ const routes: Routes = [
     canActivate: [AdminGuard],
   },
   {
+    path: 'bagend/backup',
+    loadChildren: () => import('./bagend/backup/backup.module').then( m => m.BackupPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
     path: 'verifysocial/:id/:action',
     loadChildren: () => import('./bagend/verifysocial/verifysocial.module').then( m => m.VerifysocialPageModule),
     canActivate: [AdminGuard],
@@ -190,10 +199,6 @@ const routes: Routes = [
   {
     path: 'bagend/socials',
     loadChildren: () => import('./bagend/socials/socials.module').then( m => m.SocialsPageModule)
-  },
-  {
-    path: 'welcome',
-    loadChildren: () => import('./pages/welcome/welcome.module').then( m => m.WelcomePageModule)
   },
   {
     path: 'trainer/cases',
@@ -211,15 +216,54 @@ const routes: Routes = [
     canActivate: [AuthGuard,TrainerGuard],
   },
   {
+    path: 'trainer/trainings/:training_id',
+    loadChildren: () => import('./trainer/trainings/trainings.module').then( m => m.TrainingsPageModule),
+    canActivate: [AuthGuard,TrainerGuard],
+  },
+  {
     path: 'trainer/info-items',
     loadChildren: () => import('./trainer/info-items/info-items.module').then( m => m.InfoItemsPageModule),
     canActivate: [AuthGuard,TrainerGuard],
   },
   {
     path: 'trainer/dashboard',
-    loadChildren: () => import('./trainer/dashboard/dashboard.module').then( m => m.DashboardPageModule)
+    loadChildren: () => import('./trainer/dashboard/dashboard.module').then( m => m.DashboardPageModule),
+     canActivate: [AuthGuard,TrainerGuard],
   },
-
+  {
+    path: 'trainer/dashboard/:part',
+    loadChildren: () => import('./trainer/dashboard/dashboard.module').then( m => m.DashboardPageModule),
+     canActivate: [AuthGuard,TrainerGuard],
+  },
+  {
+    path: 'trainer/example/:type/:id',
+    loadChildren: () => import('./trainer/example/example.module').then( m => m.ExamplePageModule),
+     canActivate: [AuthGuard,TrainerGuard],
+  },
+  {
+    path: 'marketplace',
+    loadChildren: () => import('./pages/marketplace/marketplace.module').then( m => m.MarketplacePageModule),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'marketplace/:tab',
+    loadChildren: () => import('./pages/marketplace/marketplace.module').then( m => m.MarketplacePageModule),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'public/cases',
+    loadChildren: () => import('./public/cases/cases.module').then( m => m.CasesPageModule)
+  },
+    {
+    path: 'bagend/create-trainer',
+    loadChildren: () => import('./bagend/create-trainer/create-trainer.module').then( m => m.CreateTrainerPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'bagend/mailflow',
+    loadChildren: () => import('./bagend/mailflow/mailflow.module').then( m => m.MailflowPageModule),
+    canActivate: [AdminGuard],
+  },
   {
     path: '**',
     redirectTo: 'start',
@@ -307,6 +351,16 @@ const routes: Routes = [
     path: 'trainings',
     loadChildren: () => import('./trainer/trainings/trainings.module').then( m => m.TrainingsPageModule)
   },
+  {
+    path: 'backup',
+    loadChildren: () => import('./bagend/backup/backup.module').then( m => m.BackupPageModule)
+  },
+
+  
+
+  
+
+  
   
   
   

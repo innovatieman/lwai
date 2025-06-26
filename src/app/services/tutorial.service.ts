@@ -26,6 +26,18 @@ export class tutorialService {
   tutorialsLoaded:boolean = false;
   activeTutorial:any
   
+  defaultTutorial:any = {
+    title: '',
+    trigger: '',
+    page: '',
+    active: false,
+    desktop: true,
+    mobile: true,
+    steps: [],
+    style:''
+  }
+
+
   defaultStep:any = {
     title: this.translate.instant('tutorials.step_title_default'),
     content: '',
@@ -175,7 +187,6 @@ export class tutorialService {
             clearInterval(checkInterval)
     
             if((this.auth.tutorials.tutorials&&this.auth.tutorials.tutorials[page]&&(this.auth.tutorials.tutorials[page][trigger] || this.auth.tutorials.tutorials[page][trigger.replace('_mobile','')])&&!restart) || (!this.tutorialsPerPage[page] || !this.tutorialsPerPage[page][trigger] || !this.tutorialsPerPage[page][trigger].active)){
-            // if(!this.tutorialsPerPage[page][trigger].active){
               return
             }
             if(!this.tutorialsPerPage[page][trigger].desktop && !this.media.smallDevice){
@@ -199,7 +210,7 @@ export class tutorialService {
       this.shepherdService.defaultStepOptions = defaultStepOptions;
       this.shepherdService.modal = true;
       let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang].steps)
-      // console.log(steps)
+      console.log(steps)
       this.shepherdService.addSteps(steps);
       this.shepherdService.start();
     }
@@ -231,6 +242,7 @@ export class tutorialService {
   // }
 
   tutorialSteps(steps:any){
+    // console.log(steps)
     let newSteps:any[] = []
     steps.forEach((step:any)=>{
       

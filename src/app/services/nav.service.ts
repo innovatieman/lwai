@@ -12,6 +12,10 @@ export class NavService {
   @Output() changeNav: EventEmitter<boolean> = new EventEmitter();
   @Output() changeLang: EventEmitter<string> = new EventEmitter();
   @Output() renewPWA: EventEmitter<boolean> = new EventEmitter();
+  @Output() organisationChange: EventEmitter<boolean> = new EventEmitter();
+  @Output() reloadMenu:EventEmitter<boolean> = new EventEmitter<boolean>();
+  activeOrganisationId: string = ''
+  
   langList:string[] = ['en','nl']
   redirectUrl:any = null
   specialCode:string = ''
@@ -26,7 +30,7 @@ export class NavService {
     let urlParams = new URLSearchParams(window.location.search);
     this.redirectUrl = urlParams.get('redirect');
     this.specialCode = urlParams.get('specialcode')||''
-    this.registrationCode = urlParams.get('registrationcode')||''
+    this.registrationCode = urlParams.get('registrationCode')||''
   }
 
   public go(page: string,backwards?: boolean){
@@ -40,6 +44,12 @@ export class NavService {
   }
   public back(){
     this.navController.back();
+  }
+
+  changeOrganisation(organisationId:string){
+    this.activeOrganisationId = organisationId
+    this.organisationChange.emit(true)
+    localStorage.setItem('organisationId',organisationId)
   }
 
   goto(url: string,newTab?: boolean){

@@ -1,0 +1,45 @@
+
+.menuItemMobile{
+    // box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.3)!important;
+    z-index: 5;
+    position: relative;
+    width:fit-content;
+}
+
+.menuMobileContainer{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+    transition: all 0.5s ease-in-out;
+    padding:5px;
+    max-height: calc(100%);
+    padding-top:0;
+}
+.menuMobileInnerContainer{
+    overflow: hidden;
+    pointer-events: none;
+    max-height: 100%;
+    ion-card{
+        pointer-events: auto;
+        margin-left:10px;
+        padding-right:25px;
+        min-height: 45px;
+        margin-bottom:16px;
+    }
+
+}
+.overlayMobileMenu{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(0, 0, 0);
+    z-index: 4;
+    opacity: 0.3;
+    transition: all 0.3s;
+}

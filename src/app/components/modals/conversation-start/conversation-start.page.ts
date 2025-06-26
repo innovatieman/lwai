@@ -1,8 +1,10 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
+import { ConversationService } from 'src/app/services/conversation.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { InfoService } from 'src/app/services/info.service';
 import { MediaService } from 'src/app/services/media.service';
@@ -41,10 +43,15 @@ export class ConversationStartPage implements OnInit {
     public translate:TranslateService,
     public info:InfoService,
     public auth:AuthService,
+    private route:ActivatedRoute,
+    private conversationService:ConversationService,
     
   ) { }
 
   ngOnInit() {
+
+    // console.log(location.pathname.substring(1))
+
     if(this.caseItem){
       if(this.caseItem.goals){
         this.caseItem.goalsItems = JSON.parse(JSON.stringify(this.caseItem.goals))
@@ -169,6 +176,13 @@ export class ConversationStartPage implements OnInit {
       this.caseItem.photo = ''
     }
     this.toast.hideTooltip()
+    
+    if(location.pathname.substring(1).includes('my_trainings') || location.pathname.substring(1).includes('my_organisation')){
+      this.conversationService.originUrl = location.pathname.substring(1)
+    }
+    else{
+      this.conversationService.originUrl = ''
+    }
     this.modalCtrl.dismiss(this.caseItem)
   }
 

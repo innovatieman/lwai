@@ -13,7 +13,7 @@
 
   <div singleLine></div>
 
-  <ion-grid *ngIf="options.skills&&options?.firstTime">
+  <ion-grid *ngIf="options.skills&&options?.firstTime && options.conversation?.messages?.length > 10">
     <ion-row *ngIf="options.skills">
       <ion-col size="4">
         <div class="skillBonus impact">+{{skillScore['impact'].score - skillScore['impact'].prevScore}}</div>
@@ -35,7 +35,11 @@
       </ion-col>
     </ion-row>
   </ion-grid>
-    <div *ngIf="options.skills&&options?.firstTime">
+  <div basicPadding marginBottom italic flex center-ver center-hor *ngIf=" options.conversation?.messages?.length <10" class="skillSummary">
+    {{ 'conversation.no_skills_points_length' | translate }}
+  </div>
+
+  <div *ngIf="options.skills&&options?.firstTime ">
     <div marginBottom [innerHtml]="options.skills.summary | sanitizeHtml" weight400></div>
     <div weight600>{{'standards.impact' | translate}}</div>
     <div marginBottom [innerHtml]="options.skills.evaluation.Impact.feedback | sanitizeHtml" weight400></div>

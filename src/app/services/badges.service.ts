@@ -16,12 +16,12 @@ export class BadgesService {
     private firestore: FirestoreService,
     private translate: TranslateService,
   ) { 
-    this.loadCases(() => {
-      console.log(this.badges);
+    this.loadBadges(() => {
+      // console.log(this.badges);
     });
   }
 
-  loadCases(callback?:Function) {
+  loadBadges(callback?:Function) {
         const currentLang = this.translate.currentLang || 'en';
         // Query voor cases die toegankelijk zijn voor de gebruiker
         this.fire
@@ -36,9 +36,9 @@ export class BadgesService {
               }))
             ),
             // Haal vertalingen op voor de huidige taal
-            switchMap(cases =>
+            switchMap(badges =>
               combineLatest(
-                cases.map(doc =>
+                badges.map(doc =>
                   this.fire
                     .collection(`badges/${doc.id}/translations`)
                     .doc(currentLang)
@@ -53,9 +53,9 @@ export class BadgesService {
               )
             )
           )
-          .subscribe(cases => {
+          .subscribe(badges => {
             // Combineer hoofdgegevens en vertalingen
-            this.badges = cases.map(doc => ({
+            this.badges = badges.map(doc => ({
               ...doc,
               title: doc.translation?.title || doc.title,
               text: doc.translation?.text || doc.text,

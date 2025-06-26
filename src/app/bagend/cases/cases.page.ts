@@ -41,6 +41,7 @@ export class CasesPage implements OnInit {
   backupDate: number = 0
   extraFilters: any = {
     open_to_user: [true],
+    create_self: [false],
     photo:[],
     free_question:[],
   }
@@ -187,6 +188,10 @@ export class CasesPage implements OnInit {
             goalsItem: doc.translation?.goalsItem || doc.goalsItem,
             level_explanation: doc.translation?.level_explanation || doc.level_explanation,
             role: doc.translation?.role || doc.role,
+            free_question: doc.translation?.free_question || doc.free_question || '',
+            free_question2: doc.translation?.free_question2 || doc.free_question2 || '',
+            free_question3: doc.translation?.free_question3 || doc.free_question3 || '',
+            free_question4: doc.translation?.free_question4 || doc.free_question4 || '',
           }));
           // if(this.caseItem.id){
           //   this.caseItem = this.cases.filter((e:any) => {
@@ -446,6 +451,12 @@ export class CasesPage implements OnInit {
         if(res.casus!=caseItem.casus){
           res.translate = false
         }
+        for(let key in res){
+          if(res[key] == undefined){
+            res[key] = null
+          }
+        }
+
         this.firestore.set('cases',res.id,res).then(()=>{
           this.loadCases(()=>{
             this.caseItem = this.cases.filter((e:any) => {
@@ -602,6 +613,10 @@ export class CasesPage implements OnInit {
       else if(res=='generate'){
         this.createPhoto(this.caseItem)
       }
+      else if(res=='download'){
+        this.nav.goto(this.caseItem.photo,true)
+      }
+
     },true)
   }
 
@@ -688,7 +703,7 @@ export class CasesPage implements OnInit {
 
   csvData: any = '';
   getCaseCsv(){
-    this.http.get('assets/datasets/cases_temp2.csv', { responseType: 'text' })
+    this.http.get('assets/datasets/cases_temp_free_choice.csv', { responseType: 'text' })
       .subscribe(
         data => {
           this.csvData = data;
@@ -740,6 +755,7 @@ export class CasesPage implements OnInit {
     this.csvData.forEach(async (item:any) => {
       item.level = parseInt(item.level);
       item.attitude = parseInt(item.attitude);
+      item.steadfastness = parseInt(item.steadfastness);
       item.types = item.types.split('$$$');
       for(let i = 0; i < item.types.length; i++){
         item.types[i] = item.types[i].trim();
@@ -758,6 +774,7 @@ export class CasesPage implements OnInit {
     let eindeBatch = this.csvData.length;
     for(let i = batch; i < eindeBatch; i++){
       let obj:any = {
+        create_self: false,
         conversation:this.csvData[i].conversation,
         role: this.csvData[i].role,
         title: this.csvData[i].title,
@@ -771,6 +788,9 @@ export class CasesPage implements OnInit {
         types: this.csvData[i].types,
         openingMessage: this.csvData[i].openingMessage || '',
         free_question: this.csvData[i].free_question || '',
+        free_question2: this.csvData[i].free_question_2 || '',
+        free_question3: this.csvData[i].free_question_3 || '',
+        free_question4: this.csvData[i].free_question_4 || '',
         open_to_user: false,
         goalsItems: {
           free:this.csvData[i].goal,
@@ -818,7 +838,7 @@ export class CasesPage implements OnInit {
       //   age: this.csvData[i].age,
       //   gender: this.csvData[i].gender
       // }
-      // console.log(obj);
+      console.log(obj);
       this.firestore.create('cases',obj).then(()=>{
         console.log('Case imported');
       })
@@ -868,47 +888,69 @@ export class CasesPage implements OnInit {
 
 
   async createPhoto(caseItem:any){
-    console.log(caseItem)
-      this.toast.showLoader('Creating image...')
-      setTimeout(() => {
-        if(!this.caseItem.id){
-          this.toast.hideLoader()
-        }
-      }, 500);
-      let url = 'https://generateandstoreimagerunway-p2qcpa6ahq-ew.a.run.app'
 
-      let prompt = `
-        create a photo in a photo-realistic style of a character/person with the following Role:
-        "${caseItem.role}"
-      `
-      prompt = caseItem.role
+    this.modalService.inputFields('Generate image', 'Please fill in the details for the image...', [
+      {
+        type: 'textarea',
+        title: 'Prompt',
+        value: `A centered portrait of a 
+[age (young, middle-aged, old, ...)] 
+[gender (male, female, non-binary, ...)] 
+[ethnicity (Asian, Black, Caucasian, Hispanic, ...)] 
+[occupation (doctor, teacher, engineer, ...)],
+who looks [emotion (happy, scared, angry, ...]. 
+The person is positioned in the center of the frame.
+The person’s hairstyle, clothing, and any accessories are chosen creatively by the AI.  
+The background is soft, neutral, and simple (e.g., soft gray or light beige).  
+The face is well-lit with a natural expression, and the portrait is in a photo-realistic style.  
+No text, lines, or other elements should be present in the image besides the portrait.`,
+      }], async (result: any) => {
+        if (result.data) {
+          let prompt = result.data[0].value
+      console.log(caseItem)
+        this.toast.showLoader('Creating image...')
+        setTimeout(() => {
+          if(!this.caseItem.id){
+            this.toast.hideLoader()
+          }
+        }, 500);
+        let url = 'https://generateandstoreimagerunway-p2qcpa6ahq-ew.a.run.app'
+
+        // let prompt = `
+        //   create a photo in a photo-realistic style of a character/person with the following Role:
+        //   "${caseItem.role}"
+        // `
+        // prompt = caseItem.role
+        
+        let obj:any = {
+          "userId": this.auth.userInfo.uid,
+          "size": "1024x1024",
+          prompt:prompt || '',
+          akool: false,
+          noPadding: true
+        }
+    
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
+        });
+        if (!response.ok) {
+          console.error("Request failed:", response.status, response.statusText);
+          return;
+        }
+        const responseData = await response.json();
+        console.log(responseData)
+        if(responseData?.imageURL){
+          caseItem.photo = responseData.imageURL
+          this.firestore.update('cases',caseItem.id,{photo:caseItem.photo})
+        }
+        this.toast.hideLoader()
+      }
       
-      let obj:any = {
-        "userId": this.auth.userInfo.uid,
-        "size": "1024x1024",
-        prompt:prompt || '',
-        akool: false,
-        noPadding: true
-      }
-  
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(obj),
-      });
-      if (!response.ok) {
-        console.error("Request failed:", response.status, response.statusText);
-        return;
-      }
-      const responseData = await response.json();
-      console.log(responseData)
-      if(responseData?.imageURL){
-        caseItem.photo = responseData.imageURL
-        this.firestore.update('cases',caseItem.id,{photo:caseItem.photo})
-      }
-      this.toast.hideLoader()
+    })
 
       // const imageUrl = responseData.imageUrl;
   
@@ -949,7 +991,13 @@ export class CasesPage implements OnInit {
         this.extraFilters.photo
       );
 
-      this.filteredCases = extraFiltered3;
+      const extraFiltered4 = this.filterKeyPipe.transform(
+        extraFiltered3,
+        'create_self',
+        this.extraFilters.create_self
+      );
+
+      this.filteredCases = extraFiltered4;
       this.filteredCases = this.filteredCases.sort((a, b) => a.order_rating - b.order_rating);
       this.visibleCases = this.filteredCases.slice(0, this.maxCases);
       if (this.infiniteScroll) {
@@ -957,7 +1005,9 @@ export class CasesPage implements OnInit {
       }
       setTimeout(() => {
         // console.log('disabled: ', this.visibleCases.length >= this.filteredCases.length)
-        this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+        if(this.infiniteScroll){
+          this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+        }
       }, 400);
     }
 
@@ -1433,7 +1483,7 @@ export class CasesPage implements OnInit {
           check = this.caseItem?.title && this.caseItem?.user_info
           break;
         case 'basics':
-          check = this.caseItem?.role && this.caseItem?.conversation && this.caseItem.types.length && this.caseItem?.level && this.caseItem?.attitude && this.caseItem?.steadfastness && this.caseItem?.order_rating
+          check = this.caseItem?.role && this.caseItem?.conversation && this.caseItem.types?.length && this.caseItem?.level && this.caseItem?.attitude && this.caseItem?.steadfastness && this.caseItem?.order_rating
           break;
         case 'looks':
           check = this.caseItem?.photo

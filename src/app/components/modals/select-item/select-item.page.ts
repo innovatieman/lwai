@@ -99,7 +99,7 @@ export class SelectItemPage implements OnInit {
         selectedList.push(allList[key])
       }
     }
-    if(selectedList.length==0){
+    if(selectedList.length==0&&!this.extraData.allowEmpty){
       this.toast.show(this.translate.instant('error_messages.no_selection'),null,'middle')
       return
     }

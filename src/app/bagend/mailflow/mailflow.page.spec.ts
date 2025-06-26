@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { WelcomePage } from './welcome.page';
+import { MailflowPage } from './mailflow.page';
 
-describe('WelcomePage', () => {
-  let component: WelcomePage;
-  let fixture: ComponentFixture<WelcomePage>;
+describe('MailflowPage', () => {
+  let component: MailflowPage;
+  let fixture: ComponentFixture<MailflowPage>;
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(WelcomePage);
+    fixture = TestBed.createComponent(MailflowPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

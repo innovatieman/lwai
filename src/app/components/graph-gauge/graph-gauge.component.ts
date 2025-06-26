@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import * as Highcharts from 'highcharts';
 import highchartsMore from 'highcharts/highcharts-more';
 import solidGauge from 'highcharts/modules/solid-gauge';
@@ -11,7 +11,7 @@ solidGauge(Highcharts);
   templateUrl: './graph-gauge.component.html',
   styleUrls: ['./graph-gauge.component.scss'],
 })
-export class GraphGaugeComponent implements OnInit {
+export class GraphGaugeComponent implements OnInit, OnChanges {
   @Input() value:number = 0
   @Input() height:string = '150px'
   Highcharts: typeof Highcharts = Highcharts;
@@ -112,5 +112,12 @@ export class GraphGaugeComponent implements OnInit {
   }
 
   ngOnInit() {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+  if (changes['value'] && this.chart && this.chart.series) {
+    const newValue = changes['value'].currentValue;
+    this.chart.series[0].setData([newValue], true);
+  }
+}
 
 }

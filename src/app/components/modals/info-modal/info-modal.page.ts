@@ -22,7 +22,12 @@ export class InfoModalPage implements OnInit {
     image:false,
     videoLoaded:false,
     btnsClass:'',
-    buttons:null
+    buttons:null,
+    image_max_width:'100%',
+    image_width:'100%',
+    image_up:false,
+    image_under:false,
+    image_only_once:false,
   };
 
 
@@ -40,6 +45,9 @@ export class InfoModalPage implements OnInit {
   ngOnInit() {
     if(!this.options.videoLoaded&&this.options.video){
       this.toast.showLoader()
+    }
+    if(!this.options.image && !this.options.video){
+      this.options.image_only_once = true
     }
     // console.log(this.options)
   }

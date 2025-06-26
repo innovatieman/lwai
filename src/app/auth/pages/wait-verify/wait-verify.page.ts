@@ -43,6 +43,7 @@ export class WaitVerifyPage implements OnInit {
   verifyCode:any = {}
   initiated:boolean = false
   isLoggedIn:boolean = false
+  showVerifyOption: boolean = false
   useOptions: any[]=[
     {id:'my_understanding'},
     {id:'others_understanding'},
@@ -96,6 +97,28 @@ export class WaitVerifyPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    let countUserCheck = 0;
+    const checkInterval = setInterval(async () => {
+      countUserCheck++;
+      if (countUserCheck > 60) {
+        clearInterval(checkInterval);
+        return;
+      }
+      const user = await this.auth.afAuth.currentUser;
+      if (user) {
+        await user.reload();
+        if (user.emailVerified) {
+          // this.startingStep()
+          this.auth.getActiveCourses(user)
+          this.auth.getMyOrganisations(user)
+          clearInterval(checkInterval);
+          if (this.step == 0) {
+            this.next(this.step);
+          }
+        }
+      }
+    }, 300); // elke 1 seconde
+
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
         this.isLoggedIn = true
@@ -164,6 +187,13 @@ export class WaitVerifyPage implements OnInit {
 
   }
 
+  stopVideo(){
+    if (this.myVideo && this.myVideo.nativeElement) {
+      const video = this.myVideo.nativeElement;
+      video.pause();
+      video.autoplay = false;
+    }
+  }
   onCodeChanged(code: string) {
     // console.log(code)
     this.emailResend = ''
@@ -237,8 +267,84 @@ export class WaitVerifyPage implements OnInit {
         this.emailResend = this.translate.instant('error_messages.failure')
         this.toast.hideLoader()
       }
+      setTimeout(() => {
+        this.showVerifyOption = true;
+      }, 5000);
     });
+    
   }
+
+  verifyOption(){
+
+    this.modalService.showVerification(
+      this.translate.instant('page_wait_verify.verify_option_title'),
+      this.translate.instant('page_wait_verify.verify_option_text').replace('{email}',this.auth.userInfo.email),
+      [
+        {
+          text:this.translate.instant('buttons.back'),
+          value:false,
+          color:'dark'
+        },
+        {
+          text:this.translate.instant('buttons.confirm'),
+          value:true,
+          color:'primary'
+        },
+        {
+          text:this.translate.instant('page_wait_verify.wrong_email_delete_account'),
+          value:'delete',
+          color:'medium',
+          fill:'clear',
+          full:true,
+          fullWidth:true
+        }
+      ]
+    ).then(response=>{
+      console.log(response)
+      if(response=== 'delete'){
+        this.modalService.showConfirmation(this.translate.instant('page_wait_verify.wrong_email_delete_account_confirm')).then((response:any)=>{
+          if(response){
+            this.toast.showLoader(this.translate.instant('page_wait_verify.deleting_account'))
+            this.deleteAccount()
+          }
+        })
+      }
+      else if(response){
+        this.toast.showLoader()
+        this.functions.httpsCallable('confirmMyEmail')({}).subscribe((response:any)=>{
+          console.log(response)
+          if(response.status==200){
+            this.isVerified = true
+            if(this.step==0){
+              this.next(this.step)
+            }
+            this.toast.show(this.translate.instant('page_wait_verify.verified'),3000,'bottom')
+          }
+          else{
+            this.toast.show(this.translate.instant('error_messages.failure'),3000)
+          }
+          this.toast.hideLoader()
+        })
+      }
+    })
+  }
+
+  deleteAccount(){
+    this.toast.showLoader(this.translate.instant('page_account.busy_deleting'))
+    this.functions.httpsCallable('deleteSelf')({}).subscribe((response:any)=>{
+      this.toast.hideLoader()
+      if(response.status==200){
+        this.toast.show(this.translate.instant('page_account.delete_account_success'),3000)
+        setTimeout(() => {
+          this.auth.logout('register')
+        }, 3000);
+      }
+      else{
+        this.toast.show(this.translate.instant('page_account.delete_account_failure'),3000)
+      }
+    })
+  }
+
 
   async savePreferences(types?:any){
     if(!types){
@@ -382,7 +488,7 @@ export class WaitVerifyPage implements OnInit {
       this.checkregistrationCode()
     }
     this.fillSteps()
-    console.log(this.step,this.singleUse)
+    // console.log(this.step,this.singleUse)
     if(this.step == 5){
       if(!this.singleUse.id && this.itemsSelected('situationOptions',true)==1){
         this.singleUse = this.itemsSelected('situationOptions',false,true)
@@ -439,6 +545,7 @@ export class WaitVerifyPage implements OnInit {
     // }
     // this.loading = false
   }
+
   selectingCountry:boolean = false
   showCountryPicker(){
     if(this.selectingCountry){
@@ -711,7 +818,14 @@ export class WaitVerifyPage implements OnInit {
 
   checkregistrationCode(){
     if(this.nav.registrationCode){
-      this.auth.registerWithCode(this.nav.registrationCode)
+      console.log(this.nav.registrationCode)
+      // this.auth.registerWithCode(this.nav.registrationCode)
+      this.auth.registerWithCode(this.nav.registrationCode,(res:any) => {
+        console.log('register with code',res)
+        if(res.status==200){
+          this.auth.getActiveCourses(this.auth.userInfo,()=>{},true)
+        }
+      })
     }
   }
 

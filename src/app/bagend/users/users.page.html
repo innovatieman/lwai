@@ -20,12 +20,12 @@
           <ion-card-content>
 
 
-            <ion-item lines="none">
+            <ion-item detail="false" lines="none">
               <ion-toggle color="primary" [(ngModel)]="users[activeTab].isAdmin" (ionChange)="update('isAdmin')">
                 Administrator
               </ion-toggle>
             </ion-item>
-            <ion-item lines="none">
+            <ion-item detail="false" lines="none">
               <ion-toggle color="primary" [(ngModel)]="users[activeTab].isConfirmed" (ionChange)="update('isConfirmed')">
                 Confirmed
               </ion-toggle>

@@ -1,0 +1,13 @@
+<app-header page="admin"></app-header>
+<!-- <main>
+    <ion-textarea rows="10" [(ngModel)]="newObj" style="text-align:left" placeholder="Voeg een object toe"></ion-textarea>
+    <ion-button (click)="addCase()" [disabled]="uploading">Opslaan</ion-button>
+</main> -->
+
+<main>
+  <div basicPadding>
+    <ion-button expand="block" fill="outline" color="primary" (click)="backupFirestore()">
+     Start Backup
+    </ion-button>
+  </div>
+</main>

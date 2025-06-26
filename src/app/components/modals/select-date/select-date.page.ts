@@ -16,7 +16,7 @@ export class SelectDatePage implements OnInit {
   // timePickerObj:any = {}
   constructor(
     private navParams:NavParams,
-    public modal:ModalController,
+    public modalController:ModalController,
     public translate:TranslateService
   ) { 
     // this.date = new Date()
@@ -71,7 +71,7 @@ export class SelectDatePage implements OnInit {
       let day = event?.path[0]?.dataset?.day
 
       if(year+'-'+month+'-'+day == moment().format('YYYY-MM-DD')){
-        this.modal.dismiss(year+'-'+month+'-'+day)
+        this.modalController.dismiss(year+'-'+month+'-'+day)
       }
     }
 
@@ -84,12 +84,12 @@ export class SelectDatePage implements OnInit {
       let day = event?.path[0]?.dataset?.day
 
       if(year+'-'+month+'-'+day == moment().format('YYYY-MM-DD')){
-        this.modal.dismiss(year+'-'+month+'-'+day)
+        this.modalController.dismiss(year+'-'+month+'-'+day)
       }
     }
     if(event.detail.value){
       let formattedDate = moment(event.detail.value).format('YYYY-MM-DD')
-      this.modal.dismiss(formattedDate)
+      this.modalController.dismiss(formattedDate)
     }
   }
 }

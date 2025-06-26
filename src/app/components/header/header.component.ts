@@ -9,6 +9,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { InputFieldsPage } from '../modals/input-fields/input-fields.page';
 import { ToastService } from 'src/app/services/toast.service';
+import { SelectMenuService } from 'src/app/services/select-menu.service';
+import { SwUpdate } from '@angular/service-worker';
 
 @Component({
   selector: 'app-header',
@@ -38,7 +40,8 @@ export class HeaderComponent  implements OnInit {
   isAuthenticated: boolean = false;
   isAdmin: boolean = false;
   isTrainer: boolean = false;
-
+  isEmployee: boolean = false;
+  isOrgAdmin: boolean = false;
 
   menuItems:any=[
     {
@@ -51,16 +54,28 @@ export class HeaderComponent  implements OnInit {
       isTrainer:true,
     },
 
-    {
-      url:'trainer/modules',
-      // action:'trainerMenu',
+    // {
+    //   url:'trainer/trainings',
+    //   // action:'trainerMenu',
+    //   page:'trainer',
+    //   title:'Trainer',
+    //   // dropDown:false,
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    //   isTrainer:true,
+    // },
+     {
+      // url:'trainer/trainings',
+      action:'trainerMenu',
       page:'trainer',
       title:'Trainer',
-      // dropDown:false,
+      dropDown:this.auth.organisations.length>1 ? true : false,
       isVisitor:false,
       isAdmin:true,
       isUser:false,
       isTrainer:true,
+      isOrgAdmin:true,
     },
     {
       action:'adminMenu',
@@ -71,6 +86,7 @@ export class HeaderComponent  implements OnInit {
       isAdmin:true,
       isUser:false,
       isTrainer:false,
+      isOrgAdmin:false,
     },
     
   ]
@@ -126,6 +142,21 @@ export class HeaderComponent  implements OnInit {
       icon: 'faComment',
       url: '/bagend/voices',
     },
+    {
+      title: "Backup",
+      icon: 'faDatabase',
+      url: '/bagend/backup',
+    },
+    {
+      title: "Create Trainer/organisation",
+      icon: 'faFolderPlus',
+      url: '/bagend/create-trainer',
+    },
+    {
+      title: "mailFlow",
+      icon: 'faEnvelope',
+      url: '/bagend/mailflow',
+    },
 
     
     // {
@@ -158,7 +189,9 @@ export class HeaderComponent  implements OnInit {
     public translateService:TranslateService,
     private firestore:FirestoreService,
     private modalController:ModalController,
-    private toast:ToastService
+    private toast:ToastService,
+    private selectMenuservice:SelectMenuService,
+    private swUpdate: SwUpdate,
   ) { }
 
   ngOnInit() {
@@ -168,6 +201,10 @@ export class HeaderComponent  implements OnInit {
       this.showCredits = true
       this.ref.detectChanges()
     })
+    this.auth.employeeLoaded.subscribe((employee)=>{
+      this.isEmployee = employee;
+    })
+
     const path = window.location.pathname;
     this.auth.isAuthenticated().subscribe((auth) => {
       if(auth){
@@ -183,8 +220,13 @@ export class HeaderComponent  implements OnInit {
     this.auth.isAdmin().subscribe((admin) => {
       this.isAdmin = admin;
     });
+
     this.auth.hasActive('trainer').subscribe((trainer)=>{
       this.isTrainer = trainer
+    })
+
+    this.auth.isOrgAdmin().subscribe((orgAdmin)=>{
+      this.isOrgAdmin = orgAdmin
     })
   }
 
@@ -228,11 +270,33 @@ export class HeaderComponent  implements OnInit {
   }
 
   async trainerMenu(){
+    console.log('trainerMenu',this.auth.organisations.length)
+    if(this.auth.organisations.length==1){
+      this.nav.activeOrganisationId = this.auth.organisations[0].id
+      if(window.location.pathname.indexOf('trainer')==-1){
+        this.nav.go('/trainer/trainings')
+      }
+      return
+    }
+
+    let list = []
+    for(let i=0;i<this.auth.organisations.length;i++){
+      list.push({
+        title:this.auth.organisations[i].name,
+        icon:this.auth.organisations[i].logo ? '' :'faStar',
+        image:this.auth.organisations[i].logo ? this.auth.organisations[i].logo : '',
+        // url:'/trainer/trainings',
+        logo:this.auth.organisations[i].logo !=undefined,
+        id:this.auth.organisations[i].id,
+        value:this.auth.organisations[i].id,
+      })
+    }
+
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
       componentProps:{
         customMenu:true,
-        pages:this.trainerItems
+        pages:list
       },
       cssClass: 'customMenu',
       event: event,
@@ -241,6 +305,15 @@ export class HeaderComponent  implements OnInit {
     });
     this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
     await this.shortMenu.present();
+    await this.shortMenu.onWillDismiss().then((result:any)=>{
+      console.log(this.selectMenuservice.selectedItem)
+      if(this.selectMenuservice.selectedItem){
+        this.nav.changeOrganisation(this.selectMenuservice.selectedItem.id)
+        if(window.location.pathname.indexOf('/trainer')==-1){
+          this.nav.go('/trainer/trainings')
+        }
+      }
+    })
   }
 
   shouldShowPage(page: any): boolean {
@@ -257,6 +330,10 @@ export class HeaderComponent  implements OnInit {
     }
 
     if (this.isTrainer && page.isTrainer) {
+      return true;
+    }
+
+    if( this.isOrgAdmin && page.isOrgAdmin){
       return true;
     }
 
@@ -343,6 +420,32 @@ export class HeaderComponent  implements OnInit {
           }
         })
         return await modalItem.present()
+    }
+
+    reload(){
+      if(this.swUpdate?.isEnabled){
+        this.swUpdate.activateUpdate().then(() => {
+          console.log('Update activated, reloading...');
+          setTimeout(() => {
+            window.location.href = window.location.href
+            document.location.reload();
+          }, 2000);
+        });
+      }
+      else{
+        console.log(caches);
+        // Clear the cache
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            caches.delete(cacheName).then(() => {
+              console.log(`Cache ${cacheName} deleted.`);
+            });
+          });
+        });
+        // Reload the page
+        window.location.href = window.location.href
+        // window.location.reload();
+      }
     }
 
 }

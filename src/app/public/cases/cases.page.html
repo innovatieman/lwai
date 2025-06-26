@@ -1,0 +1,81 @@
+<div style="width:100vw;height:100vh;display:flex;justify-content:center;">
+  <div style="max-width:1500px;" [ngStyle]="{'width':width, 'height':height}">
+    <div fullwidth fullheight flex center-ver center-hor *ngIf="!casesLoaded">
+      <div flex center-ver center-hor >
+        <ion-spinner name="lines-sharp" style="height:100px;width:100px"></ion-spinner>
+      </div>
+    </div>
+    <ion-grid>
+    <ion-row>
+      <ion-content id="mainContent" #mainContent style="--background:none;height:100vh;width:100%vw" [ngStyle]="{'flex':media.smallDevice ? 'none' : 1}" fullheight fullwidth>
+        <ng-container *ngIf="media.screenSize !== 'xs'">
+          <ion-row>
+            <ion-col [size]="helper.cardSizeLarge" *ngFor="let caseItem of visibleCases;let i = index">
+                  <ion-card [id]="'case_card'+i" noPadding pointer fullheight class="'caseItem" (click)="showCaseInfo(caseItem)">
+                    <ion-card-content noPadding fullHeight>
+                        <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
+                        <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                        <div *ngIf="caseItem.avatarName" class="videoAvatarBadge">{{'cases.badge_video' | translate}}</div>
+                        <div class="shareButtonCase" pointer (click)="media.shareCase(caseItem,$event)">
+                            <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+                            <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
+                        </div>
+                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                            <ion-card-header>
+                                <ion-card-title font-18 weight600>{{caseItem.title}}</ion-card-title>
+                                <ion-card-subtitle font-14 weight400>{{caseItem.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                            </ion-card-header>
+                        </div>
+                        <div center flex center-ver center-hor style="padding:0px 10px;">
+                            <ion-button class="saveButton creditButton" style="border-radius:100%" [ngStyle]="{'background':levelService.levelColor(caseItem.level)}" fill="outline" size="small">
+                                <div>
+                                    <div [ngStyle]="{'color':levelService.levelColorText(caseItem.level)}">{{caseItem.level}}</div>
+                                    <div font-12 [ngStyle]="{'color':levelService.levelColorTextLevel(caseItem.level)}">{{'standards.level' | translate}}</div>
+                                </div>
+                            </ion-button>
+                            <div class="spacer"></div>
+                            <ion-button class="saveButton cardButton" fill="outline" size="small">{{'buttons.watch' | translate}}</ion-button>
+                        </div>
+                    </ion-card-content>
+                  </ion-card>
+            </ion-col>
+          </ion-row>  
+        
+        </ng-container>
+
+        <ng-container *ngIf="media.screenSize === 'xs'">
+            <ion-col [size]="12" *ngFor="let caseItem of visibleCases;let i = index">
+
+                <ion-card class="caseItemSm" [id]="'case_card'+i" noMargin basicPadding pointer flex align-top style="border-radius:16px;width:calc(100% - 10px)" (click)="showCaseInfo(caseItem)">
+                    <div style="width:100px;">
+                        <div backgroundImage fullwidth fullheight class="avatarImage avatarSmall" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
+                        <div backgroundImage fullwidth fullheight class="avatarImage avatarSmall" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                        
+                    </div>
+                    
+                    <div flex flex-column fullwidth style="height: 135px;">
+                        <ion-card-header style="padding:0px 10px;flex-direction:column" >
+                            <ion-card-title font-18 weight600>{{caseItem.title}}</ion-card-title>
+                            <ion-card-subtitle style="text-transform:none" font-14 weight500>{{caseItem.user_info | maxLength : 80 : true}}</ion-card-subtitle>
+                        </ion-card-header>
+                        <span class="spacer"></span>
+                        <div flex center-ver fullwidth class="arrowDiv">
+                            <span class="spacer"></span>
+                            <span font-18 text-secondary weight600 relative style="top:-2px">{{'buttons.watch' | translate}}</span>
+                            <fa-icon font-24 titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                        </div>
+                    </div>
+                </ion-card>
+            </ion-col>
+
+        </ng-container>
+
+        <ion-infinite-scroll *ngIf="filteredCases.length > visibleCases.length" (ionInfinite)="loadMore($event)">
+            <ion-infinite-scroll-content></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+
+      </ion-content>
+      </ion-row>
+    </ion-grid>
+  </div>
+</div>

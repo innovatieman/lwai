@@ -17,12 +17,12 @@
       <p>{{'page_register.subtitle' | translate}}</p>
       <form [formGroup]="registerForm" (ngSubmit)="registerWithEmail()">
 
-        <ion-item lines="none" class="fieldItem">
+        <ion-item detail="false" lines="none" class="fieldItem">
           <ion-label position="stacked">{{'page_register.email' | translate}}</ion-label>
           <ion-input type="email" formControlName="email"></ion-input>
         </ion-item>
 
-        <ion-item lines="none" class="fieldItem">
+        <ion-item detail="false" lines="none" class="fieldItem">
           <ion-label position="stacked">{{'page_register.password' | translate}}</ion-label>
           <ion-input type="password" *ngIf="!showPassword" formControlName="password">
             <ion-icon slot="end" name="eye" *ngIf="!showPassword" (click)="showPassword = true"></ion-icon>
@@ -33,7 +33,7 @@
         </ion-item>
         <div class="showOfferCodeText" *ngIf="!showOfferCode" (click)="showOfferCode=!showOfferCode">{{'page_register.show_offerCode' | translate}}</div>
 
-        <ion-item lines="none" class="fieldItem" *ngIf="showOfferCode">
+        <ion-item detail="false" lines="none" class="fieldItem" *ngIf="showOfferCode">
           <ion-label position="stacked">{{'page_register.offerCode' | translate}}</ion-label>
           <ion-input type="text" [(ngModel)]="offerCode" (ionChange)="offerToLocal()" [ngModelOptions]="{standalone: true}">
             <ion-icon slot="end" name="close" (click)="showOfferCode = false"></ion-icon>

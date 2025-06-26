@@ -28,9 +28,17 @@ export class MenuPage implements OnInit {
   @Input() pages:any 
   accountPages:any [] = [
     {
-      title: 'Mijn Account',
+      title: this.translateService.instant('page_account.title'),
       url: '/account',
       icon: 'faUser',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:true
+    },
+    {
+      title: this.translateService.instant('marketplace.add_training'),
+      url: '/marketplace/manual',
+      icon: 'faGraduationCap',
       isVisitor:false,
       isAdmin:true,
       isUser:true
@@ -51,6 +59,14 @@ export class MenuPage implements OnInit {
       title: 'Mijn Account',
       url: '/account',
       icon: 'faUser',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:true
+    },
+    {
+      title: this.translateService.instant('marketplace.add_training'),
+      url: '/marketplace/manual',
+      icon: 'faGraduationCap',
       isVisitor:false,
       isAdmin:true,
       isUser:true

@@ -1,0 +1,45 @@
+ion-item{
+    margin-bottom:20px;
+}
+.flowType{
+    font-weight: bold;
+    padding:5px 10px;
+    border-radius: 8px;
+}
+.flowType.registration{
+    background-color: #e0f7fa;
+    color: #006064;
+    border: solid 1px #004d40;
+}
+.flowType.inspiration{
+    background-color: #fce4ec;
+    color: #880e4f;
+    border: solid 1px #880e4f;
+}
+.flowType.learning{
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    border: solid 1px #1b5e20;
+}
+.flowType.customer{
+    background-color: #fff3e0;
+    color: #e65100;
+    border: solid 1px #e65100;
+}
+.mailItem{
+    border-bottom: solid 1px #ccc;
+    padding: 10px 0;
+}
+.mailLabel{
+    color: #333;
+    margin-right:20px;
+}
+.mailValue{
+    color: #666;
+}
+
+.mailBody{
+    border-bottom: solid 1px #ccc;
+    padding: 15px;
+    color:var(--color-global);
+}

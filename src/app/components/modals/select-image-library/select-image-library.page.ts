@@ -43,13 +43,13 @@ export class SelectImageLibraryPage implements OnInit {
   }
 
   loadImages(){
-    this.firestore.get('ai-avatars').subscribe((images:any)=>{
+    this.firestore.get('avatars').subscribe((images:any)=>{
       this.images = images.map((e:any) => {
         let img = e.payload.doc.data()
         img.id = e.payload.doc.id
         return img
       })
-      console.log(this.images)
+      // console.log(this.images)
       this.getFilterOptions()
       if(this.properties && this.properties.type){
         this.filter.type = [this.properties.type]
@@ -150,7 +150,7 @@ export class SelectImageLibraryPage implements OnInit {
           }
       }
     }
-    console.log(this.filterOptions)
+    // console.log(this.filterOptions)
 
   }
 

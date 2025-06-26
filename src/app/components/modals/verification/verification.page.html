@@ -13,8 +13,14 @@
 </div>
 
 <div [ngStyle]="{'display':media.screenSize=='xs' ? 'block' : 'flex'}" center-hor basicPadding *ngIf="buttons.length>1">
+  <ng-template fullwidth ngFor let-btn let-last="last" [ngForOf]="buttons" let-index="index">
+    <ion-button *ngIf="!btn.fullWidth" class="saveButton" [color]="btn.color" [ngStyle]="{'display': media.screenSize=='xs' ? 'block' : 'inline-block'}" [innerHTML]="btn.text" (click)="dismiss(btn.value)" [fill]="!btn.fill ? 'solid' : btn.fill"></ion-button>
+    <span *ngIf="!last && !buttons[index+1].fullWidth" class="spacer"></span>
+  </ng-template>
+</div>
+
+<div [ngStyle]="{'display':media.screenSize=='xs' ? 'block' : 'flex'}" center-hor basicPadding *ngIf="buttons.length>1">
   <ng-template fullwidth ngFor let-btn let-last="last" [ngForOf]="buttons">
-    <ion-button class="saveButton" [color]="btn.color" [ngStyle]="{'display': media.screenSize=='xs' ? 'block' : 'inline-block'}" [innerHTML]="btn.text" (click)="dismiss(btn.value)" [fill]="!btn.fill ? 'solid' : btn.fill"></ion-button>
-    <span *ngIf="!last" class="spacer"></span>
+    <ion-button style="width:100%;" *ngIf="btn.fullWidth" class="saveButton" [color]="btn.color" [ngStyle]="{'display': media.screenSize=='xs' ? 'block' : 'block'}" [innerHTML]="btn.text" (click)="dismiss(btn.value)" [fill]="!btn.fill ? 'solid' : btn.fill"></ion-button>
   </ng-template>
 </div>

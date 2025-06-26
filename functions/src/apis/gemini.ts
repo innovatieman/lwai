@@ -5,8 +5,16 @@ const path = require("path");
 // import * as mime from "mime-types";
 const fileType = require("file-type");
 const { VertexAI } = require("@google-cloud/vertexai");
+import {createVertex } from '@ai-sdk/google-vertex';
+import * as responder from '../utils/responder'
+// import { TextToSpeechClient } from "@google-cloud/text-to-speech";
+
 const vertexAI = new VertexAI({ project: "lwai-3bac8", location: "europe-west1" });
 const modelVertex = vertexAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+const vertexEmbedding = createVertex({ project: "lwai-3bac8", location: "europe-west1" });
+const embeddingModel = vertexEmbedding.textEmbeddingModel('text-embedding-005'); // of 'text-embedding-005'
+
 // import * as ffmpeg from "ffmpeg-static";
 // import { spawn } from "child_process";
 const textToSpeech = require("@google-cloud/text-to-speech");
@@ -24,6 +32,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { buffer } from "stream/consumers";
 import { Readable } from "stream";
 import moment from "moment";
+import { FieldValue } from 'firebase-admin/firestore';
+import { Firestore } from "@google-cloud/firestore";
+const clientDb = new Firestore();
+
+const { onCall, CallableRequest } = require("firebase-functions/v2/https");
+import {onDocumentWritten} from "firebase-functions/v2/firestore";
+import type { CallableRequest } from 'firebase-functions/lib/common/providers/https';
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key);
 const modelGemini = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -44,9 +59,11 @@ const creditsCost:any = {
   goal: 3,
   soundToText:2,
   skills: 5,
+  close_analyst: 10
 }
 
 // firebase deploy --only functions:chatGemini,functions:choicesGemini,functions:factsGemini,functions:backgroundGemini,functions:phasesGemini,functions:feedbackGemini,functions:closingGemini,functions:case_prompt_gemini,functions:soundToTextGemini,functions:skillsGemini
+
 
 exports.chatGemini = onRequest( 
   { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
@@ -232,11 +249,13 @@ exports.choicesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       const categoryRef = db.doc(`categories/${body.categoryId}`);
       const conversationRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
-      const [agent_instructions, categorySnap,formats,conversationSnap] = await Promise.all([
+      const caseRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/caseItem/caseItem`);
+      const [agent_instructions, categorySnap,formats,conversationSnap,caseSnap] = await Promise.all([
         getAgentInstructions(body.instructionType,body.categoryId), 
         categoryRef.get(), 
         getFormats(body.instructionType),
-        conversationRef.get()
+        conversationRef.get(),
+        caseRef.get()
       ]);
 
     if (!categorySnap.exists) {
@@ -244,13 +263,24 @@ exports.choicesGemini = onRequest(
     }
       const categoryData = categorySnap.data();
       const conversationData = conversationSnap.data();
+      const caseData = caseSnap.data();
+
+      caseData.extra_knowledge_summary = ''
+      if(caseData.extra_knowledge && caseData.trainerId){
+        const knowledgeRef = db.collection(`trainers`).doc(caseData.trainerId).collection('knowledge').doc(caseData.extra_knowledge);
+        const knowledgeSnap = await knowledgeRef.get();
+        if(knowledgeSnap.exists){
+          caseData.extra_knowledge_summary = knowledgeSnap.data().summary || '';
+        }
+      }
 
       ////////////////////////////////////////////////////////////////////
       // Set system content
       ////////////////////////////////////////////////////////////////////
       let systemContent = setSystemContent(agent_instructions,formats);
       systemContent = systemContent.split(`[phases_scores]`).join(lastPhaseScores);
-      
+      systemContent = systemContent.split(`[extra_knowledge]`).join(caseData.extra_knowledge_summary);
+
       ////////////////////////////////////////////////////////////////////
       // Get possible goals
       //////////////////////////////////////////////////////////////////
@@ -746,6 +776,7 @@ exports.feedbackGemini = onRequest(
     ////////////////////////////////////////////////////////////////////
     res = setHeaders(res);
 
+    console.log('Start feedback');
 
     try {
       ////////////////////////////////////////////////////////////////////
@@ -785,10 +816,11 @@ exports.feedbackGemini = onRequest(
 
       let messageText = '';
       for(let i = 1; i < messages.length; i++){
-        if(i == messages.length-1 && messages[i].role == 'modal'){
+        // console.log('message ' + i + ' role', messages[i].role);
+        if(i == messages.length-1 && messages[i].role == 'assistant'){
           //do nothing
         }
-        else if(messages[i].role == 'modal'){
+        else if(messages[i].role == 'assistant' || messages[i].role == 'modal'){
           messageText = messageText + messages[i].role + ': ' + cleanReactionMessage(messages[i].content) + '\n\n';
         }
         else{
@@ -814,11 +846,20 @@ exports.feedbackGemini = onRequest(
       const categoryData = categorySnap.data();
       const caseData = caseSnap.data();
 
+      caseData.extra_knowledge_summary = ''
+      if(caseData.extra_knowledge && caseData.trainerId){
+        const knowledgeRef = db.collection(`trainers`).doc(caseData.trainerId).collection('knowledge').doc(caseData.extra_knowledge);
+        const knowledgeSnap = await knowledgeRef.get();
+        if(knowledgeSnap.exists){
+          caseData.extra_knowledge_summary = knowledgeSnap.data().summary || '';
+        }
+      }
+
       ////////////////////////////////////////////////////////////////////
       // Set system content
       ////////////////////////////////////////////////////////////////////
       let systemContent = setSystemContent(agent_instructions,formats);
-      systemContent = systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title)
+      systemContent = systemContent.split("[role]").join(body.role).split("[category]").join(categoryData.title).split("[extra_knowledge]").join(caseData.extra_knowledge_summary);
       systemContent = systemContent.split(`[${body.instructionType}]`).join(JSON.stringify(categoryData[body.instructionType]));
       if(caseData.casus){
         systemContent = systemContent.split("[casus]").join(caseData.casus);
@@ -850,7 +891,7 @@ exports.feedbackGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Add to conversation in Firebase
       ////////////////////////////////////////////////////////////////////
-      await addToConversation(body.userId,body.conversationId,'modal',completeMessage,'feedback');
+      await addToConversation(body.userId,body.conversationId,'modal',completeMessage,'feedback',((messages[messages.length-1].role == 'modal' || messages[messages.length-1].role == 'assistant') ? messages.length-2 : messages.length-1));
 
       ////////////////////////////////////////////////////////////////////
       // Stop loading
@@ -866,9 +907,11 @@ exports.feedbackGemini = onRequest(
       // Update credits
       //////////////////////////////////////////////////////////////////
       if(!body.training?.trainingId){
+        console.log("Updating credits for user");
         await updateCredits(body.userId, creditsCost['feedback']);
       }
       else{
+        console.log("Updating credits for training");
         await updateCreditsTraining(body.userEmail,creditsCost['feedback'],body.training.trainingId,body.training.trainerId);
       }
 
@@ -876,6 +919,134 @@ exports.feedbackGemini = onRequest(
       // Return response
       ////////////////////////////////////////////////////////////////////
       res.status(200).send('ready');
+        
+    } catch (error) {
+      ////////////////////////////////////////////////////////////////////
+      // Error handling
+      //////////////////////////////////////////////////////////////////
+      console.error("Error tijdens streaming:", error);
+      res.status(500).send("Error tijdens streaming");
+    }
+  }
+);
+
+exports.closeAnalystGemini = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
+  async (req: any, res: any) => {
+    ////////////////////////////////////////////////////////////////////
+    // Set headers
+    ////////////////////////////////////////////////////////////////////
+    res = setHeaders(res);
+
+
+    try {
+      ////////////////////////////////////////////////////////////////////
+      // Check required parameters
+      ////////////////////////////////////////////////////////////////////
+      const body = req.body;
+      if((!body.userId) || (!body.userEmail && !body.caseId) || (!body.trainingId) || (!body.instructionType) || (!body.trainerId)){
+        console.log("Missing required parameters in request body");
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Set language
+      ////////////////////////////////////////////////////////////////////
+      let language = 'nl'
+      if(body.language){
+        language = body.language;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Check subscription
+      //////////////////////////////////////////////////////////////////
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      const isAdmin = await checkUserIsAdmin(body.userId, body.trainerId);
+      if (!isAdmin) {
+        res.status(403).send("User is not an admin");
+        return;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Get close evaluations 
+      ////////////////////////////////////////////////////////////////////
+      const closeRef = db.collection(`trainers/${body.trainerId}/trainings/${body.trainingId}/close`);
+      const closeSnap = await closeRef.get();
+      if (closeSnap.empty) {
+        throw new Error("Close evaluations not found");
+      }
+
+      let closeEvaluations = closeSnap.docs.map(doc => doc.data());
+      let relevantEvaluations:any[] = [];
+      for(let i = 0; i < closeEvaluations.length; i++){
+        if((closeEvaluations[i].user == body.userEmail || closeEvaluations[i].caseId == body.caseId) && !closeEvaluations[i].summary){
+          relevantEvaluations.push(closeEvaluations[i]);
+        }
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Get instructions data
+      ////////////////////////////////////////////////////////////////////
+      const [agent_instructions,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,'main',language), 
+        getFormats(body.instructionType)
+      ]);
+
+      ////////////////////////////////////////////////////////////////////
+      // Set system content
+      ////////////////////////////////////////////////////////////////////
+      let systemContent = setSystemContent(agent_instructions,formats);
+
+      ////////////////////////////////////////////////////////////////////
+      // Set user content
+      ////////////////////////////////////////////////////////////////////
+      let content = agent_instructions.content
+      content = content.split(`[evaluations]`).join(JSON.stringify(relevantEvaluations));
+
+      ////////////////////////////////////////////////////////////////////
+      // Set messages
+      ////////////////////////////////////////////////////////////////////
+      let sendMessages:any[] = [
+        {role: "system",content: systemContent},
+        {role: "user",content: content}
+      ]
+
+      ////////////////////////////////////////////////////////////////////
+      // Stream Gemini
+      ////////////////////////////////////////////////////////////////////
+      const result:any = await streamGemini(sendMessages,agent_instructions,false)      
+      let completeMessage = result.text();
+
+      ////////////////////////////////////////////////////////////////////
+      // Add to training in firestore
+      ////////////////////////////////////////////////////////////////////
+      await db.collection('trainers').doc(body.trainerId).collection('trainings').doc(body.trainingId).collection('close').add({ 
+        summary: completeMessage.split('```json ').join('').split('```').join('').split('json ').join('').split('json').join('').trim(),
+        timestamp: new Date().getTime(),
+        user: body.userEmail || null,
+        caseId: body.caseId || null,
+      });
+
+      ////////////////////////////////////////////////////////////////////
+      // Update credits
+      //////////////////////////////////////////////////////////////////
+      await updateCredits(body.userId,creditsCost['close_analyst']);
+
+      ////////////////////////////////////////////////////////////////////
+      // Return response
+      ////////////////////////////////////////////////////////////////////
+      res.status(200).send({ 
+        summary: completeMessage.split('```json ').join('').split('```').join('').split('json ').join('').split('json').join('').trim(),
+        timestamp: new Date().getTime(),
+        user: body.userEmail,
+        caseId: body.caseId || null,
+      });
         
     } catch (error) {
       ////////////////////////////////////////////////////////////////////
@@ -952,12 +1123,14 @@ exports.closingGemini = onRequest(
       //////////////////////////////////////////////////////////////////
       const categoryRef = db.doc(`categories/${body.categoryId}/languages/${language}`);
       const conversationRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
+      const caseRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/caseItem/caseItem`);
 
-      const [agent_instructions,categorySnap,formats,conversationSnap] = await Promise.all([
+      const [agent_instructions,categorySnap,formats,conversationSnap,caseSnap] = await Promise.all([
         getAgentInstructions(body.instructionType,body.categoryId,language),
         categoryRef.get(), 
         getFormats(body.instructionType),
-        conversationRef.get()
+        conversationRef.get(),
+        caseRef.get()
       ]);
       if (!categorySnap.exists) {
         throw new Error("Category not found");
@@ -967,7 +1140,17 @@ exports.closingGemini = onRequest(
       }
       const categoryData = categorySnap.data();
       const conversationData = conversationSnap.data();
+      const caseData = caseSnap.data();
 
+      caseData.extra_knowledge_summary = ''
+      if(caseData.extra_knowledge && caseData.trainerId){
+        const knowledgeRef = db.collection(`trainers`).doc(caseData.trainerId).collection('knowledge').doc(caseData.extra_knowledge);
+        const knowledgeSnap = await knowledgeRef.get();
+        if(knowledgeSnap.exists){
+          caseData.extra_knowledge_summary = knowledgeSnap.data().summary || '';
+        }
+      }
+      
       ////////////////////////////////////////////////////////////////////
       // Set system content
       ////////////////////////////////////////////////////////////////////
@@ -975,7 +1158,8 @@ exports.closingGemini = onRequest(
       let goals = goalsText(conversationData);
       systemContent = systemContent.split(`[goal]`).join(goals);
       systemContent = systemContent.split(`[phases]`).join("<pre>" + JSON.stringify(categoryData['phaseList']) + "</pre>");
-      systemContent = systemContent.split(`['phases_scores']`).join(lastPhaseScores);
+      systemContent = systemContent.split(`[phases_scores]`).join(lastPhaseScores);
+      systemContent = systemContent.split(`[extra_knowledge]`).join(caseData.extra_knowledge_summary);
 
       ////////////////////////////////////////////////////////////////////
       // Set user content
@@ -1030,7 +1214,7 @@ exports.closingGemini = onRequest(
           content: completeMessage,
           timestamp: new Date().getTime(),
           user: body.userEmail,
-          caseId: body.conversationId
+          caseId: conversationData.caseId || conversationData.id || body.conversationId,
         });
 
         await updateCreditsTraining(body.userEmail,creditsCost['closing'],body.training.trainingId,body.training.trainerId);
@@ -1077,7 +1261,7 @@ exports.skillsGemini = onRequest(
       if(body.language){
         language = body.language;
       }
-
+      console.log('language', language);
       ////////////////////////////////////////////////////////////////////
       // Check subscription
       //////////////////////////////////////////////////////////////////
@@ -1139,7 +1323,7 @@ exports.skillsGemini = onRequest(
       let goals = goalsText(conversationData,true);
       systemContent = systemContent.split(`[goal]`).join(goals);
       systemContent = systemContent.split(`[phases]`).join("<pre>" + JSON.stringify(categoryData['phaseList']) + "</pre>");
-      systemContent = systemContent.split(`['phases_scores']`).join(lastPhaseScores);
+      systemContent = systemContent.split(`[phases_scores]`).join(lastPhaseScores);
 
       ////////////////////////////////////////////////////////////////////
       // Set user content
@@ -1261,7 +1445,7 @@ exports.soundToTextGemini = onRequest(
           {
             role: "user",
             parts: [
-              { text: "Transcribe the following audio into Dutch." },
+              { text: "Transcribe the following audio into the spoken language." },
               {
                 inlineData: {
                   mimeType: 'audio/mp4',// mimeType,
@@ -1495,17 +1679,6 @@ async (req:any, res:any) => {
     }
     const base64Audio = await eleven.textToSpeech.convert(voiceId, input );
 
-    // const response = await hume.tts.synthesizeJson({
-    //   utterances: [
-    //     {
-    //       text,
-    //       description: emotion, // bijv. "angry", "excited", "cold and sarcastic"
-    //     },
-    //   ],
-    // });
-
-    // const base64Audio = response.generations?.[0]?.audio;
-
       if (!base64Audio) {
         res.status(500).json({ error: "No audio generated by Hume" });
         return;
@@ -1514,18 +1687,95 @@ async (req:any, res:any) => {
       res.set("Content-Type", "audio/mpeg"); 
       res.send(audioBuffer); 
 
-      // res.status(200).json({
-      //   audio: base64Audio,
-      //   format: "mp3",
-      // });
-      
-
-
   } catch (error) {
     console.error('Error generating speech:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+exports.testEmbeddings = onRequest({
+  cors: true,
+  region: "europe-west1",
+  timeoutSeconds: 540,
+  memory: '1GiB',
+},
+async (req:any, res:any) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Missing text parameter.' });
+    }
+
+    console.log(`Received text: ${text}`);
+
+    const result = await embeddingModel.doEmbed({
+      values: [text]
+    });
+
+    await db.collection('test_embeddings').add({
+      text: text,
+      embeddings: FieldValue.vector(result.embeddings[0]),
+      timestamp: new Date().getTime(),
+    });
+
+    res.status(200).json({ embeddings: result.embeddings[0] });
+
+
+  } catch (error) {
+    console.error('Error generating vector embedding:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+exports.testSearchVectors = onCall(
+  {
+    region: 'europe-west1',
+    memory: '1GiB',
+  },
+  async (request: CallableRequest<any>,) => {
+    const { auth,data } = request;
+
+    if( !auth.uid ) {
+      return new responder.Message('Unauthorized', 401);
+    }
+
+    if(!data || !data.query) {
+      return new responder.Message('Missing required parameters', 400);
+    }
+    try {
+
+      const search = await embeddingModel.doEmbed({
+      values: [data.query]
+    });
+
+      const collection = data.collection || 'test_embeddings';
+
+      const vectorQuery = clientDb
+        .collection(collection)
+        .findNearest({vectorField:"embeddings", queryVector:search.embeddings[0],limit: 5, distanceMeasure: 'COSINE', distanceResultField: 'distance'});
+      const result = await vectorQuery.get();
+      if (result.empty) {
+        return new responder.Message('No results found', 404);
+      }
+      // Format the results
+      const formattedResults = result.docs.map((doc:any) => ({
+        id: doc.id,
+        data: doc.data(),
+      }));
+
+      // console.log('Search results:', formattedResults);
+
+      return new responder.Message(formattedResults, 200);
+    } catch (error) {
+      console.error('Error during vector search:', error);
+      return new responder.Message('Internal Server Error', 500);
+    }
+    
+    
+  })
 
 // exports.goalGemini = onRequest(
 //   { cors: config.allowed_cors, region: "europe-west1" },
@@ -1641,7 +1891,642 @@ async (req:any, res:any) => {
 //   }
 // );
 
+exports.chatGeminiVoiceStream = onRequest(
+  { cors: true, region: "europe-west1", memory: "2GiB", timeoutSeconds: 540 },
+  async (req:any, res:any) => {
+    res = setHeaders(res);
+    try {
+      const body = req.body;
+      const requiredFields = ["userId", "conversationId", "categoryId", "caseId", "instructionType", "attitude"];
+      if (requiredFields.some(field => !body[field]) || (!body.prompt && !body.conversationId)) {
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
 
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      // Haal conversatie op
+      let messages = await getPreviousMessages(body.userId, body.conversationId);
+      if (!messages) {
+        messages = await initializeConversation(body);
+      } else {
+        await setToConversation(body.userId, body.conversationId, "user", body.prompt, "messages", messages.length + "");
+        messages.push({ role: "user", content: body.prompt });
+      }
+
+      const language = body.language || "nl";
+
+      // Haal instructies op
+      const agent_instructions = await getAgentInstructions(body.instructionType, body.categoryId, language);
+
+      // Zet audio headers
+      res.setHeader("Content-Type", "audio/mpeg");
+      // res.setHeader("Content-Type", "audio/wav");
+
+      // Stream Gemini output
+      const result = await streamingGemini(messages, agent_instructions, true);
+      let completeMessage = "";
+      let promptTokens: any = {};
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        completeMessage += chunkText;
+        promptTokens = chunk.usageMetadata;
+
+        // Zet om naar audio
+        const [ttsResponse] = await ttsClient.synthesizeSpeech({
+          input: { text: chunkText },
+          voice: { languageCode: "nl-NL", ssmlGender: "NEUTRAL" },
+          audioConfig: { audioEncoding: "MP3" },
+          
+          // audioConfig: {
+          //   audioEncoding: "LINEAR16",
+          //   sampleRateHertz: 24000
+          // }
+        });
+
+        if (ttsResponse.audioContent) {
+          console.log(`Sending chunk of size: ${ttsResponse.audioContent.length} bytes`);
+          res.write(ttsResponse.audioContent);
+        } else {
+          console.warn("TTS response had no audio content for chunk:", chunkText);
+        }
+
+        // if (ttsResponse.audioContent) {
+        //   res.write(ttsResponse.audioContent);
+        // }
+      }
+
+      res.end();
+
+      // Sla reactie op
+      await setToConversation(body.userId, body.conversationId, "assistant", completeMessage, "messages", (messages.length + 1) + "");
+
+      await stopLoading(body);
+
+      await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
+
+      if (!body.training?.trainingId) {
+        await updateCredits(body.userId, 1); // creditsCost['reaction']
+      } else {
+        await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
+      }
+
+    } catch (err) {
+      console.error("Error tijdens streaming voice:", err);
+      res.status(500).send("Error tijdens streaming voice");
+    }
+  }
+);
+
+// Importeer hier eventuele benodigde modules die je al hebt
+// bijv. admin, functions, etc.
+// const { onRequest } = require('firebase-functions/v2/https');
+// const { setHeaders, checkUserSubscription, getPreviousMessages, initializeConversation, setToConversation, getAgentInstructions, streamingGemini, stopLoading, addTokenUsages, updateCredits, updateCreditsTraining } = require('./utils'); // Voorbeeld van je utility functies
+
+// Zorg ervoor dat je ELEVENLABS_API_KEY is ingesteld als een omgevingsvariabele in Firebase Functions
+// bijv. firebase functions:config:set elevenlabs.api_key="JOUW_API_KEY_HIER"
+// of direct in je environment als je lokaal test
+const ELEVENLABS_API_KEY = config.elevenlabs_api_key //process.env.ELEVENLABS_API_KEY;
+
+exports.chatGeminiVoiceElevenlabsStream = onRequest(
+  { cors: true, region: "europe-west1", memory: "2GiB", timeoutSeconds: 540 },
+  async (req:any, res:any) => {
+    // Stel CORS headers in (ervan uitgaande dat setHeaders dit correct doet)
+    res = setHeaders(res);
+
+    try {
+      const body = req.body;
+      const requiredFields = ["userId", "conversationId", "categoryId", "caseId", "instructionType", "attitude"];
+
+      if (requiredFields.some(field => !body[field]) || (!body.prompt && !body.conversationId)) {
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      // Haal conversatie op en update deze
+      let messages = await getPreviousMessages(body.userId, body.conversationId);
+      if (!messages) {
+        messages = await initializeConversation(body);
+      } else {
+        await setToConversation(body.userId, body.conversationId, "user", body.prompt, "messages", messages.length + "");
+        messages.push({ role: "user", content: body.prompt });
+      }
+
+      const language = body.language || "nl";
+      // Bepaal de Eleven Labs voiceId en modelId. Pas deze aan naar jouw voorkeur.
+      // Voorbeeld NL voice, pas dit aan naar een geschikte Nederlandse stem.
+      const elevenLabsVoiceId = body.voiceId || 'piiJv4CqWw2m6bWv402O'; // Bijv. "Nicole" NL voice
+      const elevenLabsModelId = body.modelId || 'eleven_multilingual_v2';
+
+      // Haal instructies op
+      const agent_instructions = await getAgentInstructions(body.instructionType, body.categoryId, language);
+
+      // Zet audio headers voor MP3 (standaard voor Eleven Labs streaming)
+      res.setHeader("Content-Type", "audio/mpeg");
+      // res.setHeader("Content-Type", "audio/ogg");
+
+      // Start streaming Gemini output
+      const geminiResult = await streamingGemini(messages, agent_instructions, true);
+      let completeMessage = "";
+      let promptTokens: any = {};
+
+      // Buffer voor tekstchunks van Gemini
+      let textBuffer: string[] = [];
+      let bufferTimeout: NodeJS.Timeout | null = null;
+      let isProcessingBuffer = false; // Voorkom dat de buffer meerdere keren tegelijk wordt verwerkt
+
+      // Functie om de gebufferde tekst naar Eleven Labs te sturen en de audio door te sturen
+      const processTextBuffer = async (force: boolean = false) => {
+        if (isProcessingBuffer && !force) return; // Voorkom dubbele calls tenzij geforceerd
+        if (textBuffer.length === 0 && !force) return;
+
+        // Combineer de gebufferde tekst en reset de buffer
+        const textToSend = textBuffer.join(' ').trim();
+        textBuffer = [];
+        if (textToSend === '') return;
+
+        isProcessingBuffer = true; // Markeer dat de verwerking is gestart
+        console.log(`Sending text chunk to Eleven Labs: "${textToSend}"`);
+
+        try {
+          // Roep de Eleven Labs streaming API aan via fetch
+          const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'xi-api-key': ELEVENLABS_API_KEY!, // API-sleutel is vereist
+                  'Accept': 'audio/mpeg', // Specificeer accept-header voor audio
+              },
+              body: JSON.stringify({
+                  text: textToSend.split("  ").join(" "), // Verwijder extra spaties
+                  model_id: elevenLabsModelId,
+                  voice_settings: {
+                    stability: 0.75, // Experimenteer hiermee
+                    similarity_boost: 0.75, // Experimenteer hiermee
+                  },
+                  output_format: "mp3_44100_128", // MP3-formaat met 44.1kHz sample rate en 128kbps bitrate
+              }),
+          });
+
+          if (!elevenLabsResponse.ok || !elevenLabsResponse.body) {
+            console.error(`Eleven Labs streaming API call failed: ${elevenLabsResponse.status} ${elevenLabsResponse.statusText}`);
+            // Overweeg hier een foutmelding naar de client te sturen of de stream te beëindigen
+            return;
+          }
+
+          // Lees de stream van Eleven Labs en stuur deze direct door naar de client
+          const reader = elevenLabsResponse.body.getReader();
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            if (value) {
+              res.write(value); // Stuur de audio chunk direct door
+            }
+          }
+
+        } catch (elevenLabsErr) {
+          console.error("Error calling Eleven Labs streaming API:", elevenLabsErr);
+        } finally {
+          isProcessingBuffer = false; // Verwerking voltooid
+        }
+      };
+
+
+      // Lees chunks van Gemini en buffer ze
+      for await (const chunk of geminiResult.stream) {
+        const chunkText = chunk.text();
+        completeMessage += chunkText;
+        promptTokens = chunk.usageMetadata;
+
+        // textBuffer.push(chunkText);
+
+        // // Als de buffer al lang genoeg is, verwerk meteen (voor natuurlijke spraakflow)
+        // if (textBuffer.join(" ").length >= 250) {
+        //   if (bufferTimeout) clearTimeout(bufferTimeout); // reset timer
+        //   await processTextBuffer(); // directe verwerking
+        // } else {
+        //   // anders: wacht een korte pauze af voor mogelijk langere zin
+        //   if (bufferTimeout) clearTimeout(bufferTimeout);
+        //   bufferTimeout = setTimeout(() => processTextBuffer(), 300); 
+        // }
+
+
+        textBuffer.push(chunkText);
+
+        // Reset of start de timer om de buffer te verwerken
+        // Dit is een heuristische aanpak: stuur de buffer na een korte pauze of bij elke nieuwe chunk
+        if (bufferTimeout) {
+            clearTimeout(bufferTimeout);
+        }
+        // Dit zorgt ervoor dat we wachten tot Gemini een korte pauze heeft (200ms)
+        // of dat de stream eindigt, om een grotere, coherentere tekst naar Eleven Labs te sturen.
+        bufferTimeout = setTimeout(() => processTextBuffer(), 200);
+      }
+
+      // Zorg ervoor dat de laatste gebufferde tekst wordt verwerkt nadat de Gemini stream is voltooid
+      if (bufferTimeout) {
+        clearTimeout(bufferTimeout);
+      }
+      await processTextBuffer(true); // Forceer de laatste verwerking
+
+      // Beëindig de HTTP-respons
+      res.end();
+
+      // Opslaan van reactie en credits (dit blijft hetzelfde)
+      await setToConversation(body.userId, body.conversationId, "assistant", completeMessage, "messages", (messages.length + 1) + "");
+      await stopLoading(body);
+      await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
+
+      if (!body.training?.trainingId) {
+        await updateCredits(body.userId, 1);
+      } else {
+        await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
+      }
+
+    } catch (err) {
+      console.error("Error tijdens streaming voice:", err);
+      res.status(500).send("Error tijdens streaming voice");
+    }
+  }
+);
+
+
+exports.chatGeminiVoiceElevenlabsStream2 = onRequest(
+  { cors: true, region: "europe-west1", memory: "2GiB", timeoutSeconds: 540 },
+  async (req:any, res:any) => {
+    res = setHeaders(res); // Stel CORS headers in
+
+    console.log("Debug: ELEVENLABS_API_KEY status:", ELEVENLABS_API_KEY ? "Set" : "Not set", "Length:", ELEVENLABS_API_KEY?.length);
+    if (!ELEVENLABS_API_KEY) {
+      console.error("ELEVENLABS_API_KEY is not set!");
+      res.status(500).send("Server configuration error: Eleven Labs API key missing.");
+      return;
+  }
+
+    try {
+      const body = req.body;
+      const requiredFields = ["userId", "conversationId", "categoryId", "caseId", "instructionType", "attitude"];
+
+      if (requiredFields.some(field => !body[field]) || (!body.prompt && !body.conversationId)) {
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      let messages = await getPreviousMessages(body.userId, body.conversationId);
+      if (!messages) {
+        messages = await initializeConversation(body);
+      } else {
+        await setToConversation(body.userId, body.conversationId, "user", body.prompt, "messages", messages.length + "");
+        messages.push({ role: "user", content: body.prompt });
+      }
+
+      const language = body.language || "nl";
+      const elevenLabsVoiceId = body.voiceId || 'piiJv4CqWw2m6bWv402O';
+      const elevenLabsModelId = body.modelId || 'eleven_multilingual_v2';
+
+      const agent_instructions = await getAgentInstructions(body.instructionType, body.categoryId, language);
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Transfer-Encoding", "chunked");
+
+      const geminiResult = await streamingGemini(messages, agent_instructions, true);
+      let completeGeminiMessage = "";
+      let promptTokens: any = {};
+
+      for await (const chunk of geminiResult.stream) {
+        const chunkText = chunk.text();
+        completeGeminiMessage += chunkText;
+        promptTokens = chunk.usageMetadata || promptTokens;
+      }
+      console.log(`Complete Gemini message received: "${completeGeminiMessage}"`);
+
+      await setToConversation(body.userId, body.conversationId, "assistant", completeGeminiMessage, "messages", (messages.length + 1) + "");
+      await stopLoading(body);
+
+      // --- NIEUWE LOGICA: PARSE HIER DE TEKST VOOR ELEVEN LABS ---
+      let textForElevenLabs = completeGeminiMessage;
+      const reactionPrefix = "reaction:";
+      const reactionIndex = completeGeminiMessage.indexOf(reactionPrefix);
+
+      if (reactionIndex !== -1) {
+        // Extraheer de tekst na "reaction:"
+        textForElevenLabs = completeGeminiMessage.substring(reactionIndex + reactionPrefix.length).trim();
+      } else {
+        // Log een waarschuwing als de verwachte prefix niet gevonden is
+        console.warn(`'${reactionPrefix}' not found in Gemini response. Sending full message to Eleven Labs.`);
+      }
+
+      ////// oud
+
+      // console.log(`Text sent to Eleven Labs: "${textForElevenLabs}"`);
+      // // --- EINDE NIEUWE LOGICA ---
+
+      // const getElevenLabsSegments = (text: string): string[] => {
+      //     const sentences = text.match(/[^.!?]*[.!?]\s*|\s*$/g) || [];
+      //     const segments: string[] = [];
+      //     let currentSegment = "";
+      //     const MAX_SEGMENT_LENGTH = 500;
+      //     const MIN_SEGMENT_LENGTH_FOR_NEW_CHUNK = 50;
+
+      //     for (const sentence of sentences) {
+      //         const trimmedSentence = sentence.trim();
+      //         if (trimmedSentence === "") continue;
+
+      //         currentSegment += (currentSegment === "" ? "" : " ") + trimmedSentence;
+
+      //         if (currentSegment.length >= MIN_SEGMENT_LENGTH_FOR_NEW_CHUNK ||
+      //             trimmedSentence.match(/[.!?]$/) ||
+      //             currentSegment.length >= MAX_SEGMENT_LENGTH) {
+      //             segments.push(currentSegment);
+      //             currentSegment = "";
+      //         }
+      //     }
+      //     if (currentSegment !== "") {
+      //         segments.push(currentSegment);
+      //     }
+      //     return segments.filter(s => s.trim().length > 0);
+      // };
+
+      // // Gebruik nu 'textForElevenLabs' voor de segmentatie
+      // const textSegments = getElevenLabsSegments(textForElevenLabs);
+      // console.log(`Splitting into ${textSegments.length} Eleven Labs segments.`);
+
+      // for (const segment of textSegments) {
+      //     console.log(`Sending segment to Eleven Labs: "${segment}"`);
+      //     try {
+      //         const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
+      //             method: 'POST',
+      //             headers: {
+      //                 'Content-Type': 'application/json',
+      //                 'xi-api-key': ELEVENLABS_API_KEY!,
+      //                 'Accept': 'audio/mpeg',
+      //             },
+      //             body: JSON.stringify({
+      //                 text: segment,
+      //                 model_id: elevenLabsModelId,
+      //                 voice_settings: {
+      //                   stability: 0.75,
+      //                   similarity_boost: 0.75,
+      //                 },
+      //                 output_format: "mp3_44100_128",
+      //             }),
+      //         });
+
+      //         if (!elevenLabsResponse.ok || !elevenLabsResponse.body) {
+      //           console.error(`Eleven Labs streaming API call failed for segment: ${elevenLabsResponse.status} ${elevenLabsResponse.statusText}`);
+      //           break;
+      //         }
+
+      //         const reader = elevenLabsResponse.body.getReader();
+      //         while (true) {
+      //           const { value, done } = await reader.read();
+      //           if (done) break;
+      //           if (value) {
+      //             res.write(value);
+      //           }
+      //         }
+      //     } catch (elevenLabsErr) {
+      //         console.error("Error calling Eleven Labs streaming API for segment:", elevenLabsErr);
+      //         break;
+      //     }
+      // }
+
+      ///// oud
+
+      console.log(`Text sent to Eleven Labs: "${textForElevenLabs}"`);
+
+      try {
+        const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': ELEVENLABS_API_KEY!,
+            'Accept': 'audio/mpeg',
+          },
+          body: JSON.stringify({
+            text: textForElevenLabs,
+            model_id: elevenLabsModelId,
+            voice_settings: {
+              stability: 0.75,
+              similarity_boost: 0.75,
+            },
+            previous_text: body.emotion || "", // Voeg hier de emotie toe als vorige tekst
+            output_format: "mp3_44100_128",
+          }),
+        });
+
+        if (!elevenLabsResponse.ok || !elevenLabsResponse.body) {
+          console.error(`Eleven Labs streaming API call failed: ${elevenLabsResponse.status} ${elevenLabsResponse.statusText}`);
+          res.end();
+          return;
+        }
+
+        // Stream direct naar de client
+        const reader = elevenLabsResponse.body.getReader();
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value) {
+            res.write(value); // stuur direct door
+          }
+        }
+      } catch (elevenLabsErr) {
+        console.error("Error calling Eleven Labs streaming API:", elevenLabsErr);
+      }
+
+
+
+
+      res.end();
+
+      // De *hele* completeGeminiMessage wordt nog steeds opgeslagen in Firestore
+      // await setToConversation(body.userId, body.conversationId, "assistant", completeGeminiMessage, "messages", (messages.length + 1) + "");
+      // await stopLoading(body);
+      await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
+
+      if (!body.training?.trainingId) {
+        await updateCredits(body.userId, 1);
+      } else {
+        await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
+      }
+
+    } catch (err) {
+      console.error("Error tijdens streaming voice:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error tijdens streaming voice");
+      } else {
+        res.end();
+      }
+    }
+  }
+);
+
+
+// exports.newKnowledgeItem = onDocumentCreated({
+//   region: "europe-west1",
+//   memory: "1GiB",
+//   timeoutSeconds: 540,
+//   document:"trainers/{trainerId}/knowledge/{itemId}",
+// },
+
+//     async (event) => {
+//         const snapshot = event.data;
+//     if (!snapshot.exists) {
+//         console.log('New knowledge item document does not exist:', snapshot.id);
+//         return null;
+//     }
+//     const data = snapshot.data();
+//     if (!data || !data.description) {
+//         console.log('New knowledge item document is missing description:', snapshot.id);
+//         return null;
+//     }
+
+//     ////////////////////////////////////////////////////////////////////
+//       // Set language
+//       ////////////////////////////////////////////////////////////////////
+//     let language = 'Nederlands';
+//     if(data.language){
+//       language = data.language;
+//     }
+
+//     const [agent_instructions,formats] = await Promise.all([
+//         getAgentInstructions('knowledge_summarizer','main',language), 
+//         getFormats('knowledge_summarizer'),
+//       ]);
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Set system content
+//       ////////////////////////////////////////////////////////////////////
+//       let systemContent = setSystemContent(agent_instructions,formats);
+
+      
+//       ////////////////////////////////////////////////////////////////////
+//       // Set user content
+//       ////////////////////////////////////////////////////////////////////
+//       console.log('description', data.description);
+//       let content = agent_instructions.content.split("[description]").join(data.description).split("[title]").join(data.title).split("[language]").join(language)
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Set messages
+//       ////////////////////////////////////////////////////////////////////
+//       let sendMessages:any[] = []
+//       sendMessages.push({role: "system",content: systemContent})
+//       sendMessages.push({role: "user",content: content})
+
+//       ////////////////////////////////////////////////////////////////////
+//       // Stream Gemini
+//       ////////////////////////////////////////////////////////////////////
+//       const result:any = await streamGemini(sendMessages,agent_instructions,false)
+//       const completeMessage = result.text();
+
+//       await db.doc(`trainers/${snapshot.ref.parent.parent.id}/knowledge/${snapshot.id}`).update({
+//         summary: completeMessage,
+//         timestamp: new Date().getTime(),
+//       });
+
+//     // Perform any necessary actions with the new knowledge item
+//     console.log('New summary item created:', snapshot);
+
+//     return null;
+// })
+
+exports.editedKnowledgeItem = onDocumentWritten({
+  region: "europe-west1",
+  memory: "1GiB",
+  timeoutSeconds: 540,
+  document:"trainers/{trainerId}/knowledge/{itemId}",
+},
+    async (event) => {
+        const snapshot = event.data;
+    if( !snapshot.after.exists ) {
+        console.log('Knowledge item document was deleted:', snapshot.after.id);
+        return null;
+    }
+    if (!snapshot.after.exists) {
+        console.log('Knowledge item document does not exist:', snapshot.after.id);
+        return null;
+    }
+    if (snapshot.before.data()?.description === snapshot.after.data()?.description) {
+        console.log('Knowledge item document was not changed:', snapshot.after.id);
+        return null;
+    }
+    if (!snapshot.after.data()) {
+        console.log('Knowledge item document is empty:', snapshot.after.id);
+        return null;
+    }
+    const data = snapshot.after.data();
+    if (!data || !data.description) {
+        console.log('New knowledge item document is missing description:', snapshot.after.id);
+        return null;
+    }
+
+    ////////////////////////////////////////////////////////////////////
+      // Set language
+      ////////////////////////////////////////////////////////////////////
+    let language = 'nl';
+    if(data.language){
+      language = data.language;
+    }
+    let original_language = 'Nederlands';
+    if(data.original_language){
+      original_language = data.original_language;
+    }
+
+    const [agent_instructions,formats] = await Promise.all([
+        getAgentInstructions('knowledge_summarizer','main',language), 
+        getFormats('knowledge_summarizer'),
+      ]);
+
+      ////////////////////////////////////////////////////////////////////
+      // Set system content
+      ////////////////////////////////////////////////////////////////////
+      let systemContent = setSystemContent(agent_instructions,formats);
+
+      
+      ////////////////////////////////////////////////////////////////////
+      // Set user content
+      ////////////////////////////////////////////////////////////////////
+      let content = agent_instructions.content.split("[description]").join(data.description).split("[title]").join(data.title).split("[language]").join(original_language)
+
+      ////////////////////////////////////////////////////////////////////
+      // Set messages
+      ////////////////////////////////////////////////////////////////////
+      let sendMessages:any[] = []
+      sendMessages.push({role: "system",content: systemContent})
+      sendMessages.push({role: "user",content: content})
+
+      ////////////////////////////////////////////////////////////////////
+      // Stream Gemini
+      ////////////////////////////////////////////////////////////////////
+      const result:any = await streamGemini(sendMessages,agent_instructions,false)
+      const completeMessage = result.text();
+
+      await db.doc(`trainers/${snapshot.after.ref.parent.parent.id}/knowledge/${snapshot.after.id}`).update({
+        summary: completeMessage,
+        timestamp: new Date().getTime(),
+      });
+
+    // console.log('New summary item created:', snapshot);
+
+    return null;
+})
 
 async function initializeConversation(body:any): Promise<any[]> {
     // console.log('initializeConversation language: ' + body.language)
@@ -1798,7 +2683,7 @@ async function getAllPositions(): Promise<{ id: string; [key: string]: any }[]> 
 
 async function getAgentInstructions(type: string, categoryId:string,lang:string = 'nl'): Promise<{ [key: string]: any } | null> {
   // console.log('instructions' + type)
-  // console.log('agent instructions: ' + type + ', lang: ' + lang + ', categoryId: ' + categoryId)
+  console.log('agent instructions: ' + type + ', lang: ' + lang + ', categoryId: ' + categoryId)
   try {
 
     const snapShotMain = await db.collection("categories").doc('main').collection('languages').doc(lang).collection('agents').doc(type).get();
@@ -1906,6 +2791,27 @@ async function checkUserSubscription(userId: string): Promise<boolean> {
   }
 }
 
+async function checkUserIsAdmin(userId: string,trainerId:string): Promise<boolean> {
+  try {
+    const trainerRef = db.collection(`trainers`).doc(trainerId);
+    const trainerDoc = await trainerRef.get();
+    if (!trainerDoc.exists) {
+      return false;
+    }
+    const trainerData = trainerDoc.data();
+
+    // Controleer op specifieke abonnementsvoorwaarden
+    if(trainerData.admins && trainerData.admins.includes(userId)){
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error bij abonnementcontrole:", error);
+    return false;
+  }
+}
+
+
 async function getUserInfo(userId: string): Promise<{ [key: string]: any } | null> {
   try {
     const snapshot = await db.collection("users").doc(userId).get();
@@ -1957,8 +2863,32 @@ async function getPreviousMessages(userId: string, conversationId: string, subCo
 // }
 
 async function updateCredits(userId: string, creditsToSubtract: number): Promise<void> {
+
+  let creditsCollectionRef = db.collection("users").doc(userId).collection("credits");
+
+  const user = await db.collection("users").doc(userId).get();
+  if (!user.exists) {
+    throw new Error("User not found");
+  }
+  const userData = user.data();
+  if (!userData || !userData.email) {
+    throw new Error("User email not found");
+  }
+  const employeesRef = db.collectionGroup("employees").where("email", "==", userData.email);
+  const employeesSnapshot = await employeesRef.get();
+  if (!employeesSnapshot.empty) {
+    const employeeOrganisationId = employeesSnapshot.docs[0].ref.parent.parent?.id;
+    if (employeeOrganisationId) {
+      try {
+        creditsCollectionRef = db.collection("trainers").doc(employeeOrganisationId).collection('credits');
+      } catch (error) {
+        console.error("Error bij het ophalen van de organisatie ID:", error);
+        throw new Error("Failed to get organisation ID");
+      }
+    }
+  }
+
   try {
-    const creditsCollectionRef = db.collection("users").doc(userId).collection("credits");
 
     // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
     const creditsQuerySnapshot = await creditsCollectionRef
@@ -2032,13 +2962,14 @@ async function updateCredits(userId: string, creditsToSubtract: number): Promise
 
 async function updateCreditsTraining(userEmail: string, creditsToSubtract: number,trainingId:string,trainerId:string): Promise<void> {
   try {
+    console.log("updateCreditsTraining trainerId: " + trainerId + ', trainingId: ' + trainingId + ', userEmail: ' + userEmail + ', creditsToSubtract: ' + creditsToSubtract);
     const creditsCollectionRef = db.collection("trainers").doc(trainerId).collection('trainings').doc(trainingId).collection("credits");
     const creditsUsersCollectionRef = db.collection("trainers").doc(trainerId).collection('trainings').doc(trainingId).collection("creditsUsers");
 
     // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
     const creditsQuerySnapshot = await creditsCollectionRef
       .where('total', '>', 0)
-      .orderBy('added', 'asc')
+      .orderBy('created', 'asc')
       .get();
 
     // let creditDocs = creditsQuerySnapshot.docs;
@@ -2047,7 +2978,7 @@ async function updateCreditsTraining(userEmail: string, creditsToSubtract: numbe
     // Als er geen documenten zijn met total > 0, pak het laatst toegevoegde document (ook als total 0 of negatief is)
     if (creditDocs.length === 0) {
       const allCreditsSnapshot = await creditsCollectionRef
-        .orderBy('added', 'desc')
+        .orderBy('created', 'desc')
         .limit(1)
         .get();
 
@@ -2165,12 +3096,13 @@ async function setToConversation(userId:string,conversationId:string,role:string
     });
 }
 
-async function addToConversation(userId:string,conversationId:string,role:string,content:string,agent:string){
+async function addToConversation(userId:string,conversationId:string,role:string,content:string,agent:string,id?:any){
   let messageRef = db.collection(`users/${userId}/conversations/${conversationId}/${agent}`);
   messageRef.add({
     role: role,
     content: content.split('```json').join('').split('```').join(''),
     timestamp: new Date().getTime(),
+    id: id+'' || '',
   });
 }
 

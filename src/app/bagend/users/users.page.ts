@@ -61,7 +61,7 @@ export class UsersPage implements OnInit {
     for(let i=0;i<this.users.length;i++){
       if(this.users[i].id=='ajXfTi2yGjeIQcwQkYyul4yU7FS2'){
         console.log(this.users[i])
-        this.firestore.updateSub('users',this.users[i].id,'credits','credits',{amount:300,added:this.users[i].registeredAt,expires:this.users[i].registeredAt+(365*24*60*60),source:'register'}).then(()=>{
+        this.firestore.updateSub('users',this.users[i].id,'credits','credits',{amount:300,added:this.users[i].registeredAt,created:this.users[i].registeredAt,expires:this.users[i].registeredAt+(365*24*60*60),source:'register'}).then(()=>{
 
         })
       }
