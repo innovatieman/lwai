@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { AuthService } from 'src/app/auth/auth.service';
 import { IconsService } from 'src/app/services/icons.service';
+import { NavService } from 'src/app/services/nav.service';
 
 @Component({
   selector: 'app-unsubscribe',
@@ -11,13 +11,20 @@ import { IconsService } from 'src/app/services/icons.service';
 export class UnsubscribePage implements OnInit {
   emailFlow: string = ''
   userId: string = ''
+  message: string = 'Momentje geduld...';
+  ready: boolean = false;
+  success: boolean = false;
   constructor(
     public auth:AuthService,
     public icon:IconsService,
-    private functions:AngularFireFunctions
+    public nav:NavService
   ) { }
 
   ngOnInit() {
+  }
+
+  toLogin(){
+    this.nav.go('login');
   }
 
   ionViewDidEnter() {
@@ -44,11 +51,19 @@ export class UnsubscribePage implements OnInit {
           },
           body: JSON.stringify(obj),
         });
-        if (!response.ok) {
+        const responseData = await response;
+        if (!responseData.ok) {
+          this.message = 'Er is iets misgegaan, probeer het later opnieuw.';
+          this.ready = true;
+          this.success = false;
           console.error("Request failed:", response.status, response.statusText);
           return;
         }
-        const responseData = await response;
+        else {
+          this.message = 'Je bent succesvol uitgeschreven.';
+          this.ready = true;
+          this.success = true;
+        }
         console.log("Response data:", responseData);
   }
 

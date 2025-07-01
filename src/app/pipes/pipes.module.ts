@@ -23,6 +23,7 @@ import { GroupByPipe } from './group-by.pipe';
 import { SearchManyPipe } from './search-many.pipe';
 import { CaseFilterPipe } from './case-filter.pipe';
 import { ConvertAiTextToHtmlPipe } from './convert-ai-text-to-html.pipe';
+import { FormatAiTextPipe } from './format-ai-text.pipe';
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { ConvertAiTextToHtmlPipe } from './convert-ai-text-to-html.pipe';
     GroupByPipe,
     SearchManyPipe,
     CaseFilterPipe,
-    ConvertAiTextToHtmlPipe
+    ConvertAiTextToHtmlPipe,
+    FormatAiTextPipe
   ],
   imports: [
     CommonModule
@@ -75,7 +77,8 @@ import { ConvertAiTextToHtmlPipe } from './convert-ai-text-to-html.pipe';
     GroupByPipe,
     SearchManyPipe,
     CaseFilterPipe,
-    ConvertAiTextToHtmlPipe
+    ConvertAiTextToHtmlPipe,
+    FormatAiTextPipe
   ],
   providers:[
     CleanHtmlPipe,
@@ -85,7 +88,8 @@ import { ConvertAiTextToHtmlPipe } from './convert-ai-text-to-html.pipe';
     SortByPipe,
     CleanReactionPipe,
     CaseFilterPipe,
-    FilterSearchPipe
+    FilterSearchPipe,
+    FormatAiTextPipe
   ]
 })
 export class PipesModule { }

@@ -133,7 +133,10 @@
         "admin_environment":"Administrator environment",
         "try_now":"Try now",
         "try_self":"Try it yourself",
-        "add": "Add"
+        "add": "Add",
+        "publish_for_organisation":"Publish for organization",
+        "publish_for_participants":"Publish for participants",
+        "upgrade":"Upgrade"
       },
       "messages": {
       "saved": "Data saved",
@@ -174,7 +177,12 @@
       "agents_choices": "Suggestions",
       "agents_facts": "Fact checker",
       "agents_background": "Background information",
-      "agents_undo": "Undo"
+      "agents_undo": "Undo",
+      "agents_attitude":"Attitude of the AI conversation partner",
+      "agents_feedback":"Feedback",
+      "agents_feedback_cipher":"Feedback score",
+      "agents_phases":"Conversation level (phases",
+      "agents_goal":"Goal of the conversation"
     },
     "languages": {
       "language": "Language",
@@ -389,7 +397,20 @@
       "your_credits":"Your credits",
       "credits_conversations":"Extensive conversations",
       "offer_code_success":"The code has been accepted and you now have extra credits.",
-      "offer_code_failure":"The code is invalid or has already been used. Please try again with a different code."
+      "offer_code_failure":"The code is invalid or has already been used. Please try again with a different code.",
+      "become_trainer":"Become a trainer",
+      "become_trainer_text":"Do you want to use AliciaLabs for your own training? Then become a trainer. You can create, publish, and manage your own cases and training.",
+      "trainer_basic":"Basic",
+      "trainer_pro":"Pro",
+      "trainer_enterprise":"Enterprise",
+      "trainer_free":"Free",
+      "trainer_enterprise_price":"On request",
+      "trainer_enterprise_button":"Request quote",
+      "trainer_basic_text":"Create and publish your own cases and training. No registration fees. Pay per training.",
+      "trainer_pro_text":"For more options and unlimited access to advanced features.",
+      "trainer_enterprise_text":"For organizations that want to use AliciaLabs for their employees.",
+      "trainer_show_details":"View details",
+      "trainer_hide_details":"Verberg details"
     },
     "cases": {
       "badge_video": "Video",
@@ -440,6 +461,7 @@
       "user_options":"What can a user enter and use?",
       "input":"Input",
       "user_help":"What help can the user call upon?",
+      "user_hide":"What is visible to the user?",
       "user_input":"User input",
       "opening_message":"Opening of conversation",
       "goal_conversation":"Goal of conversation",
@@ -480,8 +502,9 @@
       "generate_photo_standard_title":"Generate a photo",
       "generate_photo_standard_info":"Set instructions for the AI to generate a photo. The more detailed the instructions, the better the result. You can also use the standard input as a starting point.",
       "generate_instructions_original":"standard input",
-      "no_extra_knowledge":"No specific knowledge selected."
-      },
+      "no_extra_knowledge":"No specific knowledge selected.",
+      "case_expertise_knowledge":"Expertise knowledge"
+    },
     "modules":{
         "edit_module":"Edit",
         "edit_module_long":"Edit module",
@@ -666,7 +689,11 @@
         "work_help_1":"Indicate what the conversation will be about.",
         "work_help_2":"Indicate how the AI conversation partner views this topic.",
         "work_question_1":"What is the issue?",
-        "work_question_2":"What is the vision of the AI conversation partner?"
+        "work_question_2":"What is the vision of the AI conversation partner?",
+        "expert_question_1":"Which expertise does the AI conversation partner have?",
+        "expert_question_2":"Is there specific knowledge that the AI conversation partner needs to obtain from the internet? Please provide the URL(s) here.",
+        "expert_help_1":"The AI conversation partner is an expert in a specific field. Indicate which expertise the AI conversation partner has.",
+        "expert_help_2":"If the AI conversation partner needs specific knowledge, you can provide the URLs where the AI conversation partner can find this knowledge. The AI conversation partner will use this knowledge to conduct the conversation. This could be a website with information about the topic of the conversation, or a specific page with information about the AI conversation partner itself."
       }
     },
     "edit_html": {
@@ -834,6 +861,7 @@
     "case_extra_knowledge":"Our AI agents who specialize in providing feedback, suggestions, and evaluations already have a lot of knowledge. You can optionally select additional knowledge that the AI agents can use. You can add this knowledge yourself in your organization under 'Specific Knowledge'.",
     "case_user_input_options":"Here you can indicate what the user can enter themselves. If you turn on the 'sliders', the user can adjust your suggestion at the start of a conversation. Always make a suggestion for an opening message as a trainer, so that the user is helped on their way.",
     "case_user_help_options":"Indicate which functions may be available to the user during the conversation: receive suggestions, use fact-check, request background information, and/or undo last response.",
+    "case_user_hide_options":"Indicate which elements should be hidden from the user. This can be useful if you don't want the user to know the attitude of the AI conversation partner or receive direct feedback during the conversation.",
     "case_opening_message":"To start the conversation, the user must enter an opening message. This is a suggestion for the user. You can adjust this if you want.",
     "case_goal":"What is the goal of the conversation? <span style='font-weight:500;font-size:0.90rem'>(What do you want to discuss or achieve as a result?)</span>",
     "case_free_input":"Here you can add one or more free questions. At the beginning of a conversation, the user will be asked these questions. This allows the user to provide input so that the case is specifically tailored to their own situation. For example: <ul><li>Who are you going to talk to? </li><li>What are you going to talk about? </li><li>What is this person's vision on the topic of conversation? </li><li>What is this person's communication style?</li></ul>",
@@ -872,7 +900,7 @@
     "training_intro_publish_organisation":"To open the training for employees, you must publish the training. After publication, all employees of your organization will have access to the training.",
     "training_intro_publish_organisation_and_trainer":"To open the training for employees, you must publish the training. After publication, all employees of your organization will have access to the training. You can also open the training for participants outside your organization, but then you must publish the training as a trainer. There are costs associated with this.",
     "training_costs_publish":"<strong>Base amount</strong><br>For each training, you pay a fixed base amount of <strong>€100</strong>.<br><br><strong >Choice of two options</strong><br>You can then choose between two ways to arrange the practice of cases:<br><br><strong><em>Unlimited use</em></strong></p><ul><li>Participants can practice with all cases in your training as much as they want, as long as the training is open.</li><li>Costs: €20 per participant for the first 2 months.</li><li>If you want to keep the training open longer? Then you pay €5 per participant per extra month.</li><li>This option is especially advantageous if you have many cases or work with multiple participants.</li></ul><p><br><strong><em>Maximum number of credits</em></strong></p><ul><li>You buy a fixed number of credits with which participants can practice a limited number of conversations.</li><li>You get 10 conversations in total by default.</li><li>If you want more conversations to practice? Then indicate how many conversations per participant you need.</li><li>This option is especially suitable if you work with few participants or cases.</li></ul><p><br><strong>Extra participants or conversations</strong><br>During the training, you can always add extra participants, extend the opening, or buy extra conversations.<br><br><strong>NB:</strong> The number of knowledge items in your training does not affect the use of credits. Only practicing cases counts.",
-    "training_add_participants":"You can add participants to the training in three ways:<br><br><strong><em>Add participants yourself</em></strong></p><ul><li>Click on the plus sign (+) and fill in the email addresses of the participants. If they register and log in to AliciaLabs with that email address, they will automatically gain access to the training.</li></ul><p><br><br><strong><em>Import participants</em></strong></p><ul><li>If you have a list of names and email addresses of the participants, you can import them. Click on 'import' and use the template to create a file in the correct format. Import that file. If they register and log in to AliciaLabs with that email address, they will automatically gain access to the training.</li></ul><p><br><strong><em>Send link to participants</em></strong></p><ul><li>You can also create an access link and send it to the participants. If they click on the link, they can register and log in to AliciaLabs and immediately gain access to the training. If someone is already logged in, the registration code within AliciaLabs can be used to gain access to the training.</li></ul><p><br><strong>Dashboard</strong><br>On your dashboard, you can manage the training. You can also see your participants' progress and analyze it.",
+    "training_add_participants":"You can add participants to the training in three ways:<br><br><strong><em>Add participants yourself</em></strong></p><ul><li>Click on the plus sign (+) and fill in the email addresses of the participants. If they register and log in to AliciaLabs with that email address, they will automatically gain access to the training.</li></ul><p><br><br><strong><em>Import participants</em></strong></p><ul><li>If you have a list of names and email addresses of the participants, you can import them. Click on 'import' and use the template to create a file in the correct format. Import that file. If they register and log in to AliciaLabs with that email address, they will automatically gain access to the training.</li></ul><p><br><strong><em>Send link to participants &#128279;</em></strong></p><ul><li>You can also create an access link and send it to the participants. If they click on the link, they can register and log in to AliciaLabs and immediately gain access to the training. If someone is already logged in, the registration code within AliciaLabs can be used to gain access to the training.</li></ul><p><br><strong>Dashboard</strong>",
     "dashboard_trainer_info":"Your name, or organization name, and logo will be displayed on the participants' dashboard. This is the name under which you are registered with AliciaLabs.",
     "training_available_date":"This training or part of the training is available to participants from the set date. If this date is empty or in the past, then (this part of) the training is immediately available to participants.",
     "training_available_till":"This training or part of the training is available to participants until the set date. If this date is empty, then (this part of) the training is available until the training is closed.",
@@ -882,7 +910,8 @@
     "add_employee":"Add employee",
     "add_employee_info":"Here you can enter an email address of someone you want to add as an employee to the organization.",
     "training_add_employees":"You can add employees to the organization in two ways:<br><br><strong><em>Add employees yourself</em></strong></p>Click on the plus sign (+) and fill in the email addresses of the employees.<p><strong><em>Import employees</em></strong></p>If you have a list of names and email addresses of the employees, you can import them. Click on 'import' and use the template to create a file in the correct format. Import that file.",
-    "add_knowledge_item_text":"Here you can add any extra specific knowledge that the AI can use when providing feedback in cases. Note: The AI already has a considerable knowledge base, so this is only necessary if you want to add specific knowledge that is not already in the AI."
+    "add_knowledge_item_text":"Here you can add any extra specific knowledge that the AI can use when providing feedback in cases. Note: The AI already has a considerable knowledge base, so this is only necessary if you want to add specific knowledge that is not already in the AI.",
+    "add_knowledge_expert_text":"Here you can add knowledge that the AI can use in expert conversations. This knowledge is used by the AI conversation partner to coach the user and provide information during an expert conversation."
   },
     "dashboard":{
       "organisation":"Organization",
@@ -913,6 +942,7 @@
       "max_admins_reached":"The maximum number of administrators has been reached. You cannot add any new administrators.",
       "max_employees_reached":"The maximum number of employees has been reached. You cannot add any new employees.",
       "knowledge":"Specific knowledge",
+      "knowledge_feedback":"Knowledge for feedback and suggestions",
       "knowledge_title":"Title",
       "knowledge_description":"Description",
       "knowledge_original_language":"Original language",
@@ -920,7 +950,15 @@
       "add_knowledge_item":"Add knowledge item",
       "add_knowledge_creating_summary":"Our specialized AI is now creating a summary for our other AIs",
       "add_knowledge_item_text":"Here you can add any extra specific knowledge that the AI can use when providing feedback in cases. Note: The AI already has a considerable knowledge base, so this is only necessary if you want to add specific knowledge that is not already in the AI.",
-      "add_knowledge_item_instructions":"Add your knowledge here. You can indicate at each case whether the AI may use this knowledge when providing feedback."
+      "add_knowledge_item_instructions":"Add your knowledge here. You can indicate at each case whether the AI may use this knowledge when providing feedback.",
+      "knowledge_expert":"Knowledge for expert conversations",
+      "add_knowledge_expert_text":"Here you can add knowledge that the AI can use in expert conversations. This knowledge is used by the AI conversation partner to coach the user and provide information during an expert conversation.",
+      "new_expert_knowledge":"New expert knowledge",
+      "new_expert_knowledge_instructions":"Add your knowledge here. This knowledge will be used by the AI conversation partner to coach the user and provide information during an expert conversation. Provide a title, a summary of up to 1500 characters, and attach a .txt or .pdf file with the full knowledge.<br><br>NOTE: Make sure you do NOT include a table of contents or glossary in your attachment, unless this is specifically meant to be looked up. Otherwise, the AI may not find the right information.",
+      "knowledge_expert_title":"Title",
+      "knowledge_expert_summary":"Summary",
+      "expert_knowledge_uploaded":"Expert knowledge has been added. You can now select it for a case with the conversation type 'expert'.",
+      "knowledge_delete":"Are you sure you want to delete this knowledge? If it is still selected for a case, it will no longer be available for the AI conversation partner. This cannot be undone."
   },
   "marketplace":{
     "add_training":"Add training",

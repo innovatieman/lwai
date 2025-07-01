@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { max } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MaxLengthPipe } from 'src/app/pipes/max-length.pipe';
 import { AccountService } from 'src/app/services/account.service';
@@ -36,6 +37,7 @@ export class DashboardPage implements OnInit {
   showAddAdmin:boolean = false;
   newAdminEmail:string = '';
   isAdmin:boolean = false;
+  segmentsLoaded:boolean = false;
 
   [x:string]: any;
   constructor(
@@ -71,6 +73,21 @@ export class DashboardPage implements OnInit {
       }
         
     })
+
+    // this.auth.userInfo$.subscribe(userInfo => {
+    //     if (userInfo) {
+    //       this.auth.hasActive('trainer').subscribe((trainer)=>{
+    //         if(trainer &&!this.segmentsLoaded){
+    //           this.trainerService.loadSegments(()=>{
+    //             this.segmentsLoaded = true
+    //           });
+    //           this.trainerService.loadModules(()=>{
+    //             // this.trainerService.modules = this.trainerService.modules
+    //           })
+    //         }
+    //       })
+    //     }
+    // })
 
     this.auth.isAdmin().subscribe((isAdmin:boolean)=>{
       this.isAdmin = isAdmin;
@@ -547,6 +564,9 @@ export class DashboardPage implements OnInit {
   }
 
   addKnowledgeItem(){
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
+    }
     this.modalService.inputFields(this.translate.instant('dashboard.add_knowledge_item'), this.translate.instant('dashboard.add_knowledge_item_instructions'), [
       {
         type: 'text',
@@ -573,6 +593,7 @@ export class DashboardPage implements OnInit {
     ], (result: any) => {
       if (result.data) {
         let item = {
+          type: 'knowledge',
           title: result.data[0].value,
           original_language: result.data[1].value,
           description: result.data[2].value,
@@ -591,6 +612,9 @@ export class DashboardPage implements OnInit {
   }
 
   editKnowledgeItem(item:any){
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
+    }
     this.modalService.inputFields(this.translate.instant('dashboard.edit_knowledge_item'), this.translate.instant('dashboard.add_knowledge_item_instructions'), [
       {
         type: 'text',
@@ -629,6 +653,41 @@ export class DashboardPage implements OnInit {
       }
     })
   }
+  
+  editBook(item:any){
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
+    }
+    this.modalService.inputFields(this.translate.instant('dashboard.edit_book'), this.translate.instant('dashboard.add_book_instructions'), [
+      {
+        type: 'text',
+        title: this.translate.instant('dashboard.knowledge_title'),
+        name: 'title',
+        value: item.title,
+        required: true,
+      },
+      {
+        type: 'textarea',
+        title: this.translate.instant('dashboard.summary'),
+        name: 'summary',
+        value: item.summary,
+        required: true,
+        maxLength: 1500,
+      }
+    ], (result: any) => {
+      if (result.data) {
+        item.title = result.data[0].value;
+        item.summary = result.data[1].value;
+        item.language = this.translate.currentLang;
+        item.updated = Date.now();
+        this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'knowledge', item.id, item).then(() => {
+          this.trainerService.loadTrainerInfo(()=>{
+            // console.log('Knowledge item updated:', item);
+          },true)
+        })
+      }
+    })
+  }
 
   deleteKnowledgeItem(item:any){
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
@@ -644,54 +703,256 @@ export class DashboardPage implements OnInit {
     })
   }
 
-  addBook(event:any){
-    const file = event?.target?.files[0];
-    if (file) {
-      const title = "Mijn Boek Titel"; // kan ook uit een inputveld komen
-      this.uploadBook(file, title, (response: any) => {
-        console.log("✅ Upload succeeded:", response);
-      });
-    }
-  }
 
-  uploadBookClick() {
-    this.fileBook.nativeElement.click();
-  }
+  toBeDeletedSegments:any[] = []
+  deleteBook(item:any){
+    this.modalService.showConfirmation(this.translate.instant('dashboard.knowledge_delete')).then(async (result:any) => {
+      if(result){
+        this.toast.showLoader()
+        this.toBeDeletedSegments = []
+        this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'knowledge',item.id).then(()=>{
+        })
 
-  async uploadBook(file: File, title: string, callback: Function) {
-    if (!file) return;
-
-    this.toast.showLoader();
-
-    const formData = new FormData();
-    formData.append("file", file, file.name);
-    formData.append("title", title);
-
-    try {
-      const response:any =  await fetch(
-        "https://europe-west1-lwai-3bac8.cloudfunctions.net/embedBookKnowledge",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      this.toast.hideLoader();
-
-      if (!response.ok) {
-        console.error("Upload failed:", response.statusText);
-        this.toast.show("Upload mislukt: " + response.statusText);
-        return;
+        let deletingSubscription = this.firestore.queryTriple('segments','trainerId',this.nav.activeOrganisationId,'==','type','knowledge','==','metadata.book',item.title,'==')
+        .subscribe((segments:any[]) => {
+          this.toBeDeletedSegments = segments.map(doc => doc.payload.doc.id);
+          deletingSubscription.unsubscribe();
+          if(this.toBeDeletedSegments.length>0){
+            for(let i=0;i<this.toBeDeletedSegments.length;i++){
+              this.firestore.delete('segments',this.toBeDeletedSegments[i]).then(()=>{
+                // console.log('Segment deleted:', this.toBeDeletedSegments[i]);
+              }).catch((error:any)=>{
+                console.error('Error deleting segment:', error);
+              })
+            }
+          }
+          this.toast.hideLoader();
+        });
       }
+    })
+  }
 
-      const text = await response.text(); // of .json() indien gewenst
-      callback(text);
-    } catch (error) {
-      console.error("Fout bij upload:", error);
-      this.toast.hideLoader();
-      this.toast.show("Fout bij upload");
+  async uploadBook() {
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
     }
+     this.modalService.inputFields(this.translate.instant('dashboard.new_expert_knowledge'), this.translate.instant('dashboard.new_expert_knowledge_instructions'), [
+            {
+              type: 'text',
+              title: this.translate.instant('dashboard.knowledge_expert_title'),
+              name: 'title',
+              value: '',
+              required: true,
+            },
+            {
+              type: 'file',
+              title: '',
+              name: 'file',
+              value: '',
+              required: true,
+              infoItem:true,
+              maxSize: 50, // in MB
+            },
+            {
+              type: 'textarea',
+              title: this.translate.instant('dashboard.knowledge_expert_summary'),
+              name: 'summary',
+              value: '',
+              required: true,
+              maxLength: 1500,
+            },
+          ], 
+          async (resultTitle: any) => {
+            if(resultTitle.data){
+              console.log('uploadBookClick resultTitle',resultTitle.data)
+              this.toast.showLoader();
+
+                    try {
+
+                      let item = {
+                        type: 'book',
+                        title: resultTitle.data[0].value,
+                        summary: resultTitle.data[2].value,
+                        created: Date.now(),
+                        updated: Date.now(),
+                        trainerId:this.nav.activeOrganisationId
+                      }
+                      this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'knowledge', item,async (response:any) => {
+                        console.log('Knowledge item added:', response.id);
+                        
+                        await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/embedBookKnowledge", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            filePath: resultTitle.data[1].value.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), // bijv. 'uploads/mijnbestand.pdf'
+                            title: resultTitle.data[0].value,
+                            userId:this.auth.userInfo.uid || 'unknown',
+                            trainerId:this.nav.activeOrganisationId || 'unknown',
+                            expertKnowledgeId:response.id
+                          })
+                        });
+                        
+
+                        this.toast.hideLoader();
+                        this.toast.show(this.translate.instant('dashboard.expert_knowledge_uploaded'), 4000, 'middle');
+
+                        this.trainerService.loadTrainerInfo(()=>{
+                          // console.log('Knowledge item added:', item);
+                        },true)
+                      })
+
+                      
+
+                    } catch (error) {
+                      console.error("Fout bij upload:", error);
+                      this.toast.hideLoader();
+                      this.toast.show("Fout bij upload");
+                      return;
+                    }
+
+              // this.media.uploadAnyFile(fileResult,async (res:any)=>{
+              //   console.log("uploadAnyFile result",res);
+              //   if(res?.result){
+
+              //     // this.toast.showLoader();
+
+              //     //   try {
+              //     //     await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/embedBookKnowledge", {
+              //     //       method: "POST",
+              //     //       headers: {
+              //     //         "Content-Type": "application/json",
+              //     //       },
+              //     //       body: JSON.stringify({
+              //     //         filePath: resultTitle.data[1].value.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), // bijv. 'uploads/mijnbestand.pdf'
+              //     //         title: resultTitle.data[0].value,
+              //     //         userId:this.auth.userInfo.uid || 'unknown',
+              //     //         trainerId:this.nav.activeOrganisationId || 'unknown'
+              //     //       })
+              //     //     });
+              //     //     let item = {
+              //     //       type: 'book',
+              //     //       title: resultTitle.data[0].value,
+              //     //       summary: resultTitle.data[1].value,
+              //     //       created: Date.now(),
+              //     //       updated: Date.now(),
+              //     //       trainerId:this.nav.activeOrganisationId
+              //     //     }
+              //     //     this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'knowledge', item).then(() => {
+              //     //       this.trainerService.loadTrainerInfo(()=>{
+              //     //         // console.log('Knowledge item added:', item);
+              //     //       },true)
+              //     //     })
+
+              //     //     this.toast.hideLoader();
+              //     //     this.toast.show(this.translate.instant('dashboard.book_uploaded'), 4000, 'middle');
+
+              //     //   } catch (error) {
+              //     //     console.error("Fout bij upload:", error);
+              //     //     this.toast.hideLoader();
+              //     //     this.toast.show("Fout bij upload");
+              //     //     return;
+              //     //   }
+
+
+              //     // res.result.url
+              //     // this.uploadBook(res.result.url.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), resultTitle.data[0].value, (response: any) => {
+              //     //   console.log("✅ Upload succeeded:", response);
+              //     //   this.toast.show(this.translate.instant('dashboard.book_uploaded'), 4000, 'middle');
+              //     // });
+                  
+              //   }
+              // })
+            }
+      })
+
+
+    // this.media.selectAnyFile(50,(fileResult:any)=>{
+    //     if(fileResult){
+
+    //       this.modalService.inputFields(this.translate.instant('dashboard.upload_book'), this.translate.instant('dashboard.upload_book_instructions'), [
+    //         {
+    //           type: 'text',
+    //           title: this.translate.instant('dashboard.book_title'),
+    //           name: 'title',
+    //           value: '',
+    //           required: true,
+    //         },
+    //         {
+    //           type: 'html',
+    //           title: this.translate.instant('dashboard.book_summary'),
+    //           name: 'summary',
+    //           value: '',
+    //           required: true,
+    //         },
+    //       ], 
+    //       (resultTitle: any) => {
+    //         if(resultTitle.data){
+    //           this.media.uploadAnyFile(fileResult,async (res:any)=>{
+    //             console.log("uploadAnyFile result",res);
+    //             if(res?.result){
+
+    //               this.toast.showLoader();
+
+    //                 try {
+    //                   await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/embedBookKnowledge", {
+    //                     method: "POST",
+    //                     headers: {
+    //                       "Content-Type": "application/json",
+    //                     },
+    //                     body: JSON.stringify({
+    //                       filePath: res.result.url.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), // bijv. 'uploads/mijnbestand.pdf'
+    //                       title: resultTitle.data[0].value,
+    //                       userId:this.auth.userInfo.uid || 'unknown',
+    //                       trainerId:this.nav.activeOrganisationId || 'unknown'
+    //                     })
+    //                   });
+    //                   let item = {
+    //                     type: 'book',
+    //                     title: resultTitle.data[0].value,
+    //                     summary: resultTitle.data[1].value,
+    //                     created: Date.now(),
+    //                     updated: Date.now(),
+    //                     trainerId:this.nav.activeOrganisationId
+    //                   }
+    //                   this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'knowledge', item).then(() => {
+    //                     this.trainerService.loadTrainerInfo(()=>{
+    //                       // console.log('Knowledge item added:', item);
+    //                     },true)
+    //                   })
+
+    //                   this.toast.hideLoader();
+    //                   this.toast.show(this.translate.instant('dashboard.book_uploaded'), 4000, 'middle');
+
+    //                 } catch (error) {
+    //                   console.error("Fout bij upload:", error);
+    //                   this.toast.hideLoader();
+    //                   this.toast.show("Fout bij upload");
+    //                   return;
+    //                 }
+
+
+    //               // res.result.url
+    //               // this.uploadBook(res.result.url.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), resultTitle.data[0].value, (response: any) => {
+    //               //   console.log("✅ Upload succeeded:", response);
+    //               //   this.toast.show(this.translate.instant('dashboard.book_uploaded'), 4000, 'middle');
+    //               // });
+                  
+    //             }
+    //           })
+    //         }
+    //       })
+    //     }
+    // })
+
   }
 
 
+  // searchSegments(text?: string) {
+  //   text = text || 'Wat kun je me vertellen over algebra?'
+  //   this.functions.httpsCallable('searchSegments')({query: text,trainerId:this.nav.activeOrganisationId,book:'Test kennis',max:1}).subscribe(result => {
+  //     console.log('Search result:', result);
+  //   })
+  // }
 }

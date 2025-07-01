@@ -3,13 +3,15 @@
   <ion-grid>
     <ion-row>
       <ion-col>
-        <ion-card>
+        <ion-card borderradius16 basicPadding>
           <ion-card-header>
             <ion-card-title>Unsubscribe</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div>{{userId}}</div>
-            <div>{{emailFlow}}</div>
+            <div font-18 weight500 marginBottom>{{message}}</div>
+            <div *ngIf="ready" marginTop>
+              <ion-button (click)="toLogin()" class="saveButton">Gereed</ion-button>
+            </div>
           </ion-card-content>
         </ion-card>
       </ion-col>

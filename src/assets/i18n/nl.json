@@ -133,7 +133,10 @@
         "admin_environment":"Administrator omgeving",
         "try_now":"Probeer nu",
         "try_self":"Probeer zelf",
-        "add":"Toevoegen"
+        "add":"Toevoegen",
+        "publish_for_organisation":"Publiceer voor de organisatie",
+        "publish_for_participants":"Publiceer voor de deelnemers",
+        "upgrade":"Upgrade"
     },
     "messages":{
         "saved":"Gegevens opgeslagen",
@@ -174,7 +177,12 @@
         "agents_choices":"Suggesties",
         "agents_facts":"Factchecker",
         "agents_background":"Achtergrond informatie",
-        "agents_undo":"Ongedaan maken"
+        "agents_undo":"Ongedaan maken",
+        "agents_attitude":"Attitude van de AI-gesprekspartner",
+        "agents_feedback":"Feedback",
+        "agents_feedback_cipher":"Feedback cijfer",
+        "agents_phases":"Gespreksniveau van het gesprek (fases)",
+        "agents_goal":"Doel van het gesprek"
     },
     "languages":{
         "language":"Taal",
@@ -389,7 +397,20 @@
         "your_credits":"Je credits",
         "credits_conversations":"Uitgebreide gesprekken",
         "offer_code_success":"De code is geaccepteerd en je hebt nu extra credits.",
-        "offer_code_failure":"De code is ongeldig of al gebruikt. Probeer het opnieuw met een andere code."
+        "offer_code_failure":"De code is ongeldig of al gebruikt. Probeer het opnieuw met een andere code.",
+        "become_trainer":"Word trainer",
+        "become_trainer_text":"Wil je AliciaLabs gebruiken voor je eigen trainingen? Word dan trainer. Je kunt dan zelf cases en trainingen maken, publiceren en beheren.",
+        "trainer_basic":"Basic",
+        "trainer_pro":"Pro",
+        "trainer_enterprise":"Enterprise",
+        "trainer_free":"Gratis",
+        "trainer_enterprise_price":"Op aanvraag",
+        "trainer_enterprise_button":"Vraag offerte",
+        "trainer_basic_text":"Maak en publiceer je eigen cases en trainingen. Geen registratie kosten. Betaal per training.",
+        "trainer_pro_text":"Voor meer mogelijkheden en onbeperkte toegang tot geavanceerde functies.",
+        "trainer_enterprise_text":"Voor organisaties die AliciaLabs willen gebruiken voor hun medewerkers.",
+        "trainer_show_details":"Bekijk details",
+        "trainer_hide_details":"Verberg details"
     },
     "cases":{
         "badge_video":"Video",
@@ -440,6 +461,7 @@
         "user_options":"Wat mag een gebruiker invoeren en gebruiken?",
         "input":"Invoer",
         "user_help":"Welke hulp kan de gebruiker inroepen?",
+        "user_hide":"Wat moet verborgen worden voor de gebruiker?", 
         "user_input":"Gebruikersinvoer",
         "opening_message":"Opening van gesprek",
         "goal_conversation":"Doel van gesprek",
@@ -480,7 +502,8 @@
         "generate_photo_standard_title":"Genereer een foto",
         "generate_photo_standard_info":"Stel instructies in voor de AI om een foto te genereren. Hoe gedetailleerder de instructies, hoe beter het resultaat. Je kunt ook de standaardinvoer als uitgangspunt gebruiken.",
         "generate_instructions_original":"standaard invoer",
-        "no_extra_knowledge":"Geen specifieke kennis geselecteerd."
+        "no_extra_knowledge":"Geen specifieke kennis geselecteerd.",
+        "case_expertise_knowledge":"Expertise kennis"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -666,7 +689,11 @@
             "work_help_1":"Geef aan waar het gesprek over zal gaan.",
             "work_help_2":"Geef aan hoe de AI-gesprekspartner aankijkt tegen dit onderwerp.",
             "work_question_1":"Wat is het issue?",
-            "work_question_2":"Wat is de visie van de AI-gesprekspartner?"
+            "work_question_2":"Wat is de visie van de AI-gesprekspartner?",
+            "expert_question_1":"Welke expertise heeft de AI-gesprekspartner?",
+            "expert_question_2":"Is er specifieke kennis die de AI-gesprekspartner van internet moet halen? Geef hier de url(s) aan.",
+            "expert_help_1":"De AI-gesprekspartner is een expert op een bepaald gebied. Geef aan welke expertise de AI-gesprekspartner heeft.",
+            "expert_help_2":"Als de AI-gesprekspartner specifieke kennis nodig heeft, kun je hier de url's aangeven waar de AI-gesprekspartner deze kennis kan vinden. De AI-gesprekspartner zal deze kennis gebruiken om het gesprek te voeren. Dit kan bijvoorbeeld een website zijn met informatie over het onderwerp van het gesprek, of een specifieke pagina met informatie over de AI-gesprekspartner zelf."
         }
     },
     "edit_html":{
@@ -834,6 +861,7 @@
         "case_extra_knowledge":"Onze AI agents die gespecialiseerd zijn in het geven van feedback, suggesties en evaluaties, hebben al veel kennis. Je kunt hier eventueel extra kennis selecteren die de AI' agents kunnen gebruiken. Deze kennis kun je zelf toevoegen bij je organisatie onder 'Specifieke kennis'.",
         "case_user_input_options":"Hier kun je aangeven wat de gebruiker zelf kan invoeren. Als je de schuifjes &#39;aan&#39; zet, dan kan de gebruiker bij het starten van een gesprek jouw voorzet aanpassen. Doe als trainer altijd een voorzet voor een openingsbericht, zodat de gebruiker op weg geholpen is.",
         "case_user_help_options":"Geef aan welke functies voor de gebruiker beschikbaar mogen zijn tijdens het gesprek: suggesties ontvangen, factcheck gebruiken, achtergrondinformatie opvragen en/of laatste reactie ongedaan maken. Als de schuifjes blauw zijn, dan zijn deze functies beschikbaar voor de gebruiker.",
+        "case_user_hide_options":"Geef aan welke elementen voor de gebruiker verborgen moeten worden. Dit kan bijvoorbeeld handig zijn als je niet wilt dat de gebruiker de attitude van de AI-gesprekspartner weet of direct feedback ontvangt tijdens het gesprek.",
         "case_opening_message":"Om het gesprek op te starten moet de gebruiker een openingsbericht invoeren. Er staat al een suggestie weergegeven. Deze kun je als trainer hier aanpassen. Je kunt ook aangeven of de gebruiker jouw voorzet kan aanpassen.",
         "case_goal":"Het doel met het gesprek wordt gebruikt door verschillende ondersteuningsfuncties zoals de feedbackgever, de suggestiegever en de evaluator. Je kunt als trainer een doel bepalen zonder dat de gebruiker deze kan aanpassen. Dat doel moet de gebruiker dan in het gesprek zien te bereiken. Je kunt het doel ook openlaten en door de gebruiker zelf laten kiezen. Of je doet een voorzet, en geeft de gebruiker de mogelijkheid het aan te passen.",
         "case_free_input":"Hier kun je een of meer vrije vragen toevoegen. Aan het begin van een gesprek krijgt de gebruiker deze vragen voorgelegd. Hierdoor kan de gebruiker input geven zodat de case specifiek aansluit op diens eigen situatie. Denk bijvoorbeeld aan: <ul><li>Met wie ga je in gesprek? </li><li>Waarover ga je in gesprek? </li><li>Wat is de visie van deze persoon op het gespreksonderwerp? </li><li>Hoe is de communicatiestijl van deze persoon?</li></ul>",
@@ -872,7 +900,7 @@
         "training_intro_publish_organisation":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training.",
         "training_intro_publish_organisation_and_trainer":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training. Je kunt de training ook openstellen voor deelnemers buiten jouw organisatie, maar dan moet je de training publiceren als trainer. Daar zijn kosten aan verbonden.",
         "training_costs_publish":"Basisbedrag</strong><br>Voor elke training betaal je een vast basisbedrag van <strong>€100</strong>.<br><br><strong >Keuze uit twee opties</strong><br>Je kunt daarna kiezen uit twee manieren om het oefenen van casussen te regelen:<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €20 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li><li>Deze optie is vooral voordelig als je veel casussen hebt of met meerdere deelnemers werkt.</li></ul><p><br><strong><em>Maximum aantal credits</em></strong></p><ul><li>Je koopt een vast aantal credits waarmee je deelnemers een beperkt aantal gesprekken kunnen oefenen.</li><li>Standaard krijg je 10 gesprekken in totaal.</li><li>Wil je meer gesprekken laten oefenen? Geef dan aan hoeveel gesprekken per deelnemer je nodig hebt.</li><li>Deze optie is vooral geschikt als je met weinig deelnemers of casussen werkt.</li></ul><p><br><strong>Extra deelnemers of gesprekken</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen, openstelling verlengen of extra gesprekken inkopen.<br><br><strong>NB:</strong> Het aantal kennis-items in je training heeft geen invloed op het gebruik van credits. Alleen het oefenen van casussen telt mee.",
-        "training_add_participants":"Je kunt op drie manieren deelnemers toevoegen aan de training:<br><br><strong><em>Zelf deelnemers toevoegen</em></strong></p><ul><li>Klik op het plusje (+) en vul de e-mailadressen van de deelnemers in. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><br><strong><em>Deelnemers importeren</em></strong></p><ul><li>Wanneer je een lijst hebt van namen en e-mailadressen van de deelnemers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><strong><em>Link toesturen aan deelnemers</em></strong></p><ul><li>Je kunt ook een toegangslink aanmaken en deze naar de deelnemers sturen. Als ze op de link klikken, kunnen ze zich registreren en inloggen bij AliciaLabs en krijgen ze direct toegang tot de training. Als iemand al is ingelogd kan de registratiecode binnen AliciaLabs gebruikt worden om toegang te krijgen tot de training.</li></ul><p><br><strong>Dashboard</strong><br>Op je dashboard kun je de training beheren. Ook zie je de voortgang van je deelnemers en kun je deze analyseren.",
+        "training_add_participants":"Je kunt op drie manieren deelnemers toevoegen aan de training:<br><br><strong><em>Zelf deelnemers toevoegen</em></strong></p><ul><li>Klik op het plusje (+) en vul de e-mailadressen van de deelnemers in. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><br><strong><em>Deelnemers importeren</em></strong></p><ul><li>Wanneer je een lijst hebt van namen en e-mailadressen van de deelnemers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><strong><em>Link toesturen aan deelnemers &#128279;</em></strong></p><ul><li>Je kunt ook een toegangslink aanmaken en deze naar de deelnemers sturen. Als ze op de link klikken, kunnen ze zich registreren en inloggen bij AliciaLabs en krijgen ze direct toegang tot de training. Als iemand al is ingelogd kan de registratiecode binnen AliciaLabs gebruikt worden om toegang te krijgen tot de training.</li></ul><p><br><strong>Dashboard</strong>",
         "dashboard_trainer_info":"Je naam, of organisatie naam, en logo worden getoond op het dashboard van de deelnemers. Dit is de naam waaronder je geregistreerd bent bij AliciaLabs.",
         "training_available_date":"Deze training of deel van de training is voor de deelnemers beschikbaar vanaf de ingestelde datum. Als deze datum leeg is of in het verleden ligt, dan is (dit deel van) de training direct beschikbaar voor de deelnemers.",
         "training_available_till":"Deze training of deel van de training is voor de deelnemers beschikbaar tot en met de ingestelde datum. Als deze datum leeg is, dan is (dit deel van) de training beschikbaar tot de training wordt gesloten.",
@@ -882,7 +910,8 @@
         "add_employee":"Voeg medewerker toe",
         "add_employee_info":"Hier kun je een e-mailadres invoeren van iemand die je als medewerker wilt toevoegen aan de organisatie.",
         "training_add_employees":"Je kunt op twee manieren medewerkers toevoegen aan de organisatie:<br><br><strong><em>Zelf medewerkers toevoegen</em></strong></p>Klik op het plusje (+) en vul de e-mailadressen van de medewerkers in.<p><strong><em>Medewerkers importeren</em></strong></p>Wanneer je een lijst hebt van namen en e-mailadressen van de medewerkers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand.",
-        "add_knowledge_item_text":"Hier kun je eventuele extra specifieke kennis toevoegen die de AI kan gebruiken bij de feedback in cases. Let op: De AI heeft al een behoorlijke kennisbasis, dus dit is alleen nodig als je specifieke kennis wilt toevoegen die niet al in de AI zit."
+        "add_knowledge_item_text":"Hier kun je eventuele extra specifieke kennis toevoegen die de AI kan gebruiken bij de feedback in cases. Let op: De AI heeft al een behoorlijke kennisbasis, dus dit is alleen nodig als je specifieke kennis wilt toevoegen die niet al in de AI zit.",
+        "add_knowledge_expert_text":"Hier kun je kennis toevoegen die de AI kan gebruiken bij expert gesprekken. Deze kennis wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek."
     },
     "dashboard":{
         "organisation":"Organisatie",
@@ -913,6 +942,7 @@
         "max_admins_reached":"Het maximum aantal administrators is bereikt. Je kunt geen nieuwe administrators toevoegen.",
         "max_employees_reached":"Het maximum aantal medewerkers is bereikt. Je kunt geen nieuwe medewerkers toevoegen.",
         "knowledge":"Specifieke kennis",
+        "knowledge_feedback":"Kennis voor feedback en suggesties",
         "knowledge_title":"Titel",
         "knowledge_description":"Beschrijving",
         "knowledge_original_language":"Originele taal",
@@ -920,15 +950,21 @@
         "add_knowledge_item":"Kennis toevoegen",
         "add_knowledge_creating_summary":"Onze gespecialiseerde AI maakt nu een samenvatting t.b.v. onze andere AI's",
         "add_knowledge_item_text":"Hier kun je eventuele extra specifieke kennis toevoegen die de AI kan gebruiken bij de feedback in cases. Let op: De AI heeft al een behoorlijke kennisbasis, dus dit is alleen nodig als je specifieke kennis wilt toevoegen die niet al in de AI zit.",
-        "add_knowledge_item_instructions":"Voeg hier je kennis toe. Je kunt bij iedere case aangeven of de AI deze kennis mag gebruiken bij het geven van feedback."
+        "add_knowledge_item_instructions":"Voeg hier je kennis toe. Je kunt bij iedere case aangeven of de AI deze kennis mag gebruiken bij het geven van feedback.",
+        "knowledge_expert":"Kennis voor expert gesprekken",
+        "add_knowledge_expert_text":"Hier kun je kennis toevoegen die de AI kan gebruiken bij expert gesprekken. Deze kennis wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek.",
+        "new_expert_knowledge":"Nieuwe expert kennis",
+        "new_expert_knowledge_instructions":"Voeg hier je kennis toe. Deze kennis wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek. Geef een titel, een samenvatting van maximaal 1500 tekens en voeg een .txt of .pdf bestand toe met de volledige kennis.<br><br>LET OP: Zorg dat je in je bijlage GEEN inhoudsopgave of begrippenlijst opneemt, tenzij dit juist opgezocht moet kunnen worden. Anders vindt de AI wellicht niet de juiste informatie.",
+        "knowledge_expert_title":"Titel",
+        "knowledge_expert_summary":"Samenvatting",
+        "expert_knowledge_uploaded":"De kennis is toegevoegd. Je kunt deze nu selecteren bij een case met het gesprekstype 'expert'.",
+        "knowledge_delete":"Weet je zeker dat je deze kennis wilt verwijderen? Als deze nog geselecteerd is bij een case, zal deze niet meer beschikbaar zijn voor de AI-gesprekspartner. Dit kan niet ongedaan gemaakt worden."
     },
     "marketplace":{
         "add_training":"Training toevoegen",
         "code":"Voer de code in",
         "code_input":"Voeg hier de code toe die je van je trainer hebt ontvangen."
     }
-    
-
 }
 
 

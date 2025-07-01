@@ -218,7 +218,7 @@ export class InputFieldsPage implements OnInit {
             this.toast.hideLoader()
             this.modalController.dismiss(this.fields)
             noWaiting = true
-          })
+          },this.fields[i].infoItem)
         }
         else{
           noWaiting = true
@@ -269,35 +269,41 @@ export class InputFieldsPage implements OnInit {
       setTimeout(() => {
 
         let htmlBtn:any = document.querySelector('.ql-HTML');
-        htmlBtn.innerHTML = 'HTML'
-        htmlBtn.style.width = '50px'
-        htmlBtn.addEventListener('click', (event:any)=> {
-          for(let i=0;i<this.fields.length;i++){
-            if(this.fields[i].type=='html'){
-              this.fields[i].value = this.fields[i].value
-              .split('</ol><p><br></p><p>').join('</ol>')
-              .split('</p><p><br></p><ol>').join('<ol>')
-              .split('</ul><p><br></p><p>').join('</ul>')
-              .split('</p><p><br></p><ul>').join('<ul>')
-              .split('<p><br></p>').join('<br>')
-              .split('</p><br><p>').join('<br><br>')
-              .split('</p><p>').join('<br>')
-              .split('&nbsp;').join(' ')
-              this.showHtml = true 
+        if(htmlBtn){
+          htmlBtn.innerHTML = 'HTML'
+          htmlBtn.style.width = '50px'
+          htmlBtn.addEventListener('click', (event:any)=> {
+            for(let i=0;i<this.fields.length;i++){
+              if(this.fields[i].type=='html'){
+                this.fields[i].value = this.fields[i].value
+                .split('</ol><p><br></p><p>').join('</ol>')
+                .split('</p><p><br></p><ol>').join('<ol>')
+                .split('</ul><p><br></p><p>').join('</ul>')
+                .split('</p><p><br></p><ul>').join('<ul>')
+                .split('<p><br></p>').join('<br>')
+                .split('</p><br><p>').join('<br><br>')
+                .split('</p><p>').join('<br>')
+                .split('&nbsp;').join(' ')
+                this.showHtml = true 
+              }
             }
-          }
-        });
+          });
+        }
       },300)
     },100)
   }
 
-  async uploadFile(selectedFile:any,callback:Function){
+  async uploadFile(selectedFile:any,callback:Function,infoItem?:boolean){
 
     const reader = new FileReader();
     reader.onload = async () => {
       const base64Data = (reader.result as string).split(',')[1];
-      
-      const result = await this.functions.httpsCallable('uploadFile')({
+      let callableName = 'uploadFile';
+      if(infoItem){
+        callableName = 'uploadInfoItemFiles';
+      }
+      console.log(callableName)
+      const result = await this.functions.httpsCallable(callableName)({
         fileData: base64Data,
         contentType: selectedFile.type,
         fileExtension: selectedFile.name.split('.').pop()

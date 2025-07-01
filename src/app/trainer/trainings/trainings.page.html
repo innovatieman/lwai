@@ -662,13 +662,13 @@
                   <ion-row font-18 noPadding id="selectRow1">
                     <ion-col size="8"><div weight700>{{'trainings.amount_participants' | translate}}</div></ion-col>
                     <ion-col size="4">
-                      <ion-select id="select1" class="inputAmount" interface="action-sheet" font-20 weight700 [(ngModel)]="trainerService.trainingItem.amount_participants" (ionChange)="update('amount_participants')">
+                      <ion-select id="select1" class="inputAmount" interface="popover" font-20 weight700 [(ngModel)]="trainerService.trainingItem.amount_participants" (ionChange)="update('amount_participants')">
                         <ion-select-option *ngFor="let i of helpers.createNumberList(1,100)" [value]="i">{{i}}</ion-select-option>
                       </ion-select>
                     </ion-col>
                   </ion-row>
 
-                  <ion-row font-18 noPadding id="selectRow2">
+                  <!-- <ion-row font-18 noPadding id="selectRow2">
                     <ion-col size="8">
                       <div weight700>{{'trainings.type_credits' | translate}}</div>
                       <div weight400 italic font-12 *ngIf="trainerService.trainingItem.type_credits=='credits'">{{'trainings.type_credits_period' | translate}}</div>
@@ -679,12 +679,12 @@
                         <ion-select-option value="credits">{{'trainings.credits_max' | translate}}</ion-select-option>
                       </ion-select>
                     </ion-col>
-                  </ion-row>
+                  </ion-row> -->
 
                   <ion-row font-18 noPadding *ngIf="trainerService.trainingItem.type_credits=='unlimited'" id="selectRow3">
                     <ion-col size="8"><div weight700>{{'trainings.amount_period' | translate}}</div></ion-col>
                     <ion-col size="4">
-                      <ion-select id="select3" class="inputAmount" interface="action-sheet" font-20 weight700 [(ngModel)]="trainerService.trainingItem.amount_period" (ionChange)="update('amount_period')">
+                      <ion-select id="select3" class="inputAmount" interface="popover" font-20 weight700 [(ngModel)]="trainerService.trainingItem.amount_period" (ionChange)="update('amount_period')">
                         <ion-select-option *ngFor="let i of helpers.createNumberList(2,12)" [value]="i">{{i}}</ion-select-option>
                       </ion-select>
                     </ion-col>
@@ -692,14 +692,14 @@
 
                   
 
-                  <ion-row font-18 noPadding *ngIf="trainerService.trainingItem.type_credits=='credits'" id="selectRow3">
+                  <!-- <ion-row font-18 noPadding *ngIf="trainerService.trainingItem.type_credits=='credits'" id="selectRow3">
                     <ion-col size="8"><div weight700>{{'trainings.expected_conversations' | translate}}</div></ion-col>
                     <ion-col size="4">
-                      <ion-select id="select3" class="inputAmount" interface="action-sheet"  *ngIf="trainerService.trainingItem.type_credits=='credits'" font-20 weight700 [(ngModel)]="trainerService.trainingItem.expected_conversations" (ionChange)="update('expected_conversations')">
+                      <ion-select id="select3" class="inputAmount" interface="popover" *ngIf="trainerService.trainingItem.type_credits=='credits'" font-20 weight700 [(ngModel)]="trainerService.trainingItem.expected_conversations" (ionChange)="update('expected_conversations')">
                         <ion-select-option *ngFor="let i of helpers.createNumberList(1,10)" [value]="i">{{i}}</ion-select-option>
                       </ion-select>
                     </ion-col>
-                  </ion-row>
+                  </ion-row> -->
 
                   
 
@@ -743,7 +743,7 @@
                     <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.organisation" (click)="trainerService.publishType='organisation'">{{'trainings.publish_switch_organization' | translate}}</ion-button>
 
                     <div class="spacer"></div>
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.publish' | translate}}</ion-button>
+                    <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.publish_for_participants' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
               </ion-card>
@@ -764,7 +764,7 @@
                   <div marginTop flex center-ver>
                     <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='training';centerSelectItems()">{{'trainings.publish_switch_training' | translate}}</ion-button>
                     <div class="spacer"></div>
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="publishTrainingOrganisation()">{{'buttons.publish' | translate}}</ion-button>
+                    <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="publishTrainingOrganisation()">{{'buttons.publish_for_organisation' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
               </ion-card>
@@ -783,7 +783,7 @@
                   </ion-card-header>
                   <ion-card-content>
 
-                    <ion-row font-18 noPadding id="selectRow2">
+                    <!-- <ion-row font-18 noPadding id="selectRow2">
                       <ion-col size="8">
                         <div weight700>{{'trainings.type_credits' | translate}}</div>
                         <div weight400 italic font-12 *ngIf="trainerService.trainingItem.type_credits=='credits'">{{'trainings.type_credits_period' | translate}}</div>
@@ -795,7 +795,7 @@
                         </div>
 
                       </ion-col>
-                    </ion-row>
+                    </ion-row> -->
 
                     <ion-row font-18 noPadding>
                       <ion-col size="8"><div weight700>{{'trainings.amount_participants' | translate}}</div></ion-col>
@@ -823,7 +823,7 @@
                       </ion-col>
                     </ion-row>
 
-                    <ion-row font-18 noPadding *ngIf="trainerService.trainingItem.type_credits=='credits'">
+                    <!-- <ion-row font-18 noPadding *ngIf="trainerService.trainingItem.type_credits=='credits'">
                       <ion-col size="8"><div weight700>{{'trainings.expected_conversations' | translate}}</div></ion-col>
                       <ion-col size="4">
                         <div class="inputAmount" style="padding: 8px 15px;" flex center-ver font-20 weight700>
@@ -834,7 +834,7 @@
                           <fa-icon [icon]="icon.get('faPlus')" pointer (click)="addExtraCosts('expected_conversations',1)"></fa-icon>
                         </div>
                       </ion-col>
-                    </ion-row>
+                    </ion-row> -->
 
                     <div *ngIf="extraCostOptions['expected_conversations'] || extraCostOptions['amount_period'] || extraCostOptions['amount_participants']">
 
@@ -876,7 +876,7 @@
 
                       <div marginTop flex center-ver>
                         <div class="spacer"></div>
-                        <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.publish' | translate}}</ion-button>
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.upgrade' | translate}}</ion-button>
                       </div>
 
                     </div>

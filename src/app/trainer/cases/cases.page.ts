@@ -39,6 +39,7 @@ export class CasesPage implements OnInit {
   showCasus: boolean = false;
   showKnowledge: boolean = false;
   showUserOptions: boolean = false;
+  showUserHide: boolean = false;
   filteredCases: any[] = [];
   visibleCases: any[] = [];
   maxCases: number = 15;
@@ -281,6 +282,18 @@ export class CasesPage implements OnInit {
   }
 
   selectCasus(casus:any){
+    if(casus.editable_by_user && !casus.editable_by_user.hide){
+      casus.editable_by_user.hide = {
+        attitude:false,
+        phases:false,
+        feedback:false,
+        feedbackCipher: false,
+        goal: false,
+      }
+      setTimeout(() => {
+        this.update('editable_by_user',true,casus)
+      }, 500);
+    }
     this.trainerService.caseItem = casus
     if(!this.trainerService.caseItem.extra_knowledge){
       this.trainerService.caseItem.extra_knowledge = ''
@@ -289,19 +302,23 @@ export class CasesPage implements OnInit {
     // console.log(this.trainerService.caseItem)
   }
 
-  caseNotReady(){
+  caseNotReady(item?:any){
+    if(!item){
+      item = this.trainerService.caseItem
+    }
+    // console.log('caseNotReady',item)
     let check = 
-      this.trainerService.caseItem?.title == '' || 
-      this.trainerService.caseItem?.role == '' ||
-      this.trainerService.caseItem?.user_info == '' ||
-      ! this.trainerService.caseItem?.level ||
-      !this.trainerService.caseItem?.attitude ||
-      !this.trainerService.caseItem?.steadfastness ||
-      this.trainerService.caseItem?.conversation == '' ||
-      this.trainerService.caseItem?.photo == '' ||
+      item?.title == '' || 
+      item?.role == '' ||
+      item?.user_info == '' ||
+      ! item?.level ||
+      !item?.attitude ||
+      !item?.steadfastness ||
+      item?.conversation == '' ||
+      item?.photo == '' ||
       (
-        this.trainerService.caseItem?.editable_by_user?.free_answer == true &&
-        this.trainerService.caseItem?.free_question == ''
+        item?.editable_by_user?.free_answer == true &&
+        item?.free_question == ''
       )
 
       return check
@@ -453,6 +470,19 @@ export class CasesPage implements OnInit {
   }
 
   changeCategory(){
+
+    if(this.trainerService.caseItem?.conversation=='expert'){
+      if(!this.trainerService.checkIsTrainerPro()){
+        this.toast.show(this.translate.instant('cases.expert_knowledge_pro_required'))
+        this.trainerService.caseItem.conversation = ''
+        this.update('conversation')
+        this.trainerService.caseItem.openingMessage = ''
+        this.update('openingMessage')
+        return
+      }
+    }
+
+
     setTimeout(() => {
       this.trainerService.caseItem.openingMessage = this.categoryInfo(this.trainerService.caseItem.conversation).openingMessage
       this.update('openingMessage')
@@ -504,18 +534,35 @@ export class CasesPage implements OnInit {
     caseItem.existing = true
 
     this.modalService.generateCase({admin:true,conversationInfo:this.categoryInfo(this.trainerService.caseItem.conversation),...caseItem}).then((res:any)=>{
-          console.log(res)
-      if(res && res.id){
-        delete res.admin
-        delete res.conversationInfo
-        delete res.existing
-        if(res.casus!=caseItem.casus){
-          res.translate = false
+        console.log(res)
+        if(res && res.id){
+          delete res.admin
+          delete res.conversationInfo
+          delete res.existing
+          if(res.casus!=caseItem.casus){
+            res.translate = false
+          }
+          this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',res.id,res).then(()=>{
+            this.trainerService.loadCases(()=>{
+              let item = this.trainerService.cases.filter((e:any) => {
+                return e.id === res.id
+              })
+              if(item.length){
+                this.trainerService.caseItem = item[0]
+              }
+              else{
+                this.trainerService.caseItem = {}
+              }
+            })
+          })
         }
-        this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',res.id,res).then(()=>{
+        else{
           this.trainerService.loadCases(()=>{
+            for(let i=0;i<this.trainerService.cases.length;i++){
+              console.log(this.trainerService.cases[i].id,caseItem.id,this.trainerService.cases[i].title)
+            }
             let item = this.trainerService.cases.filter((e:any) => {
-              return e.created === res.created
+              return e.id === caseItem.id
             })
             if(item.length){
               this.trainerService.caseItem = item[0]
@@ -524,8 +571,8 @@ export class CasesPage implements OnInit {
               this.trainerService.caseItem = {}
             }
           })
-        })
-      }
+        }
+
     })
   }
 
@@ -789,7 +836,7 @@ export class CasesPage implements OnInit {
   }
 
   practice(item?:any){
-    if(this.caseNotReady()){
+    if(this.caseNotReady(item)){
       this.toast.show(this.translate.instant('error_messages.not_complete'))
       return
     }
@@ -806,6 +853,7 @@ export class CasesPage implements OnInit {
        item.free_question = item.translation.free_question
       }
     }
+    item.trainerId = this.nav.activeOrganisationId
     this.modalService.showConversationStart(item).then((res)=>{
       // console.log(res)
       if(res){
@@ -960,6 +1008,9 @@ export class CasesPage implements OnInit {
   }
 
   exportItem(item:any){
+    if(!this.trainerService.checkIsTrainerPro()){
+      return
+    }
     item.exportedType = 'case'
     const obj = JSON.parse(JSON.stringify(item));
     
@@ -1106,5 +1157,23 @@ export class CasesPage implements OnInit {
     return base64;
   }
 
+
+  newExpertise(){
+    if(this.trainerService.caseItem.extra_knowledge){
+      for(let i=0;i<this.trainerService.trainerInfo.knowledgeItems.length;i++){
+        if(this.trainerService.trainerInfo.knowledgeItems[i].id == this.trainerService.caseItem.extra_knowledge){
+          this.trainerService.caseItem.expertise_summary = this.trainerService.trainerInfo.knowledgeItems[i].summary || ''
+          this.trainerService.caseItem.expertise_title = this.trainerService.trainerInfo.knowledgeItems[i].title || ''
+        }
+      }
+    }
+    else{
+      this.trainerService.caseItem.expertise_summary = ''
+      this.trainerService.caseItem.expertise_title = ''
+    }
+    this.update('expertise_title')
+    this.update('expertise_summary')
+    this.update('extra_knowledge')
+  }
 
 }

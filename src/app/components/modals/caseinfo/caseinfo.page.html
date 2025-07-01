@@ -19,7 +19,7 @@
         </div>
       </div>
       <div class="spacer"></div>
-      <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type!='product'&&caseItem.type!='public_case'">
+      <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type!='product'&&caseItem.type!='public_case'&&caseItem.type!='infoItem'&&caseItem.type!='text'&&caseItem.type!='video'">
         
         <ion-button class="saveButton creditButton" fill="outline" size="small">
           <div>
@@ -35,6 +35,12 @@
         
         <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.cancel' | translate}}</ion-button>
         <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss(caseItem)">{{'buttons.buy_for' | translate}} {{(caseItem.price / 100) | currency : (caseItem.currency | uppercase) }}</ion-button>
+      </div>
+      
+      <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type=='text'||caseItem.type=='video'||caseItem.type=='infoItem'">
+        
+        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.cancel' | translate}}</ion-button>
+        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss('read')">{{'buttons.watch' | translate}}</ion-button>
       </div>
 
       <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type=='public_case'">

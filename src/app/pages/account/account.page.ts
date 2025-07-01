@@ -45,6 +45,8 @@ export class AccountPage implements OnInit {
   customers: any;
   subscriptionsStripe: any;
   db: any;
+  isTrainer: boolean = false;
+  // isTrainerPro: boolean = false;
   
   // isAdmin: boolean = false;
   menuItems:any=[
@@ -86,6 +88,11 @@ export class AccountPage implements OnInit {
     // this.auth.isAdmin().subscribe((admin) => {
     //   this.isAdmin = admin;
     // });
+
+    this.auth.hasActive('trainer').subscribe((trainer)=>{
+      this.isTrainer = trainer
+    })
+    
     this.route.params.subscribe(params=>{
       if(params['tab']){
         this.activeTab = params['tab']
@@ -568,5 +575,18 @@ export class AccountPage implements OnInit {
         this.toast.show(this.translate.instant('page_account.offer_code_failure'))
       }
     })
+  }
+
+  showTrainerDetails:boolean = false
+  registerAsTrainer(){
+
+  }
+
+  registerAsTrainerPro(){
+
+  }
+
+  registerAsTrainerEnterprise(){
+
   }
 }

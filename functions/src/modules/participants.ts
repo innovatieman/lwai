@@ -145,11 +145,11 @@ exports.createTrainingCode = functions
       return { error: 'Not authorized', code: 401 };
     }
 
-    if(!data?.trainingId){
+    if(!data?.trainingId || !data?.trainerId){
       return { error: 'No Input', code: 400 };
     }
 
-    const trainerId = context.auth.uid;
+    const trainerId = data?.trainerId || context.auth.uid;
 
     let codeObj = {
       trainingId: data.trainingId,

@@ -36,6 +36,9 @@ export class TrainerService {
   affiliates:any[] = []
   affiliateLoaded:boolean = false
   publishType: string = 'training';
+  isOrgAdmin: boolean = false;
+  segments:any[] = []
+  segmentsOrganized:any = []
   constructor(
     private functions: AngularFireFunctions,
     private fire: AngularFirestore,
@@ -56,6 +59,14 @@ export class TrainerService {
         
       }
     })
+
+    auth.isOrgAdmin().subscribe((isAdmin)=>{
+      this.isOrgAdmin = isAdmin
+      if(isAdmin && this.nav.activeOrganisationId){
+        this.loadTrainerInfo(()=>{},true)
+      }
+    })
+
     this.nav.organisationChange.subscribe((res)=>{      
       this.trainingItem = {}
       this.moduleItem = {}
@@ -252,6 +263,7 @@ export class TrainerService {
         this.infoItems = infoItems.map(doc => ({
           ...doc,
         }));
+        // console.log('infoItems',this.infoItems)
         if (callback) {
           callback();
         }
@@ -329,6 +341,13 @@ export class TrainerService {
           facts:true,
           background:true,
           undo:true,
+        },
+        hide:{
+          attitude:false,
+          phases:false,
+          feedback:false,
+          feedbackCipher: false,
+          goal: false,
         }
       }
     }
@@ -412,6 +431,51 @@ export class TrainerService {
           callback();
         }
       });
+  }
+
+  // loadSegments(callback?:Function) {
+
+  //   this.subscriptions['loadsegments'] =  
+  //     this.fire.collection('segments',ref =>
+  //       ref.where('trainerId','==',this.nav.activeOrganisationId)
+  //       .where('type','==','knowledge')
+  //     ).snapshotChanges()
+  //   .subscribe((segments:any[]) => {
+  //     this.segments = segments.map(doc => ({
+  //       id: doc.payload.doc.id,
+  //       ...doc.payload.doc.data(),
+  //     }));
+  //     this.segmentsOrganized = this.organizeSegments(this.segments);
+  //     console.log('segments',this.segmentsOrganized)
+  //     if (callback) {
+  //       callback();
+  //     }
+  //   });
+  // }
+
+  organizeSegments(segments:any[]){
+    let organized:any = {}
+    console.log('organizeSegments',segments)
+    segments.forEach(segment => {
+      if (!organized[segment.metadata?.book]) {
+        organized[segment.metadata.book] = [];
+      }
+      organized[segment.metadata.book].push(segment);
+      organized[segment.metadata.book].sort((a:any, b:any) => {
+        return a.index - b.index;
+      });
+    });
+    let books:any[] = []
+    for(let book in organized){
+      books.push({
+        book: book,
+        segments: organized[book]
+      })
+    }
+    books.sort((a:any, b:any) => {
+      return a.book.localeCompare(b.book);
+    });
+    return books;
   }
 
   //Loadmodules and participants from subcollection

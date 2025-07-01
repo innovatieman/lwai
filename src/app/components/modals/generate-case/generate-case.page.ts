@@ -10,6 +10,8 @@ import { ToastService } from 'src/app/services/toast.service';
 import { InputFieldsPage } from '../input-fields/input-fields.page';
 import { TrainerService } from 'src/app/services/trainer.service';
 import { InfoModalPage } from '../info-modal/info-modal.page';
+import { NavService } from 'src/app/services/nav.service';
+import { FirestoreService } from 'src/app/services/firestore.service';
 
 @Component({
   selector: 'app-generate-case',
@@ -53,6 +55,7 @@ export class GenerateCasePage implements OnInit {
     "transformative":2,
     "deep":2,
     "work":2,
+    "expert":2,
   }
   specificQuestionsOutput:any=[]
   
@@ -91,6 +94,8 @@ export class GenerateCasePage implements OnInit {
     public infoService:InfoService,
     public trainerService:TrainerService,
     private modalController: ModalController,
+    private nav:NavService,
+    private firestore: FirestoreService,
   ) { }
 
   ngOnInit() {
@@ -216,6 +221,7 @@ export class GenerateCasePage implements OnInit {
     }],(result:any)=>{
       if(result.data){
         this.caseItem.casus = result.data[0].value
+        this.update('casus')
       }
     })
   }
@@ -249,6 +255,16 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
     this.caseItem.communicationSkills = communicationSkills
     this.modalCtrl.dismiss(this.caseItem)
   }
+
+  update(field?:string,isArray:boolean = false){
+    let caseItem = this.caseItem
+    console.log('update',field,caseItem)
+      if(field){
+        this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',caseItem.id,caseItem[field],field,()=>{
+        },isArray)
+      }
+  }
+
 
   generateReadableText(): string {
     console.log('generateReadableText',this.caseItem)

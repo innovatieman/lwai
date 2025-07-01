@@ -195,6 +195,13 @@ export class ModalService {
   } 
 
   public async inputFields(title:string,text:string,fields:any[],callback:Function,extraData?:any){
+    let cssClass = 'inputFieldsModal';
+    for(let i=0;i<fields.length;i++){
+      if(fields[i].type=='html'){
+        cssClass = 'editHtmlModal';
+        break;
+      }
+    }
     const modalItem = await this.modalController.create({
       component:InputFieldsPage,
       componentProps:{

@@ -395,10 +395,14 @@ exports.emailUnsubscribe = onRequest(
       return res.status(400).send('Missing parameters');
     }
 
-    console.log(`Unsubscribing user ${userId} from email flow: ${emailFlow}`);
-
     try {
-      await admin.firestore().collection('users').doc(userId).collection('mailflow').doc(emailFlow).set({
+      const userRef = admin.firestore().collection('users').doc(userId);
+      const userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        console.error(`User ${userId} not found`);
+        return res.status(404).send('User not found');
+      }
+      await userRef.collection('mailflow').doc(emailFlow).set({
         unsubscribed: true,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });

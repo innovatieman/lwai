@@ -529,7 +529,7 @@
                     </ion-col>
                 </ion-row>
 
-                <ion-row noPadding *ngIf="trainerService.caseItem?.id && trainerService.isTrainerPro" >
+                <ion-row noPadding *ngIf="trainerService.caseItem?.id && trainerService.isTrainerPro && trainerService.caseItem.conversation!='expert'" >
                     <ion-col size="12">
                         <ion-card basicPadding [ngStyle]="{'outline': 'solid 2px var(--ion-color-primary)' }">
                             <ion-card-header (click)="showKnowledge=!showKnowledge">
@@ -546,7 +546,33 @@
                                     <div weight700 style="min-width:200px;">{{'dashboard.knowledge' | translate}}:</div>
                                     <ion-select fullwidth font-18 marginLeft [interfaceOptions]="{'cssClass': 'mycomponent-wider-popover'}" fullwidth interface="popover" [(ngModel)]="trainerService.caseItem.extra_knowledge" (ionChange)="update('extra_knowledge')">
                                         <ion-select-option [value]="''">{{'cases.no_extra_knowledge' | translate}}</ion-select-option>
-                                        <ion-select-option *ngFor="let item of trainerService.trainerInfo.knowledgeItems" [value]="item.id">{{item.title | translate}}</ion-select-option>
+                                        <ion-select-option *ngFor="let item of trainerService.trainerInfo.knowledgeItems | filterKey : '!type' : 'book'" [value]="item.id">{{item.title | translate}}</ion-select-option>
+                                    </ion-select>
+                                </div>
+
+                            </ion-card-content>
+                        </ion-card>
+                    </ion-col>
+                </ion-row>
+
+                <ion-row noPadding *ngIf="trainerService.caseItem?.id && trainerService.isTrainerPro && trainerService.caseItem.conversation=='expert'" >
+                    <ion-col size="12">
+                        <ion-card basicPadding [ngStyle]="{'outline': 'solid 2px var(--ion-color-primary)' }">
+                            <ion-card-header (click)="showKnowledge=!showKnowledge">
+                                <ion-card-title flex center-ver>
+                                    <span weight600>{{'cases.case_expertise_knowledge' | translate}}</span>
+                                    <span class="spacer"></span>
+                                    <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('add_knowledge_expert_text','cases.case_expertise_knowledge',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                                    <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')"  [ngStyle]="{'transform': showKnowledge ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                                </ion-card-title>
+                            </ion-card-header>
+                            <ion-card-content *ngIf="showKnowledge">
+
+                                <div font-18 fullwidth basicPadding borderRadius24 borderPrimary flex center-ver>
+                                    <div weight700 style="min-width:200px;">{{'dashboard.knowledge' | translate}}:</div>
+                                    <ion-select fullwidth font-18 marginLeft [interfaceOptions]="{'cssClass': 'mycomponent-wider-popover'}" fullwidth interface="popover" [(ngModel)]="trainerService.caseItem.extra_knowledge" (ionChange)="newExpertise()">
+                                        <ion-select-option [value]="''">{{'cases.no_extra_knowledge' | translate}}</ion-select-option>
+                                        <ion-select-option *ngFor="let item of trainerService.trainerInfo.knowledgeItems | filterKey : 'type' : 'book'" [value]="item.id">{{item.title | translate}}</ion-select-option>
                                     </ion-select>
                                 </div>
 
@@ -657,12 +683,43 @@
                                 
                                 <ion-item detail="false" lines="none" listCard fullwidth>
                                     <ion-label position="stacked" ></ion-label>
-                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.choices"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_choices' | translate}}</ion-toggle>
-                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.facts"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_facts' | translate}}</ion-toggle>
-                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.background"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_background' | translate}}</ion-toggle>
-                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.undo"(ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_undo' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.choices" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_choices' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.facts" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_facts' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.background" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_background' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.agents.undo" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_undo' | translate}}</ion-toggle>
                                 </ion-item>
+
                             </ion-card-content>
+
+                        </ion-card>
+                    </ion-col>
+                </ion-row>
+
+                <ion-row noPadding *ngIf="trainerService.caseItem?.id">
+                    <ion-col size="12">
+                        <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}">
+                            <ion-card-header (click)="showUserHide=!showUserHide">
+                                <ion-card-title flex center-ver>
+                                    <span weight600>{{'cases.user_hide' | translate}}</span>
+                                    <span class="spacer"></span>
+                                    <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('case_user_hide_options','cases.user_hide',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                                    <fa-icon pointer titleIcon font-24 [icon]="icon.get('faChevronDown')"  [ngStyle]="{'transform': showUserhelp ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+ 
+                                </ion-card-title>
+                            </ion-card-header>
+                                <ion-card-content *ngIf="showUserHide">
+
+                                <ion-item detail="false" lines="none" listCard fullwidth>
+                                    <ion-label position="stacked" ></ion-label>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.attitude" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_attitude' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.feedback" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_feedback' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.feedbackCipher" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_feedback_cipher' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.phases" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_phases' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.goal" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_goal' | translate}}</ion-toggle>
+                                </ion-item>
+
+                            </ion-card-content>
+
                         </ion-card>
                     </ion-col>
                 </ion-row>

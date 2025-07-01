@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { LevelsService } from './levels.service';
 import { AuthService } from '../auth/auth.service';
 import { FirestoreService } from './firestore.service';
-import { Subscription } from 'rxjs';
+import { Subscription, timestamp } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { HeyGenApiService } from './heygen.service';
 import { ModalService } from './modal.service';
@@ -17,6 +17,7 @@ import { ToastService } from './toast.service';
 import { tutorialService } from './tutorial.service';
 import { MediaService } from './media.service';
 import { TranslateService } from '@ngx-translate/core';
+import { FormatAiTextPipe } from '../pipes/format-ai-text.pipe';
 
 
 @Injectable({
@@ -69,6 +70,7 @@ export class ConversationService implements OnDestroy {
     private tutorial: tutorialService,
     private media:MediaService,
     private translate:TranslateService,
+    private formatAiTextPipe:FormatAiTextPipe,
 
   ) { 
     this.heyGen.active.subscribe((active:boolean)=>{
@@ -96,40 +98,72 @@ export class ConversationService implements OnDestroy {
       background:true,
       undo:true,
     }
-    let conversationObj:any = {
-      caseId:caseItem.id,
-      timestamp: new Date().getTime(),
-      title:caseItem.title,
-      role:caseItem.role,
-      attitude:caseItem.attitude,
-      conversationType:caseItem.conversation,
-      openingMessage:openingMessage,
-      steadFastness:steadFastness,
-      goalsItems:caseItem.goalsItems,
-      max_time:caseItem.max_time,
-      minimum_goals:caseItem.minimum_goals,
-      avatarName:caseItem.avatarName,
-      voiceId:caseItem.voiceId || '',
-      extra_knowledge:caseItem.extra_knowledge || '',
-      photo:caseItem.photo,
-      video_on:caseItem.avatarName?true:false,
-      agentsSettings:agentsSettings,
-      free_question:caseItem.free_question || '',
-      free_question2:caseItem.free_question2 || '',
-      free_question3:caseItem.free_question3 || '',
-      free_question4:caseItem.free_question4 || '',
-      free_answer:caseItem.free_answer || '',
-      free_answer2:caseItem.free_answer2 || '',
-      free_answer3:caseItem.free_answer3 || '',
-      free_answer4:caseItem.free_answer4 || '',
-      logo:caseItem.logo || '',
-    }
-    if(caseItem.trainerId){
-      conversationObj.trainerId = caseItem.trainerId
-    }
-    if(caseItem.trainingId){
-      conversationObj.trainingId = caseItem.trainingId
-    }
+    let conversationObj:any = JSON.parse(JSON.stringify(caseItem))
+    conversationObj.caseId = caseItem.id;
+    conversationObj.timestamp = new Date().getTime();
+    conversationObj.openingMessage = openingMessage;
+    conversationObj.steadFastness = steadFastness;
+    conversationObj.voiceId = caseItem.voiceId || '';
+    conversationObj.extra_knowledge = caseItem.extra_knowledge || '';
+    conversationObj.video_on = caseItem.video_on || (caseItem.avatarName?true:false);
+    conversationObj.agentsSettings = agentsSettings;
+    conversationObj.free_question = caseItem.free_question || '';
+    conversationObj.free_question2 = caseItem.free_question2 || '';
+    conversationObj.free_question3 = caseItem.free_question3 || '';
+    conversationObj.free_question4 = caseItem.free_question4 || '';
+    conversationObj.free_answer = caseItem.free_answer || '';
+    conversationObj.free_answer2 = caseItem.free_answer2 || '';
+    conversationObj.free_answer3 = caseItem.free_answer3 || '';
+    conversationObj.free_answer4 = caseItem.free_answer4 || '';
+    conversationObj.logo = caseItem.logo || '';
+    conversationObj.expertise_title = caseItem.expertise_title || '';
+    conversationObj.expertise_summary = caseItem.expertise_summary || '';
+    conversationObj.hide = caseItem?.editable_by_user?.hide || {
+        attitude:false,
+        phases:false,
+        feedback:false,
+        feedbackCipher: false,
+        goal:false
+      };
+    conversationObj.trainerId = caseItem.trainerId || '';
+    conversationObj.trainingId = caseItem.trainingId || '';
+
+    // let conversationObj:any = {
+    //   caseId:caseItem.id,
+    //   timestamp: new Date().getTime(),
+    //   title:caseItem.title,
+    //   role:caseItem.role,
+    //   attitude:caseItem.attitude,
+    //   conversationType:caseItem.conversation,
+    //   openingMessage:openingMessage,
+    //   steadFastness:steadFastness,
+    //   goalsItems:caseItem.goalsItems,
+    //   max_time:caseItem.max_time,
+    //   minimum_goals:caseItem.minimum_goals,
+    //   avatarName:caseItem.avatarName,
+    //   voiceId:caseItem.voiceId || '',
+    //   extra_knowledge:caseItem.extra_knowledge || '',
+    //   photo:caseItem.photo,
+    //   video_on:caseItem.avatarName?true:false,
+    //   agentsSettings:agentsSettings,
+    //   free_question:caseItem.free_question || '',
+    //   free_question2:caseItem.free_question2 || '',
+    //   free_question3:caseItem.free_question3 || '',
+    //   free_question4:caseItem.free_question4 || '',
+    //   free_answer:caseItem.free_answer || '',
+    //   free_answer2:caseItem.free_answer2 || '',
+    //   free_answer3:caseItem.free_answer3 || '',
+    //   free_answer4:caseItem.free_answer4 || '',
+    //   logo:caseItem.logo || '',
+    //   expertise_title:caseItem.expertise_title || '',
+    //   expertise_summary:caseItem.expertise_summary || '',
+    // }
+    // if(caseItem.trainerId){
+    //   conversationObj.trainerId = caseItem.trainerId
+    // }
+    // if(caseItem.trainingId){
+    //   conversationObj.trainingId = caseItem.trainingId
+    // }
 
     await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',conversationObj,async (response:any)=>{
       conversationId = response.id
@@ -190,7 +224,7 @@ export class ConversationService implements OnDestroy {
           if(!this.activeConversation.rating){
             this.activeConversation.rating = {}
           }
-          console.log(this.activeConversation)
+          // console.log(this.activeConversation)
         this.loadSubCollections(conversationId);
       })
     if(caseItem){
@@ -395,7 +429,7 @@ export class ConversationService implements OnDestroy {
   }
 
   reloadAttitude(){
-    console.log('reloadAttitude')
+    // console.log('reloadAttitude')
     let attitudeString = ''
     if(this.latestAssistantItem(this.activeConversation.messages).includes('newAttitude:')){
       attitudeString = this.latestAssistantItem(this.activeConversation.messages).replace('newAttitude:','').split(', reaction:')[0]
@@ -434,13 +468,19 @@ export class ConversationService implements OnDestroy {
       trainerId: this.activeConversation.trainerId,
       trainingId: this.activeConversation.trainingId,
     }
+    console.log(obj)
+    let url  = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGemini'
+    if( this.activeConversation.conversation == 'expert' || this.activeConversation.conversationType == 'expert'){
+      url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/chatExpertGemini'
+    }
+    console.log(url)
     // console.log(obj)
     this.update.emit(true);
     // setTimeout(() => {
     //   this.tempTextUser = ""
     // }, 10000);
     // const response = await fetch("https://chatai-p2qcpa6ahq-ew.a.run.app", {
-    const response = await fetch("https://chatgemini-p2qcpa6ahq-ew.a.run.app", {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -782,6 +822,11 @@ export class ConversationService implements OnDestroy {
     }
     // console.log(obj)
     this.tempTextUser = message
+    // this.record.recording = false;
+    this.record.stopRecording();
+    setTimeout(() => {
+      this.record.analyzing = false;
+    }, 200);
     // console.log(this.tempTextUser)
     this.scrollChatToBottom()
     this.startLoading('reaction')
@@ -1423,6 +1468,7 @@ export class ConversationService implements OnDestroy {
         doc.messages[i].role = 'Gesprekspartner'
         doc.messages[i].attitude = this.infoService.getAttitude(this.getAttitude(i+1)).title
         doc.messages[i].content = this.cleanReactionPipe.transform(doc.messages[i].content)
+        doc.messages[i].content = this.formatAiTextPipe.transform(doc.messages[i].content)
       }
     } 
 

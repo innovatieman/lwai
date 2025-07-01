@@ -42,7 +42,7 @@
                 <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="trainerService.tooltip('case_role','generate_case.role_question')"></fa-icon>
               </div>
               <!-- <div weight400 font-13>{{'generate_case.role_question' | translate}}</div> -->
-              <ion-input listCard [(ngModel)]="caseItem.role"></ion-input>
+              <ion-input listCard [(ngModel)]="caseItem.role" (ionChange)="update('role')"></ion-input>
             </div>
 
             <div fullwidth marginBottom>
@@ -52,7 +52,7 @@
                 <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="trainerService.tooltip('case_name_ai','generate_case.name_ai')"></fa-icon>
               </div>
               <!-- <div weight400 font-13>{{'generate_case.name_ai_question' | translate}}</div> -->
-              <ion-input listCard [(ngModel)]="caseItem.name_ai"></ion-input>
+              <ion-input listCard [(ngModel)]="caseItem.name_ai" (ionChange)="update('name_ai')"></ion-input>
             </div>
 
             <div fullwidth marginBottom>
@@ -62,7 +62,7 @@
                 <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')"  (click)="trainerService.tooltip('case_role_user','generate_case.role_user')"></fa-icon>
               </div>
               <!-- <div weight400 font-13>{{'generate_case.role_user_question' | translate}}</div> -->
-              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.user_role"></ion-textarea>
+              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.user_role" (ionChange)="update('user_role')"></ion-textarea>
             </div>
 
 
@@ -142,7 +142,7 @@
                 <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="showText(question.help,question.question)"></fa-icon>
               </div>
               <!-- <div weight400 font-13 *ngIf="question.help">{{question.help}}</div> -->
-              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.category_specifics[i]"></ion-textarea>
+              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.category_specifics[i]" (ionChange)="update('category_specifics',true)"></ion-textarea>
             </div>
 
           </ion-col>
@@ -172,7 +172,7 @@
               <!-- <div weight400 font-13>{{'generate_case.communication_style_question' | translate}}</div> -->
               <div listCard basicPadding>
                 <div class="selectors" marginBottom>
-                    <div *ngFor="let skill of communicationSkills" class="selectItem" (click)="skill.selected=!skill.selected" [ngStyle]="{'background':skill.selected?'var(--color-global)':'white','color':skill.selected?'white':'var(--color-global)'}">
+                    <div *ngFor="let skill of communicationSkills" class="selectItem" (click)="skill.selected=!skill.selected;update('communicationSkills',true)" [ngStyle]="{'background':skill.selected?'var(--color-global)':'white','color':skill.selected?'white':'var(--color-global)'}">
                       {{'communicationSkills.'+skill.id | translate}}
                     </div>
 
@@ -181,9 +181,9 @@
                     </div>
 
                     <div class="selectItem" *ngIf="showOtherCommunicationStyle" flex center-ver  style="width:400px;max-width:100%;" [ngStyle]="{'background':'var(--color-global)','color':'white'}">
-                      <ion-input style="text-align:left;min-height:28px" #otherCommunicationStyle id="otherCommunicationStyle" [(ngModel)]="caseItem.other_communication_style" (ionBlur)="!caseItem.other_communication_style ? showOtherCommunicationStyle=false : doNothing()">
+                      <ion-input style="text-align:left;min-height:28px" #otherCommunicationStyle id="otherCommunicationStyle" [(ngModel)]="caseItem.other_communication_style" (ionBlur)="!caseItem.other_communication_style ? showOtherCommunicationStyle=false : doNothing()" (ionChange)="update('other_communication_style')">
                       </ion-input>
-                      <fa-icon font-20 trashIcon [icon]="icon.get('faTimes')" (click)="caseItem.other_communication_style='';showOtherCommunicationStyle=false"></fa-icon>
+                      <fa-icon font-20 trashIcon [icon]="icon.get('faTimes')" (click)="caseItem.other_communication_style='';showOtherCommunicationStyle=false;update('other_communication_style')"></fa-icon>
                     </div>
                 </div>
                 
@@ -204,7 +204,7 @@
                     </ion-col>
                     <ion-col noPadding [size]="media.smallDevice ? 12 : 8">
                         <ion-item detail="false" lines="none" listCard>
-                            <ion-range noPadding [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude">
+                            <ion-range noPadding [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
                                 <ion-label weight600 style="font-size:14px" slot="start">{{'cases.attitude' | translate}}</ion-label>
                                 <ion-label weight600 style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
                             </ion-range>
@@ -225,7 +225,7 @@
                 </div>
                 <!-- <div weight400 font-13>{{'generate_case.steadfastness_question' | translate}}</div> -->
                 <ion-item detail="false" lines="none" listCard>
-                    <ion-range noPadding [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness">
+                    <ion-range noPadding [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
                         <ion-label weight600 style="font-size:14px" slot="start">{{'cases.steadfastness' | translate}}</ion-label>
                         <ion-label weight600 style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
                     </ion-range>
@@ -254,7 +254,7 @@
                 <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="trainerService.tooltip('case_external_factors','generate_case.external_factors',$event)"></fa-icon>
               </div>
               <!-- <div weight400 font-13>{{'generate_case.external_factors_question' | translate}}</div> -->
-              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.externalFactors"></ion-textarea>
+              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.externalFactors" (ionChange)="update('externalFactors')"></ion-textarea>
             </div>
 
 
@@ -265,7 +265,7 @@
                 <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="trainerService.tooltip('case_history','generate_case.history',$event)"></fa-icon>
               </div>
               <!-- <div weight400 font-13>{{'generate_case.history_question' | translate}}</div> -->
-              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.history"></ion-textarea>
+              <ion-textarea listCard rows="4" [autoGrow]="true" [(ngModel)]="caseItem.history" (ionChange)="update('history')"></ion-textarea>
             </div>
 
           </div>

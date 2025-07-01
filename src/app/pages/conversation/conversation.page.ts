@@ -1301,57 +1301,59 @@ export class ConversationPage implements OnInit {
 
 
   async openFeedback(){
-      let fields = [
-        {
-          title:this.translate.instant('menu.feedback_type'),
-          type:'select',
-          required:true,
-          value:'feedback',
-          optionKeys:[
-            {value:'feedback',title:this.translate.instant('menu.feedback')},
-            {value:'question',title:this.translate.instant('menu.feedback_question')},
-            {value:'remark',title:this.translate.instant('menu.feedback_remark')},
-          ]
-        },
-        {
-          title:this.translate.instant('menu.feedback_subject'),
-          type:'text',
-          required:true,
-          value:'',
-        },
-        {
-          title:this.translate.instant('menu.feedback_message'),
-          type:'textarea',
-          required:true,
-          value:'',
+    let fields = [
+      {
+        title:this.translate.instant('menu.feedback_type'),
+        type:'select',
+        required:true,
+        value:'feedback',
+        optionKeys:[
+          {value:'feedback',title:this.translate.instant('menu.feedback')},
+          {value:'question',title:this.translate.instant('menu.feedback_question')},
+          {value:'remark',title:this.translate.instant('menu.feedback_remark')},
+        ]
+      },
+      {
+        title:this.translate.instant('menu.feedback_subject'),
+        type:'text',
+        required:true,
+        value:'',
+      },
+      {
+        title:this.translate.instant('menu.feedback_message'),
+        type:'textarea',
+        required:true,
+        value:'',
+      }
+    ]
+
+    this.modalService.inputFields(this.translate.instant('menu.feedback'),this.translate.instant('menu.feedback_text'),fields,(result:any)=>{
+
+        if(result.data){
+          this.firestore.create('user_messages',{
+            type:result.data[0].value,
+            subject:result.data[1].value,
+            message:result.data[2].value,
+            user:this.auth.userInfo.uid,
+            displayName:this.auth.userInfo.displayName,
+            email:this.auth.userInfo.email,
+            date:new Date(),
+            timestamp:new Date().getTime(),
+            read:false,
+            archived:false,
+            caseId:this.conversation.activeConversation.caseId,
+            conversationId:this.conversation.activeConversation.conversationId,
+            url:window.location.href
+          })
+          this.toast.show(this.translate.instant('menu.feedback_sent'))
         }
-      ]
+      })
+  }
 
-      this.modalService.inputFields(this.translate.instant('menu.feedback'),this.translate.instant('menu.feedback_text'),fields,(result:any)=>{
-
-          if(result.data){
-            this.firestore.create('user_messages',{
-              type:result.data[0].value,
-              subject:result.data[1].value,
-              message:result.data[2].value,
-              user:this.auth.userInfo.uid,
-              displayName:this.auth.userInfo.displayName,
-              email:this.auth.userInfo.email,
-              date:new Date(),
-              timestamp:new Date().getTime(),
-              read:false,
-              archived:false,
-              caseId:this.conversation.activeConversation.caseId,
-              conversationId:this.conversation.activeConversation.conversationId,
-              url:window.location.href
-            })
-            this.toast.show(this.translate.instant('menu.feedback_sent'))
-          }
-        })
-    }
-
-    hideDisclaimerText(){
-      this.hideDisclaimer = true
-      localStorage.setItem('hideDisclaimer', moment().unix().toString());
-    }
+  hideDisclaimerText(){
+    this.hideDisclaimer = true
+    localStorage.setItem('hideDisclaimer', moment().unix().toString());
+  }
+  
+  
 }

@@ -137,6 +137,11 @@ export class InfoItemsPage implements OnInit {
         icon:'faEye',
         value:'view'
       },
+      {
+        title:this.translate.instant('cases.export_item'),
+        icon:'faFileExport',
+        value:'export'
+      }
     ]
     this.showshortMenu(event,list,(result:any)=>{
       if(result?.value){
@@ -152,6 +157,11 @@ export class InfoItemsPage implements OnInit {
             break;
           case 'view':
             this.example(item)
+            break;
+          case 'export':
+            this.exportItem(item)
+            break;
+
         }
       }
       this.selectMenuservice.selectedItem = undefined
@@ -442,6 +452,9 @@ export class InfoItemsPage implements OnInit {
         this.nav.goto(this.trainerService.infoItem.photo,true)
       }
         else if(res=='generate'){
+          if(!this.trainerService.checkIsTrainerPro()){
+              return
+          }
           this.createPhoto(this.trainerService.infoItem,extraPhoto)
         }
       },true,true)
@@ -841,6 +854,9 @@ export class InfoItemsPage implements OnInit {
   }
 
   exportItem(item:any){
+    if(!this.trainerService.checkIsTrainerPro()){
+      return
+    }
     item.exportedType = 'infoItem'
     const obj = JSON.parse(JSON.stringify(item));
     

@@ -391,6 +391,7 @@ export class StartPage implements OnInit {
   }
 
   showCaseInfo(caseItem:any, logo?:string,training?:any){
+    console.log('show case info',caseItem)
     if(logo){
       caseItem.logo = logo
     }
@@ -398,7 +399,14 @@ export class StartPage implements OnInit {
       caseItem.trainingId = training.id
       caseItem.trainerId = training.trainer_id
     }
-    this.modalService.showCaseInfo(caseItem)
+    this.modalService.showCaseInfo(caseItem, (response:any)=>{
+      console.log('case info response',response)
+      if(response.data == 'read'){
+        // Mark the case as read
+        this.selectTrainingItem(caseItem);
+        this.scrollItemsToTop()
+      }
+    })
   }
   // get activeConversation():any{
   //   let conversation:any = null
@@ -810,7 +818,11 @@ export class StartPage implements OnInit {
       this.modulesBreadCrumbs.push(module)
     }
 
-    selectTrainingItem(item:any){
+    selectTrainingItem(item:any,event?:Event){
+      if(event){
+        event.preventDefault()
+        event.stopPropagation()
+      }
       // console.log('select item',item)
       this.trainingItem = item
     }

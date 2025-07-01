@@ -57,10 +57,32 @@ export class ExamplePage implements OnInit {
               this.trainerService.loadModules(()=>{})
               this.trainerService.loadInfoItems(()=>{})
               this.trainerService.loadCases(()=>{})
+              setTimeout(() => {
+                this.itemsLoaded = true;
+              }, 1000);
           }
         })
       }
     })
+
+    this.auth.isOrgAdmin().subscribe((isAdmin)=>{
+      console.log('isAdmin',isAdmin)
+     if(isAdmin && !this.itemsLoaded){
+        this.trainerService.loadTrainingsAndParticipants(()=>{
+          this.itemsLoaded = true;
+          if(!this.trainerService.breadCrumbs.length){
+            this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+          }
+        })
+        this.trainerService.loadModules(()=>{})
+        this.trainerService.loadInfoItems(()=>{})
+        this.trainerService.loadCases(()=>{})
+        setTimeout(() => {
+          this.itemsLoaded = true;
+        }, 1000);
+     }
+    })
+
   }
 
   exampleItem(type:string,id:string):any{

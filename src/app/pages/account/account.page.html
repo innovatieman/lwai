@@ -27,6 +27,15 @@
             </ion-item>
   
           </div>
+
+          <!-- <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;outline: solid 2px var(--ion-color-primary);" class="notActiveItem" *ngIf="isTrainer" [ngClass]="{'activeItem':activeTab=='become_trainer','notActiveItem':activeTab!='become_trainer'}">
+
+            <ion-item detail="false" lines="none" button (click)="changeTab('become_trainer')" class="itemButton" [detail]="false">
+              <div font-20 weight700>{{'page_account.become_trainer' | translate}}</div>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faGraduationCap')"></fa-icon>
+            </ion-item>
+  
+          </div> -->
   
           <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.customer?.stripeCustomerId">
   
@@ -419,6 +428,362 @@
 
           </ion-row>
             
+        </ion-card>
+
+        <ion-card basicPadding *ngIf="activeTab=='become_trainer'">
+          <ion-card-header>
+            <ion-card-title>{{'page_account.become_trainer' | translate}}</ion-card-title>
+            <div font-16 weight400>{{'page_account.become_trainer_text' | translate}}</div>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-row>
+              <ion-col [size]="helper.cardSizeSmall">
+                <ion-card noPadding pointer class="caseItem" (click)="registerAsTrainer()"> <!--(click)="accountService.showProductInfo(product)">-->
+                    <ion-card-content noPadding fullHeight>
+                        <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
+                          <div class="title">{{'page_account.trainer_basic' | translate}}</div>
+                        </div>
+                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                            <ion-card-header>
+                                <ion-card-title font-24 weight600>{{'page_account.trainer_free' | translate}}</ion-card-title>
+                                <ion-card-subtitle font-14 weight600 text-secondary>{{'page_account.trainer_basic_text' | translate}}</ion-card-subtitle>
+                            </ion-card-header>
+                        </div>
+                        <div center flex center-ver center-hor marginBottom>
+                            <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{'buttons.letsgo' | translate}}</ion-button>
+                        </div>
+                    </ion-card-content>
+                </ion-card>
+              </ion-col>
+
+              <ion-col [size]="helper.cardSizeSmall">
+                <ion-card noPadding pointer class="caseItem" (click)="registerAsTrainerPro()"> <!--(click)="accountService.showProductInfo(product)">-->
+                    <ion-card-content noPadding fullHeight>
+                        <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
+                          <div class="title">{{'page_account.trainer_pro' | translate}}</div>
+                        </div>
+                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                            <ion-card-header>
+                                <ion-card-title font-24 weight600>€ 100 <span font-12>/jaar</span></ion-card-title>
+                                <ion-card-subtitle font-14 weight600 text-secondary>{{'page_account.trainer_pro_text' | translate}}</ion-card-subtitle>
+                            </ion-card-header>
+                        </div>
+                        <div center flex center-ver center-hor marginBottom>
+                            <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{'buttons.letsgo' | translate}}</ion-button>
+                        </div>
+                    </ion-card-content>
+                </ion-card>
+              </ion-col>
+
+              <ion-col [size]="helper.cardSizeSmall">
+                <ion-card noPadding pointer class="caseItem" (click)="registerAsTrainerEnterprise()"> <!--(click)="accountService.showProductInfo(product)">-->
+                    <ion-card-content noPadding fullHeight>
+                        <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
+                          <div class="title">{{'page_account.trainer_enterprise' | translate}}</div>
+                        </div>
+                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                            <ion-card-header>
+                                <ion-card-title font-24 weight600>{{'page_account.trainer_enterprise_price' | translate}}</ion-card-title>
+                                <ion-card-subtitle font-14 weight600 text-secondary>{{'page_account.trainer_enterprise_text' | translate}}</ion-card-subtitle>
+                            </ion-card-header>
+                        </div>
+                        <div center flex center-ver center-hor marginBottom>
+                            <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{'page_account.trainer_enterprise_button' | translate}}</ion-button>
+                        </div>
+                    </ion-card-content>
+                </ion-card>
+              </ion-col>
+
+              <ion-col size="12" marginTop>
+                <ion-button fill="clear" (click)="showTrainerDetails=!showTrainerDetails">
+                  <span>{{!showTrainerDetails ? ('page_account.trainer_show_details' | translate) : ('page_account.trainer_hide_details' | translate)}}</span>
+                </ion-button>
+              </ion-col>
+
+            </ion-row>
+
+            <ion-row *ngIf="showTrainerDetails">
+              <ion-col size="12">
+                <ion-card basicPadding class="caseItem">
+                  <table fullWidth font-16 class="trainerTable">
+                    <tr>
+                      <td></td>
+                      <td font-18 weight600>{{'page_account.trainer_basic' | translate}}</td>
+                      <td font-18 weight600>{{'page_account.trainer_pro' | translate}}</td>
+                      <td font-18 weight600>{{'page_account.trainer_enterprise' | translate}}</td>
+                    </tr>
+                    <!-- <tr>
+                      <td>{{'page_account.trainer_price' | translate}}</td>
+                      <td font-16 weight600>€ 0</td>
+                      <td font-16 weight600>€ 100</td>
+                      <td font-16 weight600>{{'page_account.trainer_enterprise_price' | translate}}</td>
+                    </tr> -->
+                    <tr>
+                      <td class="title">Cases</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Zelf cases toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Case wizard</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Publieke case kopieren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Foto's toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Oefenen als deelnemer</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Foto's genereren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Cases importeren / exporteren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Expert Coach toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td class="title">Kennis</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Kennis items toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Foto's toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>YouTube / Vimeo toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Video's uploaden</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Bijlagen toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Foto's genereren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Kennis items importeren / exporteren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td class="title">Instellingen</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Naam van trainingsbureau</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Logo toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Meerdere trainers</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Eigen kennis toevoegen voor feedback</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Eigen kennis toevoegen voor Expert Coach</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td class="title">Training</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Training Publiceren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Deelnemers toevoegen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Foto's genereren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Training importeren / exporteren</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                    </tr>
+                    <tr>
+                      <td>Trainingskosten inbegrepen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td> 
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Deelnemerskosten inbegrepen (medewerkers)</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td> 
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td class="title">Analyse</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Rapportage gebruik van cases</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Inhoudelijke samenvattingen per deelnemer</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Inhoudelijke samenvattingen per case</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td class="title">Inclusief</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Onbeperkt zelf cases oefenen</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td class="title">Gepland</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Gesprekstypes op maat</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td>Trainingen verkopen via het trainersplatform</td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                    </tr>
+                    <tr>
+                      <td class="title"></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td font-18 weight600>{{'page_account.trainer_free' | translate}}</td>
+                      <td font-18 weight600>€ 100<span font-12>/jaar</span></td>
+                      <td font-18 weight600>{{'page_account.trainer_enterprise_price' | translate}}</td>
+                    </tr>
+
+                    <tr>
+                      <td></td>
+                      <td>
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 (click)="registerAsTrainer()">{{'buttons.letsgo' | translate}}</ion-button>
+                      </td>
+                      <td>
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 (click)="registerAsTrainerPro()">{{'buttons.letsgo' | translate}}</ion-button>
+                      </td>
+                      <td>
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 (click)="registerAsTrainerEnterprise()">{{'page_account.trainer_enterprise_button' | translate}}</ion-button>
+                      </td>
+                    </tr>
+
+                  </table>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+
+          </ion-card-content>
         </ion-card>
 
       </ion-col>

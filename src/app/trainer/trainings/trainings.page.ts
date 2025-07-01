@@ -628,10 +628,87 @@ export class TrainingsPage implements OnInit {
       else if(res=='download'){
         this.nav.goto(this.trainerService.trainingItem.photo,true)
       }
-      // else if(res=='generate'){
-      //   this.createPhoto(this.trainerService.infoItem)
-      // }
-    },false,true)
+      else if(res=='generate'){
+        if(!this.trainerService.checkIsTrainerPro()){
+            return
+        }
+        this.createPhoto(this.trainerService.infoItem)
+      }
+    },true,true)
+  }
+
+  async createPhoto(moduleItem:any){
+    // console.log(caseItem)
+
+
+    let fields = [
+      {
+        type: 'textarea',
+        title: 'Input',
+        value: this.translate.instant('cases.generate_photo_standard_input'),
+        required: true,
+      },
+      {
+        type: 'textarea',
+        title: 'Extra instructions',
+        value: this.translate.instant('cases.generate_photo_standard_instructions')
+      }
+    ]
+
+    if(localStorage.getItem('generated_photo_input')){
+      fields[0].value = localStorage.getItem('generated_photo_input') || ''
+    }
+
+    if(localStorage.getItem('generated_photo_instructions')!== null && localStorage.getItem('generated_photo_instructions') !== undefined){
+      fields[1].value = localStorage.getItem('generated_photo_instructions') || ''
+    }
+
+    this.modalService.inputFields(this.translate.instant('cases.generate_photo_standard_title'), this.translate.instant('cases.generate_photo_standard_info'), fields, async (result: any) => {
+        if (result.data) {
+
+          localStorage.setItem('generated_photo_input', result.data[0].value);
+          localStorage.setItem('generated_photo_instructions', result.data[1].value);
+
+          // setTimeout(async () => {
+          let prompt = result.data[0].value + '\n' + result.data[1].value
+            console.log(prompt)
+            this.toast.showLoader()
+
+            let url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/generateAndStoreImageRunway'
+            
+            let obj:any = {
+              "userId": this.nav.activeOrganisationId,
+              "size": "1024x1024",
+              prompt:prompt || '',
+              akool: false,
+              noPadding: true
+            }
+        
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(obj),
+            });
+            if (!response.ok) {
+              console.error("Request failed:", response.status, response.statusText);
+              return;
+            }
+            const responseData = await response.json();
+            if(responseData?.imageURL){
+              this.trainerService.trainingItem.photo = responseData.imageURL
+              this.changeItem(this.trainerService.breadCrumbs[0].item.items, this.trainerService.trainingItem.id,'photo',this.trainerService.trainingItem.photo)
+              this.update('photo')
+              this.update('items',true)
+            }
+              console.log('hiding loader')
+              this.toast.hideLoader()
+            // }, 2000);
+
+        }
+      },{buttons:[{action:'standards_generate_photo',title:this.translate.instant('cases.generate_instructions_original'),color:'dark',fill:'outline'}]});
+
   }
 
   async addItemToModule(event:any){
@@ -1205,7 +1282,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   createTrainingCode(){
     if(!this.trainerService.trainingItem.code){
       this.toast.showLoader(this.translate.instant('trainings.generating_code'));
-      this.functions.httpsCallable('createTrainingCode')({trainingId:this.trainerService.trainingItem.id}).subscribe((res:any)=>{
+      this.functions.httpsCallable('createTrainingCode')({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId}).subscribe((res:any)=>{
         this.trainerService.loadTrainingsAndParticipants(()=>{
           this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
           this.toast.hideLoader();
@@ -1253,7 +1330,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     setTimeout(() => {
       for(let i=1;i<4;i++){
         let select:any = document.getElementById('select'+i)
-        if(select && select.shadowRoot){
+        if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
         }
       }
@@ -1262,7 +1339,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     setTimeout(() => {
       for(let i=1;i<4;i++){
         let select:any = document.getElementById('select'+i)
-        if(select && select.shadowRoot){
+        if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
         }
       }
@@ -1271,19 +1348,23 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     setTimeout(() => {
       for(let i=1;i<4;i++){
         let select:any = document.getElementById('select'+i)
-        if(select && select.shadowRoot){
+        if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
         }
-        select.setAttribute('style', 'opacity:1 !important');
+        if(select){
+          select.setAttribute('style', 'opacity:1 !important');
+        }
       }
     }, 300);
     setTimeout(() => {
       for(let i=1;i<4;i++){
         let select:any = document.getElementById('select'+i)
-        if(select && select.shadowRoot){
+        if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
         }
-        select.setAttribute('style', 'opacity:1 !important');
+        if(select){
+          select.setAttribute('style', 'opacity:1 !important');
+        }
       }
     }, 1000);
   }
@@ -1406,6 +1487,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   async publishTraining(extra?:boolean){
+    console.log({trainingId:this.trainerService.trainingItem.id,extra:extra,trainerId:this.nav.activeOrganisationId})
     this.toast.showLoader(this.translate.instant('trainings.publising_training'))
     if(!this.trainerService.trainingItem.available_date){
       this.toast.hideLoader()
@@ -1446,6 +1528,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   async publishTrainingOrganisation(){
+    console.log({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId})
     this.toast.showLoader(this.translate.instant('trainings.publising_training'))
     if(!this.trainerService.trainingItem.available_date){
       this.toast.hideLoader()
@@ -1461,6 +1544,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         if (result.data) {
           this.trainerService.trainingItem.available_date = moment(result.data[0].value).unix()
           this.update('available_date',true)
+          this.toast.showLoader(this.translate.instant('trainings.publising_training'))
           this.publishTrainingOrganisation()
         }
       })

@@ -186,6 +186,223 @@ exports.chatGemini = onRequest(
   }
 );
 
+
+exports.chatExpertGemini = onRequest( 
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
+  async (req: any, res: any) => {
+    ////////////////////////////////////////////////////////////////////
+    // Set headers
+    ////////////////////////////////////////////////////////////////////
+    res = setHeaders(res);
+
+    try {
+      ////////////////////////////////////////////////////////////////////
+      // Check required parameters
+      //////////////////////////////////////////////////////////////////
+      const body = req.body;
+      if((!body.userId) || (!body.conversationId) || (!body.categoryId) || (!body.caseId) || (!body.instructionType) || (!body.attitude) || (!body.prompt && !body.conversationId)){
+        // console.log("userId:",body.userId,"conversationId:",body.conversationId,"categoryId:",body.categoryId,"caseId:",body.caseId,"instructionType:",body.instructionType,"attitude:",body.attitude,"prompt:",body.prompt);
+        console.log("Missing required parameters in request body");
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+      
+      ////////////////////////////////////////////////////////////////////
+      // Check subscription
+      ////////////////////////////////////////////////////////////////////
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Get conversation messages
+      ////////////////////////////////////////////////////////////////////
+      let messages = []
+      // let rewrite_neccessary = false
+      messages = await getPreviousMessages(body.userId, body.conversationId);
+      if (!messages) {
+        // console.log("No previous messages found");
+        messages = await initializeConversation(body);
+      }
+      else{
+        // rewrite_neccessary = true;
+        // console.log('messages found',messages.length)
+        await setToConversation(body.userId,body.conversationId,'user',body.prompt,'messages',messages.length+'');
+        messages.push({ role: "user", content: body.prompt });
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Set language
+      ////////////////////////////////////////////////////////////////////
+      let language = 'nl'
+      if(body.language){
+        language = body.language;
+      }
+
+        
+      const conversationRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
+      const [conversationSnap] = await Promise.all([
+        conversationRef.get()
+      ]);
+
+      let conversationData:any = {}
+      if (!conversationSnap.exists) {
+        conversationData = {};
+      }
+      else{
+        conversationData = conversationSnap.data();
+      }
+      let relevant_expertise = ''
+
+      ////////////////////////////////////////////////////////////////////
+      // rewrite query if needed
+      ////////////////////////////////////////////////////////////////////
+      if(conversationData.expertise_title){
+        ////////////////////////////////////////////////////////////////////
+        // Set system content
+        ////////////////////////////////////////////////////////////////////
+        let allMessages = JSON.parse(JSON.stringify(messages));
+        for(let i=0;i<allMessages.length;i++){
+          allMessages[i].content = cleanReactionMessage(allMessages[i].content);
+        }
+
+        let conversation:any = {
+          conversation: allMessages,
+          latest_user_message: allMessages[allMessages.length - 1]
+        }
+
+        conversation = JSON.stringify(conversation);
+        ////////////////////////////////////////////////////////////////////
+        // Get agent instructions
+        ////////////////////////////////////////////////////////////////////
+        const [agent_instructions_rewrite,formats] = await Promise.all([
+          getAgentInstructions('query_rewriter',body.categoryId,language), 
+          getFormats('query_rewriter'),
+        ]);
+
+        ////////////////////////////////////////////////////////////////////
+        // Set system content
+        ////////////////////////////////////////////////////////////////////
+        let systemContent = setSystemContent(agent_instructions_rewrite,formats);
+        // systemContent = systemContent.split("[expertise_title]").join(conversationData.expertise_title);
+        // systemContent = systemContent.split("[expertise_summary]").join(conversationData.expertise_summary);
+
+        ////////////////////////////////////////////////////////////////////
+        // Set messages
+        ////////////////////////////////////////////////////////////////////
+        let sendMessages:any[] = [
+          {role: "system", content: systemContent},
+          {role: "user", content: conversation},
+        ]
+
+        ////////////////////////////////////////////////////////////////////
+        // Get rewritten query
+        ////////////////////////////////////////////////////////////////////
+        const result_rewrite:any = await streamGemini(sendMessages,agent_instructions_rewrite,false)
+        const rewrittenMessage = result_rewrite.text();
+
+          ////////////////////////////////////////////////////////////////////
+        // Get vector search
+        ////////////////////////////////////////////////////////////////////
+        const resultvector = await embeddingModel.doEmbed({ values: [rewrittenMessage] });
+        const vectorSearch = resultvector.embeddings[0];
+
+        ////////////////////////////////////////////////////////////////////
+        // Get vector search results
+        ////////////////////////////////////////////////////////////////////
+        const vectorQuery = db
+          .collection('segments')
+          .where('type', '==', 'knowledge')
+          .where('trainerId', '==', conversationData.trainerId)
+          .where('metadata.book', '==', conversationData.expertise_title || '')
+          .findNearest({vectorField:"embedding", queryVector:vectorSearch,limit: 3, distanceMeasure: 'COSINE', distanceResultField: 'distance'});
+        
+        const result = await vectorQuery.get();
+        if (result.empty) {
+          relevant_expertise = '(No relevant expertise found)';
+        }
+        // Format the results
+        const formattedResults = result.docs.map((doc:any) => ({
+          data: doc.data(),
+        }));
+        
+        for( let i=0;i<formattedResults.length;i++){
+          if(formattedResults[i].data.distance < 0.5){
+            relevant_expertise = relevant_expertise + formattedResults[i].data.text + '\n\n'; 
+          }
+        }
+
+        for(let i=0;i<messages.length;i++){
+          messages[i].content = messages[i].content.split('[expertise_title]').join(conversationData.expertise_title).split('[expertise_summary]').join(conversationData.expertise_summary);
+          messages[i].content = messages[i].content.split('[relevant_vector_output]').join(relevant_expertise || ('No relevant expertise found'));
+        }
+      }
+
+      // await setToConversation(body.userId,body.conversationId,'user',body.prompt,'messages',messages.length+'');
+      
+      ////////////////////////////////////////////////////////////////////
+      // Get agent instructions
+      ////////////////////////////////////////////////////////////////////
+      const [agent_instructions] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId,language), 
+      ]);
+
+      ////////////////////////////////////////////////////////////////////
+      // Stream Gemini
+      ////////////////////////////////////////////////////////////////////
+      const result = await streamingExpertGemini(messages,agent_instructions,conversationData,relevant_expertise)
+      let completeMessage = ''
+      let promptTokens:any = {}
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        res.write(chunkText);
+        completeMessage = completeMessage + chunkText;
+        promptTokens = chunk.usageMetadata;
+      }
+    //   let complete = await streamingChunks(stream,res);
+
+      ////////////////////////////////////////////////////////////////////
+      // end response
+      ////////////////////////////////////////////////////////////////////
+      res.end();
+
+      ////////////////////////////////////////////////////////////////////
+      // Add to conversation in Firebase
+      ////////////////////////////////////////////////////////////////////
+      await setToConversation(body.userId,body.conversationId,'assistant',completeMessage.split('```json').join('').split('```').join(''),'messages',(messages.length+1)+'');
+
+      ////////////////////////////////////////////////////////////////////
+      // Stop loading
+      ////////////////////////////////////////////////////////////////////
+      await stopLoading(body)
+
+      ////////////////////////////////////////////////////////////////////
+      // Add token usage
+      ////////////////////////////////////////////////////////////////////
+      await addTokenUsages(body,promptTokens.promptTokenCount,promptTokens.candidatesTokenCount,'reaction');
+
+      ////////////////////////////////////////////////////////////////////
+      // Update credits
+      ////////////////////////////////////////////////////////////////////
+      if(!body.training?.trainingId){
+        await updateCredits(body.userId, creditsCost['reaction']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['reaction'],body.training.trainingId,body.training.trainerId);
+      }
+
+    } catch (error) {
+      ////////////////////////////////////////////////////////////////////
+      // Error handling
+      ////////////////////////////////////////////////////////////////////
+      console.error("Error tijdens streaming:", error);
+      res.status(500).send("Error tijdens streaming");
+    }
+  }
+);
+
 exports.choicesGemini = onRequest(
   { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
   async (req: any, res: any) => {
@@ -2574,27 +2791,34 @@ async function initializeConversation(body:any): Promise<any[]> {
     systemContent = systemContent.replace("[positions]", positionsText);
     systemContent = systemContent.replace("[current_position]", body.attitude.toString());
 
+    systemContent = systemContent.split("[expertise_title]").join(caseData.expertise_title || '');
+    systemContent = systemContent.split("[expertise_summary]").join(caseData.expertise_summary || '');
+
+
     systemContent = systemContent + "\n\n" + formats.format + '\n\n' + formats.instructions;
 
-    if(caseData.casus){
-      let casus = caseData.casus;
-      if(caseData.free_question){
-        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question;
-        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer || agent_instructions.no_answer);
-      }
-      if(caseData.free_question2){
-        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question2;
-        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer2 || agent_instructions.no_answer);
-      }
-      if(caseData.free_question3){
-        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question3;
-        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer3 || agent_instructions.no_answer);
-      }
-      if(caseData.free_question4){
-        casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question4;
-        casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer4 || agent_instructions.no_answer);
-      }
-      
+    let casus = caseData.casus;
+    if(!casus){casus='';}
+
+    // if(caseData.casus){
+    if(caseData.free_question){
+      casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question;
+      casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer || agent_instructions.no_answer);
+    }
+    if(caseData.free_question2){
+      casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question2;
+      casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer2 || agent_instructions.no_answer);
+    }
+    if(caseData.free_question3){
+      casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question3;
+      casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer3 || agent_instructions.no_answer);
+    }
+    if(caseData.free_question4){
+      casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question4;
+      casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer4 || agent_instructions.no_answer);
+    }
+    
+    if(casus !== ''){
       systemContent = systemContent.replace("[casus]",casus);
     }
     else{
@@ -3132,11 +3356,12 @@ async function stopLoading(body:any){
 // }
 
 async function streamGemini(messages:any, agent_instructions:any,stream:boolean){
+  console.log('streamGemini messages: ' + JSON.stringify(messages).substring(0,200));
     let systemContent = ''
     let lastMessage = messages[messages.length-1];
     messages.splice(messages.length-1,1);
     for(let i=0;i<messages.length;i++){
-      if(messages[i].role == 'asssitant'){
+      if(messages[i].role == 'assistant'){
         messages[i].role = 'model';
       }
       if(messages[i].role == 'system'){
@@ -3175,6 +3400,56 @@ async function streamGemini(messages:any, agent_instructions:any,stream:boolean)
 
 async function streamingGemini(messages:any, agent_instructions:any,stream:boolean){
     let systemContent = ''
+    // let lastMessage = messages[messages.length-1];
+    // console.log('messages: ' + JSON.stringify(messages).substring(0,200));
+
+    // messages.splice(messages.length-1,1);
+    for(let i=0;i<messages.length;i++){
+        delete messages[i].timestamp;
+      if(messages[i].role == 'asssitant'){
+        messages[i].role = 'model';
+      }
+      if(messages[i].role == 'system'){
+        systemContent = messages[i].content;
+        messages.splice(i,1);
+        i--;
+      }
+    }
+    for(let i=0;i<messages.length;i++){
+        messages[i].parts = [{text: messages[i].content}];
+        delete messages[i].content;
+    }
+
+    // console.log('messages: ' + JSON.stringify(messages).substring(0,200));
+    const chat = modelGemini.generateContentStream({
+        contents: messages,
+        generationConfig: {
+            maxOutputTokens: agent_instructions.max_tokens,
+            temperature: agent_instructions.temperature,
+        },
+        systemInstruction: {
+            role: 'system',
+            parts: [{ text: systemContent }]
+        }
+        
+    });
+
+    return chat
+    // const result =  await chat.sendMessage(lastMessage.content);
+
+    // if (!result || !result.response || !result.response.text) {
+    //     throw new Error("No valid response from Gemini model");
+    // }
+
+    // return result.response; // Haal de volledige tekst op
+
+}
+
+async function streamingExpertGemini(messages:any, agent_instructions:any,conversationData:any,relevant_expertise:string){
+    let systemContent = agent_instructions.systemContent
+    systemContent = systemContent.split("[relevant_vector_output]").join(relevant_expertise);
+    systemContent = systemContent.split("[expertise_title]").join(conversationData.expertiseTitle || '');
+    systemContent = systemContent.split("[expertise_summary]").join(conversationData.expertiseSummary || '');
     // let lastMessage = messages[messages.length-1];
     // console.log('messages: ' + JSON.stringify(messages).substring(0,200));
 

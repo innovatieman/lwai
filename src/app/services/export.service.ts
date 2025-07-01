@@ -6,6 +6,7 @@ import { HelpersService } from './helpers.service';
 import { CleanReactionPipe } from '../pipes/clean-reaction.pipe';
 import { InfoService } from './info.service';
 import { TranslateService } from '@ngx-translate/core';
+import { FormatAiTextPipe } from '../pipes/format-ai-text.pipe';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,8 @@ export class ExportService {
     private helper:HelpersService,
     private cleanReactionPipe:CleanReactionPipe,
     private infoService:InfoService,
-    private translate:TranslateService
+    private translate:TranslateService,
+    private formatAiTextPipe:FormatAiTextPipe,
   ) { }
 
 
@@ -52,6 +54,7 @@ export class ExportService {
         doc.messages[i].role = 'Gesprekspartner'
         doc.messages[i].attitude = this.infoService.getAttitude(this.getAttitude(conversation,i+1)).title
         doc.messages[i].content = this.cleanReactionPipe.transform(doc.messages[i].content)
+        doc.messages[i].content = this.formatAiTextPipe.transform(doc.messages[i].content)
       }
     } 
 

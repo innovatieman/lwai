@@ -99,6 +99,14 @@
           
           </div>
 
+          
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id">
+            <ion-item detail="false" lines="none" button (click)="createTraining(trainerService.moduleItem)" class="itemButton"  noMargin>
+                <div font-20 weight700>{{'modules.create_training' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
+            </ion-item>         
+          </div>
+
           <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.moduleItem?.id">
             <ion-item detail="false" lines="none" button (click)="example()" class="itemButton"  noMargin>
                 <div font-20 weight700>{{'cases.check_example' | translate}}</div>
