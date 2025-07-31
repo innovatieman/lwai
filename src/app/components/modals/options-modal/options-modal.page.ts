@@ -12,6 +12,7 @@ import { MediaService } from 'src/app/services/media.service';
 export class OptionsModalPage implements OnInit {
   @Input() options:any[] = [];
   @Input() intro:string = '';
+  @Input() title:string = '';
 
   constructor(
     public modalController:ModalController,

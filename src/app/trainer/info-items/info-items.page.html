@@ -212,7 +212,7 @@
                               </ion-item>         
                             </ion-col>
                             <ion-col [size]="media.smallDevice ? 12 : 5">
-                              <ion-card backgroundGlobal pointer class="caseAvatar" style="height:250px" (click)="selectAvatar($event)" [ngStyle]="{'border': 'solid 1px rgba(0,0,0,0.3)'}">
+                              <ion-card backgroundGlobal pointer class="caseAvatar" style="height:250px" (click)="selectAvatar($event, false, 'avatar')" [ngStyle]="{'border': 'solid 1px rgba(0,0,0,0.3)'}">
                                 <ion-card-content backgroundImage noPadding [ngStyle]="{'background-image': trainerService.infoItem.photo ? 'url(' + trainerService.infoItem.photo + ')' :  'url(assets/img/default_avatar.png)'}">
                                   <fa-icon class="infoIconPhoto" pointer titleIcon font-24 (click)="trainerService.tooltip('info_item_title_photo','cases.photo',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                                 </ion-card-content>
@@ -319,7 +319,7 @@
                         </div>     
     
                         
-                        <ion-card *ngIf="trainerService.infoItem.type!='video'" backgroundGlobal pointer marginBottom class="caseAvatar" style="height:300px" (click)="selectAvatar($event,true)" [ngStyle]="{'border': trainerService.infoItem.extra_photo ? '0' : 'solid 1px rgba(0,0,0,0.3)'}">
+                        <ion-card *ngIf="trainerService.infoItem.type!='video'" backgroundGlobal pointer marginBottom class="caseAvatar" style="height:300px" (click)="selectAvatar($event,true,'knowledge')" [ngStyle]="{'border': trainerService.infoItem.extra_photo ? '0' : 'solid 1px rgba(0,0,0,0.3)'}">
                           <ion-card-content backgroundImage noPadding *ngIf="trainerService.infoItem.extra_photo" [ngStyle]="{'background-image': 'url(' + trainerService.infoItem.extra_photo + ')'}">
                           </ion-card-content>
                           <fa-icon class="infoIconPhoto" pointer titleIcon font-24 (click)="trainerService.tooltip('info_item_image','cases.photo',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>

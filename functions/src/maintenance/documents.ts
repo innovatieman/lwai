@@ -226,3 +226,63 @@ async function moveAndDeleteSubcollections(sourceDocRef:any, targetDocRef:any) {
     console.log(`Subcollectie ${subcollection.id} is gekopieerd en verwijderd.`);
   }
 }
+
+exports.deleteExpertSubCollections = onDocumentDeleted(
+  {
+    region: "europe-west1",
+    memory: "1GiB",
+    document: "trainers/{trainerId}/knowledge/{knowledgeId}",
+  },
+  async (event: FirestoreEvent<admin.firestore.DocumentData>) => {
+    const docPath = event.data?.ref.path;
+
+    if (!docPath) {
+      return;
+    }
+    await deleteSubcollections(docPath);
+  }
+);
+
+exports.deleteExpertSegments = onDocumentDeleted(
+  {
+    region: "europe-west1",
+    memory: "1GiB",
+    document: "trainers/{trainerId}/knowledge/{knowledgeId}/documents/{documentId}", 
+  },
+  async (event: FirestoreEvent<admin.firestore.DocumentData>) => {
+    const docPath = event.data?.ref.path;
+
+    if (!docPath) {
+      return;
+    }
+
+    let data = event.data?.data();
+    if (!data || !data.filePath) {
+      console.warn('No filePath found in document data, skipping deletion.');
+      return;
+    }
+    // Delete the file from Firebase Storage
+    const bucket = admin.storage().bucket('lwai-3bac8.firebasestorage.app');
+    const filePath = data.filePath;
+
+    const segmentsQuery = admin.firestore().collection('segments')
+      .where('filePath', '==', filePath);
+    const segmentsSnapshot = await segmentsQuery.get(); 
+    if (!segmentsSnapshot.empty) {
+      const batch = admin.firestore().batch();
+      segmentsSnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+      console.log(`Deleted ${segmentsSnapshot.size} segments related to filePath: ${filePath}`);
+    } else {
+      console.log(`No segments found for filePath: ${filePath}`);
+    }
+
+    const file = bucket.file(filePath);
+    await file.delete().catch((error:any) => {
+      console.error('Error deleting file from Firebase Storage:', error);
+    });
+
+  }
+);

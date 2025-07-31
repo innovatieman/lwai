@@ -51,11 +51,27 @@ export class ConversationStartPage implements OnInit {
   ngOnInit() {
 
     // console.log(location.pathname.substring(1))
-
+    console.log('conversation start page',this.caseItem)
     if(this.caseItem){
       if(this.caseItem.goals){
         this.caseItem.goalsItems = JSON.parse(JSON.stringify(this.caseItem.goals))
         delete this.caseItem.goals
+      }
+      if(!this.caseItem.editable_by_user){
+        this.caseItem.editable_by_user = {
+          goals:{
+            phases:false,
+            free:true,
+            attitude:false,
+          },
+          openingMessage:true,
+          agents:{
+            choices:true,
+            facts:true,
+            background:true,
+            undo:true,
+          }
+        }
       }
       if(!this.caseItem.editable_by_user.agents){
         this.caseItem.editable_by_user.agents = {
@@ -98,7 +114,7 @@ export class ConversationStartPage implements OnInit {
     this.toast.hideTooltip()
     let checkNr = nr-1
     if(back){checkNr = nr +1}
-
+    // console.log('nr',nr,'checkNr',checkNr,start)
     if(!start&&this.requiredPerPage[checkNr].length != 0){
       this.requiredPerPage[checkNr].forEach((field:string) => {
         if(!this.caseItem[field]){
@@ -109,8 +125,8 @@ export class ConversationStartPage implements OnInit {
       });
       
     }
-
-    if(this.caseItem.id && !this.showStep(nr)){
+    // console.log('hier')
+    if((this.caseItem.id || this.caseItem.caseId) && !this.showStep(nr)){
       if(nr==5){
         this.close()
         return
@@ -127,11 +143,12 @@ export class ConversationStartPage implements OnInit {
       }
       return
     }
-    
+    // console.log('step',nr)
     this.step = nr
     // this.promptChecked = true
     if(nr === 3){
       if((!this.caseItem.admin&&!this.caseItem.editable_by_user.casus&&!this.changesMade())){
+        // console.log('rebuild prompt')
         if(back){
           this.slide(2,true)
         }
@@ -175,6 +192,10 @@ export class ConversationStartPage implements OnInit {
     if(!this.caseItem.photo){
       this.caseItem.photo = ''
     }
+    if(this.caseItem.actionsBetweenConversations){
+      this.caseItem.actionsBetweenConversationsQuestion = this.translate.instant('conversation.actions_between_conversations')
+    }
+
     this.toast.hideTooltip()
     
     if(location.pathname.substring(1).includes('my_trainings') || location.pathname.substring(1).includes('my_organisation')){
@@ -275,7 +296,7 @@ export class ConversationStartPage implements OnInit {
           userId: this.auth.userInfo.uid,
           content: input,
           instructionType:'case_prompter',
-          categoryId: this.caseItem.conversation,
+          categoryId: this.caseItem.conversation || this.caseItem.conversationType,
         }),
       });
   
@@ -324,6 +345,7 @@ export class ConversationStartPage implements OnInit {
   showStep(step:number){
     // console.log(step)
     if(this.caseItem.admin){
+      console.log('admin conversation')
       return true
     }
     switch(step){

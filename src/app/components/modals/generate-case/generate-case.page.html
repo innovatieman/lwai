@@ -191,47 +191,45 @@
               </div>
             </div>
 
-            <ion-row noPadding>
-              <ion-col [size]="media.smallDevice ? 12 : 12">
-                  <ion-row noPadding>
-                    <ion-col size="12">
-                      <div flex center-ver>
-                        <div weight600 font-18>{{'generate_case.attitude' | translate}}</div>
-                        <span class="spacer"></span>
-                        <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="trainerService.tooltip('case_attitude','generate_case.attitude')"></fa-icon>
-                      </div>
-                      <!-- <div weight400 font-13>{{'generate_case.attitude_question' | translate}}</div> -->
-                    </ion-col>
-                    <ion-col noPadding [size]="media.smallDevice ? 12 : 8">
-                        <ion-item detail="false" lines="none" listCard>
-                            <ion-range noPadding [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
-                                <ion-label weight600 style="font-size:14px" slot="start">{{'cases.attitude' | translate}}</ion-label>
-                                <ion-label weight600 style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
-                            </ion-range>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col [size]="media.smallDevice ? 12 : 4" style="padding-left:20px">
-                        <ion-item detail="false" lines="none" listCard noMargin center style="top:-5px;">
-                            <ion-label weight600 style="font-size:18px">{{infoService.getAttitude(caseItem.attitude).title}}</ion-label>
-                        </ion-item>
-                    </ion-col>
-                  </ion-row>
-              </ion-col>
-              <ion-col [size]="media.smallDevice ? 12 : 12">
-                <div flex center-ver>
-                  <div weight600 font-18>{{'generate_case.steadfastness' | translate}}</div>
-                  <span class="spacer"></span>
-                  <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')"(click)="trainerService.tooltip('case_steadfastness','generate_case.steadfastness')"></fa-icon>
-                </div>
-                <!-- <div weight400 font-13>{{'generate_case.steadfastness_question' | translate}}</div> -->
-                <ion-item detail="false" lines="none" listCard>
-                    <ion-range noPadding [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
-                        <ion-label weight600 style="font-size:14px" slot="start">{{'cases.steadfastness' | translate}}</ion-label>
-                        <ion-label weight600 style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
-                    </ion-range>
-                </ion-item>
-              </ion-col> 
-          </ion-row>
+          <!-- <ion-row noPadding>
+            <ion-col [size]="media.smallDevice ? 12 : 12">
+                <ion-row noPadding>
+                  <ion-col size="12">
+                    <div flex center-ver>
+                      <div weight600 font-18>{{'generate_case.attitude' | translate}}</div>
+                      <span class="spacer"></span>
+                      <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="trainerService.tooltip('case_attitude','generate_case.attitude')"></fa-icon>
+                    </div>
+                  </ion-col>
+                  <ion-col noPadding [size]="media.smallDevice ? 12 : 8">
+                      <ion-item detail="false" lines="none" listCard>
+                          <ion-range noPadding [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude" (ionChange)="update('attitude')">
+                              <ion-label weight600 style="font-size:14px" slot="start">{{'cases.attitude' | translate}}</ion-label>
+                              <ion-label weight600 style="font-size:18px" slot="end">{{caseItem.attitude}}</ion-label>
+                          </ion-range>
+                      </ion-item>
+                  </ion-col>
+                  <ion-col [size]="media.smallDevice ? 12 : 4" style="padding-left:20px">
+                      <ion-item detail="false" lines="none" listCard noMargin center style="top:-5px;">
+                          <ion-label weight600 style="font-size:18px">{{infoService.getAttitude(caseItem.attitude).title}}</ion-label>
+                      </ion-item>
+                  </ion-col>
+                </ion-row>
+            </ion-col>
+            <ion-col [size]="media.smallDevice ? 12 : 12">
+              <div flex center-ver>
+                <div weight600 font-18>{{'generate_case.steadfastness' | translate}}</div>
+                <span class="spacer"></span>
+                <fa-icon font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')"(click)="trainerService.tooltip('case_steadfastness','generate_case.steadfastness')"></fa-icon>
+              </div>
+              <ion-item detail="false" lines="none" listCard>
+                  <ion-range noPadding [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness" (ionChange)="update('steadfastness')">
+                      <ion-label weight600 style="font-size:14px" slot="start">{{'cases.steadfastness' | translate}}</ion-label>
+                      <ion-label weight600 style="font-size:18px" slot="end">{{caseItem.steadfastness}}</ion-label>
+                  </ion-range>
+              </ion-item>
+            </ion-col> 
+          </ion-row> -->
 
           <div flex center-ver fullwidth>
             <div class="spacer"></div>

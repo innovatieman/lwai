@@ -4,6 +4,7 @@ import admin, { db } from '../firebase'
 import * as responder from '../utils/responder'
 import * as jwt from 'jsonwebtoken'
 import moment from 'moment';
+// import * as crypto from 'crypto';
 
 exports.getMyActiveTrainings = functions
   .region('europe-west1')
@@ -324,6 +325,21 @@ exports.addParticipantTraining = functions
         status: data.status,
         created: data.created,
       })
+
+    // if(data?.embedded){
+
+    //    await admin.firestore().collection("users").doc(hashEmailForUid(data.email)).set({
+    //     email: data.email,
+    //     displayName: data.displayName || '',
+    //     created: data.created,
+    //   })
+
+    //   await admin.auth().createUser({
+    //     displayName: data.displayName || '',
+    //     uid: hashEmailForUid(data.email),
+    //   })
+    // }
+
   })
 
 exports.deleteParticipantTraining = functions
@@ -592,3 +608,12 @@ exports.getMyActiveOrganisationsTrainings = functions
     return new responder.Message(validOrganisations, 200);  
 
   });
+  
+
+// function hashEmailForUid(email: string): string {
+//   const SECRET = 'asdSD234rwderfR4';
+//   const hmac = crypto.createHmac('sha256', SECRET);
+//   hmac.update(email.toLowerCase().trim()); // normaliseer e-mailadres
+//   const digest = hmac.digest('base64url'); // base64url is veilig in URLs en Firebase UIDs
+//   return digest; // bijv: '9E7kKylsE1onKd-8h7Ae8JuHQDfnP07bV9Yz9me2qOM'
+// }

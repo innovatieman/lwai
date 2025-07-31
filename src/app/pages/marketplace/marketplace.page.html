@@ -7,14 +7,6 @@
 
     <ion-row>
       <ion-col *ngIf="!media.smallDevice" [size]="3" class="selectColumn" style="padding-top:15px;">
-        <!-- <div *ngIf="media.screenSize=='xs'">
-
-
-          <ion-card basicPadding pointer font-20 weight700 tab flex center-ver center-hor style="margin: 15px 0;" (click)="nav.go('marketplace/manual')" [ngClass]="{'activeTab':activeTab=='manual'}">
-            <fa-icon [icon]="icon.get('faPlus')" ></fa-icon>
-          </ion-card>
-
-        </div> -->
           
           <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" >
   
@@ -30,6 +22,14 @@
             <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/manual')" class="itemButton" [detail]="false">
               <div font-20 weight700>{{'marketplace.add_training' | translate}}</div>
               <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faPlus')"></fa-icon>
+            </ion-item>
+  
+          </div>
+
+          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='elearnings','notActiveItem':activeTab!='elearnings'}" >
+            <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/elearnings')" class="itemButton" [detail]="false">
+              <div font-20 weight700>{{'marketplace.elearnings' | translate}}</div>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faBookOpen')"></fa-icon>
             </ion-item>
   
           </div>
@@ -68,6 +68,92 @@
               </div>
             </ion-card-content>
         </ion-card>
+
+        <ion-row *ngIf="activeTab=='elearnings' && !item_id && !media.smallDevice">
+            <ion-col [size]="helper.cardSizeSmall" *ngFor="let item of elearnings; let i = index">
+  
+                <ion-card noPadding fullheight caseCard>
+                    <ion-card-content noPadding fullHeight>
+                        <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
+                        <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                        
+                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                            <ion-card-header>
+                                <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
+                                <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                            </ion-card-header>
+                        </div>
+                        <div center flex center-ver center-hor style="padding:0px 10px">
+                            <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
+                            </div>
+                            <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
+                                <div>
+                                    <div font-12 *ngIf="item.price_elearning!=0">€ {{item.price_elearning | number :'1.0-0'}}</div>
+                                </div>
+                            </ion-button> -->
+                            <div class="spacer"></div>
+                            <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('marketplace/elearnings/'+item.id)">{{'buttons.watch' | translate}}</ion-button>
+                        </div>
+                    </ion-card-content>
+                </ion-card>
+  
+            </ion-col>
+              
+        </ion-row>
+
+        <ion-row *ngIf="activeTab=='elearnings' && item_id && !media.smallDevice">
+          <ion-col size="12">
+
+              <ion-card fullwidth [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
+                <ion-card-header>
+                    <ion-card-title font-24>
+                      <span>{{elearningItem(item_id).title}}</span>
+                    </ion-card-title>
+                </ion-card-header>
+                <div basicPadding>
+
+                    <div [innerHTML]="elearningItem(item_id).user_info | cleanHtml" weight600 marginBottom  class="textContainer"></div>
+                    <div *ngIf="elearningItem(item_id).photo" style="height:400px;" marginBottom>
+                      <img [src]="elearningItem(item_id).photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+
+                    <div>
+                      <div class="textContainer" font-18>
+                        <table>
+                          <tr>
+                            <td basicPadding weight700>Aantal modules</td>
+                            <td basicPadding>{{countItems(elearningItem(item_id), 'module')}}</td>
+                          </tr>
+                          <tr>
+                            <td basicPadding weight700>Aantal cases</td>
+                            <td basicPadding>{{countItems(elearningItem(item_id), 'case')}}</td>
+                          </tr>
+                          <tr>
+                            <td basicPadding weight700>Aantal Kennisitems</td>
+                            <td basicPadding>{{countItems(elearningItem(item_id), 'infoItem')}}</td>
+                          </tr>
+                        </table>
+
+                      </div>
+                    </div>
+
+                </div>
+                <div basicPadding flex center-ver>
+                  <ion-button color=secondary fill="clear" (click)="item_id = ''">
+                      <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                      <span marginLeft>{{'buttons.back' | translate}}</span>
+                  </ion-button>
+                  <div class="spacer"></div>
+                  <ion-button class="saveButton" [disabled]="!elearningItem(item_id).open_to_public" (click)="buyItem(elearningItem(item_id))">{{'buttons.buy' | translate}}</ion-button>
+                </div> 
+            </ion-card>
+          </ion-col>
+
+
+        </ion-row>
+
+
       </ion-col>  
     </ion-row>
   </ion-grid>

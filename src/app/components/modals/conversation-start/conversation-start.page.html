@@ -1,16 +1,16 @@
 <div header padding20 flex center-ver>
   <div class="title">
     <h3 class="subtitle-top" noMargin>
-      {{'conversation_start.the_case' | translate}} 
+      {{'conversation_start.the_case' | translate}}
       <span *ngIf="step!=4"> - </span>
-      <span *ngIf="step==0">De basis</span>
+      <!-- <span *ngIf="step==0">De basis</span>
       <span *ngIf="step==1">Extra gegevens</span>
       <span *ngIf="step==2">De gesprekspartner</span>
-      <span *ngIf="step==3">Samenvatting</span>
+      <span *ngIf="step==3">Samenvatting</span> -->
       <!-- <span *ngIf="step==4 && !caseItem.admin">{{'conversation_start.case' | translate}}</span> -->
       <span *ngIf="step==5&&caseItem.id">{{'conversation_start.starting' | translate}}</span>
-      <span *ngIf="step==5&&!caseItem.id">Start van het gesprek</span>
-      <span *ngIf="step==6">Tot slot</span>
+      <!-- <span *ngIf="step==5&&!caseItem.id">Start van het gesprek</span> -->
+      <!-- <span *ngIf="step==6">Tot slot</span> -->
     </h3>
   </div>
   <span class="spacer"></span>
@@ -21,18 +21,18 @@
 
 <div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}">
 
-  <div class="modalIntro" *ngIf="!step">Geef aan om welke casus het gaat en wat er precies speelt.</div>
+  <!-- <div class="modalIntro" *ngIf="!step">Geef aan om welke casus het gaat en wat er precies speelt.</div>
   <div class="modalIntro" *ngIf="step==1">Hoe meer informatie je hier geeft, des te beter wordt het gesprek gesimuleerd. Deze gegevens zijn niet verplicht</div>
   <div class="modalIntro" *ngIf="step==2">Geef aan hoe de gesprekspartner zich opstelt en hoe de gesprekspartner er uit ziet.</div>
-  <div class="modalIntro" *ngIf="step==3">Controleer of je casus zo goed is geinterpreteerd, of pas het nog aan.</div>
+  <div class="modalIntro" *ngIf="step==3">Controleer of je casus zo goed is geinterpreteerd, of pas het nog aan.</div> -->
   <!-- <div class="modalIntro" *ngIf="step==4">
     <span>{{'conversation_start.goal_instructions' | translate}}</span> <span *ngIf="caseItem.freeAnswer">{{'conversation_start.free_question_instructions' | translate}}</span>
   </div> -->
   <div class="modalIntro" *ngIf="step==5&&caseItem.id">{{'conversation_start.starting_instructions' | translate}}</div>
-  <div class="modalIntro" *ngIf="step==5&&!caseItem.id">Geef aan hoe het gesprek standaard begonnen kan worden. De gesprekspartner zal hierop direct reageren als begin van het gesprek.</div>
-  <div class="modalIntro" *ngIf="step==6">Geef aan welke gegevens een gebruiker nog kan aanpassen als de casus gestart wordt. Als je niets aanzet, zal de casus gelijk starten wanneer deze wordt geselecteerd.<br>Wanneer er een element wordt aangezet t.b.v. de casus, zal de gebruiker ook de AI kunnen gebruiken om deze opnieuw samen te vatten. Anders niet.</div>
+  <!-- <div class="modalIntro" *ngIf="step==5&&!caseItem.id">Geef aan hoe het gesprek standaard begonnen kan worden. De gesprekspartner zal hierop direct reageren als begin van het gesprek.</div> -->
+  <!-- <div class="modalIntro" *ngIf="step==6">Geef aan welke gegevens een gebruiker nog kan aanpassen als de casus gestart wordt. Als je niets aanzet, zal de casus gelijk starten wanneer deze wordt geselecteerd.<br>Wanneer er een element wordt aangezet t.b.v. de casus, zal de gebruiker ook de AI kunnen gebruiken om deze opnieuw samen te vatten. Anders niet.</div> -->
 
-  <ion-card basicPadding *ngIf="!step" class="mainCard">
+  <!-- <ion-card basicPadding *ngIf="!step" class="mainCard">
     <ion-card-content class="detailColumn">
       <ion-row>
           <ion-col size="12">
@@ -110,10 +110,7 @@
 
 
     </ion-card-content>
-    <!-- <div flex center-ver>
-      <span class="spacer"></span>
-      <ion-button color="primary" class="saveButton" (click)="!caseItem.role ? errorMessage('error_messages.no_role') : slide(1)">Volgende</ion-button>
-    </div> -->
+
   </ion-card>
 
   <ion-card basicPadding *ngIf="step==1" class="mainCard">
@@ -158,11 +155,6 @@
 
 
     </ion-card-content>
-    <!-- <div flex center-ver>
-      <ion-button color="secondary" class="saveButton" (click)="slide(0,true)">Terug</ion-button>
-      <span class="spacer"></span>
-      <ion-button color="primary" class="saveButton" (click)="slide(2)">Volgende</ion-button>
-    </div> -->
   </ion-card>
 
   <ion-card basicPadding *ngIf="step==2" class="mainCard">
@@ -194,9 +186,6 @@
               <ion-card class="caseAvatar">
                   <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
                   </ion-card-content>
-                  <!-- <ion-card-content *ngIf="!caseItem.photo" flex center-ver center-hor>
-                      <fa-icon [icon]="icon.get('faImage')" size="10x"></fa-icon>
-                  </ion-card-content> -->
               </ion-card>
           </ion-col>
       </ion-row>
@@ -209,7 +198,6 @@
                       <p>Hoe is de kwaliteit van jouw relatie met deze persoon?</p>
                   </ion-label>
                   <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude">
-                      <!-- <ion-label style="font-size:14px" slot="start">Attitude</ion-label> -->
                       <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="caseItem.conversation.attitudeType!='position' && info.getAttitude(caseItem.attitude)">{{info.getAttitude(caseItem.attitude).title}}</ion-label>
                       <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="caseItem.conversation.attitudeType=='position' && info.getPosition(caseItem.attitude)">{{info.getPosition(caseItem.attitude).title}}</ion-label>
                       <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="!info.getAttitude(caseItem.attitude)">Stel in</ion-label>
@@ -223,7 +211,6 @@
                       <p>Hoe standvastig is deze persoon (0% = Vindt alles wat jij vindt, 100% = Zal nooit iets anders vinden)</p>
                   </ion-label>
                   <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness">
-                      <!-- <ion-label style="font-size:14px" slot="start">Steadfastness</ion-label> -->
                       <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}%</ion-label>
                   </ion-range>
                   <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.steadfastness'"></fa-icon>
@@ -236,11 +223,6 @@
 
 
     </ion-card-content>
-    <!-- <div flex center-ver>
-      <ion-button color="secondary" class="saveButton" (click)="slide(1,true)">Terug</ion-button>
-      <span class="spacer"></span>
-      <ion-button color="primary" class="saveButton" (click)="!caseItem.attitude ? errorMessage('error_messages.no_attitude') : (!caseItem.steadfastness ? errorMessage('error_messages.no_steadfastness') : slide(3))">Volgende</ion-button>
-    </div> -->
   </ion-card>
 
   <ion-card basicPadding *ngIf="step==3" class="mainCard">
@@ -266,25 +248,15 @@
 
     </ion-card-content>
 
-  </ion-card>
+  </ion-card> -->
 
   <ion-card basicPadding *ngIf="step==4" class="mainCard">
 
     <ion-card-content class="detailColumn">
       <ion-row>
           <ion-col size="12" noPadding>
-            <!-- <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin||caseItem.editable_by_user.max_time">
-              <ion-label position="stacked" >
-                  <h1>Tijd</h1>
-                  <p>Hoe lang mag het gesprek maximaal duren?</p>
-              </ion-label>
-              <ion-range [min]="1" [max]="30" [pin]="true"  color="primary" [(ngModel)]="caseItem.max_time">
-                  <ion-label style="font-size:12px;text-align:right;min-width:65px;width:65px;" slot="end">{{caseItem.max_time}} Minuten</ion-label>
-              </ion-range>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.max_time'"></fa-icon>
-            </ion-item> -->
 
-            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin">
+            <!-- <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin">
               <ion-label position="stacked" >
                   <h1>Doel</h1>
                   <p>Wil je een specifiek doel instellen voor het gesprek? Als niet, dan is het gesprek al een doel op zich.</p>
@@ -292,7 +264,6 @@
               <ion-toggle [(ngModel)]="caseItem.goal" color="primary">Specifiek doel instellen</ion-toggle>
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.goal'"></fa-icon>
             </ion-item>
-
 
             <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin&&caseItem.goal">
               <ion-label position="stacked" >
@@ -308,39 +279,17 @@
                 <ion-input class="numberInput" min="0" max="3" type="number" [(ngModel)]="caseItem.minimum_goals"></ion-input>
               </div>
               <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.goals'"></fa-icon>
-            </ion-item>
-              
-            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="(showGoal.attitude&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.attitude&&!caseItem.admin)">
-              <ion-label position="stacked" >
-                  <h1>Houding</h1>
-                  <p>Bij welke houding van de gesprekspartner is het doel behaald </p>
-              </ion-label>
-              <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.goalsItems.attitude">
-                  <!-- <ion-label style="font-size:14px" slot="start">Attitude</ion-label> -->
-                  <ion-label style="font-size:12px;text-align:right" slot="end">{{info.getAttitude(caseItem.goalsItems.attitude).title}}</ion-label>
-              </ion-range>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.attitude_goal'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="(showGoal.phases&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.phases&&!caseItem.admin)">
-              <ion-label position="stacked" marginBottom>
-                  <h1>Fases</h1>
-                  <p>Hoe ver moeten de fases zijn gevorderd om het gesprek succesvol te laten zijn.</p>
-              </ion-label>
-              <ion-range noPadding [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.goalsItems.phases[i]" *ngFor="let phase of caseItem.conversationInfo.phaseList;let i = index">
-                  <ion-label style="font-size:12px;text-align:left;min-width:85px;width:85px;" slot="start">{{phase.short | capitalize}}</ion-label>
-                  <ion-label style="font-size:12px;text-align:right;min-width:25px;width:25px;" slot="end">{{caseItem.goalsItems.phases[i]}}</ion-label>
-              </ion-range>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.phases_goal'"></fa-icon>
-            </ion-item>
-<!-- 
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer">
-              <ion-label position="stacked">
-                <h1>{{caseItem.free_question}}</h1>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer">
-              </ion-textarea>
             </ion-item> -->
+
+            <div *ngIf="caseItem.previousConversationId" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="translate.instant('conversation.days_between_conversations')"></div>
+              <ion-input type="number" listCard labelPlacement="floating" [(ngModel)]="caseItem.daysBetweenConversations"></ion-input>
+            </div>
+            
+            <div *ngIf="caseItem.previousConversationId" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="translate.instant('conversation.actions_between_conversations')"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.actionsBetweenConversations"></ion-textarea>
+            </div>
 
             <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question" fullwidth marginBottom>
               <div weight600 font-18 [innerHtml]="caseItem.free_question | sanitizeHtml"></div>
@@ -367,17 +316,6 @@
               <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free"></ion-textarea>
             </div>
 
-<!--             
-            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="(showGoal.free&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.free&&!caseItem.admin)">
-              <ion-label position="stacked">
-                <h1>{{'conversation_start.goal' | translate}}</h1>
-                <p>{{'conversation_start.goal_instructions' | translate}}</p>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free">
-              </ion-textarea>
-            </ion-item>         -->
-
-
           </ion-col>
         
 
@@ -400,24 +338,8 @@
         <div *ngIf="!caseItem.admin" weight600 font-18 [innerHtml]="translate.instant('conversation_start.opening_user') | sanitizeHtml"></div>
         <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage"></ion-textarea>
       </div>
-
-        <!-- <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage">
-          <ion-label position="stacked">
-            <h1 style="margin-top:0" *ngIf="caseItem.admin">{{'conversation_start.opening' | translate}}</h1>
-            <h1 style="margin-top:0" *ngIf="!caseItem.admin">{{'conversation_start.opening_user' | translate}}</h1>
-            <p *ngIf="!caseItem.id">wat is het standaard begin van de casus?</p>
-          </ion-label>
-          <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage">
-          </ion-textarea>
-        </ion-item> -->
     </ion-card-content>
-    <!-- <div flex center-ver>
-      <ion-button color="secondary" class="saveButton" (click)="slide(4,true)">Terug</ion-button>
-      <span class="spacer"></span>
-      <ion-button *ngIf="!caseItem.admin" color="primary" class="saveButton" (click)="close()">Starten</ion-button>
-      <ion-button *ngIf="caseItem.admin" color="primary" class="saveButton" (click)="slide(6)">Volgende</ion-button>
-    </div> -->
-              
+
   </ion-card>
 
   <ion-card basicPadding basicRadius *ngIf="step==6&&caseItem.admin" class="mainCard">
@@ -454,6 +376,44 @@
   </ion-card>
 
 </div>
+
+<!-- <ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button *ngIf="step!=0" color="secondary" class="saveButton" (click)="slide(step-1,true)" [disabled]="step==3&&!promptChecked">
+        <span *ngIf="media.screenSize!='xs'">{{'buttons.back' | translate}}</span>
+        <span *ngIf="media.screenSize=='xs'">
+          <fa-icon [icon]="icon.get('faArrowLeft')" font-18></fa-icon>
+        </span>
+      </ion-button>
+
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="step!=6&&caseItem.admin&&caseItem.id" color="success" class="saveButton" (click)="close()" [disabled]="step==3&&!promptChecked">
+        <span *ngIf="media.screenSize!='xs'">{{'buttons.save' | translate}}</span>
+        <span *ngIf="media.screenSize=='xs'">
+          <fa-icon [icon]="icon.get('faSave')" font-18></fa-icon>
+        </span>
+      </ion-button>
+
+
+      <ion-button *ngIf="step!=6&&!(step==5&&!caseItem.admin)" color="primary" class="saveButton" (click)="slide(step+1)" [disabled]="step==3&&!promptChecked">
+        <span *ngIf="media.screenSize!='xs'">{{'buttons.next' | translate}}</span>
+        <span *ngIf="media.screenSize=='xs'">
+          <fa-icon [icon]="icon.get('faArrowRight')" font-18></fa-icon>
+        </span>
+      </ion-button>
+
+      <ion-button *ngIf="step==5&&!caseItem.admin" color="primary" class="saveButton" (click)="close()">
+        <span *ngIf="media.screenSize!='xs'">{{'buttons.start' | translate}}</span>
+        <span *ngIf="media.screenSize=='xs'">
+          <fa-icon [icon]="icon.get('faCheck')" font-18></fa-icon>
+        </span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer> -->
+
 <div class="buttons">
   
   <div flex center-ver>
@@ -504,6 +464,7 @@
     </ion-button>
 
   </div>
+</div>
 <!-- 
   <div flex center-ver *ngIf="step==0">
     <span class="spacer"></span>
@@ -553,4 +514,124 @@
     <ion-button *ngIf="caseItem.admin" color="primary" class="saveButton" (click)="close()">Opslaan</ion-button>
   </div> -->
 
+<!-- </div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <div header padding20 flex center-ver>
+  <div class="title">
+    <h3 class="subtitle-top" noMargin>
+      {{'conversation_start.the_case' | translate}} {{step}}
+      <span *ngIf="step==5&&caseItem.id">{{'conversation_start.starting' | translate}}</span>
+    </h3>
+  </div>
+  <span class="spacer"></span>
+  <ion-button (click)="modalCtrl.dismiss()" fill="clear" color="secondary">
+    <fa-icon [icon]="icon.get('faTimes')" font-20 slot="icon-only"></fa-icon>
+  </ion-button>
 </div>
+
+<div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}">
+
+  <div class="modalIntro" *ngIf="step==5&&caseItem.id">{{'conversation_start.starting_instructions' | translate}}</div>
+  
+  <ion-card basicPadding *ngIf="step==4" class="mainCard">
+
+    <ion-card-content class="detailColumn">
+      <ion-row>
+          <ion-col size="12" noPadding>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer"></ion-textarea>
+            </div>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question2" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question2 | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer2"></ion-textarea>
+            </div>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question3" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question3 | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer3"></ion-textarea>
+            </div>
+
+            <div *ngIf="caseItem.admin||caseItem.editable_by_user.free_answer && caseItem.free_question4" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="caseItem.free_question4 | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.free_answer4"></ion-textarea>
+            </div>
+
+            <div *ngIf="(showGoal.free&&caseItem.goal&&caseItem.admin)||(caseItem.editable_by_user.goals.free&&!caseItem.admin)" fullwidth marginBottom>
+              <div weight600 font-18 [innerHtml]="translate.instant('conversation_start.goal_instructions') | sanitizeHtml"></div>
+              <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.goalsItems.free"></ion-textarea>
+            </div>
+
+          </ion-col>
+        
+
+      </ion-row>
+
+
+    </ion-card-content>
+
+  </ion-card>
+
+  <ion-card basicPadding basicRadius *ngIf="step==5" class="mainCard">
+    <ion-card-content>
+
+      <div *ngIf="caseItem.admin||caseItem.editable_by_user.openingMessage" fullwidth marginBottom>
+        <div *ngIf="caseItem.admin" weight600 font-18 [innerHtml]="translate.instant('conversation_start.opening') | sanitizeHtml"></div>
+        <div *ngIf="!caseItem.admin" weight600 font-18 [innerHtml]="translate.instant('conversation_start.opening_user') | sanitizeHtml"></div>
+        <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage"></ion-textarea>
+      </div>
+    </ion-card-content>
+
+  </ion-card>
+
+</div>
+<div class="buttons">
+  
+  <div flex center-ver>
+    <ion-button *ngIf="step!=0" color="secondary" class="saveButton" (click)="slide(step-1,true)" [disabled]="step==3&&!promptChecked">
+      <span *ngIf="media.screenSize!='xs'">{{'buttons.back' | translate}}</span>
+      <span *ngIf="media.screenSize=='xs'">
+        <fa-icon [icon]="icon.get('faArrowLeft')" font-18></fa-icon>
+      </span>
+    </ion-button>
+
+    <ion-button *ngIf="step==5&&!caseItem.admin" color="primary" class="saveButton" (click)="close()">
+      <span *ngIf="media.screenSize!='xs'">{{'buttons.start' | translate}}</span>
+      <span *ngIf="media.screenSize=='xs'">
+        <fa-icon [icon]="icon.get('faCheck')" font-18></fa-icon>
+      </span>
+    </ion-button>
+
+  </div>
+
+</div> -->

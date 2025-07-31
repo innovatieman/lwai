@@ -10,157 +10,110 @@
           </ion-col>
         </ion-row>
 
-        <div singleLine></div>
-        <div weight500 style="padding: 0 15px;">Type
-          <fa-icon titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer *ngIf="editingType=='attitudes'" (click)="translateAttitudes()"></fa-icon>
-
+        <!-- <div singleLine></div> -->
+        <div style="padding: 15px 0;margin-bottom:20px;border:solid 2px var(--ion-color-primary);border-radius:16px" >
+          <div weight700 style="padding: 0 15px;">Type
+            <fa-icon titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer *ngIf="editingType=='attitudes'" (click)="translateAttitudes()"></fa-icon>
+  
+          </div>
+          <ion-card  basicPadding noBackground font-16 noPadding noMargin>
+            <ion-radio-group  [(ngModel)]="editingType" (ionChange)="changeEditType()">
+              <div flex center-ver>
+                <ion-item detail="false" lines="none" noBackground>
+                  <ion-radio labelPlacement="end" justify="start" value="content">Content</ion-radio>
+                </ion-item>
+                <ion-item detail="false" lines="none" noBackground>
+                  <ion-radio labelPlacement="end" justify="start" value="format">Format</ion-radio>
+                </ion-item>
+              </div>
+              <div flex center-ver>
+  
+                <ion-item detail="false" lines="none" noBackground>
+                  <ion-radio labelPlacement="end" justify="start" value="attitudes">Attitudes</ion-radio>
+                </ion-item>
+                <ion-item detail="false" lines="none" noBackground >
+                  <ion-radio labelPlacement="end" justify="start" value="phases">Fases</ion-radio>
+                </ion-item>
+              </div>
+            </ion-radio-group>
+          </ion-card>
         </div>
-        <ion-card  basicPadding noBackground font-16 noPadding noMargin>
-          <ion-radio-group  [(ngModel)]="editingType" (ionChange)="changeEditType()">
-            <div flex center-ver>
-              <ion-item detail="false" lines="none" noBackground>
-                <ion-radio labelPlacement="end" justify="start" value="content">Content</ion-radio>
-                <!-- <ion-label>Content</ion-label> -->
-              </ion-item>
-              <ion-item detail="false" lines="none" noBackground>
-                <ion-radio labelPlacement="end" justify="start" value="format">Format</ion-radio>
-                <!-- <ion-label>Format</ion-label> -->
-              </ion-item>
-            </div>
-            <ion-item detail="false" lines="none" noBackground>
-              <ion-radio labelPlacement="end" justify="start" value="attitudes">Attitudes</ion-radio>
-              <!-- <ion-label>Format</ion-label> -->
-            </ion-item>
-          </ion-radio-group>
-        </ion-card>
-
-        <div singleLine *ngIf="activeItem.id!='attitudes'"></div>
-        <div *ngIf="activeItem.id!='attitudes'" weight500 style="padding: 0 15px;" flex center-ver>
-          <span>Gesprekstechniek</span>
-          <span class="spacer"></span>
-          <fa-icon titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer (click)="translateCategory()"></fa-icon>
-          <fa-icon titleIcon [icon]="icon.get('faPlus')" font-20 pointer (click)="newCategory()"></fa-icon>
-        </div>
-        <ion-card *ngIf="activeItem.id!='attitudes'" marginBottom weight600  basicPadding pointer class="agent specialAgent" style="padding:10px 15px 10px 30px;color:var(--ion-color-primary)" flex center-ver (click)="selectCategory()">
-          <fa-icon [icon]="icon.get('faList')" font-20 style="margin-right:20px;;"></fa-icon>  
-          <div font-16>{{ activeItem.id=='main' ? (activeItem.id | uppercase) : (activeItem.title | uppercase)}}</div>
-        </ion-card>
-
-        <div *ngIf="activeItem.id!='attitudes'" singleLine></div>
-        <div *ngIf="activeItem.id!='attitudes'" weight500 style="padding: 0 15px;" flex center-ver>
-          <span>Agent</span>
-          <span class="spacer"></span>
-          <fa-icon [icon]="icon.get('faGlobeEurope')" *ngIf="activeAgent.id=='phaseList'&&activeItem.id!='main'" font-20 pointer (click)="translatePhases()"></fa-icon>
-          <fa-icon [icon]="icon.get('faPlus')" titleIcon font-20 pointer (click)="addAgent()"></fa-icon>
-        </div>
-        <ion-card *ngIf="activeItem.id!='attitudes'" marginBottom basicPadding pointer class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
-          <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
-          <ion-select [placeholder]="activeAgent.id=='main' ? 'Basisgegevens' : 'Select Agent'" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="''" [expandedIcon]="''" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
-            <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option>
-            <ion-select-option [value]="{title:'Fase indeling',id:'phaseList'}">{{'Fase indeling' | capitalize}}</ion-select-option>
-            <ion-select-option *ngFor="let agent of agents" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
-          </ion-select>
-          <span class="spacer"></span>
-        </ion-card>
 
         
-        <!-- <ion-card marginBottom basicPadding pointer class="agent specialAgent" (click)="activateItem(attitudesItem,true)" [ngClass]="{'activeItem':activeItem.id==attitudesItem.id}">
-          <ion-card-title fullwidth>
-            <fa-icon [icon]="icon.get('faCogs')" style="margin-right:20px"></fa-icon>  
-            <span>Attitudes</span>
-          </ion-card-title>
-        </ion-card> -->
-
-        <!-- <ion-card marginBottom basicPadding pointer font16 weight700 style="outline:solid 2px var(--ion-color-danger)" *ngFor="let item of categories | filterKey : 'id' : 'main';let i = index" [ngClass]="{'activeTab':activeItem?.id==item.id}" (click)="activateItem(item)">
-          <span style="width:30px;display:inline-block;text-align:center">
-            <fa-icon [icon]="icon.get('faUser')" style="width:30px;"></fa-icon>
-          </span>
-          <span *ngIf="item.level">{{item.level}}. </span> 
-          <span *ngIf="item.title">{{item.title | capitalize}}</span>
-          <span *ngIf="!item.title">{{item.id | capitalize}}</span>
-        </ion-card> -->
+        
 
 
+        <div *ngIf="activeItem.id!='attitudes' && activeAgent.id=='phaseList'" style="padding: 15px 0;margin-bottom:20px;border:solid 2px var(--ion-color-primary);border-radius:16px">
+
+          <div *ngIf="activeItem.id!='attitudes' && activeAgent.id=='phaseList'" weight500 style="padding: 0 15px;" flex center-ver>
+            <span weight700>Gesprekstechniek</span>
+            <span class="spacer"></span>
+            <fa-icon [icon]="icon.get('faGlobeEurope')" font-20 pointer (click)="translatePhases()"></fa-icon>
+            <fa-icon titleIcon [icon]="icon.get('faPlus')" font-20 pointer (click)="newCategory()"></fa-icon>
+          </div>
+          <ion-card *ngIf="activeAgent.id=='phaseList'" marginBottom weight600  basicPadding pointer class="agent specialAgent" style="padding:10px 15px 10px 30px;color:var(--ion-color-primary)" flex center-ver (click)="selectCategory()">
+            <fa-icon [icon]="icon.get('faList')" font-20 style="margin-right:20px;;"></fa-icon>  
+            <div font-16>{{ activeItem.id=='main' ? ('Select techniek' | uppercase) : (activeItem.title | uppercase)}}</div>
+          </ion-card>
+
+        </div>
+
+         <div *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList'" style="padding: 15px 0;margin-bottom:20px;border:solid 2px var(--ion-color-primary);border-radius:16px">
+           <div *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList'" weight500 style="padding: 0 15px;" flex center-ver>
+             <span weight700>Gesprek Agent</span>
+             <span class="spacer"></span>
+             <fa-icon [icon]="icon.get('faGlobeEurope')" *ngIf="activeAgent.id=='phaseList'&&activeItem.id!='main'" font-20 pointer (click)="translatePhases()"></fa-icon>
+             <fa-icon [icon]="icon.get('faPlus')" titleIcon font-20 pointer (click)="addAgent('conversation')"></fa-icon>
+           </div>
+           <ion-card *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList'" marginBottom basicPadding pointer class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
+             <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
+             <ion-select [placeholder]="activeAgent.id=='main' ? 'Basisgegevens' : 'Select Agent'" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="''" [expandedIcon]="''" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
+               <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option>
+               <!-- <ion-select-option [value]="{title:'Fase indeling',id:'phaseList'}">{{'Fase indeling' | capitalize}}</ion-select-option> -->
+               <ion-select-option *ngFor="let agent of agents | filterKey : 'type' : 'conversation'" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
+             </ion-select>
+             <span class="spacer"></span>
+           </ion-card>
+   
+           <div *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList' && activeAgent.type=='conversation'" weight500 style="padding: 0 15px;" flex center-ver>
+             <span weight500>Gesprekstechniek</span>
+             <span class="spacer"></span>
+             <fa-icon titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer (click)="translateCategory('conversation')"></fa-icon>
+             <fa-icon titleIcon [icon]="icon.get('faPlus')" font-20 pointer (click)="newCategory()"></fa-icon>
+           </div>
+           <ion-card *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList' && activeAgent.type=='conversation'" marginBottom weight600  basicPadding pointer class="agent specialAgent" style="padding:10px 15px 10px 30px;color:var(--ion-color-primary)" flex center-ver (click)="selectCategory()">
+             <fa-icon [icon]="icon.get('faList')" font-20 style="margin-right:20px;;"></fa-icon>  
+             <div font-16>{{ activeItem.id=='main' ? (activeItem.id | uppercase) : (activeItem.title | uppercase)}}</div>
+           </ion-card>
+          </div>
 
 
-        <!-- <ion-card basicPadding pointer font16 weight700 tab *ngFor="let item of categories | filterKey : '!id' : 'main';let i = index" [ngClass]="{'activeTab':activeItem?.id==item.id}" (click)="activateItem(item)">
-          <span style="width:30px;display:inline-block;text-align:center">
-            <fa-icon [icon]="icon.get('faUser')" style="width:30px;"></fa-icon>
-          </span>
-          <span *ngIf="item.level">{{item.level}}. </span> 
-          <span *ngIf="item.title">{{item.title | capitalize}}</span>
-          <span *ngIf="!item.title">{{item.id | capitalize}}</span>
-        </ion-card> -->
+         <div *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList'" style="padding: 15px 0;margin-bottom:20px;border:solid 2px var(--ion-color-primary);border-radius:16px">
+           <div *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList'" weight500 style="padding: 0 15px;" flex center-ver>
+             <span weight700>Support Agent</span>
+             <span class="spacer"></span>
+             <fa-icon *ngIf="activeAgent.type=='support'" titleIcon [icon]="icon.get('faGlobeEurope')" font-20 pointer (click)="translateCategory('main',activeAgent.id)"></fa-icon>
+             <fa-icon [icon]="icon.get('faPlus')" titleIcon font-20 pointer (click)="addAgent('support')"></fa-icon>
+           </div>
+           <ion-card *ngIf="activeItem.id!='attitudes' && activeAgent.id!='phaseList'" marginBottom basicPadding pointer class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
+             <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
+             <ion-select [placeholder]="'Select Agent'" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="''" [expandedIcon]="''" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
+               <!-- <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option> -->
+               <!-- <ion-select-option [value]="{title:'Fase indeling',id:'phaseList'}">{{'Fase indeling' | capitalize}}</ion-select-option> -->
+               <ion-select-option *ngFor="let agent of agents | filterKey : 'type' : 'support'" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
+             </ion-select>
+             <span class="spacer"></span>
+           </ion-card>
+        </div> 
+
+      
       </ion-col>
 
       <ion-col size="9" class="detailColumn" >
 
         <!-- Buttons -->
         <ion-row relative>
-          <!-- <div *ngIf="activeItem.id=='attitudes'||activeItem.id=='positions'" class="unavailable"></div> -->
-
-          <!-- Basic -->
-          <!-- <ion-col size="3" center noMargin>
-            <ion-card basicPadding pointer noMargin class="agent specialAgent" (click)="changeAgent(basicContent)" [ngClass]="{'activeAgent':activeAgent.id==basicContent.id}">
-              <ion-card-title fullwidth>
-                <fa-icon [icon]="icon.get('faFileAlt')" style="margin-right:20px"></fa-icon>  
-                <span>{{basicContent.title}}</span>
-              </ion-card-title>
-            </ion-card>
-          </ion-col> -->
-          <!-- <ion-col size="3" center noMargin>
-            <ion-card basicPadding pointer noMargin class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
-              <fa-icon [icon]="icon.get('faUser')" style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
-              <ion-select placeholder="Select Agent" value="{{basicContent}}" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="'i'" [expandedIcon]="'i'" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
-                <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option>
-                <ion-select-option [value]="{title:'Fase indeling',id:'phaseList'}">{{'Fase indeling' | capitalize}}</ion-select-option>
-                <ion-select-option *ngFor="let agent of agents" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
-              </ion-select>
-              <span class="spacer"></span>
-            </ion-card>
-          </ion-col> -->
-
-          <!-- Phases -->
-          <!-- <ion-col size="3" center noMargin>
-            <ion-card basicPadding pointer noMargin class="agent specialAgent" (click)="changeAgent(phaseList)" [ngClass]="{'activeAgent':activeAgent.id==phaseList.id}">
-              <ion-card-title fullwidth>
-                <fa-icon [icon]="icon.get('faList')" style="margin-right:20px"></fa-icon>  
-                <span>{{phaseList.title}}</span>
-              </ion-card-title>
-            </ion-card>
-          </ion-col> -->
-
-          <!-- Attitudes -->
-          <!-- <ion-col size="3" center noMargin>
-            <ion-card basicPadding pointer noMargin class="agent specialAgent" (click)="activateItem(attitudesItem,true)" [ngClass]="{'activeItem':activeItem.id==attitudesItem.id}">
-              <ion-card-title fullwidth>
-                <fa-icon [icon]="icon.get('faCogs')" style="margin-right:20px"></fa-icon>  
-                <span>Attitudes</span>
-              </ion-card-title>
-            </ion-card>
-          </ion-col> -->
-
-
-          <!-- <ion-col size="3" center noMargin>
-            <ion-card basicPadding pointer noMargin class="agent specialAgent" style="padding:3px 15px 3px 30px" flex center-ver (click)="openSelect($event,'select_btn_agents')">
-              <fa-icon [icon]="icon.get('faUser')" style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
-              <ion-select placeholder="Select Agent" value="{{basicContent}}" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="'i'" [expandedIcon]="'i'" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
-                <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option>
-                <ion-select-option *ngFor="let agent of agents" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
-              </ion-select>
-              <span class="spacer"></span>
-            </ion-card>
-          </ion-col> -->
-          
-          <!-- Agents -->
-          <!-- <ion-col size="3" center noMargin *ngFor="let agent of agents" >
-            <ion-card basicPadding pointer noMargin class="agent" (click)="changeAgent(agent)" [ngClass]="{'activeAgent':activeAgent.id==agent.id}">
-              <ion-card-title fullwidth>
-                <fa-icon [icon]="icon.get('faUser')" style="margin-right:20px"></fa-icon>  
-                <span>{{agent.title}}</span>
-              </ion-card-title>
-            </ion-card>
-          </ion-col> -->
+         
         </ion-row>
         
         <!-- editable -->
@@ -199,7 +152,9 @@
                   </ion-item>
     
                   <ion-item detail="false" listCard lines="none" *ngIf="field.type=='textarea' && activeItem[activeAgent.id]">
-                    <ion-label position="stacked" *ngIf="!firstInputlabels[field.field]">{{field.label}}</ion-label>
+                    <!-- <ion-label position="stacked" *ngIf="!firstInputlabels[field.field]&&field.label">{{field.label}}1</ion-label> -->
+                    <ion-label position="stacked" *ngIf="field.label&&(!activeAgent?.id || !firstInputlabels[field.field] || !firstInputlabels[field.field][activeAgent.id])">{{field.label}}</ion-label>
+                    <ion-label position="stacked" *ngIf="!firstInputlabels[field.field]&&!field.label">Vraag aan Agent</ion-label>
                     <ion-label position="stacked" *ngIf="firstInputlabels[field.field]">{{firstInputlabels[field.field][activeAgent.id]}}</ion-label>
                     <quill-editor *ngIf="!showHtml&&!field.notHtml" [(ngModel)]="activeItem[activeAgent.id][field.field]" [modules]="configModules" (onEditorCreated)="startEditor($event)" (onBlur)="update(field.field,null,true)"></quill-editor>
 

@@ -48,7 +48,7 @@ export class GenerateCasePage implements OnInit {
     "customer":2,
     "debate":2,
     "feedback":2,
-    "introduction":2,
+    "introduction":1,
     "negotiation":2,
     "personal":2,
     "sales":2,
@@ -338,17 +338,17 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
         `
 
       }
-      if(this.caseItem.attitude){
-        readableText += `**${this.translate.instant('generate_case.attitude')}:** ${this.infoService.getAttitude(this.caseItem.attitude).title}
-        _${this.translate.instant('generate_case.attitude_question')}_
+      // if(this.caseItem.attitude){
+      //   readableText += `**${this.translate.instant('generate_case.attitude')}:** ${this.infoService.getAttitude(this.caseItem.attitude).title}
+      //   _${this.translate.instant('generate_case.attitude_question')}_
 
-        `
-      }
-      if(this.caseItem.steadfastness){
-        readableText += `**${this.translate.instant('generate_case.steadfastness')}:** ${this.caseItem.steadfastness || 50}
-        _${this.translate.instant('generate_case.steadfastness_question')}_
-        `
-      }
+      //   `
+      // }
+      // if(this.caseItem.steadfastness){
+      //   readableText += `**${this.translate.instant('generate_case.steadfastness')}:** ${this.caseItem.steadfastness || 50}
+      //   _${this.translate.instant('generate_case.steadfastness_question')}_
+      //   `
+      // }
   
     return readableText.trim();
   }

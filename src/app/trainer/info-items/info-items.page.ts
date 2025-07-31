@@ -409,7 +409,7 @@ export class InfoItemsPage implements OnInit {
       }
     }
 
-    async selectAvatar(event:Event,extraPhoto:boolean = false){
+    async selectAvatar(event:Event,extraPhoto:boolean = false,ratio:string = 'knowledge'){
       this.media.selectAvatar(event,(res:any)=>{
         console.log(res)
         if(res?.status==200&&res?.result.url){
@@ -457,7 +457,7 @@ export class InfoItemsPage implements OnInit {
           }
           this.createPhoto(this.trainerService.infoItem,extraPhoto)
         }
-      },true,true)
+      },true,true,'',ratio)
     }
   
   

@@ -201,6 +201,16 @@ const routes: Routes = [
     loadChildren: () => import('./bagend/socials/socials.module').then( m => m.SocialsPageModule)
   },
   {
+    path: 'bagend/ai-organisation',
+    loadChildren: () => import('./bagend/ai-organisation/ai-organisation.module').then( m => m.AiOrganisationPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'bagend/ai-organisation/:project_id',
+    loadChildren: () => import('./bagend/ai-organisation/ai-organisation.module').then( m => m.AiOrganisationPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
     path: 'trainer/cases',
     loadChildren: () => import('./trainer/cases/cases.module').then( m => m.CasesPageModule),
     canActivate: [AuthGuard,TrainerGuard],
@@ -247,6 +257,11 @@ const routes: Routes = [
   },
   {
     path: 'marketplace/:tab',
+    loadChildren: () => import('./pages/marketplace/marketplace.module').then( m => m.MarketplacePageModule),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'marketplace/:tab/:item_id',
     loadChildren: () => import('./pages/marketplace/marketplace.module').then( m => m.MarketplacePageModule),
     canActivate: [AuthGuard],
   },
@@ -355,6 +370,7 @@ const routes: Routes = [
     path: 'backup',
     loadChildren: () => import('./bagend/backup/backup.module').then( m => m.BackupPageModule)
   },
+
 
   
 

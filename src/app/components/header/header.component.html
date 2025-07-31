@@ -15,7 +15,7 @@
           <img src="assets/icon/logo_single_black.png" style="margin-right: 10px;height:30px;min-width:30px;" *ngIf="media.screenSize=='sm'">
           <!-- <div style="font-size: 24px;" *ngIf="title">{{title | uppercase}}</div> -->
         </div>
-        <div class="menuList" *ngIf="(!media.smallDevice&&!noMenuList && countShowPages) || isOrgAdmin">
+        <div class="menuList" *ngIf="(!media.smallDevice&&!noMenuList && countShowPages) || (!media.smallDevice && isOrgAdmin)">
           <div *ngFor="let item of menuItems">
             <div class="menuItem" (click)="item.url ? nav.go(item.url) : action(item)" [ngClass]="{'activeMenuItem':page==item.page}" *ngIf="shouldShowPage(item)">
               <span>{{item.title}}</span>
@@ -34,7 +34,7 @@
             <span>{{translateService.instant('standards.update_available')}}</span>
           </ion-button>
 
-          <ion-button id="headerButtonCredits" *ngIf="!noMenuList && !showNoCredits && isVerified" [color]="credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="inactiveCredits ? doNothing() :  nav.go('account/credits')">
+          <ion-button [id]="'headerButtonCredits_'+pathname" *ngIf="!noMenuList && !showNoCredits && isVerified" [color]="credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline"  (click)="inactiveCredits ? doNothing() :  nav.go('account/credits')">
             <span *ngIf="(credits.total&&!auth.credits_unlimited_type&&!isEmployee)">{{auth.credits.total}} <span *ngIf="!media.smallDevice">{{translateService.instant('standards.credits')}}</span></span>
             <span *ngIf="(credits.total&&auth.credits_unlimited_type)||isEmployee" flex center-ver>
               <ion-icon name="infinite" noMargin slot="end" style="font-size: 18px;"></ion-icon>

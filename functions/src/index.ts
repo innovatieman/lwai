@@ -48,5 +48,7 @@ export * from './maintenance/backup'
 export * from './modules/organisation'
 export * from './querys/cases'
 export * from './apis/knowledge'
+export * from './ai-organization/marketing/google-ads'
+export * from './modules/elearnings'
 
 

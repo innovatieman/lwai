@@ -29,7 +29,7 @@
 
           <ion-item detail="false" lines="none" class="fieldItem" *ngIf="!showResetPassword">
             <ion-label position="stacked">{{'page_login.email' | translate}}</ion-label>
-            <ion-input type="email" formControlName="email"></ion-input>
+            <ion-input type="email" inputmode="email" formControlName="email"></ion-input>
           </ion-item>
 
           <ion-item detail="false" lines="none" class="fieldItem" [ngStyle]="{'display':!showPassWordReset || oobCode ? 'block' : 'hidden'}" *ngIf="!showPassWordReset || oobCode">
@@ -41,13 +41,7 @@
               <ion-icon slot="end" name="eye-off" *ngIf="showPassword" (click)="showPassword = false"></ion-icon>
             </ion-input>
           </ion-item>
-          <!-- <label for="email">E-mailadres</label>
-          <ion-input type="email" formControlName="email"></ion-input> -->
 
-        <!-- <div class="form-group" *ngIf="!showPassWordReset"> -->
-          <!-- <label for="password">Wachtwoord</label>
-          <ion-input type="password" formControlName="password" placeholder="••••••••"></ion-input> -->
-        <!-- </div> -->
         <div class="form-options" *ngIf="!showResetPassword">
           <span class="spacer"></span>
           <span *ngIf="!showPassWordReset" class="showPassWordReset" (click)="forgotPassword()" pointer>{{'page_login.forgot_password' | translate}}</span>

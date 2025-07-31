@@ -233,6 +233,15 @@
                             <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="update('title')" [(ngModel)]="trainerService.moduleItem.title"></ion-input>
                           </ion-item>
                         </ion-col>
+                        <!-- <ion-col [size]="media.smallDevice ? 12 : 4">
+                          <ion-item detail="false" lines="none" listCard>
+                            <ion-label position="floating">{{'cases.module_type' | translate}}</ion-label>
+                            <ion-select interface="popover" style="margin-left:10px" weight700 type="text"  (ionChange)="update('module_type')" [(ngModel)]="trainerService.moduleItem.module_type">
+                              <ion-select-option value="free">{{'cases.type_free' | translate}}</ion-select-option>
+                              <ion-select-option value="game">{{'cases.type_game' | translate}}</ion-select-option>
+                            </ion-select>
+                          </ion-item>
+                        </ion-col> -->
                         <ion-col [size]="media.smallDevice ? 12 : 4" align-right>
                           <ion-button fill="outline" [disabled]="moduleNotReady()" color="primary" class="saveButton" (click)="createTraining(trainerService.moduleItem)">
                             {{'modules.create_training' | translate}}
@@ -240,8 +249,8 @@
                         </ion-col>
                       </ion-row>
                         
-                      <ion-card pointer marginBottom marginTop class="caseAvatar" (click)="selectAvatar($event)" [ngStyle]="{'height':trainerService.moduleItem.photo ? '300px' : '150px','background':'var(--background-global)'}">
-                        <ion-card-content backgroundImage noPadding *ngIf="trainerService.moduleItem" [ngStyle]="{'background-image': trainerService.moduleItem.photo ? 'url(' + trainerService.moduleItem.photo + ')' : 'none'}">
+                      <ion-card pointer marginBottom marginTop class="caseAvatar" (click)="selectAvatar($event)" [ngStyle]="{'height':trainerService.getModule(trainerService.moduleItem.id).photo ? '300px' : '150px','background':'var(--background-global)'}">
+                        <ion-card-content backgroundImage noPadding *ngIf="trainerService.moduleItem" [ngStyle]="{'background-image': trainerService.getModule(trainerService.moduleItem.id).photo ? 'url(' + trainerService.getModule(trainerService.moduleItem.id).photo + ')' : 'none'}">
                           <fa-icon class="infoIconPhoto" pointer titleIcon font-24 (click)="trainerService.tooltip('module_title_photo','cases.photo',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                         </ion-card-content>
                         <div fullwidth center-ver center-hor class="btnImgChange">
@@ -311,11 +320,11 @@
 
                         <div dndPlaceholderRef></div>
 
-                        <div *ngIf="trainerService.breadCrumbs.length>1" class="card-wrapper" style="top:-10px;" [ngStyle]="{'width':'calc('+helpers.cardSizeSmallPerc+' - 32px)'}" relative>
+                        <!-- <div *ngIf="trainerService.breadCrumbs.length>1" class="card-wrapper" style="top:-10px;" [ngStyle]="{'width':'calc('+helpers.cardSizeSmallPerc+' - 32px)'}" relative> -->
                           
-                           <ion-card class="backArrowModule" pointer noBackground noPadding fullheight noMargin flex center-ver center-hor (click)="backBreadCrumbs()">
+                          <!-- <ion-card class="backArrowModule" pointer noBackground noPadding fullheight noMargin flex center-ver center-hor (click)="backBreadCrumbs()">
                             <fa-icon font-80 weight700 [icon]="icon.get('faArrowLeft')"></fa-icon>
-                          </ion-card>
+                          </ion-card> -->
                           
                           <!-- <ion-card noPadding pointer fullheight caseCard (click)="backBreadCrumbs()">
                               <ion-card-content noPadding fullHeight>
@@ -334,7 +343,7 @@
                           </ion-card>
                           <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule></ion-card>
                           <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule2></ion-card> -->
-                        </div>
+                        <!-- </div> -->
 
                         <div *ngFor="let item of trainerService.moduleItem.items; let i = index"
                               [dndDraggable]="item"

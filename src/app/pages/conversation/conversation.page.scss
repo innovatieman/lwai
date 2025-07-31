@@ -48,6 +48,17 @@ ion-header{
     }
 }
 
+.voiceStop{
+  position: absolute;
+  width: 80px;
+  height:80px;
+  background: white;
+  border-radius: 24px;
+  left: 60px;
+  top: 25px;
+  font-size:24px;
+}
+
   .explanation{
     color: rgba(0, 0, 0, 0.5);
     font-style: italic;
@@ -647,7 +658,7 @@ video{
 }
 
 .leftDetails{
-  max-height: calc(70% - 50px);
+  max-height: 100%;// calc(70% - 50px);
   overflow: auto;
 }
 
@@ -788,6 +799,7 @@ video{
     align-items: flex-end;
     z-index: 10;
     max-height: 760px;
+    pointer-events: none;
 }
 
 .speaking_bars {

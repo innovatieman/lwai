@@ -43,3 +43,10 @@ ion-item{
     padding: 15px;
     color:var(--color-global);
 }
+
+.selectedModule{
+    --background: var(--ion-color-primary);
+    ion-label{
+        color:var(--ion-color-primary-contrast);
+    }
+}

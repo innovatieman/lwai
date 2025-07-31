@@ -7,58 +7,6 @@ import Stripe from "stripe";
 const stripe = new Stripe(config.stripe.live_secret_key);
 
 
-
-// exports.buyCredits = functions.region('europe-west1').https.onCall(async (data: any, context: any) => {
-//     // Check op authenticatie
-//     if (!context.auth) {
-//         return new responder.Message('Not authorized', 401);
-//     }
-
-//     // Check op het bedrag
-//     if (!data.amount) {
-//         return new responder.Message('No amount provided', 400);
-//     }
-
-//     try {
-//         // Haal de gebruiker op
-//         const doc = await admin.firestore().collection('users').doc(context.auth.uid).get();
-//         let user = doc.data();
-
-//         if (!user) {
-//             return new responder.Message('User not found', 404);
-//         }
-
-//         // Zet credits op 0 als het ontbreekt
-//         if (!user.credits) {
-//             user.credits = 0;
-//         }
-
-//         // Update de credits
-//         user.credits += data.amount;
-//         await admin.firestore().collection('users').doc(context.auth.uid).update(user);
-
-//         // Voeg de transactie toe
-//         await admin.firestore().collection('users').doc(context.auth.uid).collection('transactions').add({
-//             type: 'credit_purchase',
-//             amount: data.amount,
-//             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-//             user: context.auth.uid,
-//             status: 'success',
-//             paymentMethod: {
-//                 type: 'credit card',
-//             },
-//             valid_until: admin.firestore.Timestamp.fromDate(
-//                 new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30)
-//             ),
-//         });
-
-//         return new responder.Message('Success');
-//     } catch (e) {
-//         console.error(e);
-//         return new responder.Message('Error', 500);
-//     }
-// });
-
 exports.creditsBought = functions.region('europe-west1').firestore
   .document('customers/{userId}/payments/{paymentId}')
   .onCreate(async (snap:any, context:any) => {
@@ -80,6 +28,9 @@ exports.creditsBought = functions.region('europe-west1').firestore
         }
         else if(productData.metadata.type=='course'){
             await addCourseToUser(context.params.userId, payment.items[0].price.product);
+        }
+        else if(productData.metadata.type=='trainer'){
+            await addTrainerSubscription(context.params.userId, productData);
         }
     }
     
@@ -359,7 +310,25 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
         return new responder.Message('Invalid number of participants', 400);
     }
 
-    const trainingPrice = (extra ? countExtraCostsTraining(trainingData,extra) : countCostsTraining(trainingData));
+    //get trainer data
+    const trainerRef = admin.firestore().collection('trainers').doc(trainerId);
+    const trainerDoc = await trainerRef.get();
+    const trainerData = trainerDoc.data();
+    let invoice_redirect:boolean = false
+    if(!trainerData){
+        return new responder.Message('Trainer not found', 404);
+    }
+    if(!trainerData.admins.includes(uid)){
+        return new responder.Message('You are not allowed to publish this training', 403);
+    }
+    if(trainerData.invoice_redirect){
+        invoice_redirect = true;
+    }
+
+    const trainerPro = await isTrainerPro(trainerId);
+
+
+    const trainingPrice = (extra ? countExtraCostsTraining(trainingData,extra) : countCostsTraining(trainingData,trainerPro));
     trainingPrice.totalCosts;
   
     try {
@@ -375,21 +344,7 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
         stripeCustomerId = customerStripe.id;
     }
 
-    //get trainer data
-    const trainerRef = admin.firestore().collection('trainers').doc(trainerId);
-    const trainerDoc = await trainerRef.get();
-    const trainerData = trainerDoc.data();
-    let invoice_redirect:boolean = false
-    if(!trainerData){
-        return new responder.Message('Trainer not found', 404);
-    }
-    if(!trainerData.admins.includes(uid)){
-        return new responder.Message('You are not allowed to publish this training', 403);
-    }
-
-    if(trainerData.invoice_redirect){
-        invoice_redirect = true;
-    }
+    
 
     if(!invoice_redirect){
         const session = await admin.firestore()
@@ -546,7 +501,7 @@ exports.publishTrainingOrganisation = functions.region('europe-west1').runWith({
         
 });
 
-function countCostsTraining(trainingItem:any){
+function countCostsTraining(trainingItem:any, trainerPro:boolean){
 
     if(!trainingItem.expected_conversations || trainingItem.expected_conversations<1){
       trainingItem.expected_conversations = 1
@@ -559,8 +514,11 @@ function countCostsTraining(trainingItem:any){
     }
     let costs:any= {}
     costs.basicCosts = 10000
-    costs.extraCostsPerConversation = 200
-    if(trainingItem.type_credits != 'credits'){
+    if(trainerPro){
+        costs.basicCosts = 0
+    }
+    // costs.extraCostsPerConversation = 200
+    // if(trainingItem.type_credits != 'credits'){
         costs.unlimitedCostsperParticipant = 1000
         if(trainingItem.type && trainingItem.type!='chat'){
             if(trainingItem.amount_participants > 30){
@@ -576,27 +534,27 @@ function countCostsTraining(trainingItem:any){
         costs.extraCosts = costs.unlimitedCostsperParticipant * trainingItem.amount_participants
         costs.extraCostsPerConversation = 0
         costs.extraConversations = 0
-    }
-    else{
-      // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
-      if(costs.extraCosts < 0){
-        costs.extraCosts = 0
-      }
-      costs.unlimitedCosts = 0
-      costs.extraConversations = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
-      costs.totalConversations = (trainingItem.amount_participants * trainingItem.expected_conversations)
-      if(costs.extraConversations < 0){
-        costs.extraConversations = 0
-      }
-      costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
-    }
+    // }
+    // else{
+    //   // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
+    //   if(costs.extraCosts < 0){
+    //     costs.extraCosts = 0
+    //   }
+    //   costs.unlimitedCosts = 0
+    //   costs.extraConversations = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
+    //   costs.totalConversations = (trainingItem.amount_participants * trainingItem.expected_conversations)
+    //   if(costs.extraConversations < 0){
+    //     costs.extraConversations = 0
+    //   }
+    //   costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
+    // }
 
-    costs.expires = moment().add(1, 'year').unix()
-     if(trainingItem.type_credits!='credits'){
+    // costs.expires = moment().add(1, 'year').unix()
+    //  if(trainingItem.type_credits!='credits'){
         costs.expires = moment().add(2, 'months').unix()
-     }
+    //  }
 
-    if(trainingItem.type_credits!='credits' && trainingItem.amount_period>2){
+    if(trainingItem.amount_period>2){
       costs.extraPeriod = (trainingItem.amount_period - 2) 
       costs.extraPeriodCosts = (trainingItem.amount_period - 2) * (10 / 2) * trainingItem.amount_participants
       costs.expires = moment().add((2 + trainingItem.amount_period), 'months').unix()
@@ -607,10 +565,10 @@ function countCostsTraining(trainingItem:any){
     costs.tax = costs.totalCosts * 0.21
     costs.totalCostsPlusTax = costs.totalCosts + costs.tax
     // credits = participants * conversations * 350;
-    costs.credits = trainingItem.amount_participants * trainingItem.expected_conversations * 350;
-    if(trainingItem.type_credits == 'unlimited'){
-      costs.credits = 1000000;
-    }
+    // costs.credits = trainingItem.amount_participants * trainingItem.expected_conversations * 350;
+    // if(trainingItem.type_credits == 'unlimited'){
+    costs.credits = 1000000;  
+    // }
 
     return costs
   }
@@ -629,35 +587,35 @@ function countExtraCostsTraining(trainingItem:any,extraCostsOptions:any){
     }
     let costs:any= {}
     costs.basicCosts = 0
-    costs.extraCostsPerConversation = 2
+    // costs.extraCostsPerConversation = 2
     costs.extraPeriodCosts = 0
     if(trainingItem.type_credits != 'credits'){
       costs.extraCosts = 10 * extraCostsOptions.amount_participants
       costs.extraCostsPerConversation = 0
       costs.extraConversations = 0
     }
-    else{
-      // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
-      if(costs.extraCosts < 0){
-        costs.extraCosts = 0
-      }
-      costs.unlimitedCosts = 0
-      if(extraCostsOptions.expected_conversations<1 && extraCostsOptions.amount_participants<1){
-        costs.extraConversations = 0
-      }
-      else if(extraCostsOptions.expected_conversations<1){
-        costs.extraConversations = (extraCostsOptions.amount_participants * trainingItem.expected_conversations)
-      }
-      else if(extraCostsOptions.amount_participants<1){
-        costs.extraConversations = (trainingItem.amount_participants * extraCostsOptions.expected_conversations)
-      }
-      else{
-        costs.extraConversations = ((trainingItem.amount_participants + extraCostsOptions.amount_participants) * (extraCostsOptions.expected_conversations + trainingItem.expected_conversations)) - (trainingItem.amount_participants * trainingItem.expected_conversations)
-      }
-      costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
-    }
+    // else{
+    //   // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
+    //   if(costs.extraCosts < 0){
+    //     costs.extraCosts = 0
+    //   }
+    //   costs.unlimitedCosts = 0
+    //   if(extraCostsOptions.expected_conversations<1 && extraCostsOptions.amount_participants<1){
+    //     costs.extraConversations = 0
+    //   }
+    //   else if(extraCostsOptions.expected_conversations<1){
+    //     costs.extraConversations = (extraCostsOptions.amount_participants * trainingItem.expected_conversations)
+    //   }
+    //   else if(extraCostsOptions.amount_participants<1){
+    //     costs.extraConversations = (trainingItem.amount_participants * extraCostsOptions.expected_conversations)
+    //   }
+    //   else{
+    //     costs.extraConversations = ((trainingItem.amount_participants + extraCostsOptions.amount_participants) * (extraCostsOptions.expected_conversations + trainingItem.expected_conversations)) - (trainingItem.amount_participants * trainingItem.expected_conversations)
+    //   }
+    //   costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
+    // }
 
-    if(trainingItem.type_credits!='credits' && extraCostsOptions.amount_period){
+    if(extraCostsOptions.amount_period){
       costs.extraPeriod = (extraCostsOptions.amount_period) 
       costs.extraPeriodCosts = (extraCostsOptions.amount_period) * (10 / 2) * (trainingItem.amount_participants + extraCostsOptions.amount_participants)
     }
@@ -668,7 +626,7 @@ function countExtraCostsTraining(trainingItem:any,extraCostsOptions:any){
 
     costs.expires = trainingItem.expires;
     
-    if(trainingItem.type_credits!='credits' && extraCostsOptions.amount_period){
+    if(extraCostsOptions.amount_period){
       costs.expires = moment.unix(trainingItem.published).add((trainingItem.amount_period + extraCostsOptions.amount_period), 'months').unix()
     }
 
@@ -677,13 +635,61 @@ function countExtraCostsTraining(trainingItem:any,extraCostsOptions:any){
     costs.tax = costs.totalCosts * 0.21
     costs.totalCostsPlusTax = costs.totalCosts + costs.tax
     // credits = participants * conversations * 350;
-    costs.credits = trainingItem.amount_participants * trainingItem.expected_conversations * 350;
-    if(trainingItem.type_credits == 'unlimited'){
-      costs.credits = 1000000;
-    }
+    // costs.credits = trainingItem.amount_participants * trainingItem.expected_conversations * 350;
+    // if(trainingItem.type_credits == 'unlimited'){
+    costs.credits = 1000000;
+    // }
 
     return costs
   }
+
+async function addTrainerSubscription(userId:string, product:any){
+    const userRef = admin.firestore().collection('users').doc(product.metadata.userId || userId);
+    await userRef.collection('credits').add({
+        total: 1000000,
+        amount: 1000000,
+        added: moment().unix(),
+        created: moment().unix(),
+        expires: moment().add(1, 'year').unix(),
+        source: 'trainer_pro',
+    });
+
+    const trainerId = product.metadata.trainerId;
+    if(!trainerId){
+       console.error('No trainer ID found');
+       return false;
+    }
+    const trainerRef = admin.firestore().collection('trainers').doc(trainerId);
+    trainerRef.collection('settings').doc('trainer').update({
+        trainerPro: true,
+        active: true,
+        expires: moment().add(1, 'year').unix(),
+        max_admins:2,
+        autorenew:true,
+    });
+    trainerRef.update({
+        trainerPro: true,
+    });
+    return true
+}
+
+async function isTrainerPro(trainerId:string){
+    const trainerRef = admin.firestore().collection('trainers').doc(trainerId).collection('settings').doc('trainer');
+    const trainerDoc = await trainerRef.get();
+    if(!trainerDoc.exists){
+        return false;
+    }
+    const trainerData = trainerDoc.data();
+    if(!trainerData || !trainerData.trainerPro || !trainerData.active || !trainerData.expires){
+        return false;
+    }
+    if(trainerData.expires < moment().unix()){
+        return false;
+    }
+    return true;
+}
+
+
 //   exports.createFlexibleCheckoutSession = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
 //     if (!context.auth) {
 //       return new responder.Message('Not authorized', 401);

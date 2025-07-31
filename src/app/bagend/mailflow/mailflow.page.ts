@@ -9,6 +9,7 @@ import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-mailflow',
@@ -38,6 +39,7 @@ export class MailflowPage implements OnInit {
       is_no_customer: false
     }
   };
+  selectedFlows: string[] = []
   constructor(
     private fire:AngularFirestore,
     public icon:IconsService,
@@ -48,7 +50,8 @@ export class MailflowPage implements OnInit {
     private selectMenuservice:SelectMenuService,
     public media:MediaService,
     public auth:AuthService,
-    private functions:AngularFireFunctions
+    private functions:AngularFireFunctions,
+    private toast:ToastService,
   ) { }
 
   ngOnInit() {
@@ -58,6 +61,20 @@ export class MailflowPage implements OnInit {
   getAllMails() {
     this.fire.collection('mailflow').valueChanges({ idField: 'id' }).subscribe((mails: any[]) => {
       this.allMails = mails;
+      for(let mail of this.allMails) {
+        if(!mail.exclude) {
+          mail.exclude = {
+            has_training: false,
+            has_organisation: false,
+            has_conversation: false,
+            is_customer: false,
+            has_no_training: false,
+            has_no_organisation: false,
+            has_no_conversation: false,
+            is_no_customer: false
+          };
+        }
+      }
       this.allMails = this.allMails.sort((a, b) => {
         return a.days - b.days || a.title.localeCompare(b.title);
       });
@@ -126,7 +143,17 @@ export class MailflowPage implements OnInit {
           created_by: this.auth.userInfo.displayName,
           updated_by:this.auth.userInfo.displayName,
           updated:new Date(),
-          active: false
+          active: false,
+          exclude:{
+            has_training: false,
+            has_organisation: false,
+            has_conversation: false,
+            is_customer: false,
+            has_no_training: false,
+            has_no_organisation: false,
+            has_no_conversation: false,
+            is_no_customer: false
+          }
         });
       }
     }))
@@ -219,6 +246,8 @@ export class MailflowPage implements OnInit {
   }
 
   startMailFlow(){
+    this.toast.show('Dit is voor test doeleinden en doet nu even niets.');
+    return
     this.functions.httpsCallable('testMailFlow')({ days: 1 }).subscribe((response:any)=>{
       console.log('Mail flow started:', response);
     });
@@ -235,6 +264,30 @@ export class MailflowPage implements OnInit {
       updated_by:this.auth.userInfo.displayName,
       updated:new Date()
     });
+  }
+
+  get allFlows() {
+    let flows:any[] = [];
+    this.allMails.forEach((mail:any) => {
+      if (!flows.includes(mail.flow)) {
+        flows.push(mail.flow);
+      }
+    });
+    return flows.sort();
+  }
+
+
+  toggleFlow(flow:string){
+    if(this.selectedFlows.includes(flow)){
+      this.selectedFlows = []
+    }
+    else{
+      this.selectedFlows = [flow]
+    }
+  }
+
+  flowSelected(flow:string){
+    return this.selectedFlows.includes(flow)
   }
 
 }

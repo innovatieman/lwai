@@ -226,7 +226,7 @@
                   </ion-card>
                 </ion-col>
 
-                <ion-col [size]="helper.cardSize" *ngIf="!auth.activeCourses?.length && auth.myOrganisationsList">
+                <ion-col [size]="helper.cardSize" *ngIf="!auth.activeCourses?.length && auth.myOrganisationsList?.length">
                   <ion-card noPadding pointer fullheight class="'caseItem skipSuggestion" flex center-ver center-hor (click)="stopVideo();nav.go('start/my_organisation')">
                     <ion-card-content noPadding fullHeight>
                       <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(' + auth.mySelectedOrganisation.logo + ')'}" style="background-size: contain"></div>

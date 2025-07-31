@@ -6,7 +6,7 @@
 
       <ion-col [size]="media.smallDevice ? 12 : 3" class="selectColumn">
 
-        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom>
           <ion-item detail="false" lines="none" button (click)="tutorial={}" class="itemButton" *ngIf="tutorial?.id">
             <div font-20 weight700>Terug</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faArrowLeft')"></fa-icon>
@@ -24,17 +24,18 @@
             <fa-icon font-24 slot="end" trash [icon]="icon.get('faTrashAlt')"></fa-icon>
           </ion-item>
         </div>
+        
 
-        <!-- <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!tutorial?.id" marginBottom>
-            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('desktop',true)">
-                <ion-checkbox slot="start" [checked]="filterActive('desktop',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
+        <div style="background:white;padding:10px 0px;border-radius:16px" *ngIf="!tutorial?.id" marginBottom>
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('device', 'desktop');onFiltersChanged()">
+                <ion-checkbox slot="start" [checked]="filterActive('device', 'desktop')" noPointerEvents (click)="check($event)"></ion-checkbox>
                 <ion-label>Desktop</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('mobile',true)">
-                <ion-checkbox slot="start" [checked]="filterActive('mobile',true)" noPointerEvents (click)="check($event)"></ion-checkbox>
+            <ion-item detail="false" lines="none" font-18 weight500 noMargin class="selectCaseItem" (click)="toggleFilter('device', 'mobile');onFiltersChanged()">
+                <ion-checkbox slot="start" [checked]="filterActive('device', 'mobile')" noPointerEvents (click)="check($event)"></ion-checkbox>
                 <ion-label>Mobiel</ion-label>
             </ion-item>
-        </div> -->
+        </div>
 
       </ion-col>
 
@@ -226,9 +227,13 @@
         </div>
         
         <div *ngIf="!tutorial.id">
-          <ion-card borderRadius24 [ngClass]="{'borderSuccess' : tutorial.active,'borderWarning' : !tutorial.active}" *ngFor="let tutorial of tutorialService.allTutorials | sortBy : -1 : 'title'" cardItem basicPadding pointer (click)="select(tutorial)">
+          <ion-card borderRadius24 [ngClass]="{'borderSuccess' : tutorial.active,'borderWarning' : !tutorial.active}" *ngFor="let tutorial of visibleItems | filterKey : 'device' : extraFilters['device'] | sortBy : -1 : 'title'" cardItem basicPadding pointer (click)="select(tutorial)">
             <ion-card-header>
-              <ion-card-title>{{tutorial.title}}</ion-card-title>
+              <ion-card-title flex center-ver>
+                <span>{{tutorial.title}}</span>
+                <span class="spacer"></span>
+                <div class="flowType" [ngClass]="tutorial.device">{{tutorial.device | capitalize}}</div>
+              </ion-card-title>
               <ion-card-subtitle>{{tutorial.page}} - {{tutorial.trigger}}</ion-card-subtitle>
             </ion-card-header>         
           </ion-card>

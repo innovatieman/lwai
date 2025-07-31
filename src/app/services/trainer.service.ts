@@ -10,6 +10,8 @@ import { ModalService } from './modal.service';
 import { id } from '@swimlane/ngx-datatable';
 import { NavService } from './nav.service';
 import { color } from 'highcharts';
+import { ToastService } from './toast.service';
+import { AccountService } from './account.service';
 
 @Injectable({
   providedIn: 'root'
@@ -47,7 +49,9 @@ export class TrainerService {
     private translate: TranslateService,
     private infoService: InfoService,
     private modalService: ModalService,
-    private nav:NavService
+    private nav:NavService,
+    private toast:ToastService,
+    private accountService:AccountService
   ) { 
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
@@ -166,7 +170,33 @@ export class TrainerService {
               this.trainerInfo.knowledgeItems = knowledgeItems.map(doc => ({
                 ...doc,
               }));
+
+              // get knowledgeItems-documents from subcollection
+              this.trainerInfo.knowledgeItems.forEach((item:any)=>{
+                item.documents = []
+                this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+                  .collection('knowledge').doc(item.id)
+                  .collection('documents')
+                  .snapshotChanges()
+                  .pipe(
+                    // Map documenten naar objecten
+                    map(docs =>
+                      docs.map((e: any) => ({
+                        id: e.payload.doc.id,
+                        ...e.payload.doc.data(),
+                      }))
+                    ),
+                  )
+                  .subscribe(documents => {
+                    item.documents = documents.map(doc => ({
+                      ...doc,
+                    }));
+                  });
+              });
+
             });
+
+
             if (this.trainerInfo.affiliate) {
               this.getAffiliates();
             }
@@ -595,7 +625,7 @@ export class TrainerService {
         if (callback) {
           if(this.breadCrumbs.length>0){
             let tr = this.getTraining(this.breadCrumbs[0].item.id)
-            if(tr && tr.participants){
+            if(tr && tr.participants && this.trainingItem){
               this.breadCrumbs[0].item.participants = tr.participants
               if(this.trainingItem.id == this.breadCrumbs[0].item.id){
                 this.trainingItem.participants = tr.participants
@@ -674,6 +704,7 @@ export class TrainerService {
   }
 
   getItemTraining(id:string,trainingId:string){
+    // console.log('getItemTraining',id,trainingId,this.trainings)
     for (let t = 0; t < this.trainings.length; t++) {
       if (this.trainings[t].id == trainingId) {
         if(this.trainings[t].trainingItems){
@@ -701,27 +732,32 @@ export class TrainerService {
     }
     let costs:any= {}
     costs.basicCosts = 100
-    costs.extraCostsPerConversation = 2
-    costs.extraPeriodCosts = 0
+
+    if(this.isTrainerPro || this.trainerInfo?.organisation?.active){
+      costs.basicCosts = 0;
+    }
+
+    costs.extraCostsPerConversation = 2;
+    costs.extraPeriodCosts = 0;
     if(trainingItem.type_credits != 'credits'){
       costs.extraCosts = 10 * trainingItem.amount_participants
       costs.extraCostsPerConversation = 0
       costs.extraConversations = 0
     }
-    else{
-      // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
-      if(costs.extraCosts < 0){
-        costs.extraCosts = 0
-      }
-      costs.unlimitedCosts = 0
-      costs.extraConversations = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
-      if(costs.extraConversations < 0){
-        costs.extraConversations = 0
-      }
-      costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
-    }
+    // else{
+    //   // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
+    //   if(costs.extraCosts < 0){
+    //     costs.extraCosts = 0
+    //   }
+    //   costs.unlimitedCosts = 0
+    //   costs.extraConversations = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
+    //   if(costs.extraConversations < 0){
+    //     costs.extraConversations = 0
+    //   }
+    //   costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
+    // }
 
-    if(trainingItem.type_credits!='credits' && trainingItem.amount_period>2){
+    if(trainingItem.amount_period>2){
       costs.extraPeriod = (trainingItem.amount_period - 2) 
       costs.extraPeriodCosts = (trainingItem.amount_period - 2) * (10 / 2) * trainingItem.amount_participants
     }
@@ -748,33 +784,33 @@ export class TrainerService {
     costs.basicCosts = 0
     costs.extraCostsPerConversation = 2
     costs.extraPeriodCosts = 0
-    if(trainingItem.type_credits != 'credits'){
+    // if(trainingItem.type_credits != 'credits'){
       costs.extraCosts = 10 * extraCostsOptions.amount_participants
       costs.extraCostsPerConversation = 0
       costs.extraConversations = 0
-    }
-    else{
-      // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
-      if(costs.extraCosts < 0){
-        costs.extraCosts = 0
-      }
-      costs.unlimitedCosts = 0
-      if(extraCostsOptions.expected_conversations<1 && extraCostsOptions.amount_participants<1){
-        costs.extraConversations = 0
-      }
-      else if(extraCostsOptions.expected_conversations<1){
-        costs.extraConversations = (extraCostsOptions.amount_participants * trainingItem.expected_conversations)
-      }
-      else if(extraCostsOptions.amount_participants<1){
-        costs.extraConversations = (trainingItem.amount_participants * extraCostsOptions.expected_conversations)
-      }
-      else{
-        costs.extraConversations = ((trainingItem.amount_participants + extraCostsOptions.amount_participants) * (extraCostsOptions.expected_conversations + trainingItem.expected_conversations)) - (trainingItem.amount_participants * trainingItem.expected_conversations)
-      }
-      costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
-    }
+    // }
+    // else{
+    //   // costs.extraCosts = (trainingItem.amount_participants * trainingItem.expected_conversations) - 10
+    //   if(costs.extraCosts < 0){
+    //     costs.extraCosts = 0
+    //   }
+    //   costs.unlimitedCosts = 0
+    //   if(extraCostsOptions.expected_conversations<1 && extraCostsOptions.amount_participants<1){
+    //     costs.extraConversations = 0
+    //   }
+    //   else if(extraCostsOptions.expected_conversations<1){
+    //     costs.extraConversations = (extraCostsOptions.amount_participants * trainingItem.expected_conversations)
+    //   }
+    //   else if(extraCostsOptions.amount_participants<1){
+    //     costs.extraConversations = (trainingItem.amount_participants * extraCostsOptions.expected_conversations)
+    //   }
+    //   else{
+    //     costs.extraConversations = ((trainingItem.amount_participants + extraCostsOptions.amount_participants) * (extraCostsOptions.expected_conversations + trainingItem.expected_conversations)) - (trainingItem.amount_participants * trainingItem.expected_conversations)
+    //   }
+    //   costs.extraCosts = costs.extraConversations * costs.extraCostsPerConversation
+    // }
 
-    if(trainingItem.type_credits!='credits' && extraCostsOptions.amount_period){
+    if(extraCostsOptions.amount_period){
       costs.extraPeriod = (extraCostsOptions.amount_period) 
       costs.extraPeriodCosts = (extraCostsOptions.amount_period) * (10 / 2) * (trainingItem.amount_participants + extraCostsOptions.amount_participants)
     }
@@ -973,5 +1009,250 @@ export class TrainerService {
     }
 
     return organized
+  }
+
+  showTrainerDetails:boolean = false
+  registerAsTrainer(addProCallback?:Function){
+    this.modalService.inputFields(this.translate.instant('page_account.register_as_trainer_title'),this.translate.instant('page_account.register_as_trainer_text'),[
+      {
+        title:this.translate.instant('page_account.register_as_trainer_name'),
+        type:'text',
+        value:'',
+        required:true,
+      },
+      {
+        title:this.translate.instant('page_account.register_as_trainer_email'),
+        type:'email',
+        value:this.auth.userInfo.email,
+        required:true,
+      },
+      {
+        title:this.translate.instant('page_account.register_as_trainer_phone'),
+        type:'text',
+        value:'',
+        required:true,
+      },
+      {
+        title:this.translate.instant('page_account.register_as_trainer_expertise'),
+        type:'text',
+        value:'',
+        required:false,
+      }
+    ],(result:any)=>{
+      if(result.data){
+        console.log(result.data)
+        this.toast.showLoader()
+        this.functions.httpsCallable('createTrainer')({
+          name: result.data[0].value,
+          email: result.data[1].value,
+          phone: result.data[2].value,
+          expertise: result.data[3].value
+        }).subscribe((response:any)=>{
+          if(response.status==200){
+            setTimeout(() => {
+              this.auth.loadOrganisations(this.auth.userInfo.uid, (organisations:any)=>{
+                if(organisations && organisations.length){
+                  if(addProCallback){
+                    addProCallback()
+                  }
+                  else{
+                    this.toast.hideLoader()
+                    this.nav.go('trainer/dashboard')
+                  }
+                  // this.toast.show(this.translate.instant('page_account.register_as_trainer_success'))
+                }
+              });
+            }, 3000);
+          }
+          else{
+            this.toast.hideLoader()
+            this.toast.show(this.translate.instant('page_account.register_as_trainer_failure'))
+          }
+        })
+      }
+    })
+
+  }
+
+  registerAsTrainerPro(){
+
+    if(!this.auth.organisations.length){
+      this.registerAsTrainer((response:any)=>{
+        if(response){
+          this.registerAsTrainerPro()
+        }
+      })
+    }
+    else{
+
+      let product = this.accountService.products_trainer.find((product:any)=>product.metadata?.level=='pro' && product.metadata?.type=='trainer')
+      if(!product){
+        this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+        return
+      }
+      let metadata = {
+        userId: this.auth.userInfo.uid,
+        trainerId:this.nav.activeOrganisationId
+      };    
+      this.buy(product,metadata)
+    }
+
+
+  }
+
+  registerAsTrainerEnterprise(){
+    this.modalService.inputFields(this.translate.instant('dashboard.request_title'),this.translate.instant('page_account.request_new_organization_text'), [
+      {
+        type: 'textarea',
+        title: '',
+        text:'',
+        value:'',
+        required: true,
+      }], (result: any) => {
+        if(result?.data){
+          this.toast.showLoader()
+          this.functions.httpsCallable('requestForOrganization')({
+            request: result.data[0].value
+          }).subscribe((response:any)=>{
+            this.toast.hideLoader()
+            if(response?.status==200){
+              this.toast.show(this.translate.instant('dashboard.request_send_success'),4000,'middle')
+            }
+            else {
+              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+            }
+          })
+        }
+      })
+  }
+
+  async buy(item: any,metadata?: any) {
+    const user = await this.auth.userInfo;
+    if (!user) {
+      console.error("User not authenticated");
+      return;
+    }
+  
+    this.toast.showLoader('Bezig met verwerking');
+  
+    if (item.credits) {
+      localStorage.setItem('buying Credits', item.credits);
+      localStorage.setItem('oldCredits', this.auth.credits.total);
+    }
+  
+    let stripeId: any = '';
+    if (this.auth.customer?.stripeCustomerId) {
+      stripeId = this.auth.customer.stripeCustomerId;
+    }
+  
+    if (!stripeId) {
+      let newCustomer = await this.functions.httpsCallable('createCustomerId')({ email: user.email }).toPromise();
+      stripeId = newCustomer.result?.stripeId;
+    }
+  
+    if (!stripeId) {
+      this.toast.hideLoader();
+      this.toast.show('Error creating customer');
+      return;
+    }
+    if(!metadata){
+      metadata = {
+        userId: user.uid
+      };
+    }
+    let checkoutSessionData: any = {
+      price: item.prices[0].id,
+      success_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
+      cancel_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
+      automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
+      metadata: metadata,
+      customer: stripeId
+    };
+  
+    if (item.prices[0].type == 'one_time') {
+      checkoutSessionData['mode'] = 'payment';
+      checkoutSessionData['payment_intent_data'] = {
+        setup_future_usage: 'off_session'
+      };
+      checkoutSessionData['invoice_creation'] = {
+        enabled: true
+      };
+      
+    } else {
+      checkoutSessionData['mode'] = 'subscription';
+    }
+  
+    console.log(checkoutSessionData);
+  
+    try {
+      const checkoutSessionRef = this.fire.collection(`customers/${user.uid}/checkout_sessions`);
+      const docRef = await checkoutSessionRef.add(checkoutSessionData);
+  
+      console.log("Checkout session created:", docRef.id);
+  
+      this.firestore.getDocListen(`customers/${user.uid}/checkout_sessions/`, docRef.id).subscribe((value: any) => {
+        setTimeout(() => {
+          this.toast.hideLoader();
+        }, 2000);
+  
+        if (value.url) {
+          window.location.assign(value.url);
+        } else if (value.error) {
+          console.error("Stripe error:", value.error);
+        }
+      });
+  
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+    }
+  }
+
+  async autoRenewal(type:boolean,setting:string='trainer'){
+    let checked = false
+    if(type===true){
+      checked = true;
+    }
+    else if(type===false){
+      await this.modalService.showConfirmation(this.translate.instant('page_account.not_auto_renewal_confirm')).then((response)=>{
+        if(!response){
+          return
+        }
+        else{
+          checked = true
+        }
+      })
+    }
+    if(!checked){
+      return
+    }
+    this.toast.showLoader()
+    this.functions.httpsCallable('editAutoRenew')({autorenew:type,setting,trainerId:this.nav.activeOrganisationId}).subscribe((response:any)=>{
+      console.log('editAutoRenew response',response)
+      this.toast.hideLoader()
+      if(response.status==200){
+        if(type===false){
+          this.toast.show(this.translate.instant('page_account.auto_renewal_disabled'),3000)
+        }
+        else{
+          this.toast.show(this.translate.instant('page_account.auto_renewal_enabled'),3000)
+        }
+      }
+      else{
+        this.toast.show(this.translate.instant('error_messages.failure'),3000)
+      }
+    })
+  }
+
+  getTrainerSettings(id:string='trainer'){
+    if(!this.trainerInfo || !this.trainerInfo.settings){
+      return {}
+    }
+    for(let i = 0; i < this.trainerInfo.settings.length; i++) {
+      if (this.trainerInfo.settings[i].id == id) {
+        return this.trainerInfo.settings[i]
+      }
+    }
+    return {}
   }
 }

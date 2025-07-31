@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { max } from 'rxjs';
+import { max, take } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MaxLengthPipe } from 'src/app/pipes/max-length.pipe';
 import { AccountService } from 'src/app/services/account.service';
@@ -14,6 +14,7 @@ import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
+import { tutorialService } from 'src/app/services/tutorial.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -38,6 +39,8 @@ export class DashboardPage implements OnInit {
   newAdminEmail:string = '';
   isAdmin:boolean = false;
   segmentsLoaded:boolean = false;
+  isTrainer:boolean = false;
+  isTrainerPro:boolean = false;
 
   [x:string]: any;
   constructor(
@@ -53,7 +56,8 @@ export class DashboardPage implements OnInit {
     public helper:HelpersService,
     public accountService:AccountService,
     private route:ActivatedRoute,
-    private modalService:ModalService
+    private modalService:ModalService,
+    private tutorial:tutorialService,
   ) { }
 
   ngOnInit() {
@@ -73,7 +77,15 @@ export class DashboardPage implements OnInit {
       }
         
     })
-
+    setTimeout(() => {
+      // console.log('triggerTutorial')
+      if(this.media.smallDevice){
+        this.tutorial.triggerTutorial('trainer/dashboard','onload_mobile')
+      }
+      else{
+        this.tutorial.triggerTutorial('trainer/dashboard','onload')
+      }
+    }, 1000);
     // this.auth.userInfo$.subscribe(userInfo => {
     //     if (userInfo) {
     //       this.auth.hasActive('trainer').subscribe((trainer)=>{
@@ -93,6 +105,32 @@ export class DashboardPage implements OnInit {
       this.isAdmin = isAdmin;
     })
 
+  }
+
+ionViewDidEnter() {
+    this.auth.hasActive('trainer').pipe(
+      take(1)
+    ).subscribe((trainer) => {
+      this.isTrainer = trainer
+    })
+    this.auth.hasActive('trainerPro').pipe(
+      take(1)
+    ).subscribe((trainerPro) => {
+      this.isTrainerPro = trainerPro
+    })
+
+    setTimeout(() => {
+      this.auth.hasActive('trainer').pipe(
+        take(1)
+      ).subscribe((trainer) => {
+        this.isTrainer = trainer
+      })
+      this.auth.hasActive('trainerPro').pipe(
+        take(1)
+      ).subscribe((trainerPro) => {
+        this.isTrainerPro = trainerPro
+      })
+    }, 2000);
   }
 
   update(field:string,required?:boolean){
@@ -121,7 +159,7 @@ export class DashboardPage implements OnInit {
           }).subscribe((response:any)=>{
             console.log('requestFromTrainerAdmin response',response)
             if(response?.status==200){
-              this.toast.show(this.translate.instant('dashboard.request_success'),4000,'middle')
+              this.toast.show(this.translate.instant('dashboard.request_send_success'),4000,'middle')
             }
             else {
               this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
@@ -658,17 +696,17 @@ export class DashboardPage implements OnInit {
     if(!this.trainerService.checkIsTrainerPro()){
         return
     }
-    this.modalService.inputFields(this.translate.instant('dashboard.edit_book'), this.translate.instant('dashboard.add_book_instructions'), [
-      {
-        type: 'text',
-        title: this.translate.instant('dashboard.knowledge_title'),
-        name: 'title',
-        value: item.title,
-        required: true,
-      },
+    this.modalService.inputFields(this.translate.instant('dashboard.edit_expert_book_summary'), this.translate.instant('dashboard.edit_expert_book_summary_instructions'), [
+      // {
+      //   type: 'text',
+      //   title: this.translate.instant('dashboard.knowledge_title'),
+      //   name: 'title',
+      //   value: item.title,
+      //   required: true,
+      // },
       {
         type: 'textarea',
-        title: this.translate.instant('dashboard.summary'),
+        title: this.translate.instant('dashboard.knowledge_summary'),
         name: 'summary',
         value: item.summary,
         required: true,
@@ -676,8 +714,8 @@ export class DashboardPage implements OnInit {
       }
     ], (result: any) => {
       if (result.data) {
-        item.title = result.data[0].value;
-        item.summary = result.data[1].value;
+        // item.title = result.data[0].value;
+        item.summary = result.data[0].value;
         item.language = this.translate.currentLang;
         item.updated = Date.now();
         this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'knowledge', item.id, item).then(() => {
@@ -713,23 +751,87 @@ export class DashboardPage implements OnInit {
         this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'knowledge',item.id).then(()=>{
         })
 
-        let deletingSubscription = this.firestore.queryTriple('segments','trainerId',this.nav.activeOrganisationId,'==','type','knowledge','==','metadata.book',item.title,'==')
-        .subscribe((segments:any[]) => {
-          this.toBeDeletedSegments = segments.map(doc => doc.payload.doc.id);
-          deletingSubscription.unsubscribe();
-          if(this.toBeDeletedSegments.length>0){
-            for(let i=0;i<this.toBeDeletedSegments.length;i++){
-              this.firestore.delete('segments',this.toBeDeletedSegments[i]).then(()=>{
-                // console.log('Segment deleted:', this.toBeDeletedSegments[i]);
-              }).catch((error:any)=>{
-                console.error('Error deleting segment:', error);
-              })
-            }
-          }
+        // let deletingSubscription = this.firestore.queryTriple('segments','trainerId',this.nav.activeOrganisationId,'==','type','knowledge','==','metadata.book',item.title,'==')
+        // .subscribe((segments:any[]) => {
+        //   this.toBeDeletedSegments = segments.map(doc => doc.payload.doc.id);
+        //   deletingSubscription.unsubscribe();
+        //   if(this.toBeDeletedSegments.length>0){
+        //     for(let i=0;i<this.toBeDeletedSegments.length;i++){
+        //       this.firestore.delete('segments',this.toBeDeletedSegments[i]).then(()=>{
+        //         // console.log('Segment deleted:', this.toBeDeletedSegments[i]);
+        //       }).catch((error:any)=>{
+        //         console.error('Error deleting segment:', error);
+        //       })
+        //     }
+        //   }
           this.toast.hideLoader();
-        });
+        // });
       }
     })
+  }
+
+  async addBook(item:any){
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
+    }
+    this.modalService.inputFields(this.translate.instant('dashboard.new_expert_knowledge'), this.translate.instant('dashboard.expert_add_book_instructions'), [
+        {
+          type: 'file',
+          title: '',
+          name: 'file',
+          value: '',
+          required: true,
+          infoItem:true,
+          maxSize: 50, // in MB
+          fileTypes:".pdf,.docx,.txt"
+        },
+      ], 
+      async (resultTitle: any) => {
+        
+        console.log('uploadBookClick resultTitle',resultTitle.data)
+         if(resultTitle.data){
+          this.toast.showLoader();
+
+          try {
+
+              this.firestore.createSubSub('trainers', this.nav.activeOrganisationId, 'knowledge', item.id, 'documents',{
+                filePath: resultTitle.data[0].value.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), // bijv. 'uploads/mijnbestand.pdf'
+                fileName: resultTitle.data[0].fileName,
+                created: Date.now(),
+                updated: Date.now(),
+              })
+              
+              await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/embedBookKnowledge", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  filePath: resultTitle.data[0].value.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), // bijv. 'uploads/mijnbestand.pdf'
+                  title: item.title,
+                  userId:this.auth.userInfo.uid || 'unknown',
+                  trainerId:this.nav.activeOrganisationId || 'unknown',
+                  expertKnowledgeId:item.id
+                })
+              });
+              
+
+              this.toast.hideLoader();
+              this.toast.show(this.translate.instant('dashboard.expert_knowledge_uploaded_extra'), 4000, 'middle');
+
+              this.trainerService.loadTrainerInfo(()=>{
+                // console.log('Knowledge item added:', item);
+              },true)
+
+          } catch (error) {
+            console.error("Fout bij upload:", error);
+            this.toast.hideLoader();
+            this.toast.show("Fout bij upload");
+            return;
+          }
+        }
+
+      })
   }
 
   async uploadBook() {
@@ -752,6 +854,7 @@ export class DashboardPage implements OnInit {
               required: true,
               infoItem:true,
               maxSize: 50, // in MB
+              fileTypes:".pdf,.docx,.txt"
             },
             {
               type: 'textarea',
@@ -775,10 +878,18 @@ export class DashboardPage implements OnInit {
                         summary: resultTitle.data[2].value,
                         created: Date.now(),
                         updated: Date.now(),
-                        trainerId:this.nav.activeOrganisationId
+                        trainerId:this.nav.activeOrganisationId,
+                        // filePath: resultTitle.data[1].value.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/','')
                       }
                       this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'knowledge', item,async (response:any) => {
                         console.log('Knowledge item added:', response.id);
+
+                        this.firestore.createSubSub('trainers', this.nav.activeOrganisationId, 'knowledge', response.id, 'documents',{
+                          filePath: resultTitle.data[1].value.replace('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/',''), // bijv. 'uploads/mijnbestand.pdf'
+                          fileName: resultTitle.data[1].fileName,
+                          created: Date.now(),
+                          updated: Date.now(),
+                        })
                         
                         await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/embedBookKnowledge", {
                           method: "POST",
@@ -948,11 +1059,18 @@ export class DashboardPage implements OnInit {
 
   }
 
+  deleteExpertDocument(document:any,knowledgeItem:any){
+    this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
+      if(result){
+        this.toast.showLoader()
+        this.firestore.deleteSubSub('trainers',this.nav.activeOrganisationId,'knowledge',knowledgeItem.id,'documents',document.id).then(()=>{
+          this.trainerService.loadTrainerInfo(()=>{
+            this.toast.hideLoader()
+            // console.log('Document deleted:', document);
+          },true)
+        })
+      }
+    })
+  }
 
-  // searchSegments(text?: string) {
-  //   text = text || 'Wat kun je me vertellen over algebra?'
-  //   this.functions.httpsCallable('searchSegments')({query: text,trainerId:this.nav.activeOrganisationId,book:'Test kennis',max:1}).subscribe(result => {
-  //     console.log('Search result:', result);
-  //   })
-  // }
 }

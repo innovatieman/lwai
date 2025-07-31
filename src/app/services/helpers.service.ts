@@ -14,7 +14,12 @@ export class HelpersService {
     private media:MediaService
   ) { }
 
-  doNothing(){}
+  doNothing(event?:Event){
+    if(event){
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
 
   get cardSizeLarge(){
     const sizes:any = {

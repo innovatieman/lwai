@@ -234,3 +234,142 @@ transition: all 0.3s;
   text-decoration: underline;
   cursor: pointer;
 }
+
+.trainerTable{
+  border-collapse: separate;
+  border-spacing: 10px 0px;
+
+  tr:nth-child(odd){
+    td{
+      background-color: var(--background-light);
+    }
+  }
+
+  tr:nth-child(1){
+    td{
+      border-top-style: solid;
+      border-top-width: 1px;
+      border-top-color: rgba(0, 0, 0, 0.1);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      padding-top:10px;
+      padding-bottom:10px;
+    }
+  }
+  tr:last-child{
+    td{
+      border:none;
+      background: none;
+      padding-top:20px;
+      padding-bottom:20px;
+    }
+  }
+  // select tr:last-child-1
+  tr:nth-last-child(2){
+    td{
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+      border-bottom-color: rgba(0, 0, 0, 0.1);
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      padding-top:10px;
+      padding-bottom:10px;
+    }
+  }
+
+
+  td{
+    text-align: center;
+    font-size: 20px;
+    width:150px;
+    border-right-width: 1px;
+    border-right-style: solid;
+    border-right-color: rgba(0, 0, 0, 0.1);
+    border-left-width: 1px;
+    border-left-style: solid; 
+    border-left-color: rgba(0, 0, 0, 0.1);
+  }
+  td:nth-child(1){
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+    width:300px;
+    padding-left:10px
+  }
+  .title{
+    padding-top: 20px;
+    font-weight: 700!important;
+    font-size: 22px!important;
+  }
+  [success]{
+    color: var(--ion-color-success);
+  }
+  [danger]{
+    color: var(--ion-color-danger);
+  }
+  [warning]{
+    color: var(--ion-color-warning);
+  }
+  [indent]{
+    padding-left: 20px;
+  }
+}
+
+
+
+ion-card {
+
+  .ribbon {
+    --f: 15px; /* control the folded part */
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    position: absolute;
+    top: 0;
+    color: #fff;
+    padding: .1em 3em;
+    background: var(--c,#45ADA8);
+    border-bottom :var(--f) solid #0007;
+    clip-path: polygon(
+      100% calc(100% - var(--f)),100% 100%,calc(100% - var(--f)) calc(100% - var(--f)),var(--f) calc(100% - var(--f)), 0 100%,0 calc(100% - var(--f)),999px calc(100% - var(--f) - 999px),calc(100% - 999px) calc(100% - var(--f) - 999px))
+  }
+  .right {
+    right: 0;
+    transform: translate(calc((1 - cos(45deg))*100%), -100%) rotate(45deg);
+    transform-origin: 0% 100%;
+  }
+  .left {
+    left: 0;
+    transform: translate(calc((cos(45deg) - 1)*100%), -100%) rotate(-45deg);
+    transform-origin: 100% 100%;
+  }
+  
+  /* a fix for firefox that show some strange lines*/
+  @supports (-moz-appearance:none) {
+    .ribbon {
+      background:
+        linear-gradient(to top,#0000 1px,#0005 0 var(--f),#0000 0) border-box,
+        linear-gradient(var(--c,#45ADA8) 0 0) 50%/
+         calc(100% - 2px) calc(100% - 2px) no-repeat border-box;
+      border-bottom-color: #0000;
+     }
+  }
+  .caseItem_with_ribbon{
+    contain:layout;
+    overflow: visible;
+    .avatarImage{
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+    }
+  }
+}
+
+.unavailable{
+  position: absolute;
+  background: rgba(255,255,255,0.5);
+  height: 100%;
+  width: calc(100%);
+  top:0;
+  left:0;
+  z-index: 5;
+}

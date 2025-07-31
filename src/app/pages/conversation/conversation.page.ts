@@ -287,6 +287,7 @@ export class ConversationPage implements OnInit {
         if(localStorage.getItem('personalCase')){
           let personalCase = JSON.parse(localStorage.getItem('personalCase')||'{}')
           if(personalCase.id==params['case']){
+            // console.log('personal case',JSON.parse(JSON.stringify(personalCase)))
             this.startConversation(personalCase,true)
           }
         }
@@ -405,7 +406,7 @@ export class ConversationPage implements OnInit {
   }
   
   startConversation(caseItem:any,personal?:boolean){
-    console.log('start conversation')
+    // console.log('start conversation',JSON.parse(JSON.stringify(caseItem)),personal)
     this.started = true
     let countTries = 0
     if(!personal){
@@ -418,7 +419,7 @@ export class ConversationPage implements OnInit {
           if(this.cases.single(caseItem).avatarName){
             this.interaction = 'combination'
           }
-          if(this.cases.single(caseItem).voiceId){
+          if(this.cases.single(caseItem).voiceId&&this.cases.single(caseItem).voice_on!== false){
             this.interaction = 'voice'
           }
           setTimeout(() => {
@@ -428,6 +429,7 @@ export class ConversationPage implements OnInit {
               console.error('Draggable element is not available');
             }
           }, 1);
+          console.log('personal conversation', caseItem);
           this.conversation.startConversation(this.cases.single(caseItem))
         }
         if(countTries>10){
@@ -438,12 +440,12 @@ export class ConversationPage implements OnInit {
     else{
       localStorage.removeItem('activatedCase')
       this.createDragGesture();
-
+      // console.log('personal conversation', JSON.parse(JSON.stringify(caseItem)));
       this.conversation.startConversation(caseItem)
       if(caseItem.avatarName){
         this.interaction = 'combination'
       }
-      if(caseItem.voiceId){
+      if(caseItem.voiceId && caseItem.voice_on!== false){
         this.interaction = 'voice'
       }
     }
@@ -461,7 +463,7 @@ export class ConversationPage implements OnInit {
         {text:this.translate.instant('credits.buy_credits'),value:'credits',color:'primary',fill:'solid'},
       ]
     },(response:any)=>{
-      console.log(response)
+      // console.log(response)
       if(response.data=='credits'){
         this.toggleVideo(true)
         this.nav.go('account/credits')
@@ -532,7 +534,7 @@ export class ConversationPage implements OnInit {
     this.createDragGesture();
 
     let conversation = JSON.parse(localStorage.getItem('conversation')||'{}')
-    console.log('continue conversation',conversation)
+    // console.log('continue conversation',conversation)
     if(conversation.avatarName){
       this.interaction = 'combination'
     }
@@ -597,6 +599,16 @@ export class ConversationPage implements OnInit {
         this.selectOption(response.data)
       }
     })
+  }
+
+  stopVoice(){
+    this.conversation.audioVoice.pause();
+    this.conversation.audioVoice.currentTime = 0;
+    this.conversation.isSpeaking = false;
+  }
+
+  pauseVoice(){
+    this.conversation.audioVoice.pause();
   }
 
   showImpact(obj:any){

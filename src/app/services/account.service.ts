@@ -35,7 +35,7 @@ export class AccountService {
 
   payments: any;
   products: any;
-  products_unlimited: any;
+  products_trainer: any;
   customers: any;
   subscriptionsStripe: any;
   db: any;
@@ -104,7 +104,8 @@ export class AccountService {
     });
 
     this.fetchProducts()
-    this.fetchSubscriptionsStripe()
+    this.fetchProductsTrainer()
+    // this.fetchSubscriptionsStripe()
 
   }
 
@@ -139,13 +140,12 @@ export class AccountService {
     })
   }
 
-  async fetchProducts_unlimited() {
-    this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
-      this.products = products.map((product:any)=>{
+  async fetchProductsTrainer() {
+    this.firestoreService.queryDouble('products','metadata.type','trainer','==','active',true,'==').subscribe((products:any)=>{
+      this.products_trainer = products.map((product:any)=>{
         let item = {
           id: product.payload.doc.id,
-          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
-          conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
+          level: product.payload.doc.data().metadata?.level ? product.payload.doc.data().metadata?.level : 'basic',
           title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
           ...product.payload.doc.data()
         }
@@ -245,29 +245,29 @@ export class AccountService {
   }
 
 
-  async fetchSubscriptionsStripe() {
-    this.firestoreService.queryDouble('products','metadata.type','subscription','==','active',true,'==').subscribe((products:any)=>{
-      this.subscriptionsStripe = products.map((product:any)=>{
-        let item = {
-          id: product.payload.doc.id,
-          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
-          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
-          ...product.payload.doc.data()
-        }
-        //get subcollection prices
-        this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
-          item.prices = prices.map((price:any)=>{
-            return {
-              id: price.payload.doc.id,
-              ...price.payload.doc.data()
-            }
-          })
-        })
-        return item
-      })
-      // console.log(this.subscriptionsStripe)
-    })
-  }
+  // async fetchSubscriptionsStripe() {
+  //   this.firestoreService.queryDouble('products','metadata.type','subscription','==','active',true,'==').subscribe((products:any)=>{
+  //     this.subscriptionsStripe = products.map((product:any)=>{
+  //       let item = {
+  //         id: product.payload.doc.id,
+  //         credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+  //         title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
+  //         ...product.payload.doc.data()
+  //       }
+  //       //get subcollection prices
+  //       this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+  //         item.prices = prices.map((price:any)=>{
+  //           return {
+  //             id: price.payload.doc.id,
+  //             ...price.payload.doc.data()
+  //           }
+  //         })
+  //       })
+  //       return item
+  //     })
+  //     // console.log(this.subscriptionsStripe)
+  //   })
+  // }
 
   updateAccount(){
     if(this.account.displayName){
@@ -497,14 +497,12 @@ export class AccountService {
 
   showProductInfo(product:any){
     console.log(product)
+    let userInfo = this.translate.instant('page_account.credits_buy_info')
+    userInfo = userInfo.replace('{conversations}', product.credits == 1000000 ? this.translate.instant('page_account.credits_unlimited_chat') : product.conversations)
+
     let item = {
-      title: product.credits +' '+ this.translate.instant('page_account.credits'),
-      user_info: `<div style="line-height:30px">
-        Goed voor ${product.conversations} goede gesprekken<br>
-        Selecteer uit alle onderwerpen<br>
-        Geldig voor 1 jaar<br>
-        Persoonlijk dashboard
-      </div>`,
+      title: (product.credits == 1000000 ? this.translate.instant('page_account.credits_unlimited_chat') : product.credits) +' '+ this.translate.instant('page_account.credits'),
+      user_info: userInfo,
       type: 'product',
       id: product.id,
       photo:'assets/img/credits.webp',

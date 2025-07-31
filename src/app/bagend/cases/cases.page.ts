@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { IonInfiniteScroll, IonSelect, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
@@ -58,6 +58,7 @@ export class CasesPage implements OnInit {
   showUserInputMore: boolean = true;
   showCasus: boolean = false;
   showUserOptions: boolean = false;
+  @ViewChild('import_item') import_item!: ElementRef;
 
   constructor(
     public firestore:FirestoreService,
@@ -85,7 +86,7 @@ export class CasesPage implements OnInit {
 
 
   ngOnInit() {
-    this.addUseCase()
+    // this.addUseCase()
     
     if(this.view=='list'){
       this.maxCases = 50
@@ -469,10 +470,13 @@ export class CasesPage implements OnInit {
     this.selectMenuservice.selectedItem = undefined
   }
 
-  deleteCase(){
+  deleteCase(item?:any){
+    if(!item){
+      item = this.caseItem
+    }
     this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
       if(result){
-        this.firestore.delete('cases',this.caseItem.id)
+        this.firestore.delete('cases',item.id)
         this.caseItem = {}
         this.loadCases()
       }
@@ -617,7 +621,7 @@ export class CasesPage implements OnInit {
         this.nav.goto(this.caseItem.photo,true)
       }
 
-    },true)
+    },true,false,'','avatar')
   }
 
   selectStreamingAvatar(event:Event){
@@ -1227,276 +1231,341 @@ No text, lines, or other elements should be present in the image besides the por
 
     }
 
-    addUseCase(){
-      // let useCases:any = {
-      //   "0PPq0Oerj0xmvQeAHv03":["self_develop","solve_problem"],
-      //   "0du8Tgj04y33yS3YbftH":["others_understanding","better_persuade"],
-      //   "1CUPUX4CFdJhh9v2yGhQ":["others_understanding","better_persuade","achieve_conversation"],
-      //   "1T0lHMWBCZ1fEikRHpLU":["achieve_conversation","better_persuade","self_develop"],
-      //   "1gRjCJY56qh9WTRi793X":["achieve_conversation","self_develop"],
-      //   "1rcmwcmNANJiOsPs07xn":["benefit_conversation","better_persuade"],
-      //   "1t7KSw4XIjHNG7UWAAHl":["solve_problem","achieve_conversation","better_persuade"],
-      //   "24qhcCIvOdKZbvILfnhV":["solve_problem","achieve_conversation","better_persuade"],
-      //   "25IjNiuBpwRcHAwHHxid":["self_develop"],
-      //   "288HXe3YZx7MOJKsJpAq":["others_understanding","achieve_conversation","help_others"],
-      //   "2aaT95d65LBckzrr17Cv":["help_others","better_persuade","solve_problem"],
-      //   "2ajLbwIoLP0xznfRapRU":["benefit_conversation","better_persuade","achieve_conversation"],
-      //   "2xcmatWzwhuABm6igiSf":["better_persuade","achieve_conversation","solve_problem"],
-      //   "38P1U3AMsZSPkTXaYjIK":["others_understanding","self_develop","achieve_conversation"],
-      //   "38fycqHcw5hvwINjrJCe":["others_understanding","achieve_conversation"],
-      //   "3pnmy8rIi2Aal4BlhRTe":["help_others","self_develop"],
-      //   "4Dfhz1sOI5DbV1FNuKsh":["better_persuade","help_others","achieve_conversation"],
-      //   "4hdVWLDNwT0Gg6iibpZt":["others_understanding","self_develop"],
-      //   "4l8WCfsgdk0VtIhLg7lc":["my_understanding","self_develop"],
-      //   "4wl5iWtLt77IaiZ3hGqR":["achieve_conversation","better_persuade","help_others"],
-      //   "50s1MbYKPOO5lfD6MEk9":["help_others","better_persuade","solve_problem"],
-      //   "5KQ1IlK2yIKwX3ppYx7g":["solve_problem","achieve_conversation","benefit_conversation"],
-      //   "5lDryHCx5P7sVN5siFap":["achieve_conversation","better_persuade","solve_problem"],
-      //   "6WCLXJvVSBPxjNJtBqLW":["others_understanding","achieve_conversation"],
-      //   "6ta3TxwlwahwpflFMbcm":["achieve_conversation","better_persuade","help_others"],
-      //   "74yEFGDojXHK1WaqqLmC":["achieve_conversation","solve_problem"],
-      //   "79jwbVeDDL1bxI2pfwyI":["achieve_conversation","solve_problem"],
-      //   "7Mk0xZC3BvsrjZ74Kny9":["others_understanding","self_develop"],
-      //   "7ql683YmPBMumXuX9kZa":["achieve_conversation","self_develop","solve_problem"],
-      //   "7wRpIpcRhuwLNkVjLHbV":["self_develop","my_understanding"],
-      //   "87rBmQfG4RxJzRoMhJV3":["benefit_conversation","self_develop"],
-      //   "8mC5dU9NxqyO5xyVvUFv":["others_understanding","achieve_conversation"],
-      //   "980ektyPEZjo0xsGJQSH":["my_understanding","self_develop"],
-      //   "9FoZaCkYYAYovCSvTNAd":["solve_problem","achieve_conversation","better_persuade"],
-      //   "9kVIoQBl3s6vHLjCZRCn":["others_understanding","self_develop"],
-      //   "9rXDEqrIOoEGirwbNuRd":["achieve_conversation","better_persuade","self_develop"],
-      //   "9vZZHArdlEkoMV3vKkIg":["help_others","better_persuade","solve_problem"],
-      //   "A60384RhsubdjfNVvW2z":["better_persuade","self_develop"],
-      //   "A8KniLuJXrHIof4DsdOk":["others_understanding","achieve_conversation"],
-      //   "AVbKL0eq3nWbAb2GlYAe":["achieve_conversation","better_persuade","benefit_conversation"],
-      //   "Af187K29OKaNsgkpSrhK":["self_develop","achieve_conversation","solve_problem"],
-      //   "Aj8THMs2iSLlpOnShj8L":["help_others","achieve_conversation","better_persuade"],
-      //   "AuBA8lijZPdBjpqcCqul":["self_develop","my_understanding"],
-      //   "BWJwPzKUlfdj92W6ioG5":["self_develop","my_understanding","achieve_conversation"],
-      //   "BkvDl7PYNwapBZn5aOMs":["others_understanding","self_develop","achieve_conversation"],
-      //   "BlAVkYmmDyHlHUpdqwUO":["self_develop","achieve_conversation","better_persuade"],
-      //   "CAWO3Ez114nxn6k6jelA":["solve_problem","benefit_conversation","achieve_conversation"],
-      //   "CBRJFIADtbxg78ffcKEH":["others_understanding","self_develop"],
-      //   "CVZo7VeeEqnZUJsO3HJV":["achieve_conversation","self_develop"],
-      //   "Cczz8dcs8DU8nWwpAqC0":["better_persuade","achieve_conversation","solve_problem"],
-      //   "DE7WCRIrEDphjIAjjIhE":["help_others","achieve_conversation"],
-      //   "DK4odoE7XKlRPWGtPfWF":["self_develop","my_understanding","achieve_conversation"],
-      //   "DSeTpC5UcUh80tD8MOHE":["solve_problem","better_persuade","benefit_conversation"],
-      //   "DjeVJwT91pRvtkDidet8":["help_others","solve_problem","achieve_conversation"],
-      //   "DoIYmVCi5L7qxowVypJy":["help_others","solve_problem","achieve_conversation"],
-      //   "EDg5711JYGA1L9he3eF9":["others_understanding","self_develop","achieve_conversation"],
-      //   "EGFJFeXMgWC9VSl6I5P2":["benefit_conversation","better_persuade","solve_problem"],
-      //   "EJxg1P8A0H1kmw2tt6EN":["benefit_conversation","better_persuade"],
-      //   "EdJwLUzsk1yaFULANAw7":["solve_problem","achieve_conversation","help_others"],
-      //   "F4UEsKzRmoT1h3TqfXpV":["self_develop","my_understanding","achieve_conversation"],
-      //   "F84fGtOTLN3fiqIaOVeu":["achieve_conversation","solve_problem","better_persuade"],
-      //   "FFnV414SgDQnjZeJsk7m":["others_understanding","self_develop","achieve_conversation"],
-      //   "FSin9khTqPnCs8lLomlc":["better_persuade","solve_problem","achieve_conversation"],
-      //   "FafTIccTUtQiidLrQKIi":["self_develop","my_understanding"],
-      //   "G52ltEFEcVjsZfInLFPD":["others_understanding","self_develop"],
-      //   "GLqpos4afcMjY5e5tUph":["others_understanding","achieve_conversation","self_develop"],
-      //   "GOe2GqkaVxc1clcSHod6":["others_understanding","self_develop"],
-      //   "GOjxLboskSVkvbSW4Uy2":["self_develop","my_understanding","solve_problem"],
-      //   "H3X8IsQJz4YP7QIaYInz":["help_others","better_persuade","achieve_conversation"],
-      //   "HBVVzrGJVoLx3iM4bqzU":["others_understanding","self_develop"],
-      //   "HOcaAPas234UWNcZY7jv":["others_understanding","help_others","better_persuade"],
-      //   "HWPNdW7PQFv0NVxeUf9t":["self_develop","my_understanding","achieve_conversation"],
-      //   "HsQZSjB0pTXNvnuGCXI1":["better_persuade","solve_problem","achieve_conversation"],
-      //   "IGAUcSTWGmKOLaFakSHK":["benefit_conversation","self_develop"],
-      //   "IbAFRVCq91gUV23KMeAb":["solve_problem","better_persuade","achieve_conversation"],
-      //   "IeByEOxHZVSCQYmT3OLy":["others_understanding","achieve_conversation","self_develop"],
-      //   "IsinksDEcFiIiuYbSlNu":["solve_problem","self_develop","achieve_conversation"],
-      //   "JCKq7GVdkHUSChcrWvH1":["benefit_conversation","better_persuade","achieve_conversation"],
-      //   "JaaTdEvoI0o0kMWvYY3l":["benefit_conversation","help_others","achieve_conversation"],
-      //   "Jc1nRjhfT2RnoArUFMBm":["others_understanding","achieve_conversation","self_develop"],
-      //   "Jgy5IZJrctUaLAra4ECX":["self_develop","my_understanding","achieve_conversation"],
-      //   "Jvvon9lbsVDyruDOP1m3":["achieve_conversation","better_persuade","benefit_conversation"],
-      //   "K1CnaAT0wrLdbO1Rdmvb":["others_understanding","better_persuade","self_develop"],
-      //   "KKL5c1OPzl0Id8piUn1k":["others_understanding","achieve_conversation","self_develop"],
-      //   "KiHnfu61YeBaJ92N7Hdq":["help_others","solve_problem","achieve_conversation"],
-      //   "LEHvnKXkvMUCyWSLj4Qz":["help_others","better_persuade","achieve_conversation"],
-      //   "LNklkzqEv0ahoT3oLkuo":["solve_problem","achieve_conversation","better_persuade"],
-      //   "LRARSieHbMLIlT4KDyZE":["others_understanding","achieve_conversation","self_develop"],
-      //   "M0GahcDXTSgA9QRovYbz":["solve_problem","better_persuade","benefit_conversation"],
-      //   "MI3UHxBL9FGXLDbJfDY5":["benefit_conversation","better_persuade"],
-      //   "MTPMxGxUA2jRgUCVTCPM":["others_understanding","achieve_conversation","self_develop"],
-      //   "MWwHSU5GFF6ZkZSIrE1R":["better_persuade","solve_problem","help_others"],
-      //   "MlePXZ4Szb8KNChNjCME":["others_understanding","self_develop"],
-      //   "NPNYWWmfFM4OoVvrRsU7":["others_understanding","self_develop"],
-      //   "Nc7xAX0axJM12cXevTGV":["achieve_conversation","solve_problem"],
-      //   "NmRGCyozk86eBYhVtSpR":["help_others","solve_problem","achieve_conversation"],
-      //   "OZ6mDNIYgXGoIRugEF9u":["my_understanding","self_develop","achieve_conversation"],
-      //   "PAnOVVyO4jq9DA1YK1t3":["benefit_conversation","better_persuade"],
-      //   "PB3Z9o9v6ZrxoZjMkunm":["help_others","solve_problem"],
-      //   "Pm0WmLBgULF6LqKW771c":["self_develop","solve_problem","achieve_conversation","better_persuade"],
-      //   "Pv7eboz5WPw31b7rwbt1":["others_understanding","self_develop"],
-      //   "QFDJyq1j3rk9hmoifHGa":["others_understanding","self_develop"],
-      //   "QLVZAEHFYcKLN1QIonRc":["others_understanding","self_develop","achieve_conversation"],
-      //   "ROvFptRva8MGN2Uh12vj":["help_others","achieve_conversation"],
-      //   "Rn8UOMobHq9nDZVaRh6l":["help_others","solve_problem","achieve_conversation"],
-      //   "SNIDoNSb47CPMjhDepJ8":["others_understanding","achieve_conversation","self_develop"],
-      //   "SQS5UHgOez03tZbBtyAI":["others_understanding","self_develop"],
-      //   "STJqQG5TrGdeqfMeJbMC":["help_others","better_persuade","solve_problem"],
-      //   "SdT338ckAY4TEC4erXI5":["help_others","achieve_conversation","solve_problem"],
-      //   "TL18C0HnQo0AIRw9MFSK":["others_understanding","help_others"],
-      //   "TMfmiUUyZ4MuqQ4Sr6Xk":["achieve_conversation","solve_problem","better_persuade"],
-      //   "TR8hHalpB3wPDd4s3CFv":["others_understanding","achieve_conversation","self_develop"],
-      //   "TpEpOEnOa4tS4wLPZm2W":["others_understanding","self_develop","achieve_conversation"],
-      //   "UEk5frHsLnTIpf0pA8Yv":["self_develop","achieve_conversation","better_persuade"],
-      //   "UHWDzseMR0NK7rzjOYLi":["my_understanding","achieve_conversation","self_develop"],
-      //   "V81pJiEOiX2pAxvW2IPP":["others_understanding","self_develop"],
-      //   "VRYwl7BLBBEqqloLOUMc":["self_develop","solve_problem","my_understanding"],
-      //   "WDhKujfTm6fFDPXNYv17":["help_others","solve_problem","achieve_conversation"],
-      //   "WYewy88i1knPATDRKlKL":["solve_problem","achieve_conversation","self_develop"],
-      //   "Wmiuc9ypNffcKUEFwAHD":["others_understanding","achieve_conversation","self_develop"],
-      //   "X9T56aEZ4BGqqR1KfSAf":["self_develop","my_understanding"],
-      //   "XIgwZx6t37SMatoLEf9u":["help_others","achieve_conversation","better_persuade"],
-      //   "XiCk7N6AKhObGzFWVHcr":["others_understanding","self_develop","achieve_conversation"],
-      //   "XmB58K2oWI5h9ioiQnAH":["help_others","achieve_conversation","better_persuade"],
-      //   "XzimftAcg9xZWE1CuPaQ":["solve_problem","better_persuade","achieve_conversation"],
-      //   "Y4Z4B92MwjTph2LmMTjF":["self_develop","achieve_conversation"],
-      //   "YjNmYCz5X3kdwdwQ1T2x":["self_develop","better_persuade","help_others"],
-      //   "YnUkNbpKkSvv1ilYQeuU":["others_understanding","achieve_conversation","self_develop"],
-      //   "Yv7a3w4w9XJDIEHxUTHn":["help_others","solve_problem","achieve_conversation"],
-      //   "Z8TaGUJMwZ4DPAPEgcya":["others_understanding","achieve_conversation","self_develop"],
-      //   "ZCYld5uo1l7Lq8BamtTI":["others_understanding","self_develop","achieve_conversation"],
-      //   "ZxyDWOfEFzyREsbVzVx5":["others_understanding","achieve_conversation","self_develop"],
-      //   "a5b9ItoLIp2aR0I9AhFw":["achieve_conversation","solve_problem"],
-      //   "aRMgEcpwe9rJuDpEaplm":["others_understanding","self_develop","achieve_conversation"],
-      //   "aV2haIVwKNjwwHLKoZj0":["others_understanding","self_develop","achieve_conversation"],
-      //   "agH35v6Hy4VrILszDE7t":["solve_problem","benefit_conversation","achieve_conversation"],
-      //   "bCrEaVKTeOXosJkhJk8W":["help_others","solve_problem","achieve_conversation"],
-      //   "bSSCHv9NMRrO8ZXAngiU":["others_understanding","self_develop","achieve_conversation"],
-      //   "bdy7fqsVROm1GIRZlOzj":["self_develop","solve_problem","my_understanding"],
-      //   "btNWnVs5CPjJkNhvbD3h":["self_develop","solve_problem","achieve_conversation"],
-      //   "cJZGsrGBmRz2MKaCjxsb":["others_understanding","self_develop","achieve_conversation"],
-      //   "cPCnyUiTWgeImT3wJDoa":["better_persuade","benefit_conversation","achieve_conversation"],
-      //   "ceJtF4NLwcXAiZEo4WPI":["self_develop","my_understanding","achieve_conversation"],
-      //   "dlkH7pqNRPuNku5lbLHR":["self_develop","my_understanding"],
-      //   "eN6H6Pd1Auoe4zXABeN6":["self_develop","achieve_conversation","my_understanding"],
-      //   "eRbWenDZd0NnFCxf79Jr":["self_develop"],
-      //   "eZGB1ZcCJ87G6PK8a3fi":["achieve_conversation","solve_problem","better_persuade"],
-      //   "fBEVX1cBrIvKtT58Uoob":["others_understanding","self_develop","achieve_conversation"],
-      //   "gDeb8GC91woK308TjEs7":["help_others","solve_problem","self_develop","achieve_conversation"],
-      //   "gJdo0kArtElthEGDER3U":["self_develop","my_understanding","solve_problem"],
-      //   "gR7JlUSgC5RU2EKDoWgO":["better_persuade","self_develop","help_others","others_understanding"],
-      //   "gTs4iDH7y7nTBRQnLUBB":["others_understanding","self_develop","achieve_conversation"],
-      //   "gbleSTnURs5HTaIx3M8q":["others_understanding","self_develop","achieve_conversation"],
-      //   "gkkEkxzuhHwcxTJnMPbb":["help_others","solve_problem","achieve_conversation"],
-      //   "gpxBPIjC5SaESTpaPvUq":["solve_problem","achieve_conversation"],
-      //   "h2yWq5D51JCIPlBS7QXS":["benefit_conversation","self_develop","achieve_conversation"],
-      //   "hMKd99PSJTjsHZa612M8":["better_persuade","solve_problem","benefit_conversation"],
-      //   "hMuYGUW9XEmGSgXNlnLA":["others_understanding","self_develop","achieve_conversation"],
-      //   "hVTmwEXnW5mpBOMO8OUZ":["others_understanding","self_develop"],
-      //   "hgO3zjtF42mqgXQlg22N":["my_understanding","better_persuade","self_develop"],
-      //   "hqdlxtfIf4MnL7279BXp":["self_develop","my_understanding","achieve_conversation"],
-      //   "hupyMVTDEVCixzuMmdF7":["benefit_conversation","solve_problem","achieve_conversation"],
-      //   "i4fBZnT7OUBNA5uVk8zT":["others_understanding","self_develop"],
-      //   "i8ovDN15tgFCpkFABQ0H":["solve_problem","better_persuade","self_develop"],
-      //   "iHg4qdUUAsCfJSsrca8z":["self_develop","my_understanding","achieve_conversation"],
-      //   "iMYwyKx5Hb1ckquvRilC":["self_develop","my_understanding"],
-      //   "iPICl1rp38mQGuULlEkh":["help_others","solve_problem","achieve_conversation"],
-      //   "kUHNgA9yHmQwj4yq5NUV":["help_others","solve_problem","achieve_conversation"],
-      //   "lya2mqAuKi6McDkRe8QP":["help_others","better_persuade","solve_problem"],
-      //   "mQ8OXIaRMi2rLFvpSrir":["help_others","achieve_conversation"],
-      //   "mxnrpDCruFJTzLSvpchy":["self_develop","my_understanding","achieve_conversation"],
-      //   "n6Fc3ZqZPPVYrkVwRpwd":["others_understanding","self_develop","achieve_conversation"],
-      //   "nGX7xdapBBh6gflBjyc3":["others_understanding","self_develop","achieve_conversation"],
-      //   "nQ0oxZpasmYkbqqNQCY7":["help_others","achieve_conversation","self_develop"],
-      //   "nbFLurXxf1Ou4akdxuiB":["others_understanding","self_develop","achieve_conversation"],
-      //   "nowtEnqJHBGcXpPVDQ0y":["others_understanding","self_develop"],
-      //   "oKsoDOWMBJfb22EqpoCW":["others_understanding","achieve_conversation","self_develop"],
-      //   "oL7yIiEjE1fw5My4BWC1":["better_persuade","my_understanding","self_develop"],
-      //   "oXxAnSAfNeq1CH8ybULn":["solve_problem","self_develop","achieve_conversation"],
-      //   "oZeq5YziZgPEJWPcRuZM":["others_understanding","self_develop","achieve_conversation"],
-      //   "oxNoJqLiJiBAjQOc2QxN":["others_understanding","self_develop"],
-      //   "pNs5KaQQLmDy22bq70VU":["benefit_conversation","better_persuade","achieve_conversation"],
-      //   "q8vo2fITQ3irFb4KdBba":["others_understanding","self_develop","achieve_conversation"],
-      //   "r8NLBkJRYzyYIj8T7stc":["self_develop","my_understanding","achieve_conversation"],
-      //   "rEBEqkpUXcEHzwUsYSl6":["solve_problem","better_persuade","self_develop"],
-      //   "rNIMIIalPSg4VdpljXOw":["others_understanding","self_develop","achieve_conversation"],
-      //   "rhQ0HsE8cSOH4UbV7Lm8":["my_understanding","self_develop"],
-      //   "rmNpOU5y4sui2GzbxaSI":["help_others","self_develop","achieve_conversation"],
-      //   "sBVYcNgwurDFo4Z8G6ur":["achieve_conversation","my_understanding","self_develop"],
-      //   "seJsKweaZ1kiIjhzjAGI":["self_develop","achieve_conversation","my_understanding"],
-      //   "tBD4esUl15QpN1Ge7jOJ":["solve_problem","self_develop","achieve_conversation"],
-      //   "tiGu0VDp3sy8XhPqCBL0":["better_persuade","achieve_conversation","solve_problem"],
-      //   "u0gWtCx20ZhTSlFaapai":["others_understanding","self_develop","achieve_conversation"],
-      //   "u8ZILTsDyiERUfNx0wlm":["help_others","self_develop","achieve_conversation"],
-      //   "uW1KTAXFQKNQfwkvXZRB":["solve_problem","achieve_conversation","better_persuade"],
-      //   "up9fAKwzMYmqljuvuVVt":["help_others","achieve_conversation","better_persuade"],
-      //   "usycYzt5i1hvqWg3ZOqv":["self_develop","my_understanding","achieve_conversation"],
-      //   "uxYQD1c0QoxoOxYxtfxb":["self_develop","my_understanding","achieve_conversation"],
-      //   "uyd74NTWjCZKmASDVDMQ":["others_understanding","self_develop","achieve_conversation"],
-      //   "v5re4i7KaryZqiWtwrnq":["solve_problem","better_persuade","achieve_conversation"],
-      //   "vpullbZkO2GxkN4f6vrE":["help_others","achieve_conversation","better_persuade"],
-      //   "vx9EvU5lE7xpClYgQeM7":["others_understanding","self_develop"],
-      //   "wCcHz4dFONQbqg66nNbV":["others_understanding","achieve_conversation","self_develop"],
-      //   "wnbwi7gtCYtu7wKSmD8o":["others_understanding","achieve_conversation","self_develop"],
-      //   "x7LQdbhYkthRKN1UGq6M":["others_understanding","self_develop"],
-      //   "xB63kcJyWdxm5JCuoAeY":["my_understanding","self_develop"],
-      //   "xBTqh2pgWnlwPprCmKCY":["self_develop","my_understanding","achieve_conversation"],
-      //   "xTMxIxacimmjjlQMOTXc":["solve_problem","better_persuade","achieve_conversation"],
-      //   "xcJBlfQaPARaW3ChsQc6":["self_develop","my_understanding","achieve_conversation"],
-      //   "y8AAOsnEuGagryuIVGAX":["others_understanding","self_develop","achieve_conversation"],
-      //   "yVXLQLNAaSwMIrbTeAHg":["others_understanding","achieve_conversation","self_develop"],
-      //   "yXQnX3aIa87xYdf1y8PN":["self_develop","solve_problem"],
-      //   "yZ9rSaiJKty0CXnzxCF0":["help_others","achieve_conversation","solve_problem"],
-      //   "zDzdeaUsNM3A7IqCt6jy":["others_understanding","self_develop"],
-      // }
-  
-      // for(let casus in useCases){
-      //   console.log(useCases[casus])
-      //   this.firestore.update('cases',casus,{useCases:useCases[casus]}).then((result:any)=>{
-      //     console.log('updated')
-      //   })
-      // }
-      // this.firestore.update('cases',"zDzdeaUsNM3A7IqCt6jy",{useCases:useCases["zDzdeaUsNM3A7IqCt6jy"]})
-    }
-
-
-    caseNotready(){
-      let check = 
-        this.caseItem?.title == '' || 
-        this.caseItem?.role == '' ||
-        this.caseItem?.user_info == '' ||
-        ! this.caseItem?.level ||
-        this.caseItem?.types?.length == 0 ||
-        !this.caseItem?.attitude ||
-        !this.caseItem?.steadfastness ||
-        this.caseItem?.conversation == '' ||
-        !this.caseItem?.translate ||
-        !this.caseItem?.order_rating ||
-        this.caseItem?.photo == '' ||
-        (
-          this.caseItem?.editable_by_user?.free_answer == true &&
-          this.caseItem?.free_question == ''
-        )
-
-        return check
-    }
-
-    caseReady(part:string){
-      let check = false
-      switch(part){
-        case 'title':
-          check = this.caseItem?.title && this.caseItem?.user_info
-          break;
-        case 'basics':
-          check = this.caseItem?.role && this.caseItem?.conversation && this.caseItem.types?.length && this.caseItem?.level && this.caseItem?.attitude && this.caseItem?.steadfastness && this.caseItem?.order_rating
-          break;
-        case 'looks':
-          check = this.caseItem?.photo
-          break;
-        case 'settings':
-          check = this.caseItem.translate && this.caseItem?.open_to_user
-          break;
-        case 'input':
-          check = ((this.caseItem.openingMessage && this.caseItem.editable_by_user.openingMessage) || !this.caseItem.editable_by_user.openingMessage) && ((this.caseItem.editable_by_user.free_answer && this.caseItem?.free_question) || !this.caseItem.editable_by_user.free_answer)
-          break;
-        default:
-          check = false
+    copyCase(caseItem?:any){
+      if(!caseItem?.id){
+        if(!this.caseItem.id){
+          this.toast.show('Selecteer een casus')
+          return
+        }
+        caseItem = this.caseItem
       }
-      return check
+      let copy = JSON.parse(JSON.stringify(caseItem))
+      delete copy.id
+      copy.created = Date.now()
+      copy.title = copy.title + ' (copy)'
+      copy.open_to_user = false
+      copy.translate = false
+      this.firestore.create('cases',copy).then(()=>{
+        this.loadCases(()=>{
+          let item = this.cases.filter((e:any) => {
+            return e.created === copy.created
+          })
+          if(item.length){
+            this.caseItem = item[0]
+          }
+          else{
+            this.caseItem = {}
+          }
+          this.toast.hideLoader()
+        })
+      })
     }
+
+    practice(item?:any){
+      if(this.caseNotReady(item)){
+        this.toast.show(this.translate.instant('error_messages.not_complete'))
+        return
+      }
+      if(!item?.id){
+        if(!this.caseItem.id){
+          this.toast.show('Selecteer een casus')
+          return
+        }
+        item = this.caseItem
+      }
+      if(item.translation){
+        item.role = item.translation.role
+        if(item.translation.free_question){
+          item.free_question = item.translation.free_question
+        }
+      }
+      item.trainerId = this.nav.activeOrganisationId
+      this.modalService.showConversationStart(item).then((res)=>{
+        // console.log(res)
+        if(res){
+          localStorage.setItem('activatedCase',item.id)
+          localStorage.setItem('personalCase',JSON.stringify(item))
+          this.nav.go('conversation/'+item.id)
+        }
+      })
+    }
+
+    async showshortMenu(event:any,list:any[],callback:Function){
+      this.shortMenu = await this.popoverController.create({
+        component: MenuPage,
+        componentProps:{
+          pages:list,
+          listShape:true,
+          customMenu:true,
+        },
+        cssClass: 'shortMenu',
+        event: event,
+        translucent: false,
+        reference:'trigger',
+      });
+      this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+      await this.shortMenu.present();
+      await this.shortMenu.onDidDismiss()
+      callback(this.selectMenuservice.selectedItem)
+    }
+
+
+    onRightClick(event:Event,item:any){
+    event.preventDefault()
+    event.stopPropagation()
+    let list = [
+      {
+        title:this.translate.instant('cases.edit_case'),
+        icon:'faEdit',
+        value:'edit'
+      },
+      {
+        title:this.translate.instant('cases.copy_case'),
+        icon:'faCopy',
+        value:'copy'
+      },
+      {
+        title:this.translate.instant('cases.remove_case'),
+        icon:'faTrashAlt',
+        value:'delete'
+      },
+      {
+        title:this.translate.instant('cases.practice'),
+        icon:'faComment',
+        value:'practice'
+      },
+      {
+        title:this.translate.instant('cases.export_case'),
+        icon:'faFileExport',
+        value:'export'
+      },
+    ]
+    this.showshortMenu(event,list,(result:any)=>{
+      if(result?.value){
+        switch(result.value){
+          case 'edit':
+            this.selectCasus(item)
+            break;
+          case 'delete':
+            this.deleteCase(item)
+            break;
+          case 'copy':
+            this.copyCase(item)
+            break;
+          case 'practice':
+            this.practice(item)
+            break;
+          case 'export':
+            this.exportItem(item)
+            break;
+        }
+      }
+      this.selectMenuservice.selectedItem = undefined
+    })
+  }
+
+  exportItem(item:any){
+
+    item.exportedType = 'case'
+    const obj = JSON.parse(JSON.stringify(item));
+    
+    const base64 = this.encodeObjectToBase64(obj); // encode naar base64
+
+    const blob = new Blob([base64], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    let title = 'case'
+    if(item.title){
+      title = item.title.replace(/[^a-zA-Z0-9]/g, '_'); // vervang speciale tekens door _
+    }
+    link.download = 'export_'+title+'.alicialabs';
+    link.click();
+
+  }
+
+  importClick(){
+    this.import_item.nativeElement.click();
+  }
+
+  selectImportFile($event:any) {
+    if($event?.target?.files[0]){
+      this.readImportFile($event.target.files[0])
+    }
+
+  } 
+
+  readImportFile(file: File) {
+    var reader = new FileReader();
+    reader.onload = () => {
+        let obj = this.decodeBase64ToObject(reader.result)
+        this.importData(obj)
+    };
+    reader.readAsText(file);
+  }
+
+  importData(fileData:any){
+    if(!fileData || fileData.exportedType !== 'case') {
+      this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+      return;
+    }
+    let newItem:any = {}
+
+    try {
+        newItem.created = Date.now();
+        newItem.conversation = fileData.conversation || '';
+        newItem.title = fileData.title + ' - import' || 'import case';
+        newItem.role = fileData.role || '';
+        newItem.free_question = fileData.free_question || '';
+        newItem.free_question2 = fileData.free_question2 || '';
+        newItem.free_question3 = fileData.free_question3 || '';
+        newItem.free_question4 = fileData.free_question4 || '';
+        newItem.tags = fileData.tags || [];
+        newItem.order_rating = fileData.order_rating || 0;
+        newItem.photo = fileData.photo || '';
+        newItem.avatarName = fileData.avatarName || '';
+        newItem.level = fileData.level || 1;
+        newItem.translate = fileData.translate || false;
+        newItem.user_role = fileData.user_role || '';
+        newItem.user_info = fileData.user_info || '';
+        newItem.attitude = fileData.attitude || 1;
+        newItem.steadfastness = fileData.steadfastness || 50;
+        newItem.casus = fileData.casus || '';
+        newItem.trainer_id = this.nav.activeOrganisationId;
+        newItem.goalsItems = fileData.goalsItems || {
+          phases: [],
+          free: '',
+          attitude: 0,
+        };
+        newItem.max_time = fileData.max_time || 30;
+        newItem.minimum_goals = fileData.minimum_goals || 0;
+        newItem.openingMessage = fileData.openingMessage || '';
+        newItem.goal = fileData.goal || false;
+        newItem.editable_by_user = fileData.editable_by_user || {
+          role: false,
+          description: false,
+          user_role: false,
+          function: false,
+          vision: false,
+          interests: false,
+          communicationStyle: false,
+          externalFactors: false,
+          history: false,
+          attitude: false,
+          steadfastness: false,
+          casus: false,
+          goals: {
+            phases: false,
+            free: true,
+            attitude: false,
+          },
+          max_time: false,
+          minimum_goals: false,
+          openingMessage: true,
+          agents: {
+            choices: true,
+            facts: true,
+            background: true,
+            undo: true,
+          },
+          hide:{
+            attitude:false,
+            phases:false,
+            feedback:false,
+            feedbackCipher: false,
+            goal: false,
+          }
+        };
+      
+    }
+     catch (error) {
+      this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+      return;
+    }
+    this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'cases', newItem,(res:any) => {
+      if(res && res.id){
+        this.loadCases(()=>{
+          let item = this.cases.filter((e:any) => {
+            return e.created === newItem.created
+          })
+          if(item.length){
+            this.caseItem = item[0]
+          }
+          else{
+            this.caseItem = {}
+          }
+          this.toast.hideLoader()
+        })
+      } else {
+        this.toast.show(this.translate.instant('error_messages.import_failed'), 4000, 'middle');
+      }
+    })
+
+  }
+
+
+  decodeBase64ToObject(base64: any): any {
+    const binary = atob(base64);
+    const bytes = new Uint8Array([...binary].map(c => c.charCodeAt(0)));
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  }
+
+  encodeObjectToBase64(obj: any): string {
+    const json = JSON.stringify(obj);
+    const utf8Bytes = new TextEncoder().encode(json); // UTF-8 → Uint8Array
+    const base64 = btoa(String.fromCharCode(...utf8Bytes));
+    return base64;
+  }
+
+  caseNotReady(item?:any){
+    if(!item?.id){
+      if(!this.caseItem.id){
+        this.toast.show('Selecteer een casus')
+        return
+      }
+      item = this.caseItem
+    }
+    let check =
+      item?.title == '' ||
+      item?.role == '' ||
+      item?.user_info == '' ||
+      !item?.level ||
+      item?.types?.length == 0 ||
+      !item?.attitude ||
+      !item?.steadfastness ||
+      item?.conversation == '' ||
+      !item?.translate ||
+      !item?.order_rating ||
+      item?.photo == '' ||
+      (
+        item?.editable_by_user?.free_answer == true &&
+        item?.free_question == ''
+      )
+
+      return check
+  }
+
+  caseReady(part:string){
+    let check = false
+    switch(part){
+      case 'title':
+        check = this.caseItem?.title && this.caseItem?.user_info
+        break;
+      case 'basics':
+        check = this.caseItem?.role && this.caseItem?.conversation && this.caseItem.types?.length && this.caseItem?.level && this.caseItem?.attitude && this.caseItem?.steadfastness && this.caseItem?.order_rating
+        break;
+      case 'looks':
+        check = this.caseItem?.photo
+        break;
+      case 'settings':
+        check = this.caseItem.translate && this.caseItem?.open_to_user
+        break;
+      case 'input':
+        check = ((this.caseItem.openingMessage && this.caseItem.editable_by_user.openingMessage) || !this.caseItem.editable_by_user.openingMessage) && ((this.caseItem.editable_by_user.free_answer && this.caseItem?.free_question) || !this.caseItem.editable_by_user.free_answer)
+        break;
+      default:
+        check = false
+    }
+    return check
+  }
 }

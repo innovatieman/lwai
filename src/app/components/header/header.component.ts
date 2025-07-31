@@ -42,7 +42,7 @@ export class HeaderComponent  implements OnInit {
   isTrainer: boolean = false;
   isEmployee: boolean = false;
   isOrgAdmin: boolean = false;
-
+  pathname: string = window.location.pathname.split('/').pop() || '';
   menuItems:any=[
     {
       url:'start',
@@ -53,20 +53,7 @@ export class HeaderComponent  implements OnInit {
       isUser:false,
       isTrainer:true,
     },
-
-    // {
-    //   url:'trainer/trainings',
-    //   // action:'trainerMenu',
-    //   page:'trainer',
-    //   title:'Trainer',
-    //   // dropDown:false,
-    //   isVisitor:false,
-    //   isAdmin:true,
-    //   isUser:false,
-    //   isTrainer:true,
-    // },
      {
-      // url:'trainer/trainings',
       action:'trainerMenu',
       page:'trainer',
       title:'Trainer',
@@ -102,11 +89,6 @@ export class HeaderComponent  implements OnInit {
       icon: 'faSuitcase',
       url: '/bagend/cases',
     },
-    // {
-    //   title: 'Users',
-    //   icon: 'faUsers',
-    //   url: '/bagend/users',
-    // },
     {
       title: 'Types',
       icon: 'faHandPointRight',
@@ -274,7 +256,7 @@ export class HeaderComponent  implements OnInit {
     if(this.auth.organisations.length==1){
       this.nav.activeOrganisationId = this.auth.organisations[0].id
       if(window.location.pathname.indexOf('trainer')==-1){
-        this.nav.go('/trainer/trainings')
+        this.nav.go('/trainer/dashboard')
       }
       return
     }
@@ -310,7 +292,7 @@ export class HeaderComponent  implements OnInit {
       if(this.selectMenuservice.selectedItem){
         this.nav.changeOrganisation(this.selectMenuservice.selectedItem.id)
         if(window.location.pathname.indexOf('/trainer')==-1){
-          this.nav.go('/trainer/trainings')
+          this.nav.go('/trainer/dashboard')
         }
       }
     })

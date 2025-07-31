@@ -1,0 +1,25 @@
+.activeItem{
+    background-color: var(--ion-color-primary);
+    ion-item{
+      --background:none;
+      --color: white;
+      div{
+        --color: white;
+      }
+      fa-icon{
+        color:white;
+      }
+    }
+  }
+  .notActiveItem{
+    background-color: white;
+    ion-item{
+      --background-hover: none;
+    }
+  }
+  .notActiveItem:hover{
+    background: var(--background-global);
+    ion-item{
+      --background: var(--background-global);
+    }
+  }

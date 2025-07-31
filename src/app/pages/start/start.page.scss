@@ -319,3 +319,25 @@ svg{
   font-size: 16px;
   line-height: 26px;
 }
+ion-accordion{
+  border-radius: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
+}
+
+.subTabSelected{
+  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  ion-card-header{
+    ion-card-title{
+      color: var(--ion-color-primary);
+    }
+    ion-card-subtitle{
+      color: var(--ion-color-primary);
+    } 
+  }
+  color: var(--ion-color-primary);
+}
+.subTab{
+  transition: all 0.3s ease;
+  text-align: center;
+}

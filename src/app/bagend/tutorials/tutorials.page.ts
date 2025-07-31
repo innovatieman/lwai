@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
+import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
@@ -19,10 +20,9 @@ export class TutorialsPage implements OnInit {
   showSteps:boolean = false
   attachToOnOptions:any = ["","auto","auto-start","auto-end","top","top-start","top-end","bottom","bottom-start","bottom-end","right","right-start","right-end","left","left-start","left-end"]
   extraFilters: any = {
-    desktop: [true],
-    mobile: [false],
+    device: [],
   }
-
+  visibleItems:any[] = []
   constructor(
     private firestore:FirestoreService,
     private translate:TranslateService,
@@ -32,10 +32,24 @@ export class TutorialsPage implements OnInit {
     public tutorialService:tutorialService,
     private toast:ToastService,
     private modalService:ModalService,
-    private nav:NavService
+    private nav:NavService,
+    private filterKeyPipe:FilterKeyPipe,
   ) { }
 
   ngOnInit() {
+
+    this.updateVisibleItems();
+    
+    setTimeout(() => {
+      this.updateVisibleItems();
+    }, 1000);
+    setTimeout(() => {
+      this.updateVisibleItems();
+    }, 2000);
+
+    // setTimeout(() => {
+    //   this.updateVisibleItems();
+    // }, 3000);
   }
 
   select(tutorial:any){
@@ -206,9 +220,31 @@ export class TutorialsPage implements OnInit {
     else{
       this.extraFilters[filter].push(value)
     }
+    console.log(this.extraFilters)
   }
+  
   filterActive(filter:any,value:any){
     return this.extraFilters[filter]?.indexOf(value) > -1
   }
   
+  onFiltersChanged() {
+      setTimeout(() => {
+        this.updateVisibleItems();
+      }, 100);
+    }
+
+  updateVisibleItems() {
+
+      const filtered:any = this.filterKeyPipe.transform(
+        this.tutorialService.allTutorials,
+        'device',
+        this.extraFilters.device
+      );
+
+      let filteredItems:any = filtered;
+      filteredItems = filteredItems.sort((a: any, b: any) => a.title.localeCompare(b.title));
+      this.visibleItems = JSON.parse(JSON.stringify(filteredItems));
+
+    }
+
 }

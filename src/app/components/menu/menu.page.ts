@@ -13,6 +13,7 @@ import { InputFieldsPage } from '../modals/input-fields/input-fields.page';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { environment } from 'src/environments/environment';
+import { tutorialService } from 'src/app/services/tutorial.service';
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.page.html',
@@ -43,6 +44,14 @@ export class MenuPage implements OnInit {
       isAdmin:true,
       isUser:true
     },
+    {
+      title: 'Restart tutorial',
+      action: ["tutorialService","restartTutorial"],
+      icon: 'faArrowRight',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:false
+    },
   ]
   versionNumber = environment.version
   appPages:any = [
@@ -56,7 +65,7 @@ export class MenuPage implements OnInit {
     //   isUser:true
     // },
     {
-      title: 'Mijn Account',
+      title: this.translateService.instant('page_account.title'),
       url: '/account',
       icon: 'faUser',
       isVisitor:false,
@@ -70,6 +79,14 @@ export class MenuPage implements OnInit {
       isVisitor:false,
       isAdmin:true,
       isUser:true
+    },
+    {
+      title: 'Restart tutorial',
+      action: ["tutorialService","restartTutorial"],
+      icon: 'faArrowRight',
+      isVisitor:false,
+      isAdmin:true,
+      isUser:false
     },
     {
       title: 'Register',
@@ -87,38 +104,38 @@ export class MenuPage implements OnInit {
       isAdmin:false,
       isUser:false
     },
-    {
-      title: 'Agents en Settings',
-      icon: 'faCogs',
-      url: '/bagend/engine',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
-    {
-      title: 'Cases',
-      icon: 'faSuitcase',
-      url: '/bagend/cases',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
-    {
-      title: 'Users',
-      icon: 'faUsers',
-      url: '/bagend/users',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
-    {
-      title: 'All Conversations',
-      icon: 'faComments',
-      url: '/bagend/conversations',
-      isVisitor:false,
-      isAdmin:true,
-      isUser:false,
-    },
+    // {
+    //   title: 'Agents en Settings',
+    //   icon: 'faCogs',
+    //   url: '/bagend/engine',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Cases',
+    //   icon: 'faSuitcase',
+    //   url: '/bagend/cases',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'Users',
+    //   icon: 'faUsers',
+    //   url: '/bagend/users',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
+    // {
+    //   title: 'All Conversations',
+    //   icon: 'faComments',
+    //   url: '/bagend/conversations',
+    //   isVisitor:false,
+    //   isAdmin:true,
+    //   isUser:false,
+    // },
   ];
 
   [key: string]: any;
@@ -135,12 +152,14 @@ export class MenuPage implements OnInit {
     private modalController:ModalController,
     private firestore:FirestoreService,
     private toast:ToastService,
+    private tutorialService:tutorialService,
   ) { }
 
   ngOnInit() {
     if(this.pages){
       this.appPages = this.pages
     }
+    console.log(this.appPages)
     const path = window.location.pathname;
     this.auth.isAuthenticated().subscribe((auth) => {
       if(auth){

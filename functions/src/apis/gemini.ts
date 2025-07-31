@@ -2417,8 +2417,9 @@ exports.chatGeminiVoiceElevenlabsStream2 = onRequest(
       const language = body.language || "nl";
       const elevenLabsVoiceId = body.voiceId || 'piiJv4CqWw2m6bWv402O';
       const elevenLabsModelId = body.modelId || 'eleven_multilingual_v2';
-
-      const agent_instructions = await getAgentInstructions(body.instructionType, body.categoryId, language);
+      
+      let agent_instructions = await getAgentInstructions(body.instructionType, body.categoryId, language);
+      agent_instructions.systemContent = agent_instructions.systemContent + `\n\n<b>Belangrijke Extra aanwijzing</b>:Zorg dat je zinnen goed klinken in spraak: gebruik natuurlijke intonatie, spreektaal, korte zinnen, duidelijke pauzes en vermijd afkortingen of complex samengestelde bijzinnen. Formuleer je reacties zo dat ze prettig klinken wanneer ze worden voorgelezen door een text-to-speech stem van ElevenLabs versie 2.`; 
 
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Transfer-Encoding", "chunked");
@@ -2450,84 +2451,9 @@ exports.chatGeminiVoiceElevenlabsStream2 = onRequest(
         console.warn(`'${reactionPrefix}' not found in Gemini response. Sending full message to Eleven Labs.`);
       }
 
-      ////// oud
-
-      // console.log(`Text sent to Eleven Labs: "${textForElevenLabs}"`);
-      // // --- EINDE NIEUWE LOGICA ---
-
-      // const getElevenLabsSegments = (text: string): string[] => {
-      //     const sentences = text.match(/[^.!?]*[.!?]\s*|\s*$/g) || [];
-      //     const segments: string[] = [];
-      //     let currentSegment = "";
-      //     const MAX_SEGMENT_LENGTH = 500;
-      //     const MIN_SEGMENT_LENGTH_FOR_NEW_CHUNK = 50;
-
-      //     for (const sentence of sentences) {
-      //         const trimmedSentence = sentence.trim();
-      //         if (trimmedSentence === "") continue;
-
-      //         currentSegment += (currentSegment === "" ? "" : " ") + trimmedSentence;
-
-      //         if (currentSegment.length >= MIN_SEGMENT_LENGTH_FOR_NEW_CHUNK ||
-      //             trimmedSentence.match(/[.!?]$/) ||
-      //             currentSegment.length >= MAX_SEGMENT_LENGTH) {
-      //             segments.push(currentSegment);
-      //             currentSegment = "";
-      //         }
-      //     }
-      //     if (currentSegment !== "") {
-      //         segments.push(currentSegment);
-      //     }
-      //     return segments.filter(s => s.trim().length > 0);
-      // };
-
-      // // Gebruik nu 'textForElevenLabs' voor de segmentatie
-      // const textSegments = getElevenLabsSegments(textForElevenLabs);
-      // console.log(`Splitting into ${textSegments.length} Eleven Labs segments.`);
-
-      // for (const segment of textSegments) {
-      //     console.log(`Sending segment to Eleven Labs: "${segment}"`);
-      //     try {
-      //         const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
-      //             method: 'POST',
-      //             headers: {
-      //                 'Content-Type': 'application/json',
-      //                 'xi-api-key': ELEVENLABS_API_KEY!,
-      //                 'Accept': 'audio/mpeg',
-      //             },
-      //             body: JSON.stringify({
-      //                 text: segment,
-      //                 model_id: elevenLabsModelId,
-      //                 voice_settings: {
-      //                   stability: 0.75,
-      //                   similarity_boost: 0.75,
-      //                 },
-      //                 output_format: "mp3_44100_128",
-      //             }),
-      //         });
-
-      //         if (!elevenLabsResponse.ok || !elevenLabsResponse.body) {
-      //           console.error(`Eleven Labs streaming API call failed for segment: ${elevenLabsResponse.status} ${elevenLabsResponse.statusText}`);
-      //           break;
-      //         }
-
-      //         const reader = elevenLabsResponse.body.getReader();
-      //         while (true) {
-      //           const { value, done } = await reader.read();
-      //           if (done) break;
-      //           if (value) {
-      //             res.write(value);
-      //           }
-      //         }
-      //     } catch (elevenLabsErr) {
-      //         console.error("Error calling Eleven Labs streaming API for segment:", elevenLabsErr);
-      //         break;
-      //     }
-      // }
-
-      ///// oud
-
       console.log(`Text sent to Eleven Labs: "${textForElevenLabs}"`);
+      const emotionText:any = emotions(completeGeminiMessage);
+      console.log(`Detected emotion: ${JSON.stringify(emotionText)}`);
 
       try {
         const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
@@ -2541,10 +2467,13 @@ exports.chatGeminiVoiceElevenlabsStream2 = onRequest(
             text: textForElevenLabs,
             model_id: elevenLabsModelId,
             voice_settings: {
-              stability: 0.75,
-              similarity_boost: 0.75,
+              stability: emotionText.stability,
+              similarity_boost: 0.6,
+              style: emotionText.style || 0.5, // Gebruik de emotie uit de response
+              use_speaker_boost: true,
             },
-            previous_text: body.emotion || "", // Voeg hier de emotie toe als vorige tekst
+            previous_text: emotionText.previous || "", // Voeg hier de emotie toe als vorige tekst
+            next_text: emotionText.next || "he said neutral",
             output_format: "mp3_44100_128",
           }),
         });
@@ -2745,6 +2674,121 @@ exports.editedKnowledgeItem = onDocumentWritten({
     return null;
 })
 
+// async function initializeConversationOld(body:any): Promise<any[]> {
+//     // console.log('initializeConversation language: ' + body.language)
+//     let language = 'nl'
+//     if(body.language){
+//       language = body.language;
+//     }
+//   try {
+//     // const categoryRef = db.doc(`categories/${body.categoryId}`);
+//     const categoryRef = db.doc(`categories/${body.categoryId}/languages/${language}`);
+//     let caseRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/caseItem/caseItem`);
+//     // if(body.trainerId){
+//     //   caseRef = db.doc(`cases_trainer/${body.caseId}`);
+//     // }
+//     const [categorySnap, caseSnap, attitudes, positions, agent_instructions, userData,formats] = await Promise.all([
+//       categoryRef.get(),                  // Haal category op
+//       caseRef.get(),                      // Haal case op
+//       getAllAttitudes(language),                  // Haal attitudes op
+//       getAllPositions(),                  // Haal positions op
+//       getAgentInstructions(body.instructionType,body.categoryId,language),   // Haal instructions op
+//       getUserInfo(body.userId)         ,        // Haal user info op
+//       getFormats(body.instructionType)
+//     ]);
+
+//     if (!categorySnap.exists || !caseSnap.exists) {
+//       throw new Error("Category or Case not found");
+//     }
+
+//     // const categoryData = categorySnap.data();
+//     const caseData = caseSnap.data();
+//     const attitudesText = '<pre>'+JSON.stringify(attitudes) + '</pre>';
+//     const positionsText = '<pre>'+JSON.stringify(positions) + '</pre>';
+    
+//     // console.log('agent_instructions 2: ' + agent_instructions.systemContent.substring(0, 50) + '...');
+
+//     let systemContent = agent_instructions.systemContent;
+//     systemContent = systemContent.split("[role]").join(caseData.role); 
+//     systemContent = systemContent.replace("[description]", caseData.description);
+//     if(caseData.steadfastness){
+//       systemContent = systemContent.replace("[steadfastness]", caseData.steadfastness.toString());
+//     }
+//     systemContent = systemContent.replace("[attitudes]", attitudesText);
+//     systemContent = systemContent.replace("[current_attitude]", body.attitude.toString());
+
+//     systemContent = systemContent.replace("[positions]", positionsText);
+//     systemContent = systemContent.replace("[current_position]", body.attitude.toString());
+
+//     systemContent = systemContent.split("[expertise_title]").join(caseData.expertise_title || '');
+//     systemContent = systemContent.split("[expertise_summary]").join(caseData.expertise_summary || '');
+
+
+//     systemContent = systemContent + "\n\n" + formats.format + '\n\n' + formats.instructions;
+
+//     let casus = caseData.casus;
+//     if(!casus){casus='';}
+
+//     // if(caseData.casus){
+//     if(caseData.free_question){
+//       casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question;
+//       casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer || agent_instructions.no_answer);
+//     }
+//     if(caseData.free_question2){
+//       casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question2;
+//       casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer2 || agent_instructions.no_answer);
+//     }
+//     if(caseData.free_question3){
+//       casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question3;
+//       casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer3 || agent_instructions.no_answer);
+//     }
+//     if(caseData.free_question4){
+//       casus = casus + '\n\n' + agent_instructions.question_user + caseData.free_question4;
+//       casus = casus + '\n\n' + agent_instructions.answer_user + (caseData.free_answer4 || agent_instructions.no_answer);
+//     }
+    
+//     if(casus !== ''){
+//       systemContent = systemContent.replace("[casus]",casus);
+//     }
+//     else{
+//       systemContent = systemContent.replace("[casus]",agent_instructions.no_casus);
+//     }
+
+//     if(agent_instructions.extra_info){
+//       systemContent = systemContent + "\n\n" + agent_instructions.extra_info;
+//     }
+
+    
+
+//     let userMessage = ''
+//     if(body?.openingMessage){
+//       userMessage = body.openingMessage.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
+//     }
+//     if(!userMessage){
+//       userMessage = agent_instructions.content.split("[role]").join(caseData.role).split("[name]").join(userData.displayName);
+//     }
+
+//     await setToConversation(body.userId,body.conversationId,'system',systemContent,'messages','0')
+//     await setToConversation(body.userId,body.conversationId,'user',userMessage,'messages','1')
+
+//     return [
+//       {
+//         role: "system",
+//         content: systemContent,
+//         timestamp: new Date().getTime(),
+//       },
+//       {
+//         role: "user",
+//         content: userMessage,
+//         timestamp: new Date().getTime(),
+//       }
+//     ];
+//   } catch (error) {
+//     console.error("Error bij initialiseren van gesprek:", error);
+//     throw new Error("Failed to initialize conversation");
+//   }
+// }
+
 async function initializeConversation(body:any): Promise<any[]> {
     // console.log('initializeConversation language: ' + body.language)
     let language = 'nl'
@@ -2776,20 +2820,52 @@ async function initializeConversation(body:any): Promise<any[]> {
     const caseData = caseSnap.data();
     const attitudesText = '<pre>'+JSON.stringify(attitudes) + '</pre>';
     const positionsText = '<pre>'+JSON.stringify(positions) + '</pre>';
-    
-    // console.log('agent_instructions 2: ' + agent_instructions.systemContent.substring(0, 50) + '...');
+    let daysBetweenConversations = body.daysBetweenConversations
+    if(daysBetweenConversations === undefined || daysBetweenConversations === null){
+      daysBetweenConversations = 1; // default to 1 day if not provided
+    }
+    let casusUpdates:any = await getCasusUpdatePrevious(body.userId,caseData,daysBetweenConversations);
 
+    if(casusUpdates.length > 0){
+      //update casusUpdates in caseItem as array field
+      await db.doc(`users/${body.userId}/conversations/${body.conversationId}/caseItem/caseItem`).update(
+        { casusUpdates: casusUpdates }
+      );
+    }
+    let textCasusUpdates = '';
+    if(casusUpdates.length > 0){
+      
+      for(let i=0; i<casusUpdates.length; i++){
+
+        textCasusUpdates += casusUpdates[i].title.replace('<nr_conversation>', i+1) + ':\n';
+        textCasusUpdates += casusUpdates[i].intro + ':\n';
+        textCasusUpdates += casusUpdates[i].summary + '\n';
+        textCasusUpdates += 'Quotes:\n' + casusUpdates[i].quotes + '\n\n';
+      }
+    }
+    // console.log('agent_instructions 2: ' + agent_instructions.systemContent.substring(0, 50) + '...');
+    let newAttitude = 0;
+    if(casusUpdates.length > 0 && casusUpdates[casusUpdates.length - 1].latestAttitude !== undefined){
+      newAttitude = casusUpdates[casusUpdates.length - 1].latestAttitude;
+    }
+    // if(newAttitude == 80 && body.attitude > 80){
+    //   newAttitude = body.attitude; // if the latest attitude is 80, but the user has a higher attitude, use the user's attitude
+    // }
+    
     let systemContent = agent_instructions.systemContent;
     systemContent = systemContent.split("[role]").join(caseData.role); 
     systemContent = systemContent.replace("[description]", caseData.description);
+
+    systemContent = systemContent.replace("[casus_updates]", textCasusUpdates);
+
     if(caseData.steadfastness){
       systemContent = systemContent.replace("[steadfastness]", caseData.steadfastness.toString());
     }
     systemContent = systemContent.replace("[attitudes]", attitudesText);
-    systemContent = systemContent.replace("[current_attitude]", body.attitude.toString());
+    systemContent = systemContent.replace("[current_attitude]", (newAttitude || body.attitude).toString());
 
     systemContent = systemContent.replace("[positions]", positionsText);
-    systemContent = systemContent.replace("[current_position]", body.attitude.toString());
+    systemContent = systemContent.replace("[current_position]", (newAttitude || body.attitude).toString());
 
     systemContent = systemContent.split("[expertise_title]").join(caseData.expertise_title || '');
     systemContent = systemContent.split("[expertise_summary]").join(caseData.expertise_summary || '');
@@ -2859,8 +2935,6 @@ async function initializeConversation(body:any): Promise<any[]> {
     throw new Error("Failed to initialize conversation");
   }
 }
-
-
 
 async function getAllAttitudes(language:string = 'nl'): Promise<{ id: string; [key: string]: any }[]> {
   try {
@@ -3564,7 +3638,243 @@ function goalsText(conversationData:any,noSpecifics?:boolean){
 }
 
 
+function emotions(input:string){
 
+  let emotionInput = input.split('reaction:')
+  if(!emotionInput || emotionInput.length < 2){
+    return {
+      text: input,
+      attitude: 50,
+      beforeText: 'Ik ben neutraal',
+      afterText: 'Zei die neutraal',
+      stability: 0.5,
+    }
+  }
+
+  let attitude:any = emotionInput[0].replace('newAttitude:','').replace(',','').trim();
+  attitude = parseInt(attitude);
+  if(isNaN(attitude)){
+    attitude = 50;
+  }
+
+  
+
+// 1: Vijandig
+// 10: Wantrouwend
+// 20: Achterdochtig
+// 30: Onwillig
+// 40: Sceptisch
+// 50: Neutraal
+// 60: Respectvol
+// 70: Open
+// 80: Vertrouwend
+// 90: empathisch
+// 100: perfect empathisch
+
+
+  const beforeText = getValueForScore(attitude, {
+    "1":"Ik ben vijandig",
+    "10":"Ik ben wantrouwnd",
+    "20":"Ik ben achterdochtig",
+    "30":"Ik ben onwillig",
+    "40":"Ik ben sceptisch",
+    "50":"Ik ben neutraal",
+    "60":"Ik ben respectvol",
+    "70":"Ik ben open",
+    "80":"Ik ben vertrouwend",
+    "90":"Ik ben empathisch",
+    "100":"Ik ben perfect empathisch",
+  })
+  const afterText = getValueForScore(attitude, {
+    "1":", zei die vijandig",
+    "10":", zei die wantrouwend",
+    "20":", zei die achterdochtig",
+    "30":", zei die onwillig",
+    "40":", zei die sceptisch",
+    "50":", zei die neutraal",
+    "60":", zei die respectvol",
+    "70":", zei die open",
+    "80":", zei die vertrouwend",
+    "90":", zei die empathisch",
+    "100":", zei die perfect empathisch",
+  })
+
+  const stability = getValueForScore(attitude, {
+    "1":0.3,
+    "10":0.32,
+    "20":0.34,
+    "30":0.5,
+    "40":0.6,
+    "50":0.7,
+    "60":0.6,
+    "70":0.5,
+    "80":0.5,
+    "90":0.5,
+    "100":0.5
+  })
+  const style = getValueForScore(attitude, {
+    "1":0.8,
+    "10":0.7,
+    "20":0.65,
+    "30":0.5,
+    "40":0.4,
+    "50":0.4,
+    "60":0.4,
+    "70":0.5,
+    "80":0.6,
+    "90":0.7,
+    "100":0.7
+  })
+
+  let answer:any = {
+    text: emotionInput[1].trim(),
+    attitude: attitude,
+    beforeText: beforeText || 'Ik ben neutraal',
+    afterText: afterText || 'Zei die neutraal',
+    stability: stability || 0.5,
+    style: style || 0.5,
+  }
+
+  return answer
+}
+
+
+function getValueForScore(score:any, mapping:any) {
+  const keys = Object.keys(mapping)
+    .map(Number) // strings naar nummers
+    .sort((a, b) => a - b); // oplopend sorteren
+
+  // Vind de grootste key ≤ score
+  let selectedKey = null;
+  for (let i = 0; i < keys.length; i++) {
+    if (score >= keys[i]) {
+      selectedKey = keys[i];
+    } else {
+      break;
+    }
+  }
+
+  return selectedKey !== null ? mapping[selectedKey.toString()] : null;
+}
+
+async function getCasusUpdatePrevious(userId:string, caseData:any,daysBetweenConversations:number){
+  if(!caseData || !caseData.previousConversationId){
+    return [];
+  }
+  let casusUpdates:any = [];
+  let previousMessages:any = [];
+  
+    const previousConversationRef = db.doc(`users/${userId}/conversations/${caseData.previousConversationId}`);
+    const previousConversationCaseItemRef = db.doc(`users/${userId}/conversations/${caseData.previousConversationId}/caseItem/caseItem`);
+    const previousConversationMessagesRef = db.collection(`users/${userId}/conversations/${caseData.previousConversationId}/messages`);
+
+    const previousConversationSnap = await previousConversationRef.get();
+    if(previousConversationSnap.exists){
+      // const previousConversationData = previousConversationSnap.data();
+      const previousConversationCaseItemSnap = await previousConversationCaseItemRef.get();
+      if(previousConversationCaseItemSnap.exists){
+        const previousConversationCaseItemData = previousConversationCaseItemSnap.data();
+        if(previousConversationCaseItemData.casusUpdates){
+          casusUpdates.push(...previousConversationCaseItemData.casusUpdates);
+        }
+      }
+      // if(previousConversationData?.casusUpdates){
+      //   casusUpdates.push(...previousConversationData.casusUpdates);
+      // }
+
+      const previousMessagesSnap = await previousConversationMessagesRef.get();
+
+      previousMessages = await Promise.all(previousMessagesSnap.docs.map(async (doc) => {
+        let message = doc.data();
+        if(message.role !== 'system'){
+          return {id:parseInt(doc.id), role: message.role, content: message.content};
+        }
+        return null;
+      }));
+      // console.log('previousMessages: ' + previousMessages.length + ' berichten gevonden');
+      previousMessages = previousMessages.filter((msg:any) => msg !== null); // Verwijder null waarden
+      // console.log('volle previousMessages: ' + previousMessages.length + ' berichten gevonden');
+      // if (!Array.isArray(previousMessages)) {
+      //  console.log('previousMessages is geen array');
+      // }
+      // previousMessages = previousMessages.sort((a: any, b: any) => {
+      //   const aId = String(a?.id ?? '');
+      //   const bId = String(b?.id ?? '');
+      //   return aId.localeCompare(bId);
+      // });
+      previousMessages = previousMessages.sort((a:any, b:any) => a.id - b.id); // Sorteer op id
+    }
+    
+    if(previousMessages.length > 0){
+      const agent_instructions = await getAgentInstructions('conversation_summarizer','main',caseData.language);
+      if(!agent_instructions || !agent_instructions.systemContent){
+        return '';
+      }
+      let systemContent = agent_instructions.systemContent;
+      let content = agent_instructions.content;
+      content = content.split("[messages]").join(JSON.stringify(previousMessages));
+      let messages = [
+        {
+          role: "system",
+          content: systemContent,
+        },
+        {
+          role: "user",
+          content: content,
+        }
+      ];
+      db.collection('temporary').add({
+        messages: messages,
+        userId: userId,
+        caseId: caseData.id,
+        timestamp: new Date()
+      });
+      const response = await streamGemini(messages, agent_instructions, false);
+      if(response && response.text){
+        let casusUpdate:any = response.text().trim();
+        casusUpdate = casusUpdate.split('```json').join('').split('```').join('')
+        console.log('casusUpdate: ' + casusUpdate);
+        casusUpdate = JSON.parse(casusUpdate);
+        casusUpdate.intro = casusUpdate.intro.split('<days_before>').join(daysBetweenConversations+'');
+        casusUpdate.daysBetweenConversations = daysBetweenConversations;
+        if(caseData.actionsBetweenConversationsQuestion){
+          casusUpdate.summary = casusUpdate.summary + '\n\n' + caseData.actionsBetweenConversationsQuestion + '\n\n' + caseData.actionsBetweenConversations;
+        }
+        if(casusUpdate !== ''){
+          casusUpdates.push(casusUpdate);
+        }
+      }
+    }
+
+    let latestAttitude = 0;
+    if(previousMessages.length > 0){
+      const lastMessage = previousMessages[previousMessages.length - 1];
+      if(lastMessage && lastMessage.content){
+        const emotionData = emotions(lastMessage.content);
+        console.log('emotionData 1: ' + JSON.stringify(emotionData));
+
+        latestAttitude = emotionData.attitude;
+      }
+    }
+    if(latestAttitude && latestAttitude > 80){
+      let temp = latestAttitude - daysBetweenConversations;
+      if(temp < 80){
+        temp = 80;
+      }
+      latestAttitude = temp;
+    }
+    if(latestAttitude && latestAttitude < 20){
+      let temp = latestAttitude + daysBetweenConversations;
+      if(temp > 20){
+        temp = 20;
+      }
+      latestAttitude = temp;
+    }
+
+    casusUpdates[casusUpdates.length - 1].latestAttitude = latestAttitude;
+
+    return casusUpdates;
+}
 
 // /**
 //  * Converteert een WebM audiobestand naar WAV-formaat.

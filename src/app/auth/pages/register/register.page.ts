@@ -54,6 +54,7 @@ export class RegisterPage implements OnInit {
       }
     });
     setTimeout(() => {
+      console.log('nav', this.nav.specialCode);
       if(this.nav.specialCode){
         this.offerCode = this.nav.specialCode;
         this.showOfferCode = true;

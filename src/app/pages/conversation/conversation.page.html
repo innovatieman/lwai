@@ -333,6 +333,10 @@
               <div fullwidth fullheight absolute center-hor flex>
                 <img class="voiceAvatar" *ngIf="conversation.activeConversation?.photo" [src]="conversation.activeConversation.photo">
                 <img class="voiceAvatar" *ngIf="!conversation.activeConversation?.photo" [src]="'assets/img/default_avatar.png'">
+                <div *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude && conversation.isSpeaking" pointer class="voiceStop" flex center-ver center-hor flex-column>
+                  <fa-icon [icon]="icon.get('faStop')" (click)="stopVoice()" pointer></fa-icon>
+                  <!-- <fa-icon marginLeft [icon]="icon.get('faPause')" (click)="pauseVoice()"></fa-icon> -->
+                </div>
                 <div *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude" class="voiceAttitude" flex center-ver center-hor flex-column>
                   <app-graph-gauge [value]="conversation.attitude" height="100px"></app-graph-gauge>
                   <div>{{conversation.attitude}} {{info.getAttitude(conversation.attitude)?.title}}</div>
@@ -364,10 +368,10 @@
 
           
         </div>
-        <div class="analyzer" *ngIf="analyzing||record.analyzing">
-          <div class="pulse-loader" *ngIf="analyzing">
+        <div class="analyzer" *ngIf="record.analyzing">
+          <!-- <div class="pulse-loader" *ngIf="analyzing">
             {{'conversation.analyzing_request' | translate}}
-          </div>
+          </div> -->
           <div class="pulse-loader" *ngIf="record.analyzing">
             {{'conversation.processing_sound' | translate}}
           </div>
@@ -377,9 +381,12 @@
           <ion-row noPadding>
             <!-- chatInput -->
             <!-- <ion-col size="12" *ngIf="interaction!='combination' && !conversation.activeConversation.closed"> -->
-              <ion-col [size]="media.smallDevice ? 9 : 10" *ngIf="interaction!='video'">
+            <ion-col [size]="media.smallDevice ? 9 : 10" *ngIf="interaction!='video'">
               <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 ? noCredits($event) :  doNothing()">
-                <ion-textarea (keyup.enter)="auth.credits.total<=0 ? noCredits() :  sendQuestion()" [disabled]="conversation.activeConversation.closed" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
+                <ion-textarea (keyup.enter)="auth.credits.total<=0 ? noCredits() :  sendQuestion()" [disabled]="conversation.activeConversation.closed||analyzing" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
+                  <div class="pulse-loader" *ngIf="analyzing" slot="start" style="position:absolute;left:0px;top:0px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:10;font-size:16px">
+                    {{'conversation.analyzing_request' | translate}}
+                  </div>
                   <ion-spinner *ngIf="loadingTextFromAudio" slot="end" name="dots"></ion-spinner>
                   <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="auth.credits.total<=0 ? noCredits() :  (!record.recording ? startRecording($event) : stopRecording($event))">
                   <!-- <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="!recording ? start() : stop()"> -->

@@ -74,7 +74,7 @@ export class tutorialService {
     cancel: {
       classes: "saveButton",
       secondary: true,
-      text: this.translate.instant('buttons.exit'),
+      text: this.translate.instant('buttons.cancel'),
       action: ()=>{
         this.exit()
       },
@@ -157,6 +157,7 @@ export class tutorialService {
         return {
           ...tutorial.payload.doc.data(),
           id:tutorial.payload.doc.id,
+          device:tutorial.payload.doc.data().desktop ? 'desktop' : 'mobile',
           languages:{}
         }
       })
@@ -175,6 +176,7 @@ export class tutorialService {
   }
 
   triggerTutorial(page:string,trigger:string,restart?:boolean){
+    // console.log('triggerTutorial',page,trigger,restart)
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
         let count:number = 0;
@@ -185,7 +187,7 @@ export class tutorialService {
           }
           if(this.tutorialsLoaded && this.auth.userInfo.uid){
             clearInterval(checkInterval)
-    
+            // console.log('check tutorial',this.auth.tutorials, this.auth.tutorials.tutorials, this.tutorialsPerPage[page], this.tutorialsPerPage[page][trigger], this.activeTutorial)
             if((this.auth.tutorials.tutorials&&this.auth.tutorials.tutorials[page]&&(this.auth.tutorials.tutorials[page][trigger] || this.auth.tutorials.tutorials[page][trigger.replace('_mobile','')])&&!restart) || (!this.tutorialsPerPage[page] || !this.tutorialsPerPage[page][trigger] || !this.tutorialsPerPage[page][trigger].active)){
               return
             }
@@ -334,7 +336,7 @@ export class tutorialService {
       userTutorials[this.activeTutorial.page] = {}
     }
     userTutorials[this.activeTutorial.page][this.activeTutorial.trigger.replace('_mobile','')] = true
-    console.log(userTutorials)
+    // console.log(userTutorials)
     this.firestore.setSub('users',this.auth.userInfo.uid,'tutorials','tutorials',{tutorials:userTutorials})
     this.activeTutorial = null
     // console.log(this.activeTutorial) 
@@ -360,5 +362,19 @@ export class tutorialService {
   hideAction(action:any){
     console.log(action)
     this[action]()
+  }
+
+  restartTutorial(){
+    let pathName = location.pathname.substring(1)
+    let pathNameArr = pathName.split('/')
+    if( pathNameArr.length > 2){
+      pathName = pathNameArr[0] + '/' + pathNameArr[1]
+    }
+    if(this.media.smallDevice){
+      this.triggerTutorial(pathName,'onload_mobile',true) // Restart mobile tutorial
+    }
+    else{
+      this.triggerTutorial(pathName,'onload',true)
+    }
   }
 }

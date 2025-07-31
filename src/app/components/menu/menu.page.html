@@ -16,7 +16,7 @@
 
   <ion-list id="inbox-list" *ngIf="!customMenu && media.smallDevice && auth.userInfo.isConfirmed">
     <div *ngFor="let p of appPages; let i = index">
-      <ion-item detail="false" pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" *ngIf="shouldShowPage(p) && p.url">
+      <ion-item detail="false" pointer [ngClass]="p.class" (click)="(p.url ? nav.go(p.url) : execute(p.action));popoverController.dismiss()" lines="none" *ngIf="shouldShowPage(p) && (p.url || p.action)">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
       </ion-item> 
@@ -29,7 +29,7 @@
 
   <ion-list id="inbox-list" *ngIf="!customMenu && !media.smallDevice && auth.userInfo.isConfirmed">
     <div *ngFor="let p of accountPages; let i = index">
-      <ion-item detail="false" pointer [ngClass]="p.class" (click)="nav.go(p.url);popoverController.dismiss()" lines="none" *ngIf="shouldShowPage(p) && p.url">
+      <ion-item detail="false" pointer [ngClass]="p.class" (click)="(p.url ? nav.go(p.url) : execute(p.action));popoverController.dismiss()" lines="none" *ngIf="shouldShowPage(p) && (p.url || p.action)">
         <fa-icon [icon]="icon.get(p.icon)" slot="start"></fa-icon>
         <ion-label>{{ trl(p.title) }}</ion-label>
       </ion-item> 

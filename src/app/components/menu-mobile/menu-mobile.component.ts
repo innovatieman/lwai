@@ -19,11 +19,12 @@ export class MenuMobileComponent  implements OnInit {
   selectedMenu:any[] = [];
   isAdmin:boolean = false;
   isTrainer:boolean = false;
+  isTrainerPro:boolean = false;
   @Input() subMenu:boolean = false;
   @Input() options:string = '';
   @Output() action = new EventEmitter<any>();
   @Input() pageParam: string = '';
-  
+  pathname: string = window.location.pathname.split('/').pop() || '';
   [x: string]: any;
   constructor(
     public icon:IconsService,
@@ -60,7 +61,10 @@ export class MenuMobileComponent  implements OnInit {
     this.auth.hasActive('trainer').subscribe((trainer)=>{
       this.isTrainer = trainer
     })
-  
+    this.auth.hasActive('trainerPro').subscribe((trainerPro)=>{
+      this.isTrainerPro = trainerPro
+    })
+
   }
 
   openMenu(event:Event){
@@ -119,7 +123,7 @@ export class MenuMobileComponent  implements OnInit {
               list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
-              list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});
+              list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
             }
             list.push({title:this.translate.instant('buttons.account'),icon:'faUser',url:'account/basics'});
             if(this.isTrainer){
@@ -138,7 +142,7 @@ export class MenuMobileComponent  implements OnInit {
                   list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
                 }
                 if(this.auth.myOrganisationsList?.length){
-                  list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});
+                  list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
                 }
                 list.push({title:this.translate.instant('buttons.account'),icon:'faUser',url:'account/basics'});
                 if(this.isTrainer){
@@ -175,7 +179,7 @@ export class MenuMobileComponent  implements OnInit {
               list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
-              list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});
+              list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
             }
             list.push({title:this.translate.instant('buttons.account'),icon:'faUser',url:'account/basics'});
             if(this.isTrainer){
@@ -191,7 +195,7 @@ export class MenuMobileComponent  implements OnInit {
               list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
-              list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});
+              list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
             }
             list.push({title:this.translate.instant('buttons.account'),icon:'faUser',url:'account/basics'});
             if(this.isTrainer){
@@ -216,6 +220,12 @@ export class MenuMobileComponent  implements OnInit {
             if(this.isTrainer){
               list.push({title:this.translate.instant('buttons.trainer_environment'),icon:'faGraduationCap',menuAction:'trainerMenu'});
             }
+            if(!this.isTrainer){
+              list.push({title:this.translate.instant('page_account.become_trainer'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
+            if(this.isTrainer&&!this.isTrainerPro){
+              list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
             break;
           case 'credits':
             list.push({title:this.translate.instant('page_account.credits'),icon:'faCoins',url:'account/credits'});
@@ -226,10 +236,16 @@ export class MenuMobileComponent  implements OnInit {
             if(this.auth.customer?.stripeCustomerId){
               list.push({title:this.translate.instant('page_account.billing'),icon:'faCreditCard',action:'auth.openStripeDashboard'});
             }
-            break;
             if(this.isTrainer){
               list.push({title:this.translate.instant('buttons.trainer_environment'),icon:'faGraduationCap',menuAction:'trainerMenu'});
             }
+            if(!this.isTrainer){
+              list.push({title:this.translate.instant('page_account.become_trainer'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
+            if(this.isTrainer&&!this.isTrainerPro){
+              list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
+            break;
           case 'conversations':
             list.push({title:this.translate.instant('page_account.my_finished_cases'),icon:'faComments',url:'account/conversations'});
             list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
@@ -241,6 +257,31 @@ export class MenuMobileComponent  implements OnInit {
             }
             if(this.isTrainer){
               list.push({title:this.translate.instant('buttons.trainer_environment'),icon:'faGraduationCap',menuAction:'trainerMenu'});
+            }
+            if(!this.isTrainer){
+              list.push({title:this.translate.instant('page_account.become_trainer'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
+            if(this.isTrainer&&!this.isTrainerPro){
+              list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
+            break;
+          case 'become_trainer':
+            list.push({title:this.translate.instant('page_account.become_trainer'),icon:'faGraduationCap',url:'account/become_trainer'});
+            list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
+            list.push({title:this.translate.instant('buttons.account'),icon:'faUser',url:'account/basics'});
+            list.push({title:this.translate.instant('page_account.my_finished_cases'),icon:'faComments',url:'account/conversations'});
+            list.push({title:this.translate.instant('page_account.credits'),icon:'faCoins',url:'account/credits'});
+            if(this.auth.customer?.stripeCustomerId){
+              list.push({title:this.translate.instant('page_account.billing'),icon:'faCreditCard',action:'auth.openStripeDashboard'});
+            }
+            if(this.isTrainer){
+              list.push({title:this.translate.instant('buttons.trainer_environment'),icon:'faGraduationCap',menuAction:'trainerMenu'});
+            }
+            if(!this.isTrainer){
+              list.push({title:this.translate.instant('page_account.become_trainer'),icon:'faGraduationCap',url:'account/become_trainer'});
+            }
+            if(this.isTrainer&&!this.isTrainerPro){
+              list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',url:'account/become_trainer'});
             }
             break;
         }
@@ -388,6 +429,7 @@ export class MenuMobileComponent  implements OnInit {
                   if(this.auth.customer?.stripeCustomerId){
                     list.push({title:this.translate.instant('page_account.billing'),icon:'faCreditCard',action:'auth.openStripeDashboard',indent:40});
                   }
+                  list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',clickAction:'setShowPart(become_trainer)',indent:40});
                   list.push({title:this.translate.instant('standards.cases'),icon:'faUser',url:'trainer/cases'});
                   list.push({title:this.translate.instant('standards.info_items'),icon:'faFileAlt',url:'trainer/info-items'});
                   list.push({title:this.translate.instant('standards.modules'),icon:'faGripHorizontal',url:'trainer/modules'});
@@ -404,6 +446,7 @@ export class MenuMobileComponent  implements OnInit {
                   if(this.auth.customer?.stripeCustomerId){
                     list.push({title:this.translate.instant('page_account.billing'),icon:'faCreditCard',action:'auth.openStripeDashboard',indent:40});
                   }
+                  list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',clickAction:'setShowPart(become_trainer)',indent:40});
                   list.push({title:this.translate.instant('standards.cases'),icon:'faUser',url:'trainer/cases'});
                   list.push({title:this.translate.instant('standards.info_items'),icon:'faFileAlt',url:'trainer/info-items'});
                   list.push({title:this.translate.instant('standards.modules'),icon:'faGripHorizontal',url:'trainer/modules'});
@@ -420,6 +463,24 @@ export class MenuMobileComponent  implements OnInit {
                   if(this.auth.customer?.stripeCustomerId){
                     list.push({title:this.translate.instant('page_account.billing'),icon:'faCreditCard',action:'auth.openStripeDashboard',indent:40});
                   }
+                  list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',clickAction:'setShowPart(become_trainer)',indent:40});
+                  list.push({title:this.translate.instant('standards.cases'),icon:'faUser',url:'trainer/cases'});
+                  list.push({title:this.translate.instant('standards.info_items'),icon:'faFileAlt',url:'trainer/info-items'});
+                  list.push({title:this.translate.instant('standards.modules'),icon:'faGripHorizontal',url:'trainer/modules'});
+                  list.push({title:this.translate.instant('standards.trainings'),icon:'faGraduationCap',url:'trainer/trainings'});
+                  list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
+                break;
+              case 'become_trainer':
+                  list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',clickAction:'setShowPart(become_trainer)',indent:40});
+                  list.push({title:this.translate.instant('dashboard.organisation'),icon:'faBuilding',url:'trainer/dashboard'});
+                  list.push({title:this.translate.instant('dashboard.settings'),icon:'faBuilding',clickAction:'setShowPart(settings)',indent:40});
+                  if(this.trainerService.trainerInfo.organisation){
+                    list.push({title:this.translate.instant('standards.employees'),icon:'faBuilding',url:'trainer/dashboard',clickAction:'setShowPart(employees)',indent:40});
+                  }
+                  if(this.auth.customer?.stripeCustomerId){
+                    list.push({title:this.translate.instant('page_account.billing'),icon:'faCreditCard',action:'auth.openStripeDashboard',indent:40});
+                  }
+                  list.push({title:this.translate.instant('page_account.become_trainer_pro'),icon:'faGraduationCap',clickAction:'setShowPart(become_trainer)',indent:40});
                   list.push({title:this.translate.instant('standards.cases'),icon:'faUser',url:'trainer/cases'});
                   list.push({title:this.translate.instant('standards.info_items'),icon:'faFileAlt',url:'trainer/info-items'});
                   list.push({title:this.translate.instant('standards.modules'),icon:'faGripHorizontal',url:'trainer/modules'});
@@ -597,7 +658,7 @@ export class MenuMobileComponent  implements OnInit {
     if(this.auth.organisations.length==1){
       this.nav.activeOrganisationId = this.auth.organisations[0].id
       if(window.location.pathname.indexOf('trainer')==-1){
-        this.nav.go('/trainer/trainings')
+        this.nav.go('/trainer/dashboard')
         this.closeMenu();
       }
       return
@@ -632,7 +693,7 @@ export class MenuMobileComponent  implements OnInit {
       if(this.selectMenuservice.selectedItem){
         this.nav.changeOrganisation(this.selectMenuservice.selectedItem.id)
         if(window.location.pathname.indexOf('trainer')==-1){
-          this.nav.go('/trainer/trainings')
+          this.nav.go('/trainer/dashboard')
           this.closeMenu();
         }
       }
@@ -640,6 +701,51 @@ export class MenuMobileComponent  implements OnInit {
     })
   }
 
+  async selectOrganisation(event?:any){
+    if(event){
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    let list = []
+    if(this.auth.organisations.length==1){
+      this.nav.gotoOrganisation(event,this.auth.organisations[0].id)
+      this.closeMenu();
+      return;
+    }
+    for(let i=0;i<this.auth.organisationTrainings.length;i++){
+      list.push({
+        title:this.auth.organisationTrainings[i].name,
+        icon:this.auth.organisationTrainings[i].logo ? '' :'faGripHorizontal',
+        image:this.auth.organisationTrainings[i].logo ? this.auth.organisationTrainings[i].logo : '',
+        id:this.auth.organisationTrainings[i].id,
+        value:this.auth.organisationTrainings[i].id,
+        logo:this.auth.organisationTrainings[i].logo !=undefined,
+      })
+    }
+
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        customMenu:true,
+        pages:list
+      },
+      cssClass: 'customMenu',
+      event: event,
+      translucent: false,
+      reference:'trigger',
+    });
+    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+    await this.shortMenu.present();
+    await this.shortMenu.onWillDismiss().then((result:any)=>{
+      // console.log(this.selectMenuservice.selectedItem)
+      if(this.selectMenuservice.selectedItem){
+        this.nav.gotoOrganisation(event,this.selectMenuservice.selectedItem.id)
+        this.closeMenu();
+      }
+    })
+  }
+
+  
 
   goto(item:any,event:Event){
     event.stopPropagation();

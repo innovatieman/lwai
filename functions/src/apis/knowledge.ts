@@ -4,6 +4,12 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../firebase";
 // @ts-ignore
 const pdf = require('pdf-parse');
+import * as mammoth from "mammoth";
+// const pptx2json =  require('pptx2json');
+
+const unzipper = require('unzipper');
+const xml2js = require('xml2js');
+
 // import * as pdfParse from "pdf-parse";
 import * as fs from "fs";
 import * as os from "os";
@@ -26,7 +32,7 @@ exports.embedBookKnowledge = onRequest({
     res.status(405).send("Only POST allowed.");
     return;
   }
-
+  console.log("📚 Boek kennis verwerking gestart...");
   try {
     const { filePath, title } = req.body;
 
@@ -43,11 +49,31 @@ exports.embedBookKnowledge = onRequest({
 
     // Detecteer MIME-type op basis van extensie
     const isPdf = path.extname(filePath).toLowerCase() === '.pdf';
-    const text = isPdf
-      ? await extractTextFromPDF(tempFile)
-      : fs.readFileSync(tempFile, 'utf-8');
+    const isDocx = path.extname(filePath).toLowerCase() === '.docx';
+    const isPptx = path.extname(filePath).toLowerCase() === '.pptx';
 
-    console.log("📄 PDF text extracted:", text.substring(0,200));
+    console.log(`extensions: isPdf=${isPdf}, isDocx=${isDocx}, isPptx=${isPptx}`);
+    let text = "";
+
+    if (isPdf) {
+      text = await extractTextFromPDF(tempFile);
+    } else if (isDocx) {
+      text = await extractTextFromDOCX(tempFile);
+    } else if (isPptx) {
+      text = await extractTextFromPPTX(tempFile);
+    } else if (filePath.endsWith(".txt")) {
+      text = fs.readFileSync(tempFile, "utf-8");
+    } else {
+      throw new Error("Bestandstype niet ondersteund");
+    }
+
+    console.log(`📄 Tekst uit bestand (${path.basename(filePath)}) succesvol geëxtraheerd. Lengte: ${text.length} tekens`);
+
+    // const text = isPdf
+    //   ? await extractTextFromPDF(tempFile)
+    //   : fs.readFileSync(tempFile, 'utf-8');
+
+    // console.log("📄 PDF text extracted:", text.substring(0,200));
 
     const chunks = splitIntoChunks(text);
     const timestamp = Date.now();
@@ -71,9 +97,10 @@ exports.embedBookKnowledge = onRequest({
         userId: req.body.userId || "unknown",
         trainerId: req.body.trainerId || "unknown",
         expertKnowledgeId: req.body.expertKnowledgeId || "unknown",
+        filePath: filePath,
       });
 
-      console.log(`✅ Chunk ${i + 1}/${chunks.length} opgeslagen.`);
+      // console.log(`✅ Chunk ${i + 1}/${chunks.length} opgeslagen.`);
     }
 
     res.status(200).send("✅ Boek succesvol verwerkt.");
@@ -140,6 +167,167 @@ async function extractTextFromPDF(filePath: string): Promise<string> {
   // const data = await pdfParse(buffer);
   return data.text;
 }
+
+
+async function extractTextFromDOCX(filePath: string): Promise<string> {
+  const result = await mammoth.extractRawText({ path: filePath });
+  return result.value;
+}
+
+
+// async function extractTextFromPPTX(filePath: string): Promise<string> {
+//   const parser = new pptx2json(filePath);
+//   const json = await parser.parse();
+//   return json.slides.map((slide:any) =>
+//     slide.texts.map((t:any) => t.text).join('\n')
+//   ).join('\n\n');
+// }
+
+export async function extractTextFromPPTX(filePath: string): Promise<string> {
+  const zip = fs.createReadStream(filePath).pipe(unzipper.Parse({ forceStream: true }));
+  const slideTexts: Record<string, string[]> = {};
+  const notesTexts: Record<string, string[]> = {};
+
+  for await (const entry of zip) {
+    if (entry.path.match(/^ppt\/slides\/slide(\d+)\.xml$/)) {
+      const slideNumber = entry.path.match(/slide(\d+)\.xml$/)?.[1];
+      console.log(`▶️ Entry gevonden: ${entry.path}`);
+      const buffer = await entry.buffer(); // <— hier hangt hij mogelijk
+      console.log(`✅ Buffer geladen: ${entry.path}`);
+      const parsed = await xml2js.parseStringPromise(buffer);
+      slideTexts[slideNumber!] = extractTextFromSlide(parsed);
+    }
+    
+
+    else if (entry.path.match(/^ppt\/notesSlides\/notesSlide(\d+)\.xml$/)) {
+      const slideNumber = entry.path.match(/notesSlide(\d+)\.xml$/)?.[1];
+      console.log(`▶️ Entry gevonden: ${entry.path}`);
+      const buffer = await entry.buffer(); // <— hier hangt hij mogelijk
+      console.log(`✅ Buffer geladen: ${entry.path}`);
+      const parsed = await xml2js.parseStringPromise(buffer);
+      notesTexts[slideNumber!] = extractTextFromSlide(parsed);
+    }
+
+    else{
+      entry.autodrain(); // Skip other entries
+    }
+  }
+
+  // Combine slide text + notes per slide
+  const combinedText = Object.keys(slideTexts)
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .map(slideNum => {
+      const slide = slideTexts[slideNum] || [];
+      const notes = notesTexts[slideNum] || [];
+      return [...slide, ...notes].join('\n');
+    })
+    .join('\n\n');
+
+  return combinedText.trim();
+}
+
+function extractTextFromSlide(parsed: any): string[] {
+  const texts: string[] = [];
+
+  const shapes = parsed['p:sld']?.['p:cSld']?.[0]?.['p:spTree']?.[0];
+  if (!shapes) return texts;
+
+  // Voeg tekst uit <p:sp> (normale tekstvakken)
+  if (Array.isArray(shapes['p:sp'])) {
+    for (const shape of shapes['p:sp']) {
+      texts.push(...extractFromShape(shape));
+    }
+  }
+
+  // Voeg tekst uit <p:grpSp> (groepen van vormen)
+  if (Array.isArray(shapes['p:grpSp'])) {
+    for (const group of shapes['p:grpSp']) {
+      if (Array.isArray(group['p:sp'])) {
+        for (const shape of group['p:sp']) {
+          texts.push(...extractFromShape(shape));
+        }
+      }
+    }
+  }
+
+  // Voeg tekst uit tabellen (p:graphicFrame > a:tbl)
+  if (Array.isArray(shapes['p:graphicFrame'])) {
+    for (const frame of shapes['p:graphicFrame']) {
+      const table = frame['a:graphic']?.[0]?.['a:graphicData']?.[0]?.['a:tbl']?.[0];
+      if (table?.['a:tr']) {
+        for (const row of table['a:tr']) {
+          const cells = row['a:tc'] || [];
+          for (const cell of cells) {
+            const cellText = extractTextFromParagraphs(cell['a:txBody']?.[0]?.['a:p'] || []);
+            texts.push(...cellText);
+          }
+        }
+      }
+    }
+  }
+
+  // Voeg tekst uit SmartArt diagrammen toe
+  if (Array.isArray(shapes['p:graphicFrame'])) {
+    for (const frame of shapes['p:graphicFrame']) {
+      const diagramData = frame?.['a:graphic']?.[0]?.['a:graphicData']?.[0];
+
+      const smartText: string[] = [];
+
+      function traverse(node: any) {
+        if (typeof node !== 'object') return;
+        for (const key of Object.keys(node)) {
+          if (key === 'dgm:t' || key === 'dgm:tx') {
+            const values = node[key].flat().filter((t: any) => typeof t === 'string');
+            smartText.push(...values);
+          } else {
+            const children = node[key];
+            if (Array.isArray(children)) {
+              children.forEach(traverse);
+            } else if (typeof children === 'object') {
+              traverse(children);
+            }
+          }
+        }
+      }
+
+      if (diagramData) {
+        traverse(diagramData);
+        texts.push(...smartText);
+      }
+    }
+  }
+
+  return texts;
+}
+
+function extractFromShape(shape: any): string[] {
+  const paras = shape?.['p:txBody']?.[0]?.['a:p'] || [];
+  return extractTextFromParagraphs(paras);
+}
+
+function extractTextFromParagraphs(paras: any[]): string[] {
+  const lines: string[] = [];
+
+  for (const para of paras) {
+    let line = "";
+
+    const runs = para['a:r'] || [];
+    for (const run of runs) {
+      const text = run['a:t']?.[0];
+      if (text) line += text;
+    }
+
+    // Ook plain text zonder run
+    const fallback = para['a:t']?.[0];
+    if (!line && fallback) line = fallback;
+
+    if (line.trim()) lines.push(line.trim());
+  }
+
+  return lines;
+}
+
+
 
 function splitIntoChunks(text: string, softLimit = 400, hardLimit = 500, overlap = 100): string[] {
   const paragraphs = text.split(/\n\s*\n/);

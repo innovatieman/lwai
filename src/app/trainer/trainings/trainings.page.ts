@@ -98,10 +98,10 @@ export class TrainingsPage implements OnInit {
             setTimeout(() => {
               // console.log('triggerTutorial')
               if(this.media.smallDevice){
-                this.tutorial.triggerTutorial('trainer/trainings','onload_mobile')
+                this.tutorial.triggerTutorial('trainer/dashboard','onload_mobile')
               }
               else{
-                this.tutorial.triggerTutorial('trainer/trainings','onload')
+                this.tutorial.triggerTutorial('trainer/dashboard','onload')
               }
             }, 1000);
           }
@@ -223,8 +223,8 @@ export class TrainingsPage implements OnInit {
     }
   }
 
-  selectTraining(training:any){
-    console.log('selectTraining',JSON.parse(JSON.stringify(training)))
+  selectTraining(training:any,clearBreadCrumbs?:boolean){
+    // console.log('selectTraining',JSON.parse(JSON.stringify(training)))
     this.showPart = 'items'
     if(training.results && training.results.length){
       training.organizedResults = this.trainerService.organizeResults(training.results,training)
@@ -239,6 +239,9 @@ export class TrainingsPage implements OnInit {
       }
     }
     // console.log('selectTraining',training)
+    if(clearBreadCrumbs){
+      this.trainerService.breadCrumbs = []
+    }
     this.trainerService.trainingItem = training;
     this.trainerService.breadCrumbs.push({
       type: 'training',
@@ -304,10 +307,10 @@ export class TrainingsPage implements OnInit {
   copyTraining(item?:any){
     this.toast.showLoader()
     if(!item){
-      item = this.trainerService.trainingItem
+      item = this.trainerService.breadCrumbs[0].item
     }
     let copy = JSON.parse(JSON.stringify(item))
-    console.log('copy',copy)
+    // console.log('copy',copy)
     let old_id = copy.id
     delete copy.id
     delete copy.created
@@ -335,11 +338,12 @@ export class TrainingsPage implements OnInit {
                 return e.id === result.id
               })
               if(trainings.length){
-                this.selectTraining(trainings[0])
+                this.selectTraining(trainings[0],true)
               }
               else{
                 this.trainerService.trainingItem = {}
               }
+              // this.trainerService.breadCrumbs = []
               this.toast.hideLoader();
               this.filterWith('concept')
                this.updateVisibleItems()
@@ -358,6 +362,9 @@ export class TrainingsPage implements OnInit {
 
 
   deleteTraining(training:any){
+    if(this.trainerService.breadCrumbs.length>0){
+      training = this.trainerService.breadCrumbs[0].item
+    }
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
         this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'trainings',training.id).then(()=>{
@@ -587,6 +594,8 @@ export class TrainingsPage implements OnInit {
     if(field){
       // console.log('update field',this.nav.activeOrganisationId,field,trainingItem)
       this.firestore.setSub('trainers',this.nav.activeOrganisationId,'trainings',trainingItem.id,trainingItem[field],field,()=>{
+          // console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
+
         setTimeout(() => {
           window.scrollTo(0, scrollPosition);
         }, 100);
@@ -790,6 +799,7 @@ export class TrainingsPage implements OnInit {
       this.modalService.selectItem('Selecteer', list, async (result: any) => {
         
         if (result.data) {
+          console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
           if(this.selectMenuservice.selectedItem.id == 'modules'){
             for(let i=0;i<result.data.length;i++){
               let newItem:any = await this.copyItemsToTraining(result.data[i], true)
@@ -797,6 +807,7 @@ export class TrainingsPage implements OnInit {
               newItem.type = 'module'
               newItem.order = 999
               // newItem.id  = (Date.now() + Math.floor(Math.random() * 1000)) + ''
+              console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
 
               if(this.trainerService.breadCrumbs.length>1){
                 this.addItemToModuleById(this.trainerService.breadCrumbs[0].item, this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id,newItem)
@@ -824,7 +835,9 @@ export class TrainingsPage implements OnInit {
             for(let i=0;i<result.data.length;i++){
               this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',result.data[i],(response:any)=>{
                 this.firestore.updateSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',response.id,{id:response.id})
-                
+                // this.trainerService.breadCrumbs = JSON.parse(JSON.stringify(breadCrumbs))
+                console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
+
                 if(this.trainerService.breadCrumbs.length>1){
                   let newItem:any = {
                     type: this.selectMenuservice.selectedItem.id.substring(0, this.selectMenuservice.selectedItem.id.length - 1),
@@ -913,12 +926,13 @@ export class TrainingsPage implements OnInit {
 
 addItemToModuleById(module: any, targetId: string, newItem: any): boolean {
   // Als dit de gezochte module is
+  console.log('addItemToModuleById',module,targetId,newItem)
   if (module.id === targetId) {
     if (!module.items) module.items = [];
     module.items.push(newItem);
     return true; // gevonden en toegevoegd
   }
-
+  console.log('addItemToModuleById2',module.id,targetId,newItem)
   // Als deze module zelf items heeft, zoek daarin verder
   if (module.items && Array.isArray(module.items)) {
     for (let item of module.items) {
@@ -1071,17 +1085,23 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
   unusedItems:any[] = []
   usedItems:any[] = []
-  findAllUsedItems(module:any){
+  countModules:number=0
+  findAllUsedItems(module:any,subModule?:boolean){
+
     for(let i=0;i<module.items.length;i++){
       if(module.items[i].type != 'module'){
         this.usedItems.push(module.items[i].id)
       }
       else{
-        this.findAllUsedItems(module.items[i])
+        this.findAllUsedItems(module.items[i],true)
       }
     }
+    if(subModule){return}
     for(let i=0;i<this.trainerService.breadCrumbs[0].item.trainingItems.length;i++){
-      if(this.usedItems.indexOf(this.trainerService.breadCrumbs[0].item.trainingItems[i].id) == -1 && this.unusedItems.indexOf(this.trainerService.breadCrumbs[0].item.trainingItems[i].id) == -1){
+      if(
+        this.usedItems.indexOf(this.trainerService.breadCrumbs[0].item.trainingItems[i].id) == -1 && 
+        this.unusedItems.indexOf(this.trainerService.breadCrumbs[0].item.trainingItems[i].id) == -1
+      ){
         this.unusedItems.push(this.trainerService.breadCrumbs[0].item.trainingItems[i].id)
       }
     }
@@ -1089,6 +1109,10 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   deleteItem(item:any){
+    this.unusedItems = []
+    this.usedItems = []
+    this.findAllUsedItems(this.trainerService.breadCrumbs[0].item)
+    
     // let trainingId = this.trainerService.trainingItem.id
     // this.trainerService.trainingItem = this.trainerService.getTraining(trainingId,this.trainerService.trainingItem.created)
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
@@ -1215,8 +1239,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       return
     }
 
-
-    this.modalService.inputFields('Nieuwe deelnemer', 'Voeg een deelnemer toe', [
+    let fields:any = [
       {
         type: 'text',
         title: this.translate.instant('page_register.name'),
@@ -1232,13 +1255,26 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         pattern:'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-z]{2,15}$',
         required: true,
       }
-    ], (result: any) => {
+    ]
+    // if(this.trainerService.checkIsTrainerPro()){
+    //   fields.push({
+    //     type: 'checkbox',
+    //     title: 'Wil je de deelnemer embedden in de training?',
+    //     name: 'Embedded',
+    //     value: false,
+    //     required: true,
+    //   })
+    // }
+
+
+    this.modalService.inputFields('Nieuwe deelnemer', 'Voeg een deelnemer toe', fields, (result: any) => {
       if (result.data) {
         let participant = {
           displayName: this.helpers.capitalizeNames(result.data[0].value),
           email: result.data[1].value.toLowerCase(),
           created: Date.now(),
           status: 'active',
+          embedded: result.data[2] ? result.data[2].value : false,
         }
         this.firestore.createSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id , 'participants', participant).then(() => {
           this.trainerService.loadTrainingsAndParticipants(() => {
@@ -1822,13 +1858,17 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     event.stopPropagation()
   }
 
-  toggle(field:string){
+  toggle(field:string,event?:Event){
+    if(event){
+      event.stopPropagation()
+    }
     if(this.trainerService.trainingItem[field]){
       this.trainerService.trainingItem[field] = false
     }
     else{
       this.trainerService.trainingItem[field] = true
     }
+    console.log('toggle',field,this.trainerService.trainingItem[field])
     this.update(field,true)
   }
 
@@ -1844,7 +1884,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   changeItem(items: any, id: string, field: string, value: any,update?:boolean): boolean {
-    // console.log('changeItem',update, items, id, field, value)
+    console.log('changeItem',update, items, id, field, value)
     let itemChanged = false
     if(!items?.length&& this.trainerService.trainingItem.id != id){
       // console.log('No items to change')
@@ -2093,5 +2133,45 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     else{
       this.toast.show(this.translate.instant('error_messages.failure'), 4000, 'middle');
     }
+  }
+
+  fixIt(){
+    console.log(this.trainerService.trainingItem)
+    console.log(this.trainerService.trainingItem.items[2])
+    console.log(this.trainerService.cases)
+    for(let item of this.trainerService.trainingItem.items[2].items){
+      let caseItem = this.trainerService.cases.find((c:any) => c.id == item.id)
+      console.log(caseItem)
+      // this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id, caseItem)
+    }
+  }
+
+  publishElearning(){
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
+    }
+    this.toast.showLoader(this.translate.instant('trainings.publising_elearning'))
+    console.log('publishElearning',this.trainerService.breadCrumbs[0].item)
+    this.functions.httpsCallable('createElearning')({
+      trainingId: this.trainerService.breadCrumbs[0].item.id,
+      trainerId: this.nav.activeOrganisationId,
+    }).subscribe((res:any)=>{
+      console.log('createElearning',res)
+      if(res?.status == 200){
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings', this.trainerService.breadCrumbs[0].item.id,{status:'published',publishType:'elearning'}).then(()=>{
+          this.trainerService.loadTrainingsAndParticipants(()=>{
+            this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+            this.trainerService.breadCrumbs = []
+            this.filterWith('published')
+            this.toast.hideLoader();
+            this.toast.show(this.translate.instant('trainings.elearning_created'), 4000, 'middle');
+          })
+        })
+      }
+      else{
+        this.toast.hideLoader();
+        this.toast.show(this.translate.instant('error_messages.failure'), 4000, 'middle');
+      }
+  })
   }
 }

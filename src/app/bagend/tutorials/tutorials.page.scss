@@ -17,3 +17,19 @@
 .caseAvatar{
     border:solid 1px rgba(0,0,0,0.2);
 }
+
+.flowType{
+    font-weight: bold;
+    padding:5px 10px;
+    border-radius: 8px;
+}
+.flowType.mobile{
+    background-color: #e0f7fa;
+    color: #006064;
+    border: solid 1px #004d40;
+}
+.flowType.desktop{
+    background-color: #fce4ec;
+    color: #880e4f;
+    border: solid 1px #880e4f;
+}

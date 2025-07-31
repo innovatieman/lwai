@@ -82,16 +82,17 @@ export class ConversationService implements OnDestroy {
 
   async startConversation(caseItem:any){
     this.firstLoadMessages = false;
-    console.log(caseItem)
+    // console.log(JSON.parse(JSON.stringify(caseItem)))
+    caseItem.conversationType = caseItem.conversation || caseItem.conversationType;
     this.caseItem = caseItem
-    this.caseItem.conversationType = caseItem.conversation
+    // this.caseItem.conversationType = caseItem.conversation
     // userId, conversationId, categoryId, caseId, instructionType, attitude
     this.dialog_role = caseItem.role;
     this.waiting = true;
     let conversationId = ''
     let openingMessage = caseItem.openingMessage || ''
     this.tempTextUser = openingMessage
-    let steadFastness = caseItem.steadFastness || 0
+    let steadfastness = caseItem.steadfastness || 0
     let agentsSettings = caseItem.editable_by_user?.agents || {
       choices:true,
       facts:true,
@@ -99,11 +100,14 @@ export class ConversationService implements OnDestroy {
       undo:true,
     }
     let conversationObj:any = JSON.parse(JSON.stringify(caseItem))
+    // console.log(JSON.parse(JSON.stringify(conversationObj)))
+
     conversationObj.caseId = caseItem.id;
     conversationObj.timestamp = new Date().getTime();
     conversationObj.openingMessage = openingMessage;
-    conversationObj.steadFastness = steadFastness;
+    conversationObj.steadfastness = steadfastness;
     conversationObj.voiceId = caseItem.voiceId || '';
+    conversationObj.voice_on = caseItem.voice_on || false;
     conversationObj.extra_knowledge = caseItem.extra_knowledge || '';
     conversationObj.video_on = caseItem.video_on || (caseItem.avatarName?true:false);
     conversationObj.agentsSettings = agentsSettings;
@@ -127,7 +131,7 @@ export class ConversationService implements OnDestroy {
       };
     conversationObj.trainerId = caseItem.trainerId || '';
     conversationObj.trainingId = caseItem.trainingId || '';
-
+    // console.log(JSON.parse(JSON.stringify(conversationObj)))
     // let conversationObj:any = {
     //   caseId:caseItem.id,
     //   timestamp: new Date().getTime(),
@@ -271,7 +275,7 @@ export class ConversationService implements OnDestroy {
               trainingId: this.activeConversation.trainingId,
             },
             conversationId:conversationId,
-            categoryId:this.caseItem.conversation,
+            categoryId:this.caseItem.conversation || this.caseItem.conversationType,
             caseId:this.caseItem.id,
             instructionType:'reaction',
             attitude:this.caseItem.attitude,
@@ -468,6 +472,7 @@ export class ConversationService implements OnDestroy {
       trainerId: this.activeConversation.trainerId,
       trainingId: this.activeConversation.trainingId,
     }
+    obj.daysBetweenConversations = this.activeConversation.daysBetweenConversations || 0;
     console.log(obj)
     let url  = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGemini'
     if( this.activeConversation.conversation == 'expert' || this.activeConversation.conversationType == 'expert'){
@@ -562,8 +567,11 @@ export class ConversationService implements OnDestroy {
     this.getExtraInfo('feedback')
   }
 
+  audioVoice:HTMLAudioElement = new Audio();
+
   async openai_chat_voice(obj: any) {
     this.update.emit(true);
+    console.log(this.activeConversation.messages)
 
     if(!obj.voiceId){
       obj.voiceId = 'ARIOBKJtltx2F7r1TMzI'// 'AyQGttFzg1EY7EIKkpHs';
@@ -588,11 +596,11 @@ export class ConversationService implements OnDestroy {
     
 
     const reader = response.body.getReader();
-    const audio = new Audio(); // Gebruik een standaard HTML Audio-element
-    audio.autoplay = true;     // Start automatisch met afspelen zodra er data is
+    this.audioVoice = new Audio(); // Gebruik een standaard HTML Audio-element
+    this.audioVoice.autoplay = true;     // Start automatisch met afspelen zodra er data is
 
     const mediaSource = new MediaSource();
-    audio.src = URL.createObjectURL(mediaSource); // Koppel MediaSource aan audio-element
+    this.audioVoice.src = URL.createObjectURL(mediaSource); // Koppel MediaSource aan audio-element
 
     let sourceBuffer: SourceBuffer | null = null;
     let bufferPromise: Promise<void> = Promise.resolve(); // Zorgt voor sequentiële appendBuffer calls
@@ -677,7 +685,7 @@ export class ConversationService implements OnDestroy {
       }
     }, { once: true }); // Zorg dat sourceopen maar één keer wordt getriggerd
 
-    audio.addEventListener('ended', () => {
+    this.audioVoice.addEventListener('ended', () => {
       console.log('Audio is afgelopen, stop de animatie.');
       this.isSpeaking = false; // Zet de isSpeaking status op false, dit is waar je de animatie stopt
     });
@@ -686,14 +694,14 @@ export class ConversationService implements OnDestroy {
     mediaSource.addEventListener('sourceended', () => {
       console.log('MediaSource finished buffering.');
       // Ruim de object-URL op wanneer de MediaSource is afgesloten
-      URL.revokeObjectURL(audio.src);
+      URL.revokeObjectURL(this.audioVoice.src);
     });
 
     mediaSource.addEventListener('sourceclose', () => {
       console.log('MediaSource closed.');
     });
 
-    audio.addEventListener('error', (e) => {
+    this.audioVoice.addEventListener('error', (e:any) => {
       console.error('Audio element error:', e);
       this.update.emit(false); // Stop loading indicator bij een audiofout
     });
@@ -1319,6 +1327,37 @@ export class ConversationService implements OnDestroy {
     this.checkGoal('freeTest')
   }
 
+  closeConversationAfterGoal(){
+    if(!this.activeConversation.close_after_goals){
+      return
+    }
+    let check = true
+    console.log('accomplishments',this.activeConversation.accomplishments)
+    for(let key in this.activeConversation.close_after_goals){
+      if(!this.activeConversation.close_after_goals[key]){
+        continue;
+      }
+      if(!this.activeConversation.accomplishments || !this.activeConversation.accomplishments.includes(key)){
+        check = false
+      }
+    }
+
+    for(let i=0;i<this.activeConversation.close_after_goals.length;i++){
+      if(!this.activeConversation.accomplishments || (this.activeConversation.close_after_goals[i] && !this.activeConversation.accomplishments.includes(this.activeConversation.close_after_goals[i]))){
+        check = false
+      }
+    }
+    console.log('check all goals',check)
+    if(check){
+      // this.closeConversation(() => {
+        this.record.playSound('achievement');
+        console.log('All goals accomplished, closing conversation');
+        // this.update.emit(true);
+      // });
+    }
+  }
+
+
   completedGoal:any = {}
   async checkGoal(type:string){
     return;
@@ -1332,8 +1371,10 @@ export class ConversationService implements OnDestroy {
         }
         if(!this.activeConversation.accomplishments.includes('attitude')){
           this.completedGoal = {goal:'attitude',explanation:'Je hebt de gewenste houding bereikt.'}
-
+          this.activeConversation.accomplishments.push('attitude')
           this.record.playSound('achievement')
+          console.log('attitude goal accomplished')
+          this.closeConversationAfterGoal()
           this.updateAchievements.emit(true)
         }
       }
@@ -1862,8 +1903,9 @@ export class ConversationService implements OnDestroy {
         pdf.setFont('PlusJakartaSans','normal');
         pdf.setFontSize(12);
         y += 15;
+        console.log(msg)
         if(msg.feedbackCipher){
-          pdf.text(msg.feedbackCipher, x, y);
+          pdf.text(msg.feedbackCipher+'', x, y);
         }
 
         y += 30;

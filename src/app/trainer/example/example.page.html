@@ -80,8 +80,8 @@
                       <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="!modulesBreadCrumbs.length">{{exampleItem(type,id).title}}</ion-card-title>
                       <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].title}}</ion-card-title>
                       <ion-card-content>
-                          <div font-16 weight500 *ngIf="!modulesBreadCrumbs.length">{{exampleItem(type,id).user_info}}</div>
-                          <div font-16 weight500 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info}}</div>
+                        <div font-16 weight500 *ngIf="!modulesBreadCrumbs.length">{{exampleItem(type,id).user_info}}</div>
+                        <div font-16 weight500 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info}}</div>
                       </ion-card-content>
                   </ion-card>
               </ion-col>
@@ -115,7 +115,7 @@
 
                   <ion-col marginBottom [size]="helper.cardSizeSmall" *ngFor="let item of (modulesBreadCrumbs.length ? modulesBreadCrumbs[modulesBreadCrumbs.length-1].items : exampleItem(type,id).items); let i = index">
                       
-                    <ion-card noMargin noPadding pointer fullheight caseCard top10 *ngIf="item.type=='case'" (click)="showCaseInfo(exampleItem(item.type,item.id))">
+                    <ion-card noMargin noPadding pointer fullheight caseCard top10 *ngIf="item.type=='case'" (click)="showCaseInfo(exampleItem(item.type,item.id))">  
                           <ion-card-content noPadding fullHeight>
                             <div backgroundImage class="avatarImage" *ngIf="exampleItem(item.type,item.id).photo" [ngStyle]="{'background-image': 'url(' + exampleItem(item.type,item.id).photo + ')'}"></div>
                             <div backgroundImage class="avatarImage" *ngIf="!exampleItem(item.type,item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -169,8 +169,8 @@
 
                       <ion-card noPadding pointer fullheight caseCard *ngIf="item.type=='module'">
                           <ion-card-content noPadding fullHeight>
-                              <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
-                              <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                              <div backgroundImage class="avatarImage" *ngIf="exampleItem(item.type,item.id).photo" [ngStyle]="{'background-image': 'url(' + exampleItem(item.type,item.id).photo + ')'}"></div>
+                              <div backgroundImage class="avatarImage" *ngIf="!exampleItem(item.type,item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
                               <div *ngIf="item.trainer?.logo" class="videoAvatarBadge" borderRadius0>
                                   <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                               </div>
@@ -217,8 +217,8 @@
                       </ion-card-title>
                   </ion-card-header>
                   <div basicPadding>
-                      <div [innerHTML]="exampleItem(type,id).user_info" weight600 marginBottom  class="textContainer"></div>
-                      <div *ngIf="exampleItem(type,id).extra_photo&&!exampleItem(type,id).conversation" style="height:400px;" marginBottom>
+                      <div [innerHTML]="exampleItem(type,id).intro" weight600 marginBottom  class="textContainer"></div>
+                      <div *ngIf="exampleItem(type,id).extra_photo&&!exampleItem(type,id).conversation && exampleItem(type,id).type!='video'" style="height:400px;" marginBottom>
                         <img [src]="exampleItem(type,id).extra_photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
                       </div>
                       <div *ngIf="exampleItem(type,id).type=='video' && exampleItem(type,id).video_url">
@@ -248,9 +248,15 @@
                       </div>
                   </div>
                   <div basicPadding>
-                    <ion-button color=secondary fill="clear" (click)="backBreadCrumbs()">
-                      <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
-                      <span marginLeft>{{'buttons.back' | translate}}</span>
+                    
+                    <ion-button color=secondary fill="clear" (click)="backToEdit()" *ngIf="!latestBreadCrumbs.type">
+                        <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                        <span marginLeft>{{'buttons.back' | translate}}</span>
+                    </ion-button>
+
+                    <ion-button color=secondary fill="clear" (click)="backBreadCrumbs()" *ngIf="latestBreadCrumbs.type">
+                        <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                        <span marginLeft>{{'buttons.back' | translate}}</span>
                     </ion-button>
                   </div> 
               </ion-card>
@@ -295,11 +301,17 @@
                       </div>
                   </div>
                   <div basicPadding>
-                      <ion-button color=secondary fill="clear" (click)="backBreadCrumbs()">
-                          <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
-                          <span marginLeft>{{'buttons.back' | translate}}</span>
-                      </ion-button>
+                    <ion-button color=secondary fill="clear" (click)="backToEdit()" *ngIf="!latestBreadCrumbs.type">
+                        <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                        <span marginLeft>{{'buttons.back' | translate}}</span>
+                    </ion-button>
+
+                    <ion-button color=secondary fill="clear" (click)="backBreadCrumbs()" *ngIf="latestBreadCrumbs.type">
+                        <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                        <span marginLeft>{{'buttons.back' | translate}}</span>
+                    </ion-button>
                   </div> 
+
               </ion-card>
           </ng-container>
 

@@ -31,6 +31,7 @@ export class AuthService {
   courses$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Cursussen als Observable
   subscriptions$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Abonnementen als Observable
   private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
+  private organisationsLoaded = new BehaviorSubject<boolean>(false);
   activeCourses: any[] = [];
   organisationTrainings: any[] = [];
   allCourses: any[] = [];
@@ -45,6 +46,9 @@ export class AuthService {
   myOrganisationsList:any[] = []
   mySelectedOrganisation:any = {}
   isEmployee:boolean = false
+  gameProgress$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Game progress als Observable
+  gameProgressItems: any[] = []
+  gameProgressLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
   creditsChanged:EventEmitter<boolean> = new EventEmitter<boolean>();
   coursesLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
   employeeLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -96,6 +100,7 @@ export class AuthService {
         this.getActiveCourses(user)
         this.getVersion()
         this.getMyOrganisations(user)
+        this.loadGameProgress(user.uid);
 
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
@@ -153,8 +158,9 @@ export class AuthService {
           if(item.total){
             total += item.total
           }
-          if(item.type && item.type == 'unlimited-chat'){
-            this.credits_unlimited_type = item.type
+          if(item.amount == '1000000'){
+            this.credits_unlimited_type = 'unlimited-chat'//item.type
+            item.type = 'unlimited-chat'
           }
         })
         this.creditsList = this.creditsList.sort((a:any,b:any)=>{
@@ -671,12 +677,20 @@ export class AuthService {
   }
 
 
-  public loadOrganisations(userId: string) {
+  public loadOrganisations(userId: string,callback?:Function) {
     this.firestore
       .collection(`trainers/`).ref.where('admins', 'array-contains', userId)//.where('type','==','organisation')
       .get()
       .then((querySnapshot) => {
         this.organisations = []
+        if(querySnapshot.empty) {
+          this.organisations$.next(this.organisations); // Update de BehaviorSubject
+          this.organisationsLoaded.next(true);
+          if(callback){
+            callback(this.organisations)
+          }
+          return;
+        }
         querySnapshot.forEach((doc) => {
           let item:any = doc.data()
           item.id = doc.id
@@ -686,6 +700,7 @@ export class AuthService {
           return a.name.localeCompare(b.name)
         })
         this.organisations$.next(this.organisations); // Update de BehaviorSubject
+        this.organisationsLoaded.next(true);
         // console.log(this.organisations)
         if(this.organisations.length==1){
           this.nav.changeOrganisation(this.organisations[0].id)
@@ -700,6 +715,9 @@ export class AuthService {
         else if(!this.nav.activeOrganisationId && this.organisations.length){
           this.nav.changeOrganisation(this.organisations[0].id)
         }
+        if(callback){
+          callback(this.organisations)
+        }
         
 
       })
@@ -710,6 +728,25 @@ export class AuthService {
   //   return this.organisations.find((org:any) => org.id == id)
   // }
 
+  public loadGameProgress(userId: string) {
+      // query game progress
+      this.firestore
+        .collection(`users/${userId}/game_progress`)
+        .valueChanges({ idField: 'id' }) // Voeg het ID toe aan elk document
+        .subscribe((gameProgress) => {
+          this.gameProgressItems = gameProgress.map((item:any) => {
+            if(item?.progress && item?.progress.length){
+              item.progress = item.progress.sort((a:any,b:any)=>{
+                return a.order - b.order
+              })
+            }
+            return item
+          })
+          this.gameProgress$.next(gameProgress); // Update de BehaviorSubject
+          this.gameProgressLoaded.next(true);
+        });
+    }
+  
 
   public loadSubscriptions(userId: string) {
       // quesry subscriptions where status is active
@@ -723,7 +760,8 @@ export class AuthService {
     }
   
     areSubscriptionsLoaded(): Observable<boolean> {
-      return this.subscriptionsLoaded.asObservable();
+      console.log('subscriptions loaded',this.subscriptionsLoaded.value, this.organisationsLoaded.value)
+      return this.subscriptionsLoaded.asObservable() && this.organisationsLoaded.asObservable();
     }
     // Geef een Observable terug van de abonnementen
     getSubscriptions(): Observable<any[]> {
@@ -742,11 +780,37 @@ export class AuthService {
     }
   
     hasActive(type:string): Observable<boolean> {
+      if(type == 'trainer' && this.organisations.length){
+        return of(true)
+      }
+      if(type == 'trainerPro' && this.organisations.length && this.nav.activeOrganisationId){
+        for(let i=0;i<this.organisations.length;i++){
+          if(this.organisations[i].trainerPro && this.organisations[i].id == this.nav.activeOrganisationId){
+            return of(true)
+          }
+        }
+        return of(false)
+      }
+
+      // if(type == 'organisation' && this.organisations.length && this.nav.activeOrganisationId){
+      //   for(let i=0;i<this.organisations.length;i++){
+      //     if(this.organisations[i].id == this.nav.activeOrganisationId){
+      //       console.log('organisation',this.organisations[i])
+      //       for(let j=0;j<this.organisations[i].settings?.length;j++){
+      //         if(this.organisations[i].settings[j].type == 'organisation' && this.organisations[i].settings[j].status == 'active'){
+      //           return of(true)
+      //         }
+      //       }
+      //     }
+      //   }
+      //   return of(false)
+      // }
+
       return this.subscriptions$.pipe(
         map((subscriptions) =>
           subscriptions.some((sub) => sub.status === 'active' && sub.type === type)
         )
-      ) || this.organisations.length
+      );
     }
   
     async upgradeSubscription(type:string,paymentMethod:string,callback:Function){
@@ -1054,5 +1118,12 @@ export class AuthService {
       })
     }
 
+  getGameItemStatus(gameId:string, itemId:string): any {
+    const game = this.gameProgressItems.find((g:any) => g.module_id === gameId && g.item_id === itemId);
+    if (game) {
+      return game;
+    }
+    return {};
+  }
 
 }

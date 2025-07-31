@@ -198,6 +198,7 @@ export class InputFieldsPage implements OnInit {
         return
       }
       if(this.fields[i].type=='html'){
+        if(!this.fields[i].value){this.fields[i].value = ''}
         this.fields[i].value = this.fields[i].value
           .split('</ol><p><br></p><p>').join('</ol>')
           .split('</p><p><br></p><ol>').join('<ol>')
@@ -215,6 +216,7 @@ export class InputFieldsPage implements OnInit {
           this.toast.showLoader()
           await this.uploadFile(this.fileField,(response:any)=>{
             this.fields[i].value = response.result.url
+            this.fields[i].fileName = this.fileField.name
             this.toast.hideLoader()
             this.modalController.dismiss(this.fields)
             noWaiting = true
@@ -302,7 +304,7 @@ export class InputFieldsPage implements OnInit {
       if(infoItem){
         callableName = 'uploadInfoItemFiles';
       }
-      console.log(callableName)
+      // console.log(callableName)
       const result = await this.functions.httpsCallable(callableName)({
         fileData: base64Data,
         contentType: selectedFile.type,

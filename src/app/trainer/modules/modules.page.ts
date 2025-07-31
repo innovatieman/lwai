@@ -166,6 +166,9 @@ export class ModulesPage implements OnInit {
     if(!module.items){
       module.items = []
     }
+    if(!module.module_type){
+      module.module_type = 'free'
+    }
     existsingItemsLength = module.items.length
     for(let i=0;i<this.connectedCases.length;i++){
       let checkExists = module.items.filter((e:any) => {
@@ -720,6 +723,9 @@ shortMenu:any
         id:'modules',
       },
     ]
+    if(this.trainerService.moduleItem?.module_type=='game'){
+      options.pop()
+    }
 
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,

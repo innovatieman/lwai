@@ -43,6 +43,13 @@
                         <div font-20 weight700>{{'cases.new_case' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
                     </ion-item>
+
+                    <ion-item detail="false" lines="none" button (click)="importClick()" class="itemButton" *ngIf="!caseItem?.id" >
+                        <div font-20 weight700>{{'cases.import_case' | translate}}</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faFileImport')"></fa-icon>
+                    </ion-item>
+                    <input hidden #import_item type="file" accept=".alicialabs" (change)="selectImportFile($event)"/>
+                    
                     <ion-item detail="false" lines="none" button (click)="getBackups('cases','cases')" class="itemButton" *ngIf="!caseItem?.id">
                         <div font-20 weight700>{{'cases.load_backups' | translate}}</div>
                         <fa-icon font-24 slot="end" [icon]="icon.get('faCloudUploadAlt')"></fa-icon>
@@ -71,6 +78,22 @@
                       <div font-20 weight700>Bewerk uitgebreid</div>
                       <fa-icon font-24 slot="end" [icon]="icon.get('faPen')"></fa-icon>
                     </ion-item> -->
+
+                    <ion-item detail="false" lines="none" button (click)="copyCase()" class="itemButton" *ngIf="caseItem?.id" noMargin>
+                        <div font-20 weight700>{{'cases.copy_case' | translate}}</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
+                    </ion-item>
+
+                    <ion-item detail="false" [disabled]="caseNotReady()" lines="none" button (click)="practice()" class="itemButton" *ngIf="caseItem?.id" noMargin>
+                        <div font-20 weight700>{{'cases.practice' | translate}}</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faComments')"></fa-icon>
+                    </ion-item>
+
+                    <ion-item detail="false" lines="none" button (click)="exportItem(caseItem)" class="itemButton" *ngIf="caseItem?.id" noMargin >
+                        <div font-20 weight700>{{'cases.export_case' | translate}}</div>
+                        <fa-icon font-24 slot="end" [icon]="icon.get('faFileExport')"></fa-icon>
+                    </ion-item>
+
                     <ion-item detail="false" lines="none" button (click)="deleteCase()" class="itemButton" *ngIf="caseItem?.id">
                       <div font-20 weight700 text-danger>{{'cases.remove_case' | translate}}</div>
                       <fa-icon font-24 slot="end" text-danger [icon]="icon.get('faTrashAlt')"></fa-icon>
@@ -148,7 +171,7 @@
                     <div *ngIf="!caseItem?.id && view=='cards'" >
                         <ion-row>
                             <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
-                            <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of visibleCases">
+                            <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of visibleCases" (contextmenu)="onRightClick($event,caseItem)">
                                 <ion-card noPadding pointer fullheight>
                                     <ion-card-content noPadding fullHeight>
                                         <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
@@ -286,7 +309,7 @@
                                         <fa-icon slot="end" pointer titleIcon font-24 [icon]="icon.get('faGlobe')" (click)="startTranslation()"></fa-icon>
                                     </ion-item>
 
-                                    <ion-item detail="false" [disabled]="showBackups || (caseNotready() && !caseItem.open_to_user)" lines="none" listCard>
+                                    <ion-item detail="false" [disabled]="showBackups || (caseNotReady() && !caseItem.open_to_user)" lines="none" listCard>
                                         <ion-toggle color="primary" [(ngModel)]="caseItem.open_to_user" (ionChange)="update('open_to_user')">
                                             {{'cases.open_for_users' | translate}}
                                         </ion-toggle>

@@ -21,7 +21,7 @@ import {
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
   faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink, faDatabase,
-  faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift
+  faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift,faBookOpen
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -31,7 +31,7 @@ import {
 
 import {
   faLinkedin,faFacebook,faInstagram,faTwitter,faYoutube,faWhatsapp,faTiktok,
-  faTelegram,faSignalMessenger,faXTwitter,faVimeo
+  faTelegram,faSignalMessenger,faXTwitter,faVimeo,faGoogle,faApple,faAndroid
 } from '@fortawesome/free-brands-svg-icons'
 
 import { UserService } from './user.service';
@@ -57,6 +57,7 @@ export class IconsService {
     faBirthdayCake,
     faBolt,
     faBook,
+    faBookOpen,
     faBuilding,
     faBullseye,
     faCalendar,
@@ -122,6 +123,7 @@ export class IconsService {
     faGlasses,
     faGlobe,
     faGlobeEurope,
+    faGoogle,
     faGopuram,
     faGraduationCap,
     faGrinTongue,

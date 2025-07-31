@@ -24,4 +24,6 @@ export const config = {
   ipapi_api_key: process.env.IPAPI_API_KEY || '',
   elevenlabs_api_key: process.env.ELEVENLABS_API_KEY || '',
   hume_api_key:process.env.HUME_API_KEY || '',
+  google_ads_api_key: process.env.GOOGLE_ADS_API_KEY || '',
+  google_ads_client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET || '',
 };

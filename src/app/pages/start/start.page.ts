@@ -22,6 +22,7 @@ import * as moment from 'moment';
 import { ConversationService } from 'src/app/services/conversation.service';
 import { MenuPage } from 'src/app/components/menu/menu.page';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-start',
@@ -73,7 +74,8 @@ export class StartPage implements OnInit {
   filteredCases: any[] = [];
   visibleCases: any[] = [];
   maxCases: number = 15;
-
+  pathname: string = window.location.pathname.split('/').pop() || '';
+  subTab: string = '';
   
   constructor(
     public nav:NavService,
@@ -96,7 +98,8 @@ export class StartPage implements OnInit {
     public badges:BadgesService,
     private conversationService:ConversationService,
     private popoverController:PopoverController,
-    private selectMenuservice:SelectMenuService
+    private selectMenuservice:SelectMenuService,
+    private toast:ToastService,
   ) { }
 
   ngOnInit() {
@@ -123,12 +126,16 @@ export class StartPage implements OnInit {
         }, 2000);
       }
       setTimeout(() => {
-        console.log('trigger tutorial onload',location.pathname.substring(1))
+        let pathName = location.pathname.substring(1)
+        let pathNameArr = pathName.split('/')
+        if( pathNameArr.length > 2){
+          pathName = pathNameArr[0] + '/' + pathNameArr[1]
+        }
         if(this.media.smallDevice){
-          this.tutorial.triggerTutorial(location.pathname.substring(1),'onload_mobile')
+          this.tutorial.triggerTutorial(pathName,'onload_mobile')
         }
         else{
-          this.tutorial.triggerTutorial(location.pathname.substring(1),'onload')
+          this.tutorial.triggerTutorial(pathName,'onload')
         }
       }, 1000);
     });
@@ -152,6 +159,18 @@ export class StartPage implements OnInit {
     this.nav.changeLang.subscribe((res)=>{
         location.reload()
     })
+
+    this.nav.myOrganisationChange.subscribe((organisationId)=>{
+      if(!organisationId){
+        this.nav.go('start/my_organisation/');this.onFiltersChanged();this.selectedModule={}
+      }
+      else{
+        this.auth.mySelectedOrganisation = this.auth.organisationTrainings.find(org => org.id === organisationId);
+        localStorage.setItem('organisationTrainingId', this.auth.mySelectedOrganisation.id);
+        this.nav.go('start/my_organisation');this.onFiltersChanged();this.selectedModule={}
+      }
+    })
+
     let urlParams = new URLSearchParams(window.location.search);
     let searchTerm = urlParams.get('searchTerm');
     if(searchTerm){
@@ -164,6 +183,7 @@ export class StartPage implements OnInit {
   }
 
   ngAfterViewInit(){
+    this.subTab = ''
     this.updateVisibleCases();
     this.reloadMenu();
   }
@@ -474,6 +494,18 @@ export class StartPage implements OnInit {
     this.conversations$.forEach((e:any) => {
       for(let i = 0; i < e.length; i++){
         if(!e[i].closed){
+          conversations.push(e[i])
+        }
+      }
+    })
+    return conversations
+  }
+
+  get closedConversations():any{
+    let conversations:any[] = []
+    this.conversations$.forEach((e:any) => {
+      for(let i = 0; i < e.length; i++){
+        if(e[i].closed){
           conversations.push(e[i])
         }
       }
@@ -916,6 +948,25 @@ export class StartPage implements OnInit {
       return false
     }
 
+    nextItem(){
+      console.log('read info item',this.selectedModule)
+      if(this.selectedModule.module_type == 'game'){
+        console.log(this.auth.getGameItemStatus(this.selectedModule.id,this.trainingItem.id))
+        if(this.auth.getGameItemStatus(this.selectedModule.id,this.trainingItem.id).status != 'finished'){
+          this.firestore.createSub('users',this.auth.userInfo.uid,'game_progress',{
+            module_id:this.selectedModule.id,
+            item_id:this.trainingItem.id,
+            read:moment().unix(),
+            status:'finished'
+          })
+        }
+        else{
+          console.log('item already finished')
+        }
+      }
+      console.log('next item');
+    }
+
     itemAvailable(item:any){
       if(!item.available_date && !item.available_till){
         return true
@@ -984,4 +1035,103 @@ export class StartPage implements OnInit {
       })
     }
     
+
+    deleteConversation(event:any,conversation:any){
+      event.stopPropagation()
+      this.modalService.showConfirmation(this.translate.instant('page_account.delete_cases_confirm')).then((response)=>{
+        if(response){
+          this.firestore.deleteSub('users',this.auth.userInfo.uid, 'conversations',conversation.conversationId).then(()=>{
+            this.toast.show(this.translate.instant('messages.deleted'))
+          })
+        }
+      })
+    }
+
+    openClosedConversation(conversation:any,event?:any){
+      if(event){
+        event.stopPropagation()
+      }
+      localStorage.setItem('continueConversation',"true")
+      localStorage.setItem('conversation',JSON.stringify(conversation))
+      this.conversationService.originUrl = location.pathname.substring(1);
+      this.nav.go('conversation/'+conversation.caseId)
+    }
+
+
+    nextConversation(conversation:any,event?:any){
+      if(event){
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      // console.log('next conversation',conversation)
+      // console.log(this.cases.all)
+      let caseItem:any = JSON.parse(JSON.stringify(conversation))
+      caseItem.previousConversationId = conversation.conversationId
+      delete caseItem.conversationId
+      delete caseItem.rating
+      delete caseItem.timestamp
+      delete caseItem.closed
+      delete caseItem.trainerId
+      delete caseItem.trainer_id
+      delete caseItem.trainingId
+      delete caseItem.training_id
+      let newTitle = caseItem.title
+      let caseTitleArr = newTitle.split(' ')
+      let nr = 2
+      try{
+        nr = parseInt(caseTitleArr[caseTitleArr.length-1])
+        if(isNaN(nr)){
+          nr = 2
+          caseItem.title = newTitle + ' ' + (nr+'')
+        }
+        else{
+          nr++
+          caseItem.title = caseTitleArr.slice(0, -1).join(' ') + ' ' + (nr+'')
+        }
+      }catch(e){
+        nr = 2
+        caseItem.title = newTitle + ' ' + (nr+'')
+      }
+
+      if(caseItem.translation){
+        caseItem.role = caseItem.translation.role
+        if(caseItem.translation.free_question){
+          caseItem.free_question = caseItem.translation.free_question
+        }
+        if(caseItem.translation.free_question2){
+          caseItem.free_question2 = caseItem.translation.free_question2
+        }
+        if(caseItem.translation.free_question3){
+          caseItem.free_question3 = caseItem.translation.free_question3
+        }
+        if(caseItem.translation.free_question4){
+          caseItem.free_question4 = caseItem.translation.free_question4
+        }  
+      }
+
+      let id = caseItem.caseId || caseItem.id;
+      if(!caseItem.steadfastness){
+        console.log(id)
+        if(id){
+          let findCase = this.cases.all.find((c:any) => c.id === id);
+          console.log('find case',findCase)
+          if(findCase && findCase.steadfastness){
+            caseItem.steadfastness = findCase.steadfastness;
+          }
+        }
+      }
+      if(!caseItem.steadfastness){
+        caseItem.steadfastness = 80
+      }
+      caseItem.id = id
+      this.modalService.showConversationStart(caseItem).then((res:any)=>{
+        console.log(res)
+        if(res){
+          localStorage.setItem('activatedCase',res.id)
+          localStorage.setItem('personalCase',JSON.stringify(res))
+          this.nav.go('conversation/'+res.id)
+        }
+      })
+    
+    }
   }

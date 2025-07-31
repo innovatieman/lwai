@@ -5,6 +5,7 @@ import { FirestoreService } from 'src/app/services/firestore.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { NavService } from 'src/app/services/nav.service';
 import { ToastService } from 'src/app/services/toast.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-create-trainer',
@@ -83,7 +84,7 @@ export class CreateTrainerPage implements OnInit {
       if(res && res.id){
         if(isTrainer){
           this.firestore.setSub('trainers', res.id, 'settings', 'trainer',{
-            expires: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+            expires: moment().add(1, 'year').unix(), // 1 year from now
             active:true,
             trainerPro,
             max_admins,
@@ -92,7 +93,7 @@ export class CreateTrainerPage implements OnInit {
         }
         if(isOrganisation){
           this.firestore.setSub('trainers', res.id, 'settings', 'organisation',{
-            expires: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+            expires: moment().add(1, 'year').unix(), // 1 year from now
             active:true,
             max_employees,
           })

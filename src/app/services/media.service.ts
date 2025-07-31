@@ -111,22 +111,21 @@ export class MediaService {
     }
  }
 
-  async selectAvatar(event:Event,callback:Function,withGeneration?:boolean,withoutSelection?:boolean,location?:string){
+  async selectAvatar(event:Event,callback:Function,withGeneration?:boolean,withoutSelection?:boolean,location?:string,ratio?:string) {
     this.selectMenuservice.selectedItem = null
     let list = [
-      {title:'Upload foto',icon:'faCloudUploadAlt',action:'upload'},
-      {title:'Maak een foto',icon:'faCameraRetro',action:'camera'},
-      {title:'Selecteer uit bibliotheek',icon:'faImage',action:'library'},
-      {title:'Verwijder foto',icon:'faTrashAlt',action:'delete'},
-      
+      {title:this.translate.instant('media.photo_upload') + (ratio ? ' ' + this.translate.instant('media.photo_ratio_'+ratio) : ''),icon:'faCloudUploadAlt',action:'upload'},
+      {title:this.translate.instant('media.photo_take'),icon:'faCameraRetro',action:'camera'},
+      {title:this.translate.instant('media.photo_library'),icon:'faImage',action:'library'},
+      {title:this.translate.instant('media.photo_delete'),icon:'faTrashAlt',action:'delete'},
     ]
     if(withoutSelection){
       list.splice(2,1)
     }
     if(withGeneration){
-      list.push({title:'Genereer avatar',icon:'faUserNinja',action:'generate'})
+      list.push({title:this.translate.instant('media.photo_generate'),icon:'faUserNinja',action:'generate'})
     }
-    list.push({title:'Download foto',icon:'faDownload',action:'download'})
+    list.push({title:this.translate.instant('media.photo_download'),icon:'faDownload',action:'download'})
 
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
@@ -153,7 +152,6 @@ export class MediaService {
         case 'camera':
           const photoData = await this.takePhoto();
           if (photoData) {
-            console.log('Foto genomen:', photoData);
             this.uploadPhoto(photoData,callback);
           }
           break;

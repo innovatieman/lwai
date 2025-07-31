@@ -1,13 +1,13 @@
 <div class="menuMobileContainer">
   <div class="overlayMobileMenu" (click)="closeMenu($event)" [ngStyle]="{'opacity':menuOpen ? 0.3 : 0,'pointer-events' : menuOpen ? 'initial' : 'none'}"></div>
-  <div id="menuMobileInnerContainer" class="menuMobileInnerContainer" [ngStyle]="{'height':heightMenu,'align-items': subMenu ? 'flex-end' : 'flex-start','overflow': menuOpen ? 'auto' : 'hidden'}" flex flex-column>
-    <ion-card [id]="first ? 'btn_menu_mobile' : ''" flex center-ver pointer borderRadius24 basicPadding [ngStyle]="{'margin-top':first ? '10px' : '0px','box-shadow': menuOpen ? '0 0 10px 3px rgba(0, 0, 0, 0.3)' : 'none','margin-left': item.indent ? item.indent + 'px' : '10px'}" *ngFor="let item of selectedMenu;let first = first" center class="notActiveItem menuItemMobile" (click)="handleClick(first, item, $event)">
-        <ion-card-title *ngIf="!subMenu" font-18 weight700>
+  <div id="menuMobileInnerContainer" class="menuMobileInnerContainer" [ngStyle]="{'height':heightMenu,'align-items': subMenu ? 'flex-end' : 'flex-start','overflow': menuOpen ? 'auto' : 'hidden','pointer-events': menuOpen ? 'all' : 'none'}" flex flex-column>
+    <ion-card style="--background:white;" [id]="first ? 'btn_menu_mobile_'+pathname : ''" flex center-ver pointer borderRadius24 basicPadding [ngStyle]="{'margin-top':first ? '10px' : '0px','box-shadow': menuOpen ? '0 0 10px 3px rgba(0, 0, 0, 0.3)' : 'none','margin-left': item.indent ? item.indent + 'px' : '10px'}" *ngFor="let item of selectedMenu;let first = first" center class="notActiveItem menuItemMobile" (click)="handleClick(first, item, $event)">
+        <ion-card-title style="--color: var(--ion-color-secondary);" *ngIf="!subMenu" font-18 weight700>
             <fa-icon [icon]="icon.get(item.icon)"></fa-icon>
             <span marginLeft>{{item.title}}</span>    
         </ion-card-title>
-        <ion-card-title *ngIf="subMenu" font-18 weight700>
-          <span>{{item.title}}</span>    
+        <ion-card-title style="--color: var(--ion-color-secondary);" *ngIf="subMenu" font-18 weight700>
+          <span>{{item.title}}</span>
           <fa-icon marginLeft [icon]="icon.get(item.icon)"></fa-icon>
         </ion-card-title>
     </ion-card>

@@ -1,0 +1,26 @@
+<app-header page="admin"></app-header>
+<main>
+  <ion-row *ngIf="media.smallDevice" style="height:52px;">
+      <app-menu-mobile></app-menu-mobile>
+    </ion-row>
+    <ion-row>
+      <ion-col *ngIf="!media.smallDevice" [size]="media.smallDevice ? 0 : 3" class="selectColumn" style="padding-top:15px;">
+
+        <ion-button color="secondary" fill="outline" (click)="createCampaign()">
+          Create Google Ads Campaign
+        </ion-button>
+
+
+        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':projectId=='google-ads','notActiveItem':projectId!='google-ads'}" >
+
+          <ion-item detail="false" lines="none" button (click)="nav.go('bagend/ai-organisation/google-ads')" class="itemButton" [detail]="false">
+            <div font-20 weight700>Google Ads</div>
+            <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faGoogle')"></fa-icon>
+          </ion-item>
+
+        </div>
+
+      </ion-col>
+    </ion-row>
+ 
+</main>

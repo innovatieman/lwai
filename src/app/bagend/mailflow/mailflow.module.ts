@@ -10,6 +10,7 @@ import { MailflowPage } from './mailflow.page';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { PipesModule } from 'src/app/pipes/pipes.module';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     MailflowPageRoutingModule,
     ComponentsModule,
     TranslateModule.forChild(),
-    FontAwesomeModule
+    FontAwesomeModule,
+    PipesModule
   ],
   declarations: [MailflowPage]
 })

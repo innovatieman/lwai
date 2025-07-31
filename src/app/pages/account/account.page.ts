@@ -20,6 +20,8 @@ import { CountriesService } from 'src/app/services/countries.service';
 import { LevelsService } from 'src/app/services/levels.service';
 import { AccountService } from 'src/app/services/account.service';
 import { ConversationService } from 'src/app/services/conversation.service';
+import { TrainerService } from 'src/app/services/trainer.service';
+import { Subscription, take } from 'rxjs';
 
 
 @Component({
@@ -46,7 +48,8 @@ export class AccountPage implements OnInit {
   subscriptionsStripe: any;
   db: any;
   isTrainer: boolean = false;
-  // isTrainerPro: boolean = false;
+  isTrainerPro: boolean = false;
+  isOrganisation: boolean = false;
   
   // isAdmin: boolean = false;
   menuItems:any=[
@@ -80,7 +83,8 @@ export class AccountPage implements OnInit {
     public countries:CountriesService,
     public levelService:LevelsService,
     public accountService:AccountService,
-    private conversationService:ConversationService
+    private conversationService:ConversationService,
+    public trainerService:TrainerService
   ) { }
 
   ngOnInit() {
@@ -88,10 +92,20 @@ export class AccountPage implements OnInit {
     // this.auth.isAdmin().subscribe((admin) => {
     //   this.isAdmin = admin;
     // });
-
     this.auth.hasActive('trainer').subscribe((trainer)=>{
       this.isTrainer = trainer
     })
+    this.auth.hasActive('trainerPro').subscribe((trainerPro)=>{
+      this.isTrainerPro = trainerPro
+    })
+    setTimeout(() => {
+      this.auth.hasActive('trainer').subscribe((trainer)=>{
+        this.isTrainer = trainer
+      })
+      this.auth.hasActive('trainerPro').subscribe((trainerPro)=>{
+        this.isTrainerPro = trainerPro
+      })
+    }, 2000);
     
     this.route.params.subscribe(params=>{
       if(params['tab']){
@@ -131,8 +145,44 @@ export class AccountPage implements OnInit {
     });
 
     // this.fetchProducts()
-    this.fetchSubscriptionsStripe()
+    // this.fetchSubscriptionsStripe()
 
+  }
+
+  ionViewDidEnter() {
+    this.auth.hasActive('trainer').pipe(
+      take(1)
+    ).subscribe((trainer) => {
+      this.isTrainer = trainer
+    })
+    this.auth.hasActive('trainerPro').pipe(
+      take(1)
+    ).subscribe((trainerPro) => {
+      this.isTrainerPro = trainerPro
+    })
+    // this.auth.hasActive('organisation').pipe(
+    //   take(1)
+    // ).subscribe((organisation) => {
+    //   this.isOrganisation = organisation
+    // });
+
+    setTimeout(() => {
+      this.auth.hasActive('trainer').pipe(
+        take(1)
+      ).subscribe((trainer) => {
+        this.isTrainer = trainer
+      })
+      this.auth.hasActive('trainerPro').pipe(
+        take(1)
+      ).subscribe((trainerPro) => {
+        this.isTrainerPro = trainerPro
+      })
+      // this.auth.hasActive('organisation').pipe(
+      //   take(1)
+      // ).subscribe((organisation) => {
+      //   this.isOrganisation = organisation
+      // });
+    }, 2000);
   }
 
 
@@ -152,57 +202,8 @@ export class AccountPage implements OnInit {
 
   }
 
-  // async fetchProducts() {
-  //   this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
-  //     this.products = products.map((product:any)=>{
-  //       let item = {
-  //         id: product.payload.doc.id,
-  //         credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
-  //         conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
-  //         title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
-  //         ...product.payload.doc.data()
-  //       }
-  //       //get subcollection prices
-  //       this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
-  //         item.prices = prices.map((price:any)=>{
-  //           return {
-  //             id: price.payload.doc.id,
-  //             ...price.payload.doc.data()
-  //           }
-  //         })
-  //       })
-  //       return item
-  //     })
-  //     console.log(this.products)
-  //   })
-  // }
 
-  // async fetchProducts_unlimited() {
-  //   this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
-  //     this.products = products.map((product:any)=>{
-  //       let item = {
-  //         id: product.payload.doc.id,
-  //         credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
-  //         conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
-  //         title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
-  //         ...product.payload.doc.data()
-  //       }
-  //       //get subcollection prices
-  //       this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
-  //         item.prices = prices.map((price:any)=>{
-  //           return {
-  //             id: price.payload.doc.id,
-  //             ...price.payload.doc.data()
-  //           }
-  //         })
-  //       })
-  //       return item
-  //     })
-  //     console.log(this.products)
-  //   })
-  // }
-
-  async buy(item: any) {
+  async buy(item: any,metadata?: any) {
     const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
@@ -231,16 +232,18 @@ export class AccountPage implements OnInit {
       this.toast.show('Error creating customer');
       return;
     }
-  
+    if(!metadata){
+      metadata = {
+        userId: user.uid
+      };
+    }
     let checkoutSessionData: any = {
       price: item.prices[0].id,
       success_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
       cancel_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/error' : '/account/credits/error'),
       automatic_tax: { enabled: true },
       allow_promotion_codes: true,
-      metadata: {
-        userId: user.uid
-      },
+      metadata: metadata,
       customer: stripeId
     };
   
@@ -283,29 +286,29 @@ export class AccountPage implements OnInit {
   }
 
 
-  async fetchSubscriptionsStripe() {
-    this.firestoreService.queryDouble('products','metadata.type','subscription','==','active',true,'==').subscribe((products:any)=>{
-      this.subscriptionsStripe = products.map((product:any)=>{
-        let item = {
-          id: product.payload.doc.id,
-          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
-          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
-          ...product.payload.doc.data()
-        }
-        //get subcollection prices
-        this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
-          item.prices = prices.map((price:any)=>{
-            return {
-              id: price.payload.doc.id,
-              ...price.payload.doc.data()
-            }
-          })
-        })
-        return item
-      })
-      // console.log(this.subscriptionsStripe)
-    })
-  }
+  // async fetchSubscriptionsStripe() {
+  //   this.firestoreService.queryDouble('products','metadata.type','subscription','==','active',true,'==').subscribe((products:any)=>{
+  //     this.subscriptionsStripe = products.map((product:any)=>{
+  //       let item = {
+  //         id: product.payload.doc.id,
+  //         credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+  //         title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
+  //         ...product.payload.doc.data()
+  //       }
+  //       //get subcollection prices
+  //       this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+  //         item.prices = prices.map((price:any)=>{
+  //           return {
+  //             id: price.payload.doc.id,
+  //             ...price.payload.doc.data()
+  //           }
+  //         })
+  //       })
+  //       return item
+  //     })
+  //     // console.log(this.subscriptionsStripe)
+  //   })
+  // }
 
   updateAccount(){
     if(this.accountService.account.displayName){
@@ -539,7 +542,7 @@ export class AccountPage implements OnInit {
     let item = {
       title: product.credits +' '+ this.translate.instant('page_account.credits'),
       user_info: `<div style="line-height:30px">
-        Goed voor ${product.conversations} goede gesprekken<br>
+        Goed voor ${product.conversations ? product.conversations : 'een onbeperkt aantal'} goede gesprekken<br>
         Selecteer uit alle onderwerpen<br>
         Geldig voor 1 jaar<br>
         Persoonlijk dashboard
@@ -576,17 +579,6 @@ export class AccountPage implements OnInit {
       }
     })
   }
-
-  showTrainerDetails:boolean = false
-  registerAsTrainer(){
-
-  }
-
-  registerAsTrainerPro(){
-
-  }
-
-  registerAsTrainerEnterprise(){
-
-  }
+  
+  
 }

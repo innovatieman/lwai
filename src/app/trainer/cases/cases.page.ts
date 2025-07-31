@@ -228,7 +228,8 @@ export class CasesPage implements OnInit {
 
   addCase(){
     this.toast.showLoader()
-    let casus = this.trainerService.defaultCase()
+    let casus:any = this.trainerService.defaultCase()
+    casus.trainer_id = this.nav.activeOrganisationId
     this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',casus).then(()=>{
       this.trainerService.loadCases(()=>{
         let item = this.trainerService.cases.filter((e:any) => {
@@ -621,7 +622,7 @@ export class CasesPage implements OnInit {
       else if(res=='download'){
         this.nav.goto(this.trainerService.caseItem.photo,true)
       }
-    },true)
+    },true, false, '', 'avatar');
   }
 
 
@@ -1078,6 +1079,7 @@ export class CasesPage implements OnInit {
         newItem.attitude = fileData.attitude || 1;
         newItem.steadfastness = fileData.steadfastness || 50;
         newItem.casus = fileData.casus || '';
+        newItem.trainer_id = this.nav.activeOrganisationId;
         newItem.goalsItems = fileData.goalsItems || {
           phases: [],
           free: '',
@@ -1113,6 +1115,13 @@ export class CasesPage implements OnInit {
             facts: true,
             background: true,
             undo: true,
+          },
+           hide:{
+            attitude:false,
+            phases:false,
+            feedback:false,
+            feedbackCipher: false,
+            goal: false,
           }
         };
       

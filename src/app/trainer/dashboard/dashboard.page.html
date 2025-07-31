@@ -5,27 +5,27 @@
           <div style="max-width: 1350px;width:100%;padding:5px 15px 0px 15px">
               <ion-row >
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton isActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/dashboard')">
+                  <ion-card id="menu_account" pointer center class="topButton isActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/dashboard')">
                       <ion-card-title>{{'dashboard.organisation' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/cases')">
+                  <ion-card id="menu_cases" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/cases')">
                       <ion-card-title>{{'standards.cases' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/info-items')">
+                  <ion-card id="menu_info_items" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/info-items')">
                       <ion-card-title>{{'buttons.knowledge' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/modules')">
+                  <ion-card id="menu_modules" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/modules')">
                       <ion-card-title>{{'standards.modules' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
                 <ion-col size="2" noPadding>
-                  <ion-card pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/trainings')">
+                  <ion-card id="menu_trainings" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/trainings')">
                       <ion-card-title>{{'standards.trainings' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
@@ -106,8 +106,19 @@
             </ion-item>
           </div>
 
+          <div marginTop style="padding:10px 0px;border-radius:16px;margin-bottom:15px" [ngStyle]="{'outline': isTrainer && isTrainerPro ? 'none' : 'solid 2px var(--ion-color-primary)'}" class="notActiveItem" [ngClass]="{'activeItem':showPart=='become_trainer','notActiveItem':showPart!='become_trainer'}">
+
+            <ion-item detail="false" lines="none" button (click)="showPart = 'become_trainer'" class="itemButton" [detail]="false">
+              <div font-20 weight700 *ngIf="!isTrainer">{{'page_account.become_trainer' | translate}}</div>
+              <div font-20 weight700 *ngIf="isTrainer&&!isTrainerPro">{{'page_account.become_trainer_pro' | translate}}</div>
+              <div font-20 weight700 *ngIf="isTrainer&&isTrainerPro">{{'page_account.is_trainer_pro' | translate}}</div>
+              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faGraduationCap')"></fa-icon>
+            </ion-item>
+  
+          </div>
+
         </ion-col>
-        <ion-col [size]="media.smallDevice ? 12 : 9" class="selectColumn">
+        <ion-col [size]="media.smallDevice ? 12 : 9" class="selectColumn detailColumn">
           
           <ion-card basicPadding borderRadius24 borderPrimary *ngIf="showPart=='settings'">
             <ion-card-header>
@@ -141,49 +152,51 @@
           </ion-card>
 
           <div *ngIf="showPart=='settings'">
-            <ion-card basicPadding borderRadius24 borderPrimary *ngFor="let setting of trainerService.trainerInfo.settings">
-              <ion-card-header>
-                <ion-card-title flex center-ver>
-                    <span weight600 titleIcon>{{'dashboard.setting_'+setting.id | translate}}</span>
-                    <span class="spacer"></span>
-                    <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('dashboard_trainer_info','dashboard.organisation',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
-                </ion-card-title>
-              </ion-card-header>
-              <ion-card-content *ngIf="setting.id=='organisation'">
-
-                <ion-card marginBottom basicPadding borderPrimary>
+            <div *ngFor="let setting of trainerService.trainerInfo.settings">
+              <ion-card basicPadding borderRadius24 borderPrimary *ngIf="setting.active" >
+                <ion-card-header>
                   <ion-card-title flex center-ver>
-                    <span weight600 font-16>{{'dashboard.amount_employees' | translate}}</span>
-                    <span class="spacer"></span>
-                    <span weight600 font-16 lowercase>{{trainerService.trainerInfo?.employees?.length || 0}} / {{setting.max_employees}}</span>
+                      <span weight600 titleIcon>{{'dashboard.setting_'+setting.id | translate}}</span>
+                      <span class="spacer"></span>
+                      <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('dashboard_trainer_info','dashboard.organisation',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
                   </ion-card-title>
-                </ion-card>
-
-                <div flex center-ver>
-                  <div class="spacer"></div>
-                  <ion-button class="saveButton" (click)="request_amount_employees('employees')">{{'dashboard.request_title' | translate}}</ion-button>
-                </div>
+                </ion-card-header>
+                <ion-card-content *ngIf="setting.id=='organisation'">
   
-              </ion-card-content>
-
-              <ion-card-content *ngIf="setting.id=='trainer'">
-
-                <ion-card marginBottom basicPadding borderPrimary>
-                  <ion-card-title flex center-ver>
-                    <span weight600 font-16>{{'dashboard.max_admins' | translate}}</span>
-                    <span class="spacer"></span>
-                    <span weight600 font-16 lowercase>{{trainerService.trainerInfo?.admins?.length || 1}} / {{setting.max_admins}}</span>
-                  </ion-card-title>
-                </ion-card>
-
-                <div flex center-ver>
-                  <div class="spacer"></div>
-                  <ion-button class="saveButton" (click)="request_amount_employees('admins')">{{'dashboard.request_title' | translate}}</ion-button>
-                </div>
+                  <ion-card marginBottom basicPadding borderPrimary>
+                    <ion-card-title flex center-ver>
+                      <span weight600 font-16>{{'dashboard.amount_employees' | translate}}</span>
+                      <span class="spacer"></span>
+                      <span weight600 font-16 lowercase>{{trainerService.trainerInfo?.employees?.length || 0}} / {{setting.max_employees}}</span>
+                    </ion-card-title>
+                  </ion-card>
   
-              </ion-card-content>
-
-            </ion-card>
+                  <div flex center-ver>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton" (click)="request_amount_employees('employees')">{{'dashboard.request_title' | translate}}</ion-button>
+                  </div>
+    
+                </ion-card-content>
+  
+                <ion-card-content *ngIf="setting.id=='trainer'">
+  
+                  <ion-card marginBottom basicPadding borderPrimary>
+                    <ion-card-title flex center-ver>
+                      <span weight600 font-16>{{'dashboard.max_admins' | translate}}</span>
+                      <span class="spacer"></span>
+                      <span weight600 font-16 lowercase>{{trainerService.trainerInfo?.admins?.length || 1}} / {{setting.max_admins}}</span>
+                    </ion-card-title>
+                  </ion-card>
+  
+                  <div flex center-ver>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton" (click)="request_amount_employees('admins')">{{'dashboard.request_title' | translate}}</ion-button>
+                  </div>
+    
+                </ion-card-content>
+  
+              </ion-card>
+            </div>
           </div>
 
           <!-- <ion-card basicPadding *ngIf="showPart=='settings'">
@@ -341,7 +354,7 @@
                 <div font-20 marginLeft text-primary marginBottom uppercase weight600>{{'dashboard.add_admin' | translate}}</div>
                 <ion-item detail="false" lines="none" listCard marginBottom>
                   <ion-label position="stacked">{{'dashboard.email_admin' | translate}}</ion-label>
-                  <ion-input type="email" [(ngModel)]="newAdminEmail" (keyup.enter)="searchAdmin()"></ion-input>
+                  <ion-input type="email" inputmode="email" [(ngModel)]="newAdminEmail" (keyup.enter)="searchAdmin()"></ion-input>
                   <ion-button [disabled]="invalidEmail(newAdminEmail)" slot="end" style="min-height:36px!important;top:10px" relative fill="solid" color="primary" class="saveButton" (click)="searchAdmin()">
                     {{'buttons.search' | translate}}
                     <ion-spinner margin-left slot="end" *ngIf="searchingAdmin" class="spinnerIcon" name="dots"></ion-spinner>
@@ -427,17 +440,1079 @@
                 <ion-card-title flex center-ver>
                   <span marginLeft weight600>{{item.title}}</span>
                   <span class="spacer"></span>
+                  <fa-icon pointer titleIcon font-24 (click)="addBook(item)" [icon]="icon.get('faPlus')"></fa-icon>
                   <fa-icon pointer titleIcon font-24 (click)="editBook(item)" [icon]="icon.get('faPen')"></fa-icon>
                   <fa-icon pointer titleIcon trash font-24 (click)="deleteBook(item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
                 </ion-card-title>
                 <ion-card-content>
                   <div font-14 [innerHTML]="item.summary"></div>
+                  <div *ngIf="item.documents && item.documents.length > 0">
+                    <ion-card marginTop basicPadding borderPrimary *ngFor="let doc of item.documents">
+                      <ion-card-title flex center-ver>
+                        <span weight600>{{doc.fileName}}</span>
+                        <div class="spacer"></div>
+                        <fa-icon pointer titleIcon font-24 (click)="nav.goto('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/' + doc.filePath,true)" [icon]="icon.get('faEye')"></fa-icon>
+                        <fa-icon pointer titleIcon font-24 trash *ngIf="item.documents?.length>1" (click)="deleteExpertDocument(doc, item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
+                      </ion-card-title>
+                    </ion-card>
+                  </div>
                 </ion-card-content>
               </ion-card>
             </ion-card-content>
 
           </ion-card>
 
+           <ion-card basicPadding *ngIf="showPart=='become_trainer'">
+            <ion-card-header>
+              <ion-card-title>{{'page_account.become_trainer' | translate}}</ion-card-title>
+              <div font-16 weight400>{{'page_account.become_trainer_text' | translate}}</div>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-row>
+                <ion-col [size]="12" *ngIf="isTrainer">
+                  <ion-card basicPadding class="caseItem" *ngFor="let setting of trainerService.trainerInfo.settings">
+                    <ion-card-header>
+                      <ion-card-title>{{'page_account.current_trainer_subscription' | translate}} - {{trainerService.trainerInfo.name}}</ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content style="padding-bottom:0px;">
+                      <div *ngIf="!setting.trainerPro&&setting.id!='organisation'" font-18 weight700>Trainer Basic</div>
+                      <div>
+                        <div font-16 weight400 *ngIf="setting.id=='trainer'">
+                          <div *ngIf="isTrainerPro" font-18 weight700>Trainer Pro</div>
+                          <div *ngIf="isTrainerPro" font-16 weight400>
+                            <span *ngIf="setting.autorenew">{{'page_account.auto_renews_on' | translate}}:</span>
+                            <span *ngIf="!setting.autorenew">{{'page_account.expires' | translate}}:</span>
+                            <span marginLeft weight600>{{helper.showLocalDate(setting.expires,'',0,true)}}</span>
+                          </div>
+                          <div flex center-ver>
+                            <div class="spacer"></div>
+                            <ion-button class="saveButton" fill="clear" size="small" style="opacity:0.6" color="medium" *ngIf="isTrainerPro&&setting.autorenew" (click)="trainerService.autoRenewal(false)">{{'page_account.cancel_subscription' | translate}}</ion-button>
+                            <ion-button class="saveButton" fill="solid" size="small" *ngIf="isTrainerPro&&!setting.autorenew" (click)="trainerService.autoRenewal(true)">{{'page_account.renew_subscription' | translate}}</ion-button>
+                            <ion-button class="saveButton" fill="solid" size="small" *ngIf="!isTrainerPro" (click)="trainerService.registerAsTrainerPro()">{{'page_account.upgrade_to_pro' | translate}}</ion-button>
+                          </div>
+                        </div>
+
+                        <div font-16 weight400 *ngIf="setting.id=='organisation'">
+                          <div *ngIf="trainerService.getTrainerSettings('organisation').active" font-18 weight700>{{'dashboard.organisation' | translate}}</div>
+                          <div *ngIf="trainerService.getTrainerSettings('organisation').active" font-16 weight400>
+                            <span *ngIf="setting.autorenew">{{'page_account.auto_renews_on' | translate}}:</span>
+                            <span *ngIf="!setting.autorenew">{{'page_account.expires' | translate}}:</span>
+                            <span marginLeft weight600>{{helper.showLocalDate(setting.expires,'',0,true)}}</span>
+                          </div>
+                          <div flex center-ver>
+                            <div class="spacer"></div>
+                            <ion-button class="saveButton" fill="clear" size="small" style="opacity:0.6" color="medium" *ngIf="trainerService.getTrainerSettings('organisation').active&&setting.autorenew" (click)="trainerService.autoRenewal(false, setting.id)">{{'page_account.cancel_subscription' | translate}}</ion-button>
+                            <ion-button class="saveButton" fill="solid" size="small" *ngIf="trainerService.getTrainerSettings('organisation').active&&!setting.autorenew" (click)="trainerService.autoRenewal(true, setting.id)">{{'page_account.renew_subscription' | translate}}</ion-button>
+                          </div>
+                        </div>
+                      </div>
+
+                    </ion-card-content>
+                  </ion-card>
+                </ion-col>
+                <ion-col [size]="helper.cardSizeSmall">
+                  <ion-card noPadding pointer class="caseItem" (click)="trainerService.registerAsTrainer()"> <!--(click)="accountService.showProductInfo(product)">-->
+                      <ion-card-content noPadding fullHeight>
+                          <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
+                            <div class="title">{{'page_account.trainer_basic' | translate}}</div>
+                          </div>
+                          <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                              <ion-card-header>
+                                  <ion-card-title font-24 weight600>{{'page_account.trainer_free' | translate}}</ion-card-title>
+                                  <ion-card-subtitle font-14 weight600 text-secondary>{{'page_account.trainer_basic_text' | translate}}</ion-card-subtitle>
+                              </ion-card-header>
+                          </div>
+                          <div center flex center-ver center-hor marginBottom>
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>
+                                <span *ngIf="isTrainer">
+                                  <fa-icon [icon]="icon.get('faCheck')" success font-24></fa-icon>
+                                </span>
+                                <span *ngIf="!isTrainer">
+                                  {{'buttons.letsgo' | translate}}
+                                </span>
+                              </ion-button>
+                          </div>
+                      </ion-card-content>
+                      <div class="unavailable" *ngIf="isTrainer" (click)="helper.doNothing($event)"></div> 
+                  </ion-card>
+                </ion-col>
+
+                <ion-col [size]="helper.cardSizeSmall">
+                  <ion-card noPadding pointer class="caseItem caseItem_with_ribbon" (click)="trainerService.registerAsTrainerPro()"> <!--(click)="accountService.showProductInfo(product)">-->
+                      <ion-card-content noPadding fullHeight>
+                          <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
+                            <div class="title">{{'page_account.trainer_pro' | translate}}</div>
+                          </div>
+                          <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                              <ion-card-header>
+                                  <ion-card-title font-24 weight600><span style="color:red;text-decoration:line-through">€ 50</span> € 25 <span font-12>/{{'page_account.mnth' | translate}}*</span></ion-card-title>
+                                  <ion-card-subtitle font-14 weight600 text-secondary>{{'page_account.trainer_pro_text' | translate}}</ion-card-subtitle>
+                              </ion-card-header>
+                          </div>
+                          <div center flex center-ver center-hor marginBottom>
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>
+                                <span *ngIf="isTrainer&&!isTrainerPro">
+                                  {{'buttons.upgrade' | translate}}
+                                </span>
+                                <span *ngIf="isTrainer&&isTrainerPro">
+                                  <fa-icon [icon]="icon.get('faCheck')" success font-24></fa-icon>
+                                </span>
+                                <span *ngIf="!isTrainer">
+                                  {{'buttons.letsgo' | translate}}
+                                </span>
+                              </ion-button>
+                          </div>
+                      </ion-card-content>
+
+                      <div class="ribbon right" *ngIf="!isTrainerPro" style="--c: var(--ion-color-primary);--f: 10px;" [innerHtml]="translate.instant('page_account.temp_discount')"></div>
+                      <div class="unavailable" *ngIf="isTrainerPro" (click)="helper.doNothing($event)"></div> 
+                  </ion-card>
+                </ion-col>
+
+                <ion-col [size]="helper.cardSizeSmall">
+                  <ion-card noPadding pointer class="caseItem" (click)="trainerService.registerAsTrainerEnterprise()"> <!--(click)="accountService.showProductInfo(product)">-->
+                      <ion-card-content noPadding fullHeight>
+                          <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
+                            <div class="title">{{'page_account.trainer_enterprise' | translate}}</div>
+                          </div>
+                          <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                              <ion-card-header>
+                                  <ion-card-title font-24 weight600>{{'page_account.trainer_enterprise_price' | translate}}</ion-card-title>
+                                  <ion-card-subtitle font-14 weight600 text-secondary>{{'page_account.trainer_enterprise_text' | translate}}</ion-card-subtitle>
+                              </ion-card-header>
+                          </div>
+                          <div center flex center-ver center-hor marginBottom>
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{'page_account.trainer_enterprise_button' | translate}}</ion-button>
+                          </div>
+                      </ion-card-content>
+                  </ion-card>
+                </ion-col>
+
+                <ion-col size="12" marginTop>
+                  <div marginBottom>
+                    <span italic font-12>* {{'page_account.price_info' | translate}}</span>
+                  </div>
+                  <ion-button fill="clear" (click)="trainerService.showTrainerDetails=!trainerService.showTrainerDetails">
+                    <span>{{!trainerService.showTrainerDetails ? ('page_account.trainer_show_details' | translate) : ('page_account.trainer_hide_details' | translate)}}</span>
+                  </ion-button>
+                </ion-col>
+
+              </ion-row>
+
+              <ion-row *ngIf="trainerService.showTrainerDetails && !media.smallDevice">
+                <ion-col size="12">
+                  <ion-card basicPadding class="caseItem">
+                    <table fullWidth font-16 class="trainerTable">
+                      <tr>
+                        <td></td>
+                        <td font-18 weight600>{{'page_account.trainer_basic' | translate}}</td>
+                        <td font-18 weight600>{{'page_account.trainer_pro' | translate}}</td>
+                        <td font-18 weight600>{{'page_account.trainer_enterprise' | translate}}</td>
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.cases' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_cases' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.case_wizard' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.copy_public_cases' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.practice' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.import_cases' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_coach' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.knowledge' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_knowledge' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_youtube' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.upload_videos' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_attachments' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.import_knowledge' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.settings' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.name_trainer' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_logo' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.multiple_trainers' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_knowledge_feedback' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_knowledge_expert' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.training' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.publish_training' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.add_participants' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.import_training' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.training_costs_included' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td> 
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.participants_costs_included' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td> 
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.employees_participants' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.unlimited_training_cases' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.unlimited_public_cases' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.analysis' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.report_use_cases' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.summary_per_participant' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.summary_per_case' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.including_for_trainer' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.unlimited_practice' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td class="title">{{'page_account.product_list.planned' | translate}}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.categories_custom' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td>{{'page_account.product_list.training_platform_trainings' | translate}}</td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                        <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                      </tr>
+                      <tr>
+                        <td class="title"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td></td>
+                        <td font-18 weight600>{{'page_account.trainer_free' | translate}}</td>
+                        <td font-18 weight600><span style="color:red;text-decoration:line-through">€ 50</span><span font-12 style="color:red;text-decoration:line-through">/{{'page_account.mnth' | translate}}</span><br> € 25 <span font-12>/{{'page_account.mnth' | translate}}</span></td>
+                        <td font-18 weight600>{{'page_account.trainer_enterprise_price' | translate}}</td>
+                      </tr>
+
+                      <tr>
+                        <td></td>
+                        <td>
+                          <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainer" (click)="trainerService.registerAsTrainer()">
+                            <span *ngIf="isTrainer">
+                              <fa-icon [icon]="icon.get('faCheck')" success font-24></fa-icon>
+                            </span>
+                            <span *ngIf="!isTrainer">
+                              {{'buttons.letsgo' | translate}}
+                            </span>
+                          </ion-button>
+                        </td>
+                        <td>
+                          <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainerPro" (click)="trainerService.registerAsTrainerPro()">
+                            <span *ngIf="isTrainer">
+                              {{'buttons.upgrade' | translate}}
+                            </span>
+                            <span *ngIf="!isTrainer">
+                              {{'buttons.letsgo' | translate}}
+                            </span>
+                          </ion-button>
+                        </td>
+                        <td>
+                          <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 (click)="trainerService.registerAsTrainerEnterprise()">{{'page_account.trainer_enterprise_button' | translate}}</ion-button>
+                        </td>
+                      </tr>
+
+                    </table>
+
+                    
+
+                  </ion-card>
+                </ion-col>
+              </ion-row>
+
+              <ion-row *ngIf="trainerService.showTrainerDetails && media.smallDevice">
+                <ion-col size="12" noPadding>
+
+                  <ion-accordion-group>
+                    <ion-accordion value="basic">
+                      <ion-item slot="header" details="false">
+                        <ion-label>{{'page_account.trainer_basic' | translate}} – {{'page_account.trainer_free' | translate}}</ion-label>
+                      </ion-item>
+                      <div slot="content">
+                        <table fullWidth font-16 class="trainerTable">
+                          <tr>
+                            <td class="title">{{'page_account.product_list.cases' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.case_wizard' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.copy_public_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.practice' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_coach' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.knowledge' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_youtube' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.upload_videos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_attachments' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_knowledge' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.settings' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.name_trainer' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_logo' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.multiple_trainers' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge_feedback' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge_expert' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.training' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.publish_training' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_participants' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_training' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.training_costs_included' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.participants_costs_included' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.employees_participants' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_training_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_public_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.analysis' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.report_use_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.summary_per_participant' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.summary_per_case' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.including_for_trainer' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_practice' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.planned' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.categories_custom' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.training_platform_trainings' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td></td>
+                            <td font-18 weight600>{{'page_account.trainer_free' | translate}}</td>
+                          </tr>
+
+                          <tr>
+                            <td colspan="2" style="text-align: center;">
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainer" (click)="trainerService.registerAsTrainer()">
+                                <span *ngIf="isTrainer">
+                                  <fa-icon [icon]="icon.get('faCheck')" success font-24></fa-icon>
+                                </span>
+                                <span *ngIf="!isTrainer">
+                                  {{'buttons.letsgo' | translate}}
+                                </span>
+                              </ion-button>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </ion-accordion>
+
+                    <ion-accordion value="pro">
+                      <ion-item slot="header">
+                        <ion-label>{{'page_account.trainer_pro' | translate}} – <span style="color:red;text-decoration:line-through">€ 50</span><span font-12 style="color:red;text-decoration:line-through">/{{'page_account.mnth' | translate}}</span> € 25<span font-12>/{{'page_account.mnth' | translate}}*</span></ion-label>
+                      </ion-item>
+                      <div slot="content">
+                        <table fullWidth font-16 class="trainerTable">
+                          <tr>
+                            <td class="title">{{'page_account.product_list.cases' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.case_wizard' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.copy_public_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.practice' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_coach' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.knowledge' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_youtube' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.upload_videos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_attachments' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_knowledge' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.settings' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.name_trainer' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_logo' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.multiple_trainers' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge_feedback' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge_expert' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.training' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.publish_training' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_participants' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_training' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.training_costs_included' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.participants_costs_included' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.employees_participants' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_training_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_public_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faTimes')" danger></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.analysis' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.report_use_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.summary_per_participant' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.summary_per_case' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.including_for_trainer' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_practice' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.planned' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.categories_custom' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.training_platform_trainings' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td></td>
+                            <td font-18 weight600><span style="color:red;text-decoration:line-through">€ 50</span><span font-12 style="color:red;text-decoration:line-through">/{{'page_account.mnth' | translate}}</span><br>€ 25<span font-12>/{{'page_account.mnth' | translate}}</span></td>
+                          </tr>
+
+                          <tr>
+                            <td colspan="2" style="text-align: center;">
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainerPro" (click)="trainerService.registerAsTrainerPro()">
+                                <span *ngIf="isTrainer&&!isTrainerPro">
+                                  {{'buttons.upgrade' | translate}}
+                                </span>
+                                <span *ngIf="isTrainer&&isTrainerPro">
+                                  <fa-icon [icon]="icon.get('faCheck')" success font-24></fa-icon>
+                                </span>
+                                <span *ngIf="!isTrainer">
+                                  {{'buttons.letsgo' | translate}}
+                                </span>
+                              </ion-button>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </ion-accordion>
+
+                    <ion-accordion value="enterprise">
+                      <ion-item slot="header" details="false">
+                        <ion-label>{{'page_account.trainer_enterprise' | translate}} – {{'page_account.trainer_enterprise_price' | translate}}</ion-label>
+                      </ion-item>
+                      <div slot="content">
+                        <table fullWidth font-16 class="trainerTable">
+                          <tr>
+                            <td class="title">{{'page_account.product_list.cases' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.case_wizard' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.copy_public_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.practice' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_coach' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.knowledge' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_youtube' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.upload_videos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_attachments' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_knowledge' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.settings' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.name_trainer' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_logo' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.multiple_trainers' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge_feedback' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_knowledge_expert' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.training' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.publish_training' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.add_participants' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.generate_photos' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.import_training' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.training_costs_included' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.participants_costs_included' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.employees_participants' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_training_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_public_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.analysis' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.report_use_cases' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.summary_per_participant' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.summary_per_case' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.including_for_trainer' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.unlimited_practice' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title">{{'page_account.product_list.planned' | translate}}</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.categories_custom' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td>{{'page_account.product_list.training_platform_trainings' | translate}}</td>
+                            <td font-16 weight600><fa-icon [icon]="icon.get('faCheck')" success></fa-icon></td>
+                          </tr>
+                          <tr>
+                            <td class="title"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td></td>
+                            <td font-18 weight600>{{'page_account.trainer_enterprise_price' | translate}}</td>
+                          </tr>
+
+                          <tr>
+                            <td colspan="2" style="text-align: center;">
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 (click)="trainerService.registerAsTrainerEnterprise()">{{'page_account.trainer_enterprise_button' | translate}}</ion-button>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </ion-accordion>
+                  </ion-accordion-group>
+
+
+                </ion-col>
+              </ion-row>
+
+            </ion-card-content>
+          </ion-card>
 
         </ion-col>
       </ion-row>

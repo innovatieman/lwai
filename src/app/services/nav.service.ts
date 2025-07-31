@@ -13,6 +13,7 @@ export class NavService {
   @Output() changeLang: EventEmitter<string> = new EventEmitter();
   @Output() renewPWA: EventEmitter<boolean> = new EventEmitter();
   @Output() organisationChange: EventEmitter<boolean> = new EventEmitter();
+  @Output() myOrganisationChange: EventEmitter<string> = new EventEmitter();
   @Output() reloadMenu:EventEmitter<boolean> = new EventEmitter<boolean>();
   activeOrganisationId: string = ''
   
@@ -124,4 +125,14 @@ export class NavService {
     this.renewPWA.emit(true)
   }
 
+  gotoOrganisation(event?:any,organisationId?:any){
+    if(event){
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    if(!organisationId){
+      organisationId = ''
+    }
+    this.myOrganisationChange.emit(organisationId)
+  }
 }

@@ -3,6 +3,8 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
+import { FirestoreService } from 'src/app/services/firestore.service';
+import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { NavService } from 'src/app/services/nav.service';
@@ -16,6 +18,8 @@ import { ToastService } from 'src/app/services/toast.service';
 export class MarketplacePage implements OnInit {
   activeTab:string = ''
   newTrainingCode:string = ''
+  elearnings:any[] = []
+  item_id:string = ''
   constructor(
     public media: MediaService,
     public icon:IconsService,
@@ -23,7 +27,9 @@ export class MarketplacePage implements OnInit {
     public nav:NavService,
     private route: ActivatedRoute,
     private translate:TranslateService,
-    private toast:ToastService
+    private toast:ToastService,
+    private firestoreService: FirestoreService,
+    public helper:HelpersService
   ) { }
 
   ngOnInit() {
@@ -32,7 +38,11 @@ export class MarketplacePage implements OnInit {
       if(params['tab']){
         this.activeTab = params['tab'];
       }
+      if(params['item_id']){
+        this.item_id = params['item_id'];
+      }
     });
+    this.getElearnings();
   }
 
   ionViewDidEnter() {
@@ -64,4 +74,58 @@ export class MarketplacePage implements OnInit {
       }
     })
   }
+
+  getElearnings() {
+    this.firestoreService.query('elearnings', 'open_to_public', true).subscribe((elearnings:any[]) => {
+      this.elearnings = elearnings.map(e => {
+        
+        return {
+          ...e.payload.doc.data(),
+          id: e.payload.doc.id
+        };
+      });
+      console.log('elearnings', this.elearnings);
+    });
+  }
+
+  elearningItem(item_id:any) {
+    if(!item_id && !this.item_id) {
+      return {}
+    }
+    if(!item_id && this.item_id) {
+      item_id = this.item_id;
+    }
+    return this.elearnings.find(e => e.id === item_id) || {};
+  }
+
+  countItems(item:any,type:string) {
+    if(!item || !item.items) {
+      return 0;
+    }
+    let itemsCount = this.countItemsInItems(item.items, type);
+    return itemsCount;
+  }
+
+
+  countItemsInItems(items:any[], type:string) {
+    if(!items || !Array.isArray(items)) {
+      return 0;
+    }
+    let itemsCount = 0;
+    items.forEach(item => {
+      if(item.type === type) {
+        itemsCount++;
+      }
+      if(item.items && Array.isArray(item.items)) {
+        itemsCount += this.countItemsInItems(item.items, type);
+      }
+    });
+    return itemsCount;
+  }
+
+  buyItem(item:any) {
+    console.log('Buying item:', item);
+    
+  }
+  
 }

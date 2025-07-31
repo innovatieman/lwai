@@ -38,13 +38,13 @@
             <ion-label *ngIf="field.type==='number'" position="stacked">{{field.title}}</ion-label>
             <ion-label *ngIf="field.type==='select'||field.type=='selectModal'" position="stacked" relative style="top:-10px">{{field.title}}</ion-label>
             <ion-input *ngIf="!field.type||field.type==='text'" [placeholder]="field.placeholder || ''" [required]="field.required" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
-            <ion-input *ngIf="field.type==='email'" type="email" [required]="field.required" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
+            <ion-input *ngIf="field.type==='email'" type="email" inputmode="email" [required]="field.required" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
             <div flex *ngIf="field.type==='time'">
               <ion-input *ngIf="field.type==='time'" [required]="field.required" type="time" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-input>
             </div>
             <ion-input *ngIf="field.type=='number'" [required]="field.required" type="number" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" ></ion-input>
             <!-- <ion-datetime displayFormat="H:mm" *ngIf="field.type=='time'" [required]="field.required" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value"></ion-datetime> -->
-            <input hidden #fileInput *ngIf="field.type=='file'" (change)="onFileSelected($event)" [required]="field.required" type="file" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" />
+            <input hidden #fileInput *ngIf="field.type=='file'" (change)="onFileSelected($event)" [required]="field.required" type="file" [accept]="field.fileTypes ? field.fileTypes : ''" [ngModelOptions]="{standalone: true}" [(ngModel)]="field.value" />
             <div *ngIf="field.type === 'file'" class="file-field" fullwidth flex center-ver>
               <ion-button (click)="triggerFileInputClick()">{{'buttons.attachment' | translate}}</ion-button>
               <ion-label titleIcon *ngIf="fileField.name">{{ fileField.name }}</ion-label>

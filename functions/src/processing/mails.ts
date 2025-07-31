@@ -84,6 +84,9 @@ exports.emailsToSend = functions.region('europe-west1').runWith({ memory: '1GB' 
       },
       attachments:[]
     };
+    if(emailData.replyTo){
+      emailContent.replyTo = emailData.replyTo;
+    }
 
     // 8. Voeg de e-mail toe aan de queue voor verzending
     await admin.firestore().collection('emailsToSend').add(emailContent);
@@ -185,6 +188,41 @@ async (request: CallableRequest<any>,) => {
   return 'success';
 })
 
+exports.userMessages = functions.region('europe-west1').runWith({ memory: '1GB' }).firestore
+  .document('user_messages/{emailId}')
+  .onCreate(async (snap: any, context: any) => {
+    const emailData = snap.data();
+
+    let message = emailData.message || '';
+    message = 'Er is een nieuw bericht van ' + emailData.displayName + ' (' + emailData.email + ')<br><br>' + message;
+    if(emailData.url){
+      message += `<br><br>Verzonden vanaf pagina: ${emailData.url}`;
+    }
+    if(emailData.attachment){
+      message += `<br><br><a href="${emailData.attachment}" target="_blank">Download Attachment</a>`;
+    }
+
+    let subject = emailData.subject || 'Nieuw bericht van ' + emailData.displayName;
+    subject = emailData.type + ': ' + subject;
+
+    const emailToSend = {
+      to: 'customerservice@alicialabs.com',
+      bcc: 'logging@alicialabs.com',
+      template: 'free',
+      language: 'nl',
+      data: {
+        content: message,
+        subject: subject,
+      },
+      subject: subject,
+      replyTo: emailData.email,
+    }
+
+    // 8. Voeg de e-mail toe aan de queue voor verzending
+    await admin.firestore().collection('emailsToProcess').add(emailToSend);
+
+    return;
+  });
 
 async function userIsRecipient(user: any, mailflow: any): Promise<boolean> {
   
