@@ -46,3 +46,63 @@
     max-height: 50px;
     max-width: 100px;
 }
+
+ion-card {
+
+  .ribbon {
+    --f: 15px; /* control the folded part */
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    position: absolute;
+    top: 0;
+    color: #fff;
+    padding: .1em 3em;
+    background: var(--c,#45ADA8);
+    border-bottom :var(--f) solid #0007;
+    clip-path: polygon(
+      100% calc(100% - var(--f)),100% 100%,calc(100% - var(--f)) calc(100% - var(--f)),var(--f) calc(100% - var(--f)), 0 100%,0 calc(100% - var(--f)),999px calc(100% - var(--f) - 999px),calc(100% - 999px) calc(100% - var(--f) - 999px))
+  }
+  .right {
+    right: 0;
+    transform: translate(calc((1 - cos(45deg))*100%), -100%) rotate(45deg);
+    transform-origin: 0% 100%;
+  }
+  .left {
+    left: 0;
+    transform: translate(calc((cos(45deg) - 1)*100%), -100%) rotate(-45deg);
+    transform-origin: 100% 100%;
+  }
+  
+  /* a fix for firefox that show some strange lines*/
+  @supports (-moz-appearance:none) {
+    .ribbon {
+      background:
+        linear-gradient(to top,#0000 1px,#0005 0 var(--f),#0000 0) border-box,
+        linear-gradient(var(--c,#45ADA8) 0 0) 50%/
+         calc(100% - 2px) calc(100% - 2px) no-repeat border-box;
+      border-bottom-color: #0000;
+     }
+  }
+  .caseItem_with_ribbon{
+    contain:layout;
+    overflow: visible;
+    .avatarImage{
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+    }
+  }
+}
+
+.price{
+  position: absolute;
+  right: 15px;
+  top:10px;
+  padding:8px 15px;
+  border-radius:12px;
+  background-color: white;
+  color:var(--ion-color-primary);
+  font-size: 18px;
+  text-transform: uppercase;
+  font-weight: 700;
+}

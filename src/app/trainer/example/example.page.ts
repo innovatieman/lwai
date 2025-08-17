@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
@@ -24,6 +25,7 @@ export class ExamplePage implements OnInit {
   trainingItem:any;
   modulesBreadCrumbs:any = [];
   itemsLoaded:boolean = false;
+  private leave$ = new Subject<void>();
   constructor(
     public nav: NavService,
     public trainerService:TrainerService,
@@ -40,49 +42,75 @@ export class ExamplePage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
+   
+
+  }
+
+  ionViewWillEnter(){
+     this.route.params.pipe(takeUntil(this.leave$)).subscribe(params => {
       this.id = params['id'];
       this.type = params['type'];
     });
-    this.auth.userInfo$.subscribe(userInfo => {
+    this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
       if (userInfo) {
-        this.auth.hasActive('trainer').subscribe((trainer)=>{
-          if(trainer &&!this.itemsLoaded){
-              this.trainerService.loadTrainingsAndParticipants(()=>{
-                this.itemsLoaded = true;
-                if(!this.trainerService.breadCrumbs.length){
+        this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
+          if(trainer){
+            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+            this.itemsLoaded = true;
+              if(!this.trainerService.breadCrumbs.length){
                   this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
-                }
-              })
-              this.trainerService.loadModules(()=>{})
-              this.trainerService.loadInfoItems(()=>{})
-              this.trainerService.loadCases(()=>{})
-              setTimeout(() => {
-                this.itemsLoaded = true;
-              }, 1000);
+              }
+            },{example:()=>{
+              this.itemsLoaded = true;
+              if(!this.trainerService.breadCrumbs.length){
+                  this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+              }
+            }})
+              // this.trainerService.loadTrainingsAndParticipants(()=>{
+              //   this.itemsLoaded = true;
+              //   if(!this.trainerService.breadCrumbs.length){
+              //     this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+              //   }
+              // })
+              // this.trainerService.loadModules(()=>{})
+              // this.trainerService.loadInfoItems(()=>{})
+              // this.trainerService.loadCases(()=>{})
+              // setTimeout(() => {
+              //   this.itemsLoaded = true;
+              // }, 1000);
           }
         })
       }
     })
 
-    this.auth.isOrgAdmin().subscribe((isAdmin)=>{
-      console.log('isAdmin',isAdmin)
-     if(isAdmin && !this.itemsLoaded){
-        this.trainerService.loadTrainingsAndParticipants(()=>{
-          this.itemsLoaded = true;
-          if(!this.trainerService.breadCrumbs.length){
-            this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
-          }
-        })
-        this.trainerService.loadModules(()=>{})
-        this.trainerService.loadInfoItems(()=>{})
-        this.trainerService.loadCases(()=>{})
-        setTimeout(() => {
-          this.itemsLoaded = true;
-        }, 1000);
+    this.auth.isOrgAdmin().pipe(takeUntil(this.leave$)).subscribe((isAdmin)=>{
+      // console.log('isAdmin',isAdmin)
+     if(isAdmin){
+      this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+        this.itemsLoaded = true;
+        if(!this.trainerService.breadCrumbs.length){
+          this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+        }
+      })
+        // this.trainerService.loadTrainingsAndParticipants(()=>{
+        //   this.itemsLoaded = true;
+        //   if(!this.trainerService.breadCrumbs.length){
+        //     this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+        //   }
+        // })
+        // this.trainerService.loadModules(()=>{})
+        // this.trainerService.loadInfoItems(()=>{})
+        // this.trainerService.loadCases(()=>{})
+        // setTimeout(() => {
+        //   this.itemsLoaded = true;
+        // }, 1000);
      }
     })
+  }
 
+  ionViewWillLeave() {
+    this.leave$.next();
+    this.leave$.complete();
   }
 
   exampleItem(type:string,id:string):any{
@@ -111,15 +139,15 @@ export class ExamplePage implements OnInit {
   }
 
   selectSubModule(module:any){
-      console.log('select submodule',module)
+      // console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)
-      console.log(this.modulesBreadCrumbs)
+      // console.log(this.modulesBreadCrumbs)
   }
 
   selectTrainingItem(item:any){
-    console.log('select training item',item)
-    console.log(this.trainerService.breadCrumbs)
-    console.log(this.exampleItem(this.trainerService.breadCrumbs[0].type,item.id))
+    // console.log('select training item',item)
+    // console.log(this.trainerService.breadCrumbs)
+    // console.log(this.exampleItem(this.trainerService.breadCrumbs[0].type,item.id))
     if(item.type == 'infoItem'){
       if(this.trainerService.breadCrumbs.length && (this.trainerService.breadCrumbs[0].type=='training' || this.trainerService.breadCrumbs[0].type=='module')){
         this.modulesBreadCrumbs.push({type:'infoItem',item:this.exampleItem(item.type,item.id)})
@@ -140,7 +168,7 @@ export class ExamplePage implements OnInit {
     else if(item.type == 'training'){
       this.modulesBreadCrumbs.push({type:'training',item:item})
     }
-    console.log(this.modulesBreadCrumbs)
+    // console.log(this.modulesBreadCrumbs)
     // this.trainingItem = item
   }
 

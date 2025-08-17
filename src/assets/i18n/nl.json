@@ -140,7 +140,8 @@
         "publish_for_participants":"Publiceer voor de deelnemers",
         "publish_elearning":"Publiceer e-training",
         "upgrade":"Upgrade",
-        "continue":"Vervolg"
+        "continue":"Vervolg",
+        "buy":"Koop"
     },
     "messages":{
         "saved":"Gegevens opgeslagen",
@@ -590,7 +591,8 @@
         "no_available_items":"Er zijn (nog) geen items beschikbaar",
         "no_connected_items":"Deze module heeft (nog) geen onderdelen.",
         "new_training":"Nieuwe training",
-        "new_training_name":"Hoe heet de nieuwe training?"
+        "new_training_name":"Hoe heet de nieuwe training?",
+        "cannot_add_module_to_itself":"Er ontstaat een oneindige lus als je deze module toevoegt aan zichzelf. Kies een andere module."
     },
     "trainings":{
         "edit_training":"Bewerken",
@@ -655,7 +657,9 @@
         "publish_switch_organization":"Publiceer voor de hele organisatie",
         "max_participants_reached":"Het maximum aantal deelnemers is bereikt. Als je meer deelnemers wilt toevoegen, moet je het aantal deelnemers verhogen in de bij het Creditbeheer van de training.",
         "progress":"Voortgang",
-        "no_progress":"Er is nog geen voortgang in deze training."
+        "no_progress":"Er is nog geen voortgang in deze training.",
+        "price_elearning":"Bepaal de prijs van je e-learning incl. BTW",
+        "elearning_margin_alicialabs":"AliciaLabs marge is 20% van de prijs."
     },
     "generate_case":{
         "title_step_0":"De basis",
@@ -976,7 +980,8 @@
         "training_intro_publish":"Er zijn kosten verbonden aan het openstellen van een training voor deelnemers. Deze kosten hangen af van het aantal deelnemers en van hoeveel casussen je wilt laten oefenen.",
         "training_intro_publish_organisation":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training.",
         "training_intro_publish_organisation_and_trainer":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training. Je kunt de training ook openstellen voor deelnemers buiten jouw organisatie, maar dan moet je de training publiceren als trainer. Daar zijn kosten aan verbonden.",
-        "training_costs_publish":"Basisbedrag</strong><br>Voor elke training betaal je een vast basisbedrag van <strong>€100</strong>.<br><br><strong >Keuze uit twee opties</strong><br>Je kunt daarna kiezen uit twee manieren om het oefenen van casussen te regelen:<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €20 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li><li>Deze optie is vooral voordelig als je veel casussen hebt of met meerdere deelnemers werkt.</li></ul><p><br><strong><em>Maximum aantal credits</em></strong></p><ul><li>Je koopt een vast aantal credits waarmee je deelnemers een beperkt aantal gesprekken kunnen oefenen.</li><li>Standaard krijg je 10 gesprekken in totaal.</li><li>Wil je meer gesprekken laten oefenen? Geef dan aan hoeveel gesprekken per deelnemer je nodig hebt.</li><li>Deze optie is vooral geschikt als je met weinig deelnemers of casussen werkt.</li></ul><p><br><strong>Extra deelnemers of gesprekken</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen, openstelling verlengen of extra gesprekken inkopen.<br><br><strong>NB:</strong> Het aantal kennis-items in je training heeft geen invloed op het gebruik van credits. Alleen het oefenen van casussen telt mee.",
+        "training_costs_publish":"<strong>Basisbedrag</strong><br>Voor elke training betaal je een vast basisbedrag van <strong>€100</strong>, tenzij je een Trainer Pro pakket hebt.<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €10 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li></ul><br><strong>Extra deelnemers of gesprekken</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen of de openstelling verlengen.<br><br><strong>NB:</strong> Het aantal kennis-items in je training heeft geen invloed op het gebruik van credits. Alleen het oefenen van casussen telt mee.",
+        "training_costs_publish_trainer_pro":"<strong>Basisbedrag</strong><br>Je hebt als Trainer Pro geen basiskosten per training.<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €10 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li></ul><br><strong>Extra deelnemers of gesprekken</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen of de openstelling verlengen.<br><br><strong>NB:</strong> Het aantal kennis-items in je training heeft geen invloed op het gebruik van credits. Alleen het oefenen van casussen telt mee.",
         "training_add_participants":"Je kunt op drie manieren deelnemers toevoegen aan de training:<br><br><strong><em>Zelf deelnemers toevoegen</em></strong></p><ul><li>Klik op het plusje (+) en vul de e-mailadressen van de deelnemers in. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><br><strong><em>Deelnemers importeren</em></strong></p><ul><li>Wanneer je een lijst hebt van namen en e-mailadressen van de deelnemers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><strong><em>Link toesturen aan deelnemers &#128279;</em></strong></p><ul><li>Je kunt ook een toegangslink aanmaken en deze naar de deelnemers sturen. Als ze op de link klikken, kunnen ze zich registreren en inloggen bij AliciaLabs en krijgen ze direct toegang tot de training. Als iemand al is ingelogd kan de registratiecode binnen AliciaLabs gebruikt worden om toegang te krijgen tot de training.</li></ul><p><br><strong>Dashboard</strong>",
         "dashboard_trainer_info":"Je naam, of organisatie naam, en logo worden getoond op het dashboard van de deelnemers. Dit is de naam waaronder je geregistreerd bent bij AliciaLabs.",
         "training_available_date":"Deze training of deel van de training is voor de deelnemers beschikbaar vanaf de ingestelde datum. Als deze datum leeg is of in het verleden ligt, dan is (dit deel van) de training direct beschikbaar voor de deelnemers.",
@@ -1046,7 +1051,14 @@
         "add_training":"Training toevoegen",
         "code":"Voer de code in",
         "code_input":"Voeg hier de code toe die je van je trainer hebt ontvangen.",
-        "elearnings":"E-trainings"
+        "elearnings":"E-trainings",
+        "elearning":"E-training",
+        "organisation":"Organisatie",
+        "training":"Training",
+        "free":"Gratis",
+        "add_unlimited_credits":"Om deze training goed te kunnen volgen, heb je credits nodig. Je kunt onbeperkt oefenen met deze training door een abonnement te nemen met onbeperkte credits. Wil je voor € 25 per jaar onbeperkt oefenen met deze (en alle andere) training?",
+        "unlimited_credits":"Ja, ik wil graag onbeperkte credits voor een jaar voor € 25.",
+        "success_purchase":"Je hebt de training succesvol gekocht. Deze is nu beschikbaar bij de trainingen in je dashboard."
     },
     "media":{
         "photo_upload":"Upload foto",

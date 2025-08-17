@@ -17,6 +17,7 @@ import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
 import * as moment from 'moment';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-info-items',
@@ -43,6 +44,7 @@ export class InfoItemsPage implements OnInit {
     maxItems: number = 15;
     itemsLoaded: boolean = false;
     showHtml: boolean = false;
+    private leave$ = new Subject<void>();
     configModules={
       toolbar: {
         container:[
@@ -81,36 +83,62 @@ export class InfoItemsPage implements OnInit {
     ) { }
   
     ngOnInit() {
-      this.auth.userInfo$.subscribe(userInfo => {
-        if (userInfo) {
-          this.auth.hasActive('trainer').subscribe((trainer)=>{
-            if(trainer &&!this.itemsLoaded){
-              this.trainerService.loadInfoItems(()=>{
-                this.updateVisibleItems();
-                this.itemsLoaded = true
-              });
-              this.trainerService.loadModules(()=>{
-                // this.trainerService.modules = this.trainerService.modules
-              })
-            }
-          })
-        }
-      })
       
-      this.nav.organisationChange.subscribe((res)=>{
-        this.trainerService.loadInfoItems(()=>{
-          this.updateVisibleItems();
-        });
-        this.trainerService.loadModules(()=>{})
-      })
-      
-      this.nav.changeLang.subscribe((res)=>{
-        this.updateVisibleItems();
-      })
 
   
     }
   
+  ionViewWillEnter(){
+    this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
+        if (userInfo) {
+          this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
+            if(trainer){
+              this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+                  this.updateVisibleItems();
+                },{
+                infoItems:()=>{
+                  this.updateVisibleItems();
+                }}
+              )
+            }
+            // if(trainer &&!this.itemsLoaded){
+            //   this.trainerService.loadInfoItems(()=>{
+            //     this.updateVisibleItems();
+            //     this.itemsLoaded = true
+            //   });
+            //   this.trainerService.loadModules(()=>{
+            //     // this.trainerService.modules = this.trainerService.modules
+            //   })
+            // }
+          })
+        }
+      })
+      
+      this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
+        this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+            this.updateVisibleItems();
+          },{
+          infoItems:()=>{
+            this.updateVisibleItems();
+          }}
+        )
+        // })
+            
+        // this.trainerService.loadInfoItems(()=>{
+        //   this.updateVisibleItems();
+        // });
+        // this.trainerService.loadModules(()=>{})
+      })
+      
+      this.nav.changeLang.pipe(takeUntil(this.leave$)).subscribe((res)=>{
+        this.updateVisibleItems();
+      })
+  }
+
+  ionViewWillLeave() {
+    this.leave$.next();
+    this.leave$.complete();
+  }
 
     shortMenu:any
   onRightClick(event:Event,item:any){
@@ -213,21 +241,32 @@ export class InfoItemsPage implements OnInit {
   
     addItem(){
       this.toast.showLoader()
-      let infoItem = this.trainerService.defaultInfoItem()
-      this.firestore.createSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem).then(()=>{
-        this.trainerService.loadCases(()=>{
-          let item = this.trainerService.cases.filter((e:any) => {
-            return e.created === infoItem.created
-          })
-          if(item.length){
-            this.trainerService.infoItem = item[0]
-          }
-          else{
-            this.trainerService.infoItem = {}
-          }
-          this.toast.hideLoader()
-        })
-      })
+      let infoItem:any = this.trainerService.defaultInfoItem()
+      this.firestore.createSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem).then(async () => {
+        try {
+          const found = await this.trainerService.waitForItem('infoItem', infoItem.created, 5000, 'created');
+          this.trainerService.infoItem = found;
+          this.updateVisibleItems();
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.infoItem = {}; // { id: res.id, ...res };
+        }
+      });
+        
+      //   this.trainerService.loadCases(()=>{
+      //     let item = this.trainerService.cases.filter((e:any) => {
+      //       return e.created === infoItem.created
+      //     })
+      //     if(item.length){
+      //       this.trainerService.infoItem = item[0]
+      //     }
+      //     else{
+      //       this.trainerService.infoItem = {}
+      //     }
+      //     this.toast.hideLoader()
+      //   })
+      // })
     }
   
     deleteItem(infoItem?:any){
@@ -238,12 +277,16 @@ export class InfoItemsPage implements OnInit {
         }
         infoItem = this.trainerService.infoItem
       }
-      this.modalService.showConfirmation('Are you sure you want to delete this item?').then((result:any) => {
+      this.modalService.showConfirmation('Are you sure you want to delete this item?').then(async (result:any) => {
         if(result){
           let id = infoItem.id
-          this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem.id)
+          this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem.id).then(()=>{
+          this.updateVisibleItems();
+        })
           this.trainerService.infoItem = {}
-          this.trainerService.loadInfoItems()
+
+
+          // this.trainerService.loadInfoItems()
 
           for(let i=0;i<this.trainerService.modules.length;i++){
             let change = false
@@ -342,46 +385,46 @@ export class InfoItemsPage implements OnInit {
       return check
     }
   
-    async startTranslation(caseItem?:any){
-      let id = ''
-      if(!caseItem?.id){
-        if(!this.trainerService.infoItem.id){
-          this.toast.show('Selecteer een casus')
-          return
-        }
-        id = this.trainerService.infoItem.id
-      }
-      else{
-        id = caseItem.id
-      }
-      let list:any[] = []
-      this.nav.langList.forEach((lang)=>{
-        list.push({
-          value:lang,
-          title:this.translate.instant('languages.'+lang),
-          icon:'faGlobeEurope'
-        })
-      })
-      this.modalService.inputFields('Selecteer de originele taal','',[{
-        type:'select',
-        placeholder:'Selecteer de originele taal',
-        value:this.translate.currentLang,
-        optionKeys:list
-      }],(result:any)=>{
-        if(result.data){
-          this.firestore.update('cases_trainer',id!,{original_language:result.data[0].value,translate:false})
-          setTimeout(() => {
-            this.firestore.update('cases_trainer',id!,{original_language:result.data[0].value,translate:true}).then(()=>{
-              if(this.trainerService.infoItem.id){
-                this.trainerService.infoItem = {}
-              }
-            })
-          }, 1000);
-          this.toast.show('Translation started')
-        }
-      })
+    // async startTranslation(infoItem?:any){
+    //   let id = ''
+    //   if(!infoItem?.id){
+    //     if(!this.trainerService.infoItem.id){
+    //       this.toast.show('Selecteer een casus')
+    //       return
+    //     }
+    //     id = this.trainerService.infoItem.id
+    //   }
+    //   else{
+    //     id = infoItem.id
+    //   }
+    //   let list:any[] = []
+    //   this.nav.langList.forEach((lang)=>{
+    //     list.push({
+    //       value:lang,
+    //       title:this.translate.instant('languages.'+lang),
+    //       icon:'faGlobeEurope'
+    //     })
+    //   })
+    //   this.modalService.inputFields('Selecteer de originele taal','',[{
+    //     type:'select',
+    //     placeholder:'Selecteer de originele taal',
+    //     value:this.translate.currentLang,
+    //     optionKeys:list
+    //   }],(result:any)=>{
+    //     if(result.data){
+    //       this.firestore.update('cases_trainer',id!,{original_language:result.data[0].value,translate:false})
+    //       setTimeout(() => {
+    //         this.firestore.update('cases_trainer',id!,{original_language:result.data[0].value,translate:true}).then(()=>{
+    //           if(this.trainerService.infoItem.id){
+    //             this.trainerService.infoItem = {}
+    //           }
+    //         })
+    //       }, 1000);
+    //       this.toast.show('Translation started')
+    //     }
+    //   })
        
-    }
+    // }
     
     update(field?:string,isArray:boolean = false,infoItem?:any){
       if(!infoItem?.id){
@@ -390,6 +433,18 @@ export class InfoItemsPage implements OnInit {
       const scrollPosition = window.scrollY;
       if(this.trainerService.breadCrumbs && this.trainerService.breadCrumbs[0]?.type == 'training'){
         if(field){
+
+          infoItem[field] = infoItem[field] || ''
+          infoItem[field] = infoItem[field]
+          .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
+
           this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',infoItem.id,infoItem[field],field,()=>{
             setTimeout(() => {
               window.scrollTo(0, scrollPosition);
@@ -589,20 +644,37 @@ export class InfoItemsPage implements OnInit {
       copy.created = Date.now()
       copy.title = copy.title + ' (copy)'
       copy.open_to_user = false
-      this.firestore.createSub('trainers',this.nav.activeOrganisationId,'infoItems',copy).then(()=>{
-        this.trainerService.loadInfoItems(()=>{
-          let item = this.trainerService.infoItems.filter((e:any) => {
-            return e.created === copy.created
-          })
-          if(item.length){
-            this.trainerService.infoItem = item[0]
-            this.toast.show('Je kunt nu de kopie bewerken')
-          }
-          else{
-            this.trainerService.infoItem = {}
-          }
-        },true)
-      })
+      this.firestore.createSub('trainers',this.nav.activeOrganisationId,'infoItems',copy).then(async () => {
+        try {
+          const found = await this.trainerService.waitForItem('infoItem', copy.created, 5000, 'created');
+          console.log('found',found)
+          this.trainerService.infoItem = found;
+          this.updateVisibleItems();
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          // this.trainerService.caseItem = { id: copy.id, ...copy };
+          this.trainerService.infoItem = {}
+          this.updateVisibleItems();
+
+        }
+      });
+
+
+
+      //   this.trainerService.loadInfoItems(()=>{
+      //     let item = this.trainerService.infoItems.filter((e:any) => {
+      //       return e.created === copy.created
+      //     })
+      //     if(item.length){
+      //       this.trainerService.infoItem = item[0]
+      //       this.toast.show('Je kunt nu de kopie bewerken')
+      //     }
+      //     else{
+      //       this.trainerService.infoItem = {}
+      //     }
+      //   },true)
+      // })
     }
   
    
@@ -922,20 +994,29 @@ export class InfoItemsPage implements OnInit {
       this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
       return;
     }
-    this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'infoItems', newItem,(res:any) => {
+    this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'infoItems', newItem,async (res:any) => {
       if(res && res.id){
-        this.trainerService.loadInfoItems(() => {
-          let item = this.trainerService.infoItems.filter((e:any) => {
-            return e.created === newItem.created
-          })
-          if(item.length){
-            this.trainerService.caseItem = item[0]
-          }
-          else{
-            this.trainerService.caseItem = {}
-          }
-          // this.toast.show(this.translate.instant('cases.case_imported_successfully'))
-        });
+        try {
+          const found = await this.trainerService.waitForItem('infoItem', newItem.created, 5000, 'created');
+          this.trainerService.infoItem = found;
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.infoItem = { id: newItem.id, ...newItem };
+        }
+
+        // this.trainerService.loadInfoItems(() => {
+        //   let item = this.trainerService.infoItems.filter((e:any) => {
+        //     return e.created === newItem.created
+        //   })
+        //   if(item.length){
+        //     this.trainerService.infoItem = item[0]
+        //   }
+        //   else{
+        //     this.trainerService.infoItem = {}
+        //   }
+        //   // this.toast.show(this.translate.instant('cases.case_imported_successfully'))
+        // });
       } else {
         this.toast.show(this.translate.instant('error_messages.import_failed'), 4000, 'middle');
       }

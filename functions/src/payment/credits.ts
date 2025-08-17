@@ -7,55 +7,76 @@ import Stripe from "stripe";
 const stripe = new Stripe(config.stripe.live_secret_key);
 
 
-exports.creditsBought = functions.region('europe-west1').firestore
+exports.creditsBought = functions.region('europe-west1').runWith({ memory: '1GB' }).firestore
   .document('customers/{userId}/payments/{paymentId}')
   .onCreate(async (snap:any, context:any) => {
     console.log('Payment created');
     let payment = snap.data();
-    if(payment.status == 'succeeded' && payment.description !== 'Subscription creation' && payment.items?.length > 0 && payment.items[0].price){
+    if(payment.status == 'succeeded' && payment.description !== 'Subscription creation' && payment.items?.length > 0){
         await admin.firestore().collection('processed_payments').doc(context.params.paymentId).set({processed: true});
 
-        const product = await admin.firestore().collection('products').doc(payment.items[0].price.product).get();
-        const productData = product.data();
+        for(let i=0; i<payment.items.length; i++){
+            if(payment.items[i].price?.product){
+                const product = await admin.firestore().collection('products').doc(payment.items[i].price.product).get();
+                const productData = product.data();
 
-        if(productData.metadata.credits){
-            if(productData.metadata.trainingId){
-                await addCreditsToTraining(context.params.userId, productData);
+                if(productData.metadata.credits){
+                    if(productData.metadata.trainingId){
+                        await addCreditsToTraining(context.params.userId, productData);
+                    }
+                    else{
+                        await addCreditsToUser(context.params.userId, productData);
+                    }
+                }
+                else if(productData.metadata.type=='course'){
+                    await addCourseToUser(context.params.userId, payment.items[i].price.product);
+                }
+                else if(productData.metadata.type=='trainer'){
+                    await addTrainerSubscription(context.params.userId, productData);
+                }
+                else if(productData.metadata.type=='elearning'){
+                    await addElearningToUser(context.params.userId, payment.items[i].price.product);
+                    await registerPurchase(context.params.userId,productData.metadata.trainingId,productData.metadata.trainerId,(payment.items[i].price.unit_amount ? (payment.items[i].price.unit_amount / 100) : 0))
+                }
             }
-            else{
-                await addCreditsToUser(context.params.userId, productData);
-            }
-        }
-        else if(productData.metadata.type=='course'){
-            await addCourseToUser(context.params.userId, payment.items[0].price.product);
-        }
-        else if(productData.metadata.type=='trainer'){
-            await addTrainerSubscription(context.params.userId, productData);
         }
     }
     
   });
 
-  exports.creditsBoughtUpdated = functions.region('europe-west1').firestore
+  exports.creditsBoughtUpdated = functions.region('europe-west1').runWith({ memory: '1GB' }).firestore
   .document('customers/{userId}/payments/{paymentId}')
   .onUpdate(async (change:any, context:any) => {
     console.log('Payment created');
     let payment = change.after.data();
-    if(payment.status == 'succeeded' && payment.description !== 'Subscription creation' && payment.items?.length > 0 && payment.items[0].price){
+    if(payment.status == 'succeeded' && payment.description !== 'Subscription creation' && payment.items?.length > 0){
+
+
         const processedPayment = await admin.firestore().collection('processed_payments').doc(context.params.paymentId).get();
         if(processedPayment.exists){
             return;
         }
         await admin.firestore().collection('processed_payments').doc(context.params.paymentId).set({processed: true});
 
-        const product = await admin.firestore().collection('products').doc(payment.items[0].price.product).get();
-        const productData = product.data();
-        
-        if(productData.metadata.credits){
-            await addCreditsToUser(context.params.userId, productData);
-        }
-        else if(productData.metadata.type=='course'){
-            await addCourseToUser(context.params.userId, payment.items[0].price.product);
+        for(let i=0; i<payment.items.length; i++){
+            if(payment.items[i].price.product){
+                const product = await admin.firestore().collection('products').doc(payment.items[i].price.product).get();
+                const productData = product.data();
+                
+                if(productData.metadata.credits){
+                    await addCreditsToUser(context.params.userId, productData);
+                }
+                else if(productData.metadata.type=='course'){
+                    await addCourseToUser(context.params.userId, payment.items[i].price.product);
+                }
+                else if(productData.metadata.type=='trainer'){
+                    await addTrainerSubscription(context.params.userId, productData);
+                }
+                else if(productData.metadata.type=='elearning'){
+                    await addElearningToUser(context.params.userId, payment.items[i].price.product);
+                    await registerPurchase(context.params.userId,productData.metadata.trainingId,productData.metadata.trainerId,(payment.items[i].price.unit_amount ? (payment.items[i].price.unit_amount / 100) : 0))
+                }
+            }
         }
 
     }
@@ -91,6 +112,60 @@ exports.creditsBought = functions.region('europe-west1').firestore
     }
 
   }
+
+    async function addElearningToUser(userId:string, productId:string){
+        const elearnings = await admin.firestore().collection('elearnings').where('stripeProductId', '==', productId).get();
+        if(elearnings.empty){
+            return;
+        }
+        const elearning = elearnings.docs[0];
+        const elearningId = elearning.id;
+
+        if(!elearning.exists){
+            return;
+        }
+        const elearningData = elearning.data();
+        if(!elearningData){
+            return;
+        }
+        const elearningItems = await admin.firestore().collection('elearnings').doc(elearningId).collection('items').get();
+
+        let elearningItemsData:any = [];
+        elearningItems.forEach((item:any)=>{
+            elearningItemsData.push(item.data());
+        });
+
+        const newElearning = await admin.firestore().collection('users').doc(userId).collection('my_elearnings').add(elearningData);
+        for(let i=0; i<elearningItemsData.length; i++){
+            await admin.firestore().collection('users').doc(userId).collection('elearnings').doc(newElearning.id).collection('items').doc(elearningItemsData[i].id).set(elearningItemsData[i]);
+        }
+
+    }
+
+    async function registerPurchase(userId:string, trainingId:string, trainerId:string,price:any){
+        const purchase = await admin.firestore().collection('elearning_purchases').add({
+            purchased:moment().unix(),
+            trainerId,
+            userId,
+            trainingId,
+            status: price ? 'To be paid' : 'complete',
+            price: price ? parseInt(price) : 0
+        })
+
+        const user =  await admin.firestore().collection('users').doc(userId).get();
+        const userData = user.data()
+        admin.firestore().collection('trainers').doc(trainerId).collection('purchases').doc(purchase.id).set({
+            purchased:moment().unix(),
+            trainerId,
+            user:{
+                email:userData.email,
+                displayName:userData.displayName
+            },
+            trainingId,
+            status: price ? 'To be paid' : 'complete',
+            price: price ? parseInt(price) : 0
+        })
+    }
 
   async function addCreditsToUser(userId:string,productData:any){
     let obj:any = {

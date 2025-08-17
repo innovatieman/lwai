@@ -1430,7 +1430,7 @@ No text, lines, or other elements should be present in the image besides the por
         newItem.attitude = fileData.attitude || 1;
         newItem.steadfastness = fileData.steadfastness || 50;
         newItem.casus = fileData.casus || '';
-        newItem.trainer_id = this.nav.activeOrganisationId;
+        newItem.trainerId = this.nav.activeOrganisationId;
         newItem.goalsItems = fileData.goalsItems || {
           phases: [],
           free: '',

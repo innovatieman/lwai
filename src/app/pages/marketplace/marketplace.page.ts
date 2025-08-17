@@ -3,6 +3,7 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
+import { AccountService } from 'src/app/services/account.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
@@ -29,7 +30,9 @@ export class MarketplacePage implements OnInit {
     private translate:TranslateService,
     private toast:ToastService,
     private firestoreService: FirestoreService,
-    public helper:HelpersService
+    public helper:HelpersService,
+    private functions: AngularFireFunctions,
+    private accountService:AccountService
   ) { }
 
   ngOnInit() {
@@ -41,8 +44,20 @@ export class MarketplacePage implements OnInit {
       if(params['item_id']){
         this.item_id = params['item_id'];
       }
+      if(this.item_id == 'error'){
+        this.toast.show(this.translate.instant('error_messages.failure'), 6000);
+        this.nav.go('marketplace/elearnings');
+      }
+      else if(this.item_id == 'success'){
+        this.toast.show(this.translate.instant('marketplace.success_purchase'), 6000);
+        setTimeout(() => {
+          this.nav.go('start/my_trainings');
+        }, 1000);
+      }
     });
     this.getElearnings();
+    this.accountService.fetchProducts();
+    this.accountService.fetchProductsElearnings();
   }
 
   ionViewDidEnter() {
@@ -123,8 +138,44 @@ export class MarketplacePage implements OnInit {
     return itemsCount;
   }
 
-  buyItem(item:any) {
-    console.log('Buying item:', item);
+  showCreditsOption:boolean = false;
+  unlimitedCreditsOption:boolean = true;
+  buyItem(item:any, skipCreditsCheck:boolean = false) {
+    console.log('Buying item:', item, this.auth.credits);
+    
+    if((!this.auth.credits_unlimited_type) && !skipCreditsCheck) {
+      this.showCreditsOption = true;
+      return;
+    }
+
+    let productItem = this.accountService.getProductElearningById(item.stripeProductId);
+
+
+    // console.log(this.accountService.getUnlimitedChatProduct())
+    // console.log('skip');
+    let products:any[] = [productItem]
+    if(this.showCreditsOption && this.unlimitedCreditsOption) {
+      products.push(this.accountService.getUnlimitedChatProduct())
+    }
+
+    this.accountService.buyMultiple(products).then((res:any) => {
+    }).catch((error:any) => {
+      console.error('Purchase failed:', error);
+      this.toast.show(this.translate.instant('elearnings.purchase_failed'), 6000);
+    });
+
+
+    // this.functions.httpsCallable('buyElearning')({ elearningId: item.id }).subscribe({
+    //   next: (response:any) => {
+    //     console.log('Purchase successful:', response);
+    //     this.toast.show(this.translate.instant('elearnings.purchase_successful'), 6000);
+    //     // this.nav.go('start/my_trainings');
+    //   }
+    //   , error: (error:any) => {
+    //     console.error('Purchase failed:', error);
+    //     this.toast.show(this.translate.instant('elearnings.purchase_failed'), 6000);
+    //   }
+    // });
     
   }
   

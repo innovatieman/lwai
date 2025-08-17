@@ -19,11 +19,13 @@ export class ConversationStartPage implements OnInit {
   @Input() caseItem:any = {}
   step = -1
   promptChecked:boolean = false
+  pageLoaded:boolean = false
   showGoal:any = {
     attitude: false,
     phases: false,
     free: false
   }
+  directStart:boolean = false
   caseItemOriginal:any = {}
   requiredPerPage: any = {
     0: ['role','title'],
@@ -110,6 +112,10 @@ export class ConversationStartPage implements OnInit {
     this.slide(0,false,true)
   }
 
+  ionViewDidEnter() {
+    this.pageLoaded = true
+  }
+
   async slide(nr:number,back?:boolean,start?:boolean){
     this.toast.hideTooltip()
     let checkNr = nr-1
@@ -128,7 +134,13 @@ export class ConversationStartPage implements OnInit {
     // console.log('hier')
     if((this.caseItem.id || this.caseItem.caseId) && !this.showStep(nr)){
       if(nr==5){
-        this.close()
+        this.directStart = true
+        let checkLoaded = setInterval(() => {
+          if(this.pageLoaded){
+            clearInterval(checkLoaded)
+            this.close()
+          }
+        },20)
         return
       }
       if(back){
@@ -204,6 +216,7 @@ export class ConversationStartPage implements OnInit {
     else{
       this.conversationService.originUrl = ''
     }
+    console.log('caseItem',this.caseItem)
     this.modalCtrl.dismiss(this.caseItem)
   }
 

@@ -104,6 +104,7 @@ export class StartPage implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
+
       if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'my_trainings' || params['tab'] == 'my_organisation')){
         this.showAll = params['tab']
         console.log(params['case_types'],params['case_types'] != 'create_self')
@@ -416,8 +417,10 @@ export class StartPage implements OnInit {
       caseItem.logo = logo
     }
     if(training){
-      caseItem.trainingId = training.id
-      caseItem.trainerId = training.trainer_id
+      if(caseItem.publishType!='elearning'){
+        caseItem.trainingId = training.id
+      }
+      caseItem.trainerId =  training.trainerId || training.trainer_id
     }
     this.modalService.showCaseInfo(caseItem, (response:any)=>{
       console.log('case info response',response)
@@ -817,7 +820,6 @@ export class StartPage implements OnInit {
 
   
     selectModule(module:any,organisation?:boolean){
-      // console.log('select module',module,organisation)
       let countCheck = 0
       let check = setInterval(() => {
         countCheck++
@@ -825,11 +827,10 @@ export class StartPage implements OnInit {
           clearInterval(check)
         }
         if(!organisation){
-
-          if(this.auth.activeCourses.length > 0){
+          
+          if(this.auth.activeCourses.length > 0 || this.auth.myElearnings?.length > 0){
             clearInterval(check)
             this.selectedModule = this.auth.getActiveCourse(module)
-            // console.log('selected module',this.selectedModule)
           }
         }
         else{

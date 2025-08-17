@@ -541,12 +541,7 @@ export class AccountPage implements OnInit {
     console.log(product)
     let item = {
       title: product.credits +' '+ this.translate.instant('page_account.credits'),
-      user_info: `<div style="line-height:30px">
-        Goed voor ${product.conversations ? product.conversations : 'een onbeperkt aantal'} goede gesprekken<br>
-        Selecteer uit alle onderwerpen<br>
-        Geldig voor 1 jaar<br>
-        Persoonlijk dashboard
-      </div>`,
+      user_info: this.translate.instant('page_account.credits_buy_info'),
       type: 'product',
       id: product.id,
       photo:'assets/img/credits.webp',

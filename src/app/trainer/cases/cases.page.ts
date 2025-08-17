@@ -18,6 +18,7 @@ import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
 import * as moment from 'moment';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-cases',
@@ -44,6 +45,8 @@ export class CasesPage implements OnInit {
   visibleCases: any[] = [];
   maxCases: number = 15;
   casesLoaded: boolean = false;
+  private leave$ = new Subject<void>();
+
   constructor(
     public nav: NavService,
     public icon:IconsService,
@@ -64,46 +67,63 @@ export class CasesPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.auth.userInfo$.subscribe(userInfo => {
+    
+
+
+  }
+
+  ionViewWillEnter(){
+    this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
       if (userInfo) {
-        this.auth.hasActive('trainer').subscribe((trainer)=>{
+        this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
           // console.log('trainer',trainer,this.casesLoaded)
-          if(trainer &&!this.casesLoaded){
+          if(trainer){
             // console.log('loading cases')
-            this.trainerService.loadCases(()=>{
-              // console.log('cases loaded')
-              this.updateVisibleCases();
-              // console.log(this.trainerService.cases)
-              this.casesLoaded = true
-            });
-            this.trainerService.loadModules(()=>{
-              // this.trainerService.modules = this.trainerService.modules
-            })
+            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+                this.updateVisibleCases();
+              },{
+              cases:()=>{
+                this.updateVisibleCases();
+              }}
+            )
+            // this.trainerService.loadCases(()=>{
+            //   // console.log('cases loaded')
+            //   this.updateVisibleCases();
+            //   // console.log(this.trainerService.cases)
+            //   this.casesLoaded = true
+            // });
+            // this.trainerService.loadModules(()=>{
+            //   // this.trainerService.modules = this.trainerService.modules
+            // })
           }
         })
       }
     })
 
-    this.nav.organisationChange.subscribe((res)=>{
-      this.trainerService.loadCases(()=>{
-        this.updateVisibleCases();
-      })
-      this.trainerService.loadModules(()=>{
-        // this.trainerService.modules = this.trainerService.modules
-      })
+    this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
+      this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+          this.updateVisibleCases();
+        },{
+        cases:()=>{
+          this.updateVisibleCases();
+        }}
+      )
     })
     
-    this.nav.changeLang.subscribe((res)=>{
+    this.nav.changeLang.pipe(takeUntil(this.leave$)).subscribe((res)=>{
       this.updateVisibleCases();
     })
 
     this.loadCategories()
+  }
 
-
+  ionViewWillLeave() {
+    this.leave$.next();
+    this.leave$.complete();
   }
 
   private loadCategories() {
-    let catsSubscription = this.firestore.get('categories').subscribe((categories) => {
+    let catsSubscription = this.firestore.get('categories').pipe(takeUntil(this.leave$)).subscribe((categories) => {
       this.categories = categories.map( (category:any) => {
         // add OpeningMessage tot the category
         let catData = category.payload.doc.data()
@@ -229,21 +249,32 @@ export class CasesPage implements OnInit {
   addCase(){
     this.toast.showLoader()
     let casus:any = this.trainerService.defaultCase()
-    casus.trainer_id = this.nav.activeOrganisationId
-    this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',casus).then(()=>{
-      this.trainerService.loadCases(()=>{
-        let item = this.trainerService.cases.filter((e:any) => {
-          return e.created === casus.created
-        })
-        if(item.length){
-          this.trainerService.caseItem = item[0]
-        }
-        else{
+    casus.trainerId = this.nav.activeOrganisationId
+    this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',casus).then(async () => {
+        try {
+          const found = await this.trainerService.waitForItem('case', casus.created, 5000, 'created');
+          this.trainerService.caseItem = found;
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
           this.trainerService.caseItem = {}
+          // this.trainerService.caseItem = { id: casus.id, ...casus };
         }
-        this.toast.hideLoader()
-      })
-    })
+      });
+
+    //   this.trainerService.loadCases(()=>{
+    //     let item = this.trainerService.cases.filter((e:any) => {
+    //       return e.created === casus.created
+    //     })
+    //     if(item.length){
+    //       this.trainerService.caseItem = item[0]
+    //     }
+    //     else{
+    //       this.trainerService.caseItem = {}
+    //     }
+    //     this.toast.hideLoader()
+    //   })
+    // })
   }
 
   deleteCase(caseItem?:any){
@@ -257,12 +288,13 @@ export class CasesPage implements OnInit {
     this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
       if(result){
         let id = caseItem.id
-        console.log('deleting case',id)
+        // console.log('deleting case',id)
         this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'cases',caseItem.id).then(()=>{
           console.log('deleted case')
+          this.updateVisibleCases();
         })
         this.trainerService.caseItem = {}
-        this.trainerService.loadCases()
+        // this.trainerService.loadCases()
         for(let i=0;i<this.trainerService.modules.length;i++){
           let change = false
           let module = this.trainerService.modules[i]
@@ -543,35 +575,51 @@ export class CasesPage implements OnInit {
           if(res.casus!=caseItem.casus){
             res.translate = false
           }
-          this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',res.id,res).then(()=>{
-            this.trainerService.loadCases(()=>{
-              let item = this.trainerService.cases.filter((e:any) => {
-                return e.id === res.id
-              })
-              if(item.length){
-                this.trainerService.caseItem = item[0]
-              }
-              else{
-                this.trainerService.caseItem = {}
-              }
-            })
-          })
+          this.firestore.setSub('trainers', this.nav.activeOrganisationId, 'cases', res.id, res)
+          .then(async () => {
+            try {
+              const found = await this.trainerService.waitForItem('case',res.id, 5000);
+              this.trainerService.caseItem = found;
+              this.updateVisibleCases();
+              // …openen/navigeer of modal sluiten
+            } catch (err) {
+              // Graceful fallback: direct openen met lokale data
+              this.trainerService.caseItem = { id: res.id, ...res };
+            }
+          });
+
+          // this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',res.id,res).then(()=>{
+          //   this.trainerService.loadCases(()=>{
+          //     let item = this.trainerService.cases.filter((e:any) => {
+          //       return e.id === res.id
+          //     })
+          //     if(item.length){
+          //       this.trainerService.caseItem = item[0]
+          //     }
+          //     else{
+          //       this.trainerService.caseItem = {}
+          //     }
+          //   })
+          // })
         }
         else{
-          this.trainerService.loadCases(()=>{
-            for(let i=0;i<this.trainerService.cases.length;i++){
-              console.log(this.trainerService.cases[i].id,caseItem.id,this.trainerService.cases[i].title)
-            }
-            let item = this.trainerService.cases.filter((e:any) => {
-              return e.id === caseItem.id
-            })
-            if(item.length){
-              this.trainerService.caseItem = item[0]
-            }
-            else{
-              this.trainerService.caseItem = {}
-            }
-          })
+          const item = this.trainerService.cases.find((e: any) => e.id === caseItem.id);
+          this.trainerService.caseItem = item || {};
+          this.updateVisibleCases();
+          // this.trainerService.loadCases(()=>{
+          //   for(let i=0;i<this.trainerService.cases.length;i++){
+          //     console.log(this.trainerService.cases[i].id,caseItem.id,this.trainerService.cases[i].title)
+          //   }
+          //   let item = this.trainerService.cases.filter((e:any) => {
+          //     return e.id === caseItem.id
+          //   })
+          //   if(item.length){
+          //     this.trainerService.caseItem = item[0]
+          //   }
+          //   else{
+          //     this.trainerService.caseItem = {}
+          //   }
+          // })
         }
 
     })
@@ -793,19 +841,34 @@ export class CasesPage implements OnInit {
     copy.created = Date.now()
     copy.title = copy.title + ' (copy)'
     copy.open_to_user = false
-    this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',copy).then(()=>{
-      this.trainerService.loadCases(()=>{
-        let item = this.trainerService.cases.filter((e:any) => {
-          return e.created === copy.created
-        })
-        if(item.length){
-          this.trainerService.caseItem = item[0]
-        }
-        else{
+    this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',copy)
+      .then(async () => {
+        try {
+          const found = await this.trainerService.waitForItem('case',copy.created, 5000, 'created');
+          this.trainerService.caseItem = found;
+          this.updateVisibleCases();
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          // this.trainerService.caseItem = { id: copy.id, ...copy };
           this.trainerService.caseItem = {}
+          this.updateVisibleCases();
+
         }
-      })
-    })
+      });
+
+      // this.trainerService.loadCases(()=>{
+      //   let item = this.trainerService.cases.filter((e:any) => {
+      //     return e.created === copy.created
+      //   })
+      //   if(item.length){
+      //     this.trainerService.caseItem = item[0]
+      //   }
+      //   else{
+      //     this.trainerService.caseItem = {}
+      //   }
+      // })
+    // })
   }
 
   back(){
@@ -1079,7 +1142,7 @@ export class CasesPage implements OnInit {
         newItem.attitude = fileData.attitude || 1;
         newItem.steadfastness = fileData.steadfastness || 50;
         newItem.casus = fileData.casus || '';
-        newItem.trainer_id = this.nav.activeOrganisationId;
+        newItem.trainerId = this.nav.activeOrganisationId;
         newItem.goalsItems = fileData.goalsItems || {
           phases: [],
           free: '',
@@ -1130,20 +1193,29 @@ export class CasesPage implements OnInit {
       this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
       return;
     }
-    this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'cases', newItem,(res:any) => {
+    this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'cases', newItem,async (res:any) => {
       if(res && res.id){
-        this.trainerService.loadCases(() => {
-          let item = this.trainerService.cases.filter((e:any) => {
-            return e.created === newItem.created
-          })
-          if(item.length){
-            this.trainerService.caseItem = item[0]
-          }
-          else{
-            this.trainerService.caseItem = {}
-          }
-          // this.toast.show(this.translate.instant('cases.case_imported_successfully'))
-        });
+        try {
+          const found = await this.trainerService.waitForItem('case',newItem.created, 5000, 'created');
+          this.trainerService.caseItem = found;
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.caseItem = { id: newItem.id, ...newItem };
+        }
+
+        // this.trainerService.loadCases(() => {
+        //   let item = this.trainerService.cases.filter((e:any) => {
+        //     return e.created === newItem.created
+        //   })
+        //   if(item.length){
+        //     this.trainerService.caseItem = item[0]
+        //   }
+        //   else{
+        //     this.trainerService.caseItem = {}
+        //   }
+        //   // this.toast.show(this.translate.instant('cases.case_imported_successfully'))
+        // });
       } else {
         this.toast.show(this.translate.instant('error_messages.import_failed'), 4000, 'middle');
       }

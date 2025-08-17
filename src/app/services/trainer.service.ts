@@ -5,7 +5,8 @@ import { AuthService } from '../auth/auth.service';
 import { InfoService } from './info.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { combineLatest, map, switchMap, defaultIfEmpty } from 'rxjs';
+import { combineLatest, map, switchMap, defaultIfEmpty, of } from 'rxjs';
+import { BehaviorSubject, filter, firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { ModalService } from './modal.service';
 import { id } from '@swimlane/ngx-datatable';
 import { NavService } from './nav.service';
@@ -17,6 +18,11 @@ import { AccountService } from './account.service';
   providedIn: 'root'
 })
 export class TrainerService {
+  [x:string]: any;
+  cases$ = new BehaviorSubject<any[]>([]); // voeg toe
+  infoItems$ = new BehaviorSubject<any[]>([]); // voeg toe
+  modules$ = new BehaviorSubject<any[]>([]); // voeg toe
+  trainings$ = new BehaviorSubject<any[]>([]); // voeg toe
   subscriptions:any ={}
   cases: any[] = []
   isTrainer: boolean = false
@@ -41,6 +47,9 @@ export class TrainerService {
   isOrgAdmin: boolean = false;
   segments:any[] = []
   segmentsOrganized:any = []
+  private currentOrgId?: string;
+  private listenersStarted = false;
+  
   constructor(
     private functions: AngularFireFunctions,
     private fire: AngularFirestore,
@@ -84,6 +93,71 @@ export class TrainerService {
         }
       });
     })
+  }
+
+  ensureLoadedForOrg(orgId: string,callback?: any,callbackSpecific?: any) {
+    // console.log('ensureLoadedForOrg',orgId)
+    if (!orgId) return;
+    if (this.listenersStarted && this.currentOrgId === orgId) {
+      if (callback) {
+        // console.log('already loaded for org', orgId);
+        callback();
+      }
+      return;
+    }
+    // als org wijzigt: alle oude listeners sluiten
+    Object.values(this.subscriptions).forEach((s:any) => s?.unsubscribe());
+    this.subscriptions = {};
+
+    this.currentOrgId = orgId;
+    this.listenersStarted = true;
+    // console.log('specific',callbackSpecific)
+    this.loadTrainingsAndParticipants(()=>{
+      this.loadModules(()=>{
+        if(callbackSpecific?.modules){
+          callbackSpecific.modules();
+        }
+      })
+      this.loadCases(()=>{
+        if(callbackSpecific?.cases){
+          callbackSpecific.cases();
+        }
+      })
+      this.loadInfoItems(()=>{
+        if(callbackSpecific?.infoItems){
+          callbackSpecific.infoItems();
+        }
+      })
+      if (callback) {
+        callback();
+      }
+      if(callbackSpecific?.trainings){
+        callbackSpecific.trainings();
+      }
+      if(callbackSpecific?.example){
+        callbackSpecific.example();
+      }
+    })
+  }
+
+  async waitForItem(type:string,id: any, timeoutMs = 5000, searchField: string = 'id'): Promise<any> {
+    try {
+      return await firstValueFrom(
+        this[type + 's$'].pipe(
+          map((list:any) => list.find((c:any) => c[searchField] === id)),
+          filter(Boolean),
+          timeout({ first: timeoutMs })
+        )
+      );
+    } catch (e) {
+      if (e instanceof TimeoutError) {
+        // Val terug: kijk eenmalig in de huidige cache
+        const fallback = this[type + 's'].find((c:any) => c[searchField] === id);
+        if (fallback) return fallback;
+        throw new Error(`Item ${id} niet gevonden binnen ${timeoutMs} ms`);
+      }
+      throw e;
+    }
   }
 
   loadTrainerInfo(callback?:Function,unsubscribe?:boolean) {
@@ -222,59 +296,118 @@ export class TrainerService {
     }
     this.affiliateLoaded = true
     this.functions.httpsCallable('myAffiliates')({}).subscribe((res:any) => {
-      console.log('res',res)
+      // console.log('res',res)
       if(res && res.result){
         this.affiliates = res.result
-        console.log('affiliates',this.affiliates)
+        // console.log('affiliates',this.affiliates)
       }
     })
   }
 
-  loadCases(callback?:Function) {
-      const currentLang = this.translate.currentLang || 'en';
-      // Query voor cases die toegankelijk zijn voor de gebruiker
-      this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-        .collection('cases')
-        .snapshotChanges()
-        .pipe(
-          // Map documenten naar objecten
-          map(docs =>
-            docs.map((e: any) => ({
-              ...e.payload.doc.data(),
-              id: e.payload.doc.id,
-            }))
-          ),
-          // Haal vertalingen op voor de huidige taal
-          switchMap(cases =>
-            combineLatest(
-              cases.map(doc =>
-                this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-                  .collection(`cases/${doc.id}/translations`)
-                  .doc(currentLang)
-                  .get()
-                  .pipe(
-                    map(translationDoc => ({
-                      ...doc,
-                      id: doc.id,
-                      translation: translationDoc.exists ? translationDoc.data() : null,
-                    }))
-                  )
-              )
-            )
-          )
-        )
-        .subscribe(cases => {
-          this.cases = cases.map(doc => ({
-            ...doc,
-            id: doc.id,
-          }));
-          if (callback) {
-            callback();
-          }
-        });
-  }
+  // loadCases(callback?:Function) {
+  //     const currentLang = this.translate.currentLang || 'en';
+  //     // Query voor cases die toegankelijk zijn voor de gebruiker
+  //     this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //       .collection('cases')
+  //       .snapshotChanges()
+  //       .pipe(
+  //         // Map documenten naar objecten
+  //         map(docs =>
+  //           docs.map((e: any) => ({
+  //             ...e.payload.doc.data(),
+  //             id: e.payload.doc.id,
+  //           }))
+  //         ),
+  //         // Haal vertalingen op voor de huidige taal
+  //         switchMap(cases =>
+  //           combineLatest(
+  //             cases.map(doc =>
+  //               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //                 .collection(`cases/${doc.id}/translations`)
+  //                 .doc(currentLang)
+  //                 .get()
+  //                 .pipe(
+  //                   map(translationDoc => ({
+  //                     ...doc,
+  //                     id: doc.id,
+  //                     translation: translationDoc.exists ? translationDoc.data() : null,
+  //                   }))
+  //                 )
+  //             )
+  //           )
+  //         )
+  //       )
+  //       .subscribe(cases => {
+  //         this.cases = cases.map(doc => ({
+  //           ...doc,
+  //           id: doc.id,
+  //         }));
+  //         if (callback) {
+  //           callback();
+  //         }
+  //       });
+  // }
 
-  
+  loadCases(callback?: Function): void {
+  // 1) Eerst bestaande subscription sluiten (voorkomt stapeling)
+    if (this.subscriptions['loadcases']) {
+      this.subscriptions['loadcases'].unsubscribe();
+    }
+
+    const orgId = this.nav.activeOrganisationId;
+    const lang  = this.translate.currentLang || 'en';
+
+    // 2) Realtime listener op cases + bijbehorende vertaling voor huidige taal
+    this.subscriptions['loadcases'] = this.fire
+      .collection('trainers')
+      .doc(orgId)
+      .collection('cases')
+      .snapshotChanges()
+      .pipe(
+        // Docs → plain objects
+        map((docs: any[]) =>
+          docs.map((e: any) => ({
+            id: e.payload.doc.id,
+            ...e.payload.doc.data(),
+          }))
+        ),
+        // Voor elk case-doc ook de vertaling ophalen (zelfde org, subcollectie)
+        switchMap((cases: any[]) => {
+          if (!cases.length) return of([] as any[]);
+          return combineLatest(
+            cases.map((c) =>
+              this.fire
+                .collection('trainers')
+                .doc(orgId)
+                .collection(`cases/${c.id}/translations`)
+                .doc(lang)
+                .get()
+                .pipe(
+                  map((tDoc: any) => ({
+                    ...c,
+                    translation: tDoc.exists ? tDoc.data() : null,
+                  }))
+                )
+            )
+          );
+        })
+      )
+      .subscribe((incomingCases: any[]) => {
+        // 3) In-place reconcile: behoud object-referenties die de UI al vasthoudt
+        this.patchArrayInPlace(this.cases, incomingCases, 'id', (target: any, src: any) => {
+          Object.assign(target, src);
+        });
+
+        // 4) (optioneel) stabiele sortering
+        this.cases.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+
+        // 5) Stream updaten voor wie wil wachten op binnenkomst (waitForCase, etc.)
+        this.cases$.next(this.cases);
+        if(callback) {
+          callback();
+        }
+      });
+  }
 
   loadInfoItems(callback?:Function,unsubscribe?:boolean) {
     this.subscriptions['loadInfoItems'] =  this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
@@ -289,18 +422,33 @@ export class TrainerService {
           }))
         ),
       )
-      .subscribe(infoItems => {
-        this.infoItems = infoItems.map(doc => ({
-          ...doc,
-        }));
-        // console.log('infoItems',this.infoItems)
-        if (callback) {
+      .subscribe((incomingCases: any[]) => {
+        // 3) In-place reconcile: behoud object-referenties die de UI al vasthoudt
+        this.patchArrayInPlace(this.infoItems, incomingCases, 'id', (target: any, src: any) => {
+          Object.assign(target, src);
+        });
+
+        // 4) (optioneel) stabiele sortering
+        this.infoItems.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+
+        // 5) Stream updaten voor wie wil wachten op binnenkomst (waitForCase, etc.)
+        this.infoItems$.next(this.infoItems);
+        if(callback) {
           callback();
         }
-        if(unsubscribe){
-          this.subscriptions['loadInfoItems'].unsubscribe();
-        }
       });
+      // .subscribe(infoItems => {
+      //   this.infoItems = infoItems.map(doc => ({
+      //     ...doc,
+      //   }));
+      //   // console.log('infoItems',this.infoItems)
+      //   if (callback) {
+      //     callback();
+      //   }
+      //   if(unsubscribe){
+      //     this.subscriptions['loadInfoItems'].unsubscribe();
+      //   }
+      // });
   }
 
   getInfoItem(id:string){
@@ -401,67 +549,260 @@ export class TrainerService {
     }
   }
 
-  loadModules(callback?:Function) {
-    this.subscriptions['loadmodules'] = this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  // loadModules(callback?:Function) {
+  //   this.subscriptions['loadmodules'] = this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //     .collection('modules')
+  //     .snapshotChanges()
+  //     .pipe(
+  //       // Map documenten naar objecten
+  //       map(docs =>
+  //         docs.map((e: any) => ({
+  //           id: e.payload.doc.id,
+  //           ...e.payload.doc.data(),
+  //         }))
+  //       ),
+  //     )
+  //     .subscribe(modules => {
+  //       this.modules = modules.map(doc => ({
+  //         ...doc,
+  //       }));
+  //       if(this.moduleItem.id){
+  //         for (let i = 0; i < this.modules.length; i++) {
+  //           if (this.modules[i].id == this.moduleItem.id) {
+  //             this.moduleItem = JSON.parse(JSON.stringify(this.modules[i]))
+  //           }
+  //         }
+  //       }
+  //       // console.log(this.modules)
+  //       if (callback) {
+  //         callback();
+  //       }
+  //     });
+  // }
+
+  // In je service
+
+
+  // private subscriptions: { [k: string]: any } = {};
+
+  /** Roep dit aan vlak vóór je `update('items', ...)` doet in je component */
+  private lastOrderSigByModule = new Map<string, string>();
+  rememberLocalOrder(moduleId: string, items: any[]): void {
+    this.lastOrderSigByModule.set(moduleId, this.computeOrderSig(items));
+  }
+
+  loadModules(callback?: Function): void {
+    // console.log('loadModules',this.nav.activeOrganisationId)
+    // Unsubscribe als deze al bestaat
+    if (this.subscriptions['loadmodules']) {
+      this.subscriptions['loadmodules'].unsubscribe();
+    }
+
+    this.subscriptions['loadmodules'] = this.fire
+      .collection('trainers')
+      .doc(this.nav.activeOrganisationId)
       .collection('modules')
       .snapshotChanges()
       .pipe(
-        // Map documenten naar objecten
-        map(docs =>
+        map((docs: any[]) =>
           docs.map((e: any) => ({
             id: e.payload.doc.id,
             ...e.payload.doc.data(),
           }))
-        ),
+        )
       )
-      .subscribe(modules => {
-        this.modules = modules.map(doc => ({
-          ...doc,
-        }));
-        if(this.moduleItem.id){
-          for (let i = 0; i < this.modules.length; i++) {
-            if (this.modules[i].id == this.moduleItem.id) {
-              this.moduleItem = JSON.parse(JSON.stringify(this.modules[i]))
-            }
+      .subscribe((incomingModules: any[]) => {
+        // 1) Patch top-level modules in place
+        this.patchArrayInPlace(this.modules, incomingModules, 'id', (targetModule: any, srcModule: any) => {
+          // 1a) Kopieer velden behalve items
+          Object.keys(srcModule).forEach((k) => {
+            if (k !== 'items') targetModule[k] = srcModule[k];
+          });
+
+          // 1b) Bereken signatures
+          const targetItems: any[] = Array.isArray(targetModule.items) ? targetModule.items : (targetModule.items = []);
+          const srcItems: any[] = Array.isArray(srcModule.items) ? srcModule.items : [];
+          const incomingSig = this.computeOrderSig(srcItems);
+          const currentSig  = this.computeOrderSig(targetItems);
+          const plannedSig  = this.lastOrderSigByModule.get(targetModule.id);
+
+          // 1c) Als de volgorde (snapshot) gelijk is aan lokaal/geplande -> items níet aanraken (flits voorkomen)
+          const sameOrder =
+            (plannedSig && plannedSig === incomingSig) ||
+            (!plannedSig && incomingSig === currentSig);
+
+          if (sameOrder) {
+            // Optioneel: wél lichte field-merge doen zonder structuur of volgorde te wijzigen
+            // (Meestal niet nodig bij re-order; we laten 'm leeg om nul DOM-mutaties te forceren)
+          } else {
+            // 1d) Patch geneste items in place + sorteer
+            this.patchArrayInPlace(targetItems, srcItems, 'id', (t: any, s: any) => Object.assign(t, s));
+            targetItems.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          }
+
+          // 1e) Als de geplande signature is “ingehaald” door snapshot: opruimen
+          if (plannedSig && plannedSig === incomingSig) {
+            this.lastOrderSigByModule.delete(targetModule.id);
+          }
+        });
+        
+        // 2) Zorg dat moduleItem een **referentie** blijft naar modules[]
+        if (this.moduleItem && this.moduleItem.id) {
+          const ref = this.modules.find((m) => m.id === this.moduleItem.id);
+          if (ref && ref !== this.moduleItem) {
+            this.moduleItem = ref; // herverwijs, niet klonen
           }
         }
-        // console.log(this.modules)
-        if (callback) {
-          callback();
-        }
+
+        if (typeof callback === 'function') callback();
       });
   }
 
-  loadTrainings(callback?:Function) {
-    this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  // ---- Helpers -------------------------------------------------------------
+
+  /** Signature op basis van id-volgorde; snel en stabiel */
+  private computeOrderSig(arr: any[]): string {
+    if (!Array.isArray(arr)) return '';
+    return arr.map((x) => x && x.id).join('|');
+  }
+
+  /**
+   * Patcht target[] zodat de array-referentie behouden blijft:
+   * - Update bestaande items via onUpdate
+   * - Voeg nieuwe toe
+   * - Verwijder niet-meer-bestaande
+   */
+  private patchArrayInPlace(
+    target: any[],
+    source: any[],
+    key: string,
+    onUpdate?: (targetItem: any, srcItem: any) => void
+  ): void {
+    const indexById = new Map<any, number>();
+    for (let i = 0; i < target.length; i++) indexById.set(target[i][key], i);
+
+    const seen = new Set<any>();
+
+    // Update bestaande of voeg toe
+    for (let s = 0; s < source.length; s++) {
+      const sItem = source[s];
+      const id = sItem[key];
+      const tIdx = indexById.get(id);
+
+      if (tIdx !== undefined) {
+        const tItem = target[tIdx];
+        if (onUpdate) onUpdate(tItem, sItem);
+        else Object.assign(tItem, sItem);
+        seen.add(id);
+      } else {
+        target.push({ ...sItem });
+        seen.add(id);
+      }
+    }
+
+    // Verwijder verdwenen items (van achter naar voren)
+    for (let i = target.length - 1; i >= 0; i--) {
+      const id = target[i][key];
+      if (!seen.has(id)) target.splice(i, 1);
+    }
+  }
+
+    loadTrainings(callback?: Function): void {
+    // Unsubscribe als deze al bestaat
+    if (this.subscriptions['loadtrainings']) {
+      this.subscriptions['loadtrainings'].unsubscribe();
+    }
+
+    this.subscriptions['loadtrainings'] = this.fire
+      .collection('trainers')
+      .doc(this.nav.activeOrganisationId)
       .collection('trainings')
       .snapshotChanges()
       .pipe(
-        // Map documenten naar objecten
-        defaultIfEmpty([]),
-        map(docs =>
+        map((docs: any[]) =>
           docs.map((e: any) => ({
             id: e.payload.doc.id,
             ...e.payload.doc.data(),
           }))
-        ),
+        )
       )
-      .subscribe(trainings => {
-        this.trainings = trainings.map(doc => ({
-          ...doc,
-        }));
-        if(this.trainingItem.id){
-          for (let i = 0; i < this.trainings.length; i++) {
-            if (this.trainings[i].id == this.trainingItem.id) {
-              this.trainingItem = JSON.parse(JSON.stringify(this.modules[i]))
-            }
+      .subscribe((incomingTrainings: any[]) => {
+        // 1) Patch top-level modules in place
+        this.patchArrayInPlace(this.trainings, incomingTrainings, 'id', (targetModule: any, srcModule: any) => {
+          // 1a) Kopieer velden behalve items
+          Object.keys(srcModule).forEach((k) => {
+            if (k !== 'items') targetModule[k] = srcModule[k];
+          });
+
+          // 1b) Bereken signatures
+          const targetItems: any[] = Array.isArray(targetModule.items) ? targetModule.items : (targetModule.items = []);
+          const srcItems: any[] = Array.isArray(srcModule.items) ? srcModule.items : [];
+          const incomingSig = this.computeOrderSig(srcItems);
+          const currentSig  = this.computeOrderSig(targetItems);
+          const plannedSig  = this.lastOrderSigByModule.get(targetModule.id);
+
+          // 1c) Als de volgorde (snapshot) gelijk is aan lokaal/geplande -> items níet aanraken (flits voorkomen)
+          const sameOrder =
+            (plannedSig && plannedSig === incomingSig) ||
+            (!plannedSig && incomingSig === currentSig);
+
+          if (sameOrder) {
+            // Optioneel: wél lichte field-merge doen zonder structuur of volgorde te wijzigen
+            // (Meestal niet nodig bij re-order; we laten 'm leeg om nul DOM-mutaties te forceren)
+          } else {
+            // 1d) Patch geneste items in place + sorteer
+            this.patchArrayInPlace(targetItems, srcItems, 'id', (t: any, s: any) => Object.assign(t, s));
+            targetItems.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          }
+
+          // 1e) Als de geplande signature is “ingehaald” door snapshot: opruimen
+          if (plannedSig && plannedSig === incomingSig) {
+            this.lastOrderSigByModule.delete(targetModule.id);
+          }
+        });
+
+        // 2) Zorg dat moduleItem een **referentie** blijft naar trainings[]
+        if (this.trainingItem && this.trainingItem.id) {
+          const ref = this.trainings.find((m) => m.id === this.trainingItem.id);
+          if (ref && ref !== this.trainingItem) {
+            this.trainingItem = ref; // herverwijs, niet klonen
           }
         }
-        if (callback) {
-          callback();
-        }
+
+        if (typeof callback === 'function') callback();
       });
   }
+
+  // loadTrainings(callback?:Function) {
+  //   this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //     .collection('trainings')
+  //     .snapshotChanges()
+  //     .pipe(
+  //       // Map documenten naar objecten
+  //       defaultIfEmpty([]),
+  //       map(docs =>
+  //         docs.map((e: any) => ({
+  //           id: e.payload.doc.id,
+  //           ...e.payload.doc.data(),
+  //         }))
+  //       ),
+  //     )
+  //     .subscribe(trainings => {
+  //       this.trainings = trainings.map(doc => ({
+  //         ...doc,
+  //       }));
+  //       if(this.trainingItem.id){
+  //         for (let i = 0; i < this.trainings.length; i++) {
+  //           if (this.trainings[i].id == this.trainingItem.id) {
+  //             this.trainingItem = JSON.parse(JSON.stringify(this.modules[i]))
+  //           }
+  //         }
+  //       }
+  //       if (callback) {
+  //         callback();
+  //       }
+  //     });
+  // }
 
   // loadSegments(callback?:Function) {
 
@@ -1254,5 +1595,27 @@ export class TrainerService {
       }
     }
     return {}
+  }
+
+  checkForLoopModules(module:any,loopModules:any[] = []):boolean{
+    if(!module?.items || !module.items.length){
+      return false
+    }
+    for(let i=0;i<module.items.length;i++){
+      let item = module.items[i]
+      if(item.type == 'module'){
+        if(loopModules.includes(item.id)){
+          return true
+        }
+        else{
+          loopModules.push(item.id)
+          let found = this.getModule(item.id)
+          if(this.checkForLoopModules(found,loopModules)){
+            return true
+          }
+        }
+      }
+    }
+    return false
   }
 }

@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { max, take } from 'rxjs';
+import { max, Subject, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MaxLengthPipe } from 'src/app/pipes/max-length.pipe';
 import { AccountService } from 'src/app/services/account.service';
@@ -41,7 +41,7 @@ export class DashboardPage implements OnInit {
   segmentsLoaded:boolean = false;
   isTrainer:boolean = false;
   isTrainerPro:boolean = false;
-
+  private leave$ = new Subject<void>();
   [x:string]: any;
   constructor(
     public nav: NavService,
@@ -62,7 +62,15 @@ export class DashboardPage implements OnInit {
 
   ngOnInit() {
     this.accountService.ngOnInit()
-    this.route.params.subscribe(params=>{
+  }
+
+ionViewWillLeave() {
+    this.leave$.next();
+    this.leave$.complete();
+  }
+
+ionViewWillEnter(){
+  this.route.params.pipe(takeUntil(this.leave$)).subscribe(params=>{
       if(params['tab']){
         this.showPart = params['tab']
       }
@@ -86,26 +94,11 @@ export class DashboardPage implements OnInit {
         this.tutorial.triggerTutorial('trainer/dashboard','onload')
       }
     }, 1000);
-    // this.auth.userInfo$.subscribe(userInfo => {
-    //     if (userInfo) {
-    //       this.auth.hasActive('trainer').subscribe((trainer)=>{
-    //         if(trainer &&!this.segmentsLoaded){
-    //           this.trainerService.loadSegments(()=>{
-    //             this.segmentsLoaded = true
-    //           });
-    //           this.trainerService.loadModules(()=>{
-    //             // this.trainerService.modules = this.trainerService.modules
-    //           })
-    //         }
-    //       })
-    //     }
-    // })
 
-    this.auth.isAdmin().subscribe((isAdmin:boolean)=>{
+    this.auth.isAdmin().pipe(takeUntil(this.leave$)).subscribe((isAdmin:boolean)=>{
       this.isAdmin = isAdmin;
     })
-
-  }
+}
 
 ionViewDidEnter() {
     this.auth.hasActive('trainer').pipe(
@@ -156,7 +149,7 @@ ionViewDidEnter() {
           this.functions.httpsCallable('requestFromTrainerAdmin')({
             trainerId: this.nav.activeOrganisationId,
             request: result.data[0].value
-          }).subscribe((response:any)=>{
+          }).pipe(takeUntil(this.leave$)).subscribe((response:any)=>{
             console.log('requestFromTrainerAdmin response',response)
             if(response?.status==200){
               this.toast.show(this.translate.instant('dashboard.request_send_success'),4000,'middle')
@@ -178,11 +171,11 @@ ionViewDidEnter() {
       console.log(res)
       if(res?.status==200&&res?.result.url){
         this.trainerService.trainerInfo.logo = res.result.url
-        this.functions.httpsCallable('uploadLogo')({trainerId:this.nav.activeOrganisationId,logo:this.trainerService.trainerInfo.logo}).subscribe((response:any)=>{})
+        this.functions.httpsCallable('uploadLogo')({trainerId:this.nav.activeOrganisationId,logo:this.trainerService.trainerInfo.logo}).pipe(takeUntil(this.leave$)).subscribe((response:any)=>{})
       }
       else if(res=='delete'){
         this.trainerService.trainerInfo.logo = ''
-        this.functions.httpsCallable('uploadLogo')({trainerId:this.nav.activeOrganisationId,logo:this.trainerService.trainerInfo.logo}).subscribe((response:any)=>{})
+        this.functions.httpsCallable('uploadLogo')({trainerId:this.nav.activeOrganisationId,logo:this.trainerService.trainerInfo.logo}).pipe(takeUntil(this.leave$)).subscribe((response:any)=>{})
       }
 
     },false,true)
@@ -311,7 +304,7 @@ ionViewDidEnter() {
   addAdmin(newAdmin:any){
     this.toast.showLoader()
     console.log('addAdmin',newAdmin)
-    this.functions.httpsCallable('addNewAdmin')({trainerId:this.nav.activeOrganisationId,email:newAdmin.email,uid:'n/a'}).subscribe((response:any)=>{
+    this.functions.httpsCallable('addNewAdmin')({trainerId:this.nav.activeOrganisationId,email:newAdmin.email,uid:'n/a'}).pipe(takeUntil(this.leave$)).subscribe((response:any)=>{
       console.log('addhNewAdmin response',response)
       this.searchingAdmin = false;
       this.errorAdmin = false;
@@ -335,7 +328,7 @@ ionViewDidEnter() {
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
         this.toast.showLoader()
-        this.functions.httpsCallable('deleteAdmin')({trainerId:this.nav.activeOrganisationId,uid:admin.uid}).subscribe((response:any)=>{
+        this.functions.httpsCallable('deleteAdmin')({trainerId:this.nav.activeOrganisationId,uid:admin.uid}).pipe(takeUntil(this.leave$)).subscribe((response:any)=>{
           console.log('deleteAdmin response',response)
           
           if(response?.status==200){
@@ -410,7 +403,7 @@ ionViewDidEnter() {
     this.newAdmin = null;
     this.errorAdmin = false;
     this.searchingAdmin = true;
-    this.functions.httpsCallable('searchNewAdmin')({trainerId:this.nav.activeOrganisationId,email:this.newAdminEmail}).subscribe((response:any)=>{
+    this.functions.httpsCallable('searchNewAdmin')({trainerId:this.nav.activeOrganisationId,email:this.newAdminEmail}).pipe(takeUntil(this.leave$)).subscribe((response:any)=>{
       this.searchingAdmin = false;
       if(response?.status==200){
 

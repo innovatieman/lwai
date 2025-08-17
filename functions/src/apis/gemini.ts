@@ -169,7 +169,7 @@ exports.chatGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['reaction']);
       }
       else{
@@ -386,7 +386,7 @@ exports.chatExpertGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['reaction']);
       }
       else{
@@ -548,7 +548,7 @@ exports.choicesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['choices']);
       }
       else{
@@ -682,7 +682,7 @@ exports.factsGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['facts']);
       }
       else{
@@ -826,7 +826,7 @@ exports.backgroundGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['background']);
       }
       else{
@@ -963,7 +963,7 @@ exports.phasesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['phases']);
       }
       else{
@@ -1123,7 +1123,7 @@ exports.feedbackGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         console.log("Updating credits for user");
         await updateCredits(body.userId, creditsCost['feedback']);
       }
@@ -1423,7 +1423,7 @@ exports.closingGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['closing']);
       }
       else{
@@ -1580,7 +1580,7 @@ exports.skillsGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCost['skills']);
       }
       else{
@@ -1698,7 +1698,7 @@ exports.soundToTextGemini = onRequest(
 
 
       // ✅ Credits bijwerken
-      if(!body.training?.trainingId){
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, creditsCosts);
       }
       else{
@@ -2187,7 +2187,7 @@ exports.chatGeminiVoiceStream = onRequest(
 
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
 
-      if (!body.training?.trainingId) {
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, 1); // creditsCost['reaction']
       } else {
         await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
@@ -2365,7 +2365,7 @@ exports.chatGeminiVoiceElevenlabsStream = onRequest(
       await stopLoading(body);
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
 
-      if (!body.training?.trainingId) {
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, 1);
       } else {
         await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
@@ -2507,7 +2507,7 @@ exports.chatGeminiVoiceElevenlabsStream2 = onRequest(
       // await stopLoading(body);
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
 
-      if (!body.training?.trainingId) {
+      if(!body.training?.trainingId || !body.training?.trainerId){
         await updateCredits(body.userId, 1);
       } else {
         await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
@@ -3875,43 +3875,3 @@ async function getCasusUpdatePrevious(userId:string, caseData:any,daysBetweenCon
 
     return casusUpdates;
 }
-
-// /**
-//  * Converteert een WebM audiobestand naar WAV-formaat.
-//  * @param inputBuffer - Buffer met WebM audio
-//  * @returns {Promise<Buffer>} - Geconverteerd WAV-bestand als buffer
-//  */
-// export async function convertWebMtoWav(inputBuffer: Buffer): Promise<Buffer> {
-//   // 📌 Maak tijdelijke bestanden aan
-//   const inputPath = path.join("/tmp", `input-${Date.now()}.webm`);
-//   const outputPath = path.join("/tmp", `output-${Date.now()}.wav`);
-
-//   // 📌 Schrijf de WebM-audio naar een tijdelijk bestand
-//   fs.writeFileSync(inputPath, inputBuffer);
-
-//   return new Promise((resolve, reject) => {
-//     // 📌 Voer FFmpeg uit om WebM naar WAV te converteren
-//     const ffmpegProcess = spawn(ffmpeg as unknown as string, [
-//       "-i", inputPath, // Inputbestand
-//       "-ar", "16000",  // Sample rate 16kHz (geschikt voor Whisper AI)
-//       "-ac", "1",      // Mono audio
-//       "-b:a", "256k",  // Bitrate
-//       outputPath       // Outputbestand
-//     ]);
-
-//     ffmpegProcess.on("close", (code) => {
-//       if (code === 0) {
-//         // 📌 Lees de geconverteerde WAV en geef als buffer terug
-//         const wavBuffer = fs.readFileSync(outputPath);
-        
-//         // 📌 Opruimen van tijdelijke bestanden
-//         fs.unlinkSync(inputPath);
-//         fs.unlinkSync(outputPath);
-
-//         resolve(wavBuffer);
-//       } else {
-//         reject(new Error(`FFmpeg fout, exit code: ${code}`));
-//       }
-//     });
-//   });
-// }

@@ -140,8 +140,8 @@
         "publish_for_participants":"Publish for participants",
         "publish_elearning":"Publish e-training",
         "upgrade":"Upgrade",
-        "continue":"Continue"
-      },
+        "continue":"Continue",
+        "buy":"Buy"      },
       "messages": {
       "saved": "Data saved",
       "success": "Success!",
@@ -591,8 +591,9 @@
         "no_available_items":"There are no items available (yet)",
         "no_connected_items":"This module has no items yet.",
         "new_training":"New training",
-        "new_training_name":"What is the name of the new training?"
-    },
+        "new_training_name":"What is the name of the new training?",
+        "cannot_add_module_to_itself":"An infinite loop would occur if you add this module to itself. Please choose another module."
+      },
     "trainings":{
         "edit_training":"Edit training",
         "edit_training_long":"Edit training",
@@ -656,7 +657,9 @@
         "publish_switch_organization":"Publish for the entire organization",
         "max_participants_reached":"The maximum number of participants has been reached. If you want to add more participants, you need to increase the number of participants in the Credit Management of the training.",
         "progress":"Progress",
-        "no_progress": "There is no progress in this training yet."
+        "no_progress": "There is no progress in this training yet.",
+        "price_elearning":"Determine the price of your e-learning including VAT",
+        "elearning_margin_alicialabs":"AliciaLabs margin is 20% of the price."
     },
     "generate_case":{
       "title_step_0":"The basics",
@@ -977,7 +980,8 @@
     "training_intro_publish":"There are costs associated with opening a training for participants. These costs depend on the number of participants and how many cases you want to practice.",
     "training_intro_publish_organisation":"To open the training for employees, you must publish the training. After publication, all employees of your organization will have access to the training.",
     "training_intro_publish_organisation_and_trainer":"To open the training for employees, you must publish the training. After publication, all employees of your organization will have access to the training. You can also open the training for participants outside your organization, but then you must publish the training as a trainer. There are costs associated with this.",
-    "training_costs_publish":"<strong>Base amount</strong><br>For each training, you pay a fixed base amount of <strong>€100</strong>.<br><br><strong >Choice of two options</strong><br>You can then choose between two ways to arrange the practice of cases:<br><br><strong><em>Unlimited use</em></strong></p><ul><li>Participants can practice with all cases in your training as much as they want, as long as the training is open.</li><li>Costs: €20 per participant for the first 2 months.</li><li>If you want to keep the training open longer? Then you pay €5 per participant per extra month.</li><li>This option is especially advantageous if you have many cases or work with multiple participants.</li></ul><p><br><strong><em>Maximum number of credits</em></strong></p><ul><li>You buy a fixed number of credits with which participants can practice a limited number of conversations.</li><li>You get 10 conversations in total by default.</li><li>If you want more conversations to practice? Then indicate how many conversations per participant you need.</li><li>This option is especially suitable if you work with few participants or cases.</li></ul><p><br><strong>Extra participants or conversations</strong><br>During the training, you can always add extra participants, extend the opening, or buy extra conversations.<br><br><strong>NB:</strong> The number of knowledge items in your training does not affect the use of credits. Only practicing cases counts.",
+    "training_costs_publish":"<strong>Basic amount</strong><br>For each training, you pay a fixed basic amount of <strong>€100</strong>, unless you have a Trainer Pro package.<br><br><strong><em>Unlimited use</em></strong></p><ul><li>Participants can practice with all cases in your training as long as the training is open.</li><li>Costs: €10 per participant for the first 2 months.</li><li>Do you want to keep the training open longer? Then you pay €5 per participant for each additional month.</li></ul><br><strong>Extra participants or conversations</strong><br>You can always add extra participants or extend the opening during the training.<br><br><strong>NB:</strong> The number of knowledge items in your training does not affect the use of credits. Only practicing cases counts.",
+    "training_costs_publish_trainer_pro":"<strong>Basic amount</strong><br>As a Trainer Pro, you do not have basic costs per training.<br><br><strong><em>Unlimited use</em></strong></p><ul><li>Participants can practice with all cases in your training as long as the training is open.</li><li>Costs: €10 per participant for the first 2 months.</li><li>Do you want to keep the training open longer? Then you pay €5 per participant for each additional month.</li></ul><br><strong>Extra participants or conversations</strong><br>You can always add extra participants or extend the opening during the training.<br><br><strong>NB:</strong> The number of knowledge items in your training does not affect the use of credits. Only practicing cases counts.",
     "training_add_participants":"You can add participants to the training in three ways:<br><br><strong><em>Add participants yourself</em></strong></p><ul><li>Click on the plus sign (+) and fill in the email addresses of the participants. If they register and log in to AliciaLabs with that email address, they will automatically gain access to the training.</li></ul><p><br><br><strong><em>Import participants</em></strong></p><ul><li>If you have a list of names and email addresses of the participants, you can import them. Click on 'import' and use the template to create a file in the correct format. Import that file. If they register and log in to AliciaLabs with that email address, they will automatically gain access to the training.</li></ul><p><br><strong><em>Send link to participants &#128279;</em></strong></p><ul><li>You can also create an access link and send it to the participants. If they click on the link, they can register and log in to AliciaLabs and immediately gain access to the training. If someone is already logged in, the registration code within AliciaLabs can be used to gain access to the training.</li></ul><p><br><strong>Dashboard</strong>",
     "dashboard_trainer_info":"Your name, or organization name, and logo will be displayed on the participants' dashboard. This is the name under which you are registered with AliciaLabs.",
     "training_available_date":"This training or part of the training is available to participants from the set date. If this date is empty or in the past, then (this part of) the training is immediately available to participants.",
@@ -1047,7 +1051,13 @@
     "add_training":"Add training",
     "code":"Insert the code",
     "code_input":"Enter the code you received from your trainer.",
-    "elearnings":"E-trainings"
+    "elearnings":"E-trainings",
+    "elearning":"E-training",
+    "organisation":"Organization",
+    "training":"Training",
+    "free":"Free",
+    "add_unlimited_credits":"To follow this training properly, you need credits. You can practice this training unlimitedly by taking a subscription with unlimited credits. Do you want unlimited practice with this (and all other) training for € 25 per year?",
+    "unlimited_credits":"Yes, I would like unlimited credits for one year for € 25."
   },
   "media":{
     "photo_upload":"Upload photo",

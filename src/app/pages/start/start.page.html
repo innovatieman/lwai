@@ -1,4 +1,4 @@
-<app-header [page]="'start'" [showNoCredits]="showAll=='my_trainings'"></app-header>
+<app-header [page]="'start'" [showNoCredits]="showAll=='my_trainings'&&(!auth.myElearnings.length || !selectedModule || selectedModule?.publishType!='elearning')"></app-header>
 <main class="selectMain">
     <div *ngIf="!auth.userInfo.isConfirmed&&auth.userInfo.email">
         <ion-card style="font-size:18px" basicPadding>
@@ -131,8 +131,8 @@
                 </ion-col>
 
                 <ion-col *ngIf="!media.smallDevice" [size]="3" class="selectColumn" style="margin-top:15px">
-        
-                    <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="auth.activeCourses?.length && selectedModule?.trainer">
+
+                    <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="(auth.activeCourses?.length || auth.myElearnings?.length)  && selectedModule?.trainer">
                         <div fullwidth style="height:100px">
                             <img [src]="selectedModule?.trainer.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
                         </div> 
@@ -184,7 +184,7 @@
                         </ion-item>
                     </div>
 
-                    <div [id]="'btn_my_trainings_'+pathname" style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.activeCourses?.length && (!trainingItem?.id) && (!selectedModule?.id)" [ngClass]="{'activeItem': showAll=='my_trainings','notActiveItem': showAll!='my_trainings'}">
+                    <div [id]="'btn_my_trainings_'+pathname" style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="(auth.activeCourses?.length || auth.myElearnings?.length) && (!trainingItem?.id) && (!selectedModule?.id)" [ngClass]="{'activeItem': showAll=='my_trainings','notActiveItem': showAll!='my_trainings'}">
                         <ion-item detail="false" lines="none" button (click)="nav.go('start/my_trainings/');onFiltersChanged();selectedModule={}" class="itemButton">
                             <div font-20 weight700>{{'buttons.your_trainings' | translate}}</div>
                             <fa-icon font-24 slot="end" [icon]="icon.get('faGraduationCap')"></fa-icon>
@@ -982,8 +982,41 @@
                                     <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModuleMobile2></ion-card>
 
                                 </ion-col>
-                                
-                                <ion-col [size]="12" *ngIf="!(auth.activeCourses | filterSearch : searchTerm : false : ['title','tags','user_info','id','trainer.name']).length">
+
+                                <ion-col marginBottom [size]="helper.cardSizeSmall" *ngFor="let item of auth.myElearnings | filterSearch : searchTerm : false : ['title','tags','user_info','id','trainer.name']">
+                                    
+                                    <ion-card noPadding pointer fullheight caseCard>
+                                        <ion-card-content noPadding fullHeight>
+                                            <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
+                                            <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                                            
+                                            <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                                                <ion-card-header>
+                                                    <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
+                                                    <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                                                </ion-card-header>
+                                            </div>
+                                            <div center flex center-ver center-hor>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                    <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
+                                                </div>
+                                                <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
+                                                    <div>
+                                                        <div>{{item.items?.length ? item.items?.length : 0}}</div>
+                                                        <div font-12>{{'standards.items' | translate}}</div>
+                                                    </div>
+                                                </ion-button> -->
+                                                <div class="spacer"></div>
+                                                <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('start/my_trainings/'+item.id);scrollItemsToTop()">{{'modules.open_module' | translate}}</ion-button>
+                                            </div>
+                                        </ion-card-content>
+                                    </ion-card>
+                                    <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModuleMobile></ion-card>
+                                    <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModuleMobile2></ion-card>
+
+                                </ion-col>
+
+                                <ion-col [size]="12" *ngIf="!(auth.activeCourses | filterSearch : searchTerm : false : ['title','tags','user_info','id','trainer.name']).length && !(auth.myElearnings | filterSearch : searchTerm : false : ['title','tags','user_info','id','trainer.name']).length">
                                     <ion-card noPadding pointer fullheight>
                                         <ion-card-content noPadding fullHeight flex center-hor>
                                             <div flex center center-ver center-hor>
@@ -1030,17 +1063,38 @@
                                     <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule2></ion-card>
 
                                 </ion-col>
-                                <!-- <ion-col [size]="helpers.cardSizeSmall" *ngIf="!visibleItems.length">
-                                    <ion-card noPadding pointer fullheight>
-                                        <ion-card-content noPadding fullHeight flex center-hor>
-                                            <div flex center center-ver center-hor>
+                                <ion-col [size]="helper.cardSizeSmall" *ngFor="let item of auth.myElearnings">
+
+                                    <ion-card noPadding fullheight caseCard>
+                                        <ion-card-content noPadding fullHeight>
+                                            <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
+                                            <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                                            
+                                            <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                                                 <ion-card-header>
-                                                    <ion-card-title font-18 weight600>{{'cases.no_results' | translate}}</ion-card-title>
+                                                    <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
+                                                    <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
                                                 </ion-card-header>
+                                            </div>
+                                            <div center flex center-ver center-hor>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                    <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
+                                                </div>
+                                                <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
+                                                    <div>
+                                                        <div>{{item.items?.length ? item.items?.length : 0}}</div>
+                                                        <div font-12>{{'standards.items' | translate}}</div>
+                                                    </div>
+                                                </ion-button> -->
+                                                <div class="spacer"></div>
+                                                <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('start/my_trainings/'+item.id);scrollItemsToTop()">{{'modules.open_module' | translate}}</ion-button>
                                             </div>
                                         </ion-card-content>
                                     </ion-card>
-                                </ion-col> -->
+                                    <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule></ion-card>
+                                    <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule2></ion-card>
+                                </ion-col>
+                                
                             </ng-container>
                             
                             <ion-col size="12" marginBottom *ngIf="showAll=='my_trainings'&&selectedModule?.id && media.smallDevice">
@@ -1064,32 +1118,6 @@
                                 </ion-col>
 
                                 <ion-row basicPadding fullwidth>
-                                    <!-- <ion-col [size]="helper.cardSizeSmall" *ngIf="modulesBreadCrumbs.length || selectedModule?.id"> -->
-
-                                        <!-- <ion-card class="backArrowModule" pointer noBackground noPadding fullheight noMargin flex center-ver center-hor (click)="backBreadCrumbs()">
-                                            <fa-icon font-80 weight700 [icon]="icon.get('faArrowLeft')"></fa-icon>
-                                        </ion-card> -->
-
-                                        <!-- <ion-card noPadding pointer fullheight caseCard (click)="backBreadCrumbs()">
-                                            <ion-card-content noPadding fullHeight>
-                                                <div backgroundImage class="avatarImage" *ngIf="auth.getTrainingItem(selectedModule.id,'breadCrumbs',modulesBreadCrumbs,2).photo" [ngStyle]="{'background-image': 'url(' + auth.getTrainingItem(selectedModule.id,'breadCrumbs',modulesBreadCrumbs,2).photo + ')'}"></div>
-                                                <div backgroundImage class="avatarImage" *ngIf="!auth.getTrainingItem(selectedModule.id,'breadCrumbs',modulesBreadCrumbs,2).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                                                <div flex center center-ver center-hor style="height:calc(100% - 275px)">
-                                                    <ion-card-header>
-                                                        <ion-card-title font-18 weight600>{{'buttons.back_to' | translate}}</ion-card-title>
-                                                        <ion-card-subtitle font-14 weight400>{{auth.getTrainingItem(selectedModule.id,'breadCrumbs',modulesBreadCrumbs,2).title}}</ion-card-subtitle>
-                                                    </ion-card-header>
-                                                </div>
-                                                <div center flex center-ver center-hor>
-                                                    <ion-button class="saveButton cardButton" fill="outline" size="small">{{'buttons.back' | translate}}</ion-button>
-                                                </div>
-                                            </ion-card-content>
-                                        </ion-card>
-                                        <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule></ion-card>
-                                        <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule2></ion-card> -->
-                                          
-
-                                    <!-- </ion-col> -->
 
                                     <ng-container  *ngFor="let item of (modulesBreadCrumbs.length ? modulesBreadCrumbs[modulesBreadCrumbs.length-1].items : selectedModule.items); let i = index">
                                         <ion-col marginBottom *ngIf="itemAvailable(auth.getTrainingItem(selectedModule.id,item.id))" [size]="helper.cardSizeSmall">

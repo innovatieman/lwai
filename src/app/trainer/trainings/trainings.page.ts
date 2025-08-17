@@ -22,6 +22,7 @@ import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ActivatedRoute } from '@angular/router';
 import { tutorialService } from 'src/app/services/tutorial.service';
 import * as moment from 'moment';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-trainings',
@@ -50,7 +51,30 @@ export class TrainingsPage implements OnInit {
   trainingFilter:any = ['published']
   selectedTags:any[] = []
   extraCostOptions:any = {}
+  showHtml:boolean = false
+  private leave$ = new Subject<void>();
+
+   configModules={
+      toolbar: {
+        container:[
+          ['bold', 'italic', 'underline'],
+          [{ 'color': [] }],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+          [{ 'size': ['small', false, 'large', 'huge'] }],
+          [{ 'align': [] }],
+          [{'indent': '-1'}, {'indent': '+1'}],
+          ['link'],
+          ['clean'],
+          ['HTML'],
+        ],
+        clipboard: {
+          matchVisual: false
+        }
+      }
+    }
   
+    trackByItem = (_: number, item: { id: string }) => item.id;
+
   constructor(
     public nav: NavService,
     public icon:IconsService,
@@ -75,24 +99,50 @@ export class TrainingsPage implements OnInit {
 
   ngOnInit() {
     
-    this.auth.userInfo$.subscribe(userInfo => {
+
+    // this.route.params.subscribe((params:any)=>{
+
+    // })
+      // this.getCourseData()
+      
+    
+      
+  }
+
+  ionViewWillEnter(){
+    this.extraCostOptions = {}
+    this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
       if (userInfo) {
-        this.auth.hasActive('trainer').subscribe((trainer)=>{
-          if(trainer &&!this.itemsLoaded){
-              this.trainerService.loadTrainingsAndParticipants(()=>{
-                // console.log('loadedTrainingsAndParticipants')
-                // console.log(this.trainerService.trainings)
-                this.updateVisibleItems();
-                this.itemsLoaded = true
-                this.route.params.subscribe((params:any)=>{
-                  if(params?.training_id){
-                    this.selectTraining(this.trainerService.getTraining('',params.training_id))
-                  }
-                })
-              });
-              this.trainerService.loadModules(()=>{})
-              this.trainerService.loadCases(()=>{})
-              this.trainerService.loadInfoItems(()=>{})
+        this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
+          if(trainer){
+
+            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+              this.updateVisibleItems();
+              // this.itemsLoaded = true
+              this.route.params.subscribe((params:any)=>{
+                if(params?.training_id){
+                  this.selectTraining(this.trainerService.getTraining('',params.training_id))
+                }
+              })
+            })
+
+              // this.trainerService.loadTrainingsAndParticipants(()=>{
+              //   // console.log('loadedTrainingsAndParticipants')
+              //   // console.log(this.trainerService.trainings)
+              //   this.updateVisibleItems();
+              //   this.itemsLoaded = true
+              //   this.route.params.subscribe((params:any)=>{
+              //     if(params?.training_id){
+              //       this.selectTraining(this.trainerService.getTraining('',params.training_id))
+              //     }
+              //   })
+              // });
+              // this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+              //   this.updateVisibleItems();
+              // })
+              // this.trainerService.loadModules(()=>{})
+              // this.trainerService.loadCases(()=>{})
+              // this.trainerService.loadInfoItems(()=>{})
               
             // console.log('loadTrainingsAndParticipants') 
             setTimeout(() => {
@@ -109,29 +159,21 @@ export class TrainingsPage implements OnInit {
       }
     })
     
-    this.nav.organisationChange.subscribe((res)=>{
+    this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
       this.trainerService.trainings = []
       this.updateVisibleItems();
-      this.trainerService.loadTrainingsAndParticipants(()=>{
-        // console.log('loadTrainingsAndParticipants2')  
+      this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
         this.updateVisibleItems();
-        this.trainerService.loadModules(()=>{})
-        this.trainerService.loadCases(()=>{})
-        this.trainerService.loadInfoItems(()=>{})
       })
+      // this.trainerService.loadTrainingsAndParticipants(()=>{
+      //   // console.log('loadTrainingsAndParticipants2')  
+      //   this.updateVisibleItems();
+      //   this.trainerService.loadModules(()=>{})
+      //   this.trainerService.loadCases(()=>{})
+      //   this.trainerService.loadInfoItems(()=>{})
+      // })
     })
 
-    // this.route.params.subscribe((params:any)=>{
-
-    // })
-      // this.getCourseData()
-      
-    
-      
-  }
-
-  ionViewWillEnter(){
-    this.extraCostOptions = {}
     if(this.trainerService.trainingItem?.id){
       setTimeout(() => {
         if(this.trainerService.trainingItem.type == 'module'){
@@ -142,6 +184,35 @@ export class TrainingsPage implements OnInit {
         }
       }, 100);
     }
+  }
+
+  ionViewWillLeave() {
+    console.log('TrainingsPage left');
+    this.leave$.next();
+    this.leave$.complete();
+  }
+
+  showEditor(){
+    this.showHtml = false
+    setTimeout(() => {
+      let elements = document.getElementsByClassName("ql-container")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','height:calc(100% - 40px);border:0;')
+      }
+      elements = document.getElementsByClassName("ql-toolbar")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','border:0;')
+      }
+      setTimeout(() => {
+
+        let htmlBtn:any = document.querySelector('.ql-HTML');
+        htmlBtn.innerHTML = 'HTML'
+        htmlBtn.style.width = '50px'
+        htmlBtn.addEventListener('click', (event:any)=> {
+          this.showHtml = true 
+        });
+      },300)
+    },100)
   }
 
   useAction(action:string){
@@ -181,29 +252,50 @@ export class TrainingsPage implements OnInit {
     return ''
   }
 
-  dropHandler(event: any) {
+  // dropHandler(event: any) {
+  //   if (event.dropEffect === 'move' && event.index !== undefined) {
+  //     const draggedItem = event.data;
+  //     const previousIndex = this.trainerService.trainingItem.items.findIndex((item: any) => item.id === draggedItem.id);
+  //     const currentIndex = event.index;
+
+  //     if (previousIndex !== -1 && previousIndex !== currentIndex) {
+  //       this.trainerService.trainingItem.items.splice(previousIndex, 1);
+  //       this.trainerService.trainingItem.items.splice(currentIndex, 0, draggedItem);
+  //       // update order between items
+  //       for(let i=0;i<this.trainerService.trainingItem.items.length;i++){
+  //         this.trainerService.trainingItem.items[i].order = i
+  //       }
+
+  //       if(this.trainerService.trainingItem.type== 'module'){
+  //         this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',this.trainerService.trainingItem.id,this.trainerService.trainingItem)
+  //       }
+  //       else{
+  //         this.update('items',true,this.trainerService.trainingItem);
+  //       }
+  //     }
+  //   }
+  // }
+
+    dropHandler(event: any) {
     if (event.dropEffect === 'move' && event.index !== undefined) {
-      const draggedItem = event.data;
-      const previousIndex = this.trainerService.trainingItem.items.findIndex((item: any) => item.id === draggedItem.id);
-      const currentIndex = event.index;
+      const dragged = event.data;
+      const prev = this.trainerService.trainingItem.items.findIndex((x: any) => x.id === dragged.id);
+      const curr = event.index;
 
-      if (previousIndex !== -1 && previousIndex !== currentIndex) {
-        this.trainerService.trainingItem.items.splice(previousIndex, 1);
-        this.trainerService.trainingItem.items.splice(currentIndex, 0, draggedItem);
-        // update order between items
-        for(let i=0;i<this.trainerService.trainingItem.items.length;i++){
-          this.trainerService.trainingItem.items[i].order = i
-        }
+      if (prev !== -1 && prev !== curr) {
+        const arr = this.trainerService.trainingItem.items;
+        arr.splice(prev, 1);
+        arr.splice(curr, 0, dragged);
+        arr.forEach((x: any, i: number) => x.order = i);
 
-        if(this.trainerService.trainingItem.type== 'module'){
-          this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',this.trainerService.trainingItem.id,this.trainerService.trainingItem)
-        }
-        else{
-          this.update('items',true,this.trainerService.trainingItem);
-        }
+        // bewaar signature van de nieuwe lokale staat
+        this.trainerService.rememberLocalOrder(this.trainerService.trainingItem.id, this.trainerService.trainingItem.items);
+
+        this.update('items', true, this.trainerService.trainingItem); // enkel veld
       }
     }
   }
+
 
   backBreadCrumbs(){
     console.log('backBreadCrumbs',this.trainerService.breadCrumbs)
@@ -281,24 +373,35 @@ export class TrainingsPage implements OnInit {
           amount_participants:10,
           expected_conversations:3,
           amount_period:2,
-          trainer_id: this.nav.activeOrganisationId,
+          trainerId: this.nav.activeOrganisationId,
           items: [],
           type_credits:'unlimited',
           user_info: ''
         }
-        this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', module).then(() => {
-          this.trainerService.loadTrainingsAndParticipants(()=>{
-            this.connectedCases = []
-            let item = this.trainerService.trainings.filter((e:any) => {
-              return e.created === module.created
-            })
-            if(item.length){
-              this.trainerService.trainingItem = item[0]
-            }
-            else{
-              this.trainerService.trainingItem = {}
-            }
-          })
+        this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', module).then(async () => {
+        this.connectedCases = []
+        try {
+          const found = await this.trainerService.waitForItem('training', module.created, 5000, 'created');
+          this.trainerService.trainingItem = found;
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.trainingItem = {}
+          // this.trainerService.caseItem = { id: casus.id, ...casus };
+        }
+
+          // this.trainerService.loadTrainingsAndParticipants(()=>{
+          //   this.connectedCases = []
+          //   let item = this.trainerService.trainings.filter((e:any) => {
+          //     return e.created === module.created
+          //   })
+          //   if(item.length){
+          //     this.trainerService.trainingItem = item[0]
+          //   }
+          //   else{
+          //     this.trainerService.trainingItem = {}
+          //   }
+          // })
         })
       }
     })
@@ -327,27 +430,44 @@ export class TrainingsPage implements OnInit {
     this.firestore.createSub('trainers',this.nav.activeOrganisationId,'trainings',copy,(result:any)=>{
       if(result && result.id){
         // let oldItem = this.trainerService.getTraining(old_id)
-        this.firestore.getSubSub('trainers',this.nav.activeOrganisationId,'trainings',old_id,'items').subscribe((oldItems:any)=>{
+        this.firestore.getSubSub('trainers',this.nav.activeOrganisationId,'trainings',old_id,'items').pipe(takeUntil(this.leave$)).subscribe((oldItems:any)=>{
           oldItems.forEach((allItem:any) => {
             let oldItem = allItem.payload.doc.data()
             this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',result.id,'items',allItem.payload.doc.id,oldItem)
           })
-          setTimeout(() => {
-            this.trainerService.loadTrainingsAndParticipants(()=>{
-              let trainings = this.trainerService.trainings.filter((e:any) => {
-                return e.id === result.id
-              })
-              if(trainings.length){
-                this.selectTraining(trainings[0],true)
-              }
-              else{
-                this.trainerService.trainingItem = {}
-              }
-              // this.trainerService.breadCrumbs = []
-              this.toast.hideLoader();
+          setTimeout(async() => {
+            try {
+              const found = await this.trainerService.waitForItem('training', copy.created, 5000, 'created');
+              this.selectTraining(found,true);
               this.filterWith('concept')
-               this.updateVisibleItems()
-            })
+              this.updateVisibleItems()
+              this.toast.hideLoader();
+              // this.trainerService.trainingItem = found;
+              // …openen/navigeer of modal sluiten
+            } catch (err) {
+              // Graceful fallback: direct openen met lokale data
+              this.trainerService.trainingItem = {}
+              this.filterWith('concept')
+              this.updateVisibleItems()
+              this.toast.hideLoader();
+              // this.trainerService.caseItem = { id: casus.id, ...casus };
+            }
+
+            // this.trainerService.loadTrainingsAndParticipants(()=>{
+            //   let trainings = this.trainerService.trainings.filter((e:any) => {
+            //     return e.id === result.id
+            //   })
+            //   if(trainings.length){
+            //     this.selectTraining(trainings[0],true)
+            //   }
+            //   else{
+            //     this.trainerService.trainingItem = {}
+            //   }
+            //   // this.trainerService.breadCrumbs = []
+            //   this.toast.hideLoader();
+            //   this.filterWith('concept')
+            //    this.updateVisibleItems()
+            // })
           }, 1500);
           
         })
@@ -368,12 +488,13 @@ export class TrainingsPage implements OnInit {
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
         this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'trainings',training.id).then(()=>{
-          this.trainerService.loadTrainings(()=>{
-            this.trainerService.trainingItem = {}
-            this.trainerService.breadCrumbs = []
-            this.showPart = 'items'
-            this.updateVisibleItems()
-          })
+          this.trainerService.trainingItem = {}
+          this.trainerService.breadCrumbs = []
+          this.showPart = 'items'
+          this.updateVisibleItems();
+
+          // this.trainerService.loadTrainings(()=>{
+          // })
         })
       }
     })
@@ -600,6 +721,19 @@ export class TrainingsPage implements OnInit {
           window.scrollTo(0, scrollPosition);
         }, 100);
       },isArray)
+
+      if(trainingItem.status=='published' && trainingItem.publishType == 'elearning'){
+        console.log('adjustElearning',field,trainingItem[field])
+        this.functions.httpsCallable('adjustElearning')({
+          elearningId: trainingItem.id,
+          trainerId: this.nav.activeOrganisationId,
+          updates: {
+            [field]: trainingItem[field]
+          }
+        }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
+          console.log('adjustElearning response',res)
+        });
+      }
     }
   }
 
@@ -721,8 +855,8 @@ export class TrainingsPage implements OnInit {
   }
 
   async addItemToModule(event:any){
-    console.log(this.trainerService.breadCrumbs)
-    console.log(this.trainerService.trainingItem)
+    // console.log(this.trainerService.breadCrumbs)
+    // console.log(this.trainerService.trainingItem)
     let options:any[] = [
       {
         title:this.translate.instant('standards.cases'),
@@ -796,18 +930,22 @@ export class TrainingsPage implements OnInit {
         this.toast.show(this.translate.instant('modules.no_available_items'))
         return
       }
-      this.modalService.selectItem('Selecteer', list, async (result: any) => {
-        
+      this.modalService.selectItem(this.translate.instant('buttons.select'), list, async (result: any) => {
+
         if (result.data) {
-          console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
+          // console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
           if(this.selectMenuservice.selectedItem.id == 'modules'){
             for(let i=0;i<result.data.length;i++){
+              if(this.trainerService.checkForLoopModules(result.data[i],[this.trainerService.trainingItem.id])){
+                this.toast.show(this.translate.instant('modules.cannot_add_module_to_itself'))
+                return
+              }
               let newItem:any = await this.copyItemsToTraining(result.data[i], true)
-              console.log('newItem',newItem.id)
+              // console.log('newItem',newItem.id)
               newItem.type = 'module'
               newItem.order = 999
               // newItem.id  = (Date.now() + Math.floor(Math.random() * 1000)) + ''
-              console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
+              // console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
 
               if(this.trainerService.breadCrumbs.length>1){
                 this.addItemToModuleById(this.trainerService.breadCrumbs[0].item, this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id,newItem)
@@ -835,8 +973,20 @@ export class TrainingsPage implements OnInit {
             for(let i=0;i<result.data.length;i++){
               this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',result.data[i],(response:any)=>{
                 this.firestore.updateSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',response.id,{id:response.id})
+                // console.log('response',this.trainerService.breadCrumbs[0])
+                if(this.trainerService.breadCrumbs[0].item.status == 'published' && this.trainerService.breadCrumbs[0].item.publishType == 'elearning'){
+                  let newItem:any = JSON.parse(JSON.stringify(result.data[i]))
+                  newItem.id = response.id
+                  this.functions.httpsCallable('adjustElearning')({
+                    elearningId: this.trainerService.breadCrumbs[0].item.id,
+                    trainerId: this.nav.activeOrganisationId,
+                    items: [newItem]
+                  }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
+                    // console.log('adjustElearning response',res)
+                  });
+                }
                 // this.trainerService.breadCrumbs = JSON.parse(JSON.stringify(breadCrumbs))
-                console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
+                // console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
 
                 if(this.trainerService.breadCrumbs.length>1){
                   let newItem:any = {
@@ -926,7 +1076,7 @@ export class TrainingsPage implements OnInit {
 
 addItemToModuleById(module: any, targetId: string, newItem: any): boolean {
   // Als dit de gezochte module is
-  console.log('addItemToModuleById',module,targetId,newItem)
+  // console.log('addItemToModuleById',module,targetId,newItem)
   if (module.id === targetId) {
     if (!module.items) module.items = [];
     module.items.push(newItem);
@@ -947,7 +1097,7 @@ addItemToModuleById(module: any, targetId: string, newItem: any): boolean {
 }
 
 deleteItemToModuleById(module: any, targetId: string, itemId: any): boolean {
-  console.log('deleteItemToModuleById',module,targetId,itemId)
+  // console.log('deleteItemToModuleById',module,targetId,itemId)
   // Als dit de gezochte module is
   if (module.id === targetId) {
     if (!module.items) module.items = [];
@@ -966,7 +1116,7 @@ deleteItemToModuleById(module: any, targetId: string, itemId: any): boolean {
         if (removed) return true; // gevonden in submodule
       }
       // Als het geen module is, maar een item, controleer dan of het overeenkomt
-      console.log('item',itemId,item.id)
+      // console.log('item',itemId,item.id)
       if (item.id === itemId) {
         const index = module.items.findIndex((i: any) => i.id === itemId);
         if (index > -1) {
@@ -988,7 +1138,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   for (let i = 0; i < module.items.length; i++) {
     let item = module.items[i];
     let newItem;
-    console.log('copyItemsToTraining', item);
+    // console.log('copyItemsToTraining', item);
     if (item.type === 'case') {
       newItem = await this.trainerService.getCase(item.id);
       newItem.type = 'case';
@@ -1027,6 +1177,16 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       res.id,
       { id: res.id }
     );
+
+    if(this.trainerService.breadCrumbs[0].status == 'published' && this.trainerService.breadCrumbs[0].item.publishType == 'elearning'){
+      let newNewItem:any = JSON.parse(JSON.stringify(newItem))
+      newNewItem.id = res.id
+      this.functions.httpsCallable('adjustElearning')({
+        elearningId: this.trainerService.breadCrumbs[0].item.id,
+        trainerId: this.nav.activeOrganisationId,
+        items: [newNewItem]
+      });
+    }
 
     module.items[i] = {
       ...item,
@@ -1087,6 +1247,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   usedItems:any[] = []
   countModules:number=0
   findAllUsedItems(module:any,subModule?:boolean){
+    // console.log('findAllUsedItems',module,subModule)
 
     for(let i=0;i<module.items.length;i++){
       if(module.items[i].type != 'module'){
@@ -1128,17 +1289,17 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
             }
             this.unusedItems = []
             this.usedItems = []
-  
+            
             setTimeout(() => {
-                this.trainerService.loadTrainingsAndParticipants(()=>{
-                  setTimeout(() => {
-                    this.trainerService.breadCrumbs[0].item = this.trainerService.getTraining(this.trainerService.breadCrumbs[0].item.id)
-                    if(this.trainerService.breadCrumbs.length>1){
-                      this.trainerService.trainingItem = this.trainerService.getTrainingModule(this.trainerService.breadCrumbs[0].item,this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id)
-                      this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item = this.trainerService.trainingItem
-                    }
-                  }, 10);
-                })
+              this.trainerService.breadCrumbs[0].item = this.trainerService.getTraining(this.trainerService.breadCrumbs[0].item.id)
+              if(this.trainerService.breadCrumbs.length>1){
+                this.trainerService.trainingItem = this.trainerService.getTrainingModule(this.trainerService.breadCrumbs[0].item,this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id)
+                this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item = this.trainerService.trainingItem
+              }
+              // this.trainerService.loadTrainingsAndParticipants(()=>{
+              //   setTimeout(() => {
+              //   }, 10);
+              // })
             }, 1000);
           }
         }, 1000);
@@ -1178,19 +1339,30 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
           training.title = result.data[0].value
           training.created = Date.now()
           training.moduleId = training.id
-          training.trainer_id = this.nav.activeOrganisationId
+          training.trainerId = this.nav.activeOrganisationId
           training.status = 'concept'
           training.amount_period = 2
           delete training.id
           delete training.type
-          this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', training).then(() => {
-            this.trainerService.loadTrainingsAndParticipants(() => {
-              this.trainerService.trainingItem = this.trainerService.getTraining('',training.created)
-              this.nav.go('trainer/trainings')
+          this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', training).then(async () => {
+            try {
+              const found = await this.trainerService.waitForItem('training', module.created, 5000, 'created');
+              this.trainerService.trainingItem = found;
+              this.nav.go('trainer/trainings');
+              // …openen/navigeer of modal sluiten
+            } catch (err) {
+              // Graceful fallback: direct openen met lokale data
+              this.trainerService.trainingItem = {}
+              // this.trainerService.caseItem = { id: casus.id, ...casus };
+            }
+            
+            // this.trainerService.loadTrainingsAndParticipants(() => {
+            //   this.trainerService.trainingItem = this.trainerService.getTraining('',training.created)
+            //   this.nav.go('trainer/trainings')
               
-              this.createItems(training.items,training.moduleId)
+            //   this.createItems(training.items,training.moduleId)
 
-            })
+            // })
           })
         }
       })
@@ -1203,7 +1375,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         item = this.trainerService.getCase(item.id)
         item.item_type = 'case'
         item.trainingId = this.trainerService.trainingItem.id
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
         item.moduleId = moduleId
         item.order = i
         this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id,item).then(() => {})
@@ -1212,7 +1384,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         item = this.trainerService.getInfoItem(item.id)
         item.item_type = 'infoItem'
         item.trainingId = this.trainerService.trainingItem.id
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
         item.moduleId = moduleId
         item.order = i
         this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id,item).then(() => {})
@@ -1221,7 +1393,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         item = this.trainerService.getModule(item.id)
         item.item_type = 'module'
         item.trainingId = this.trainerService.trainingItem.id
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
         item.moduleId = moduleId
         item.order = i
         this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id,item).then(() => {})
@@ -1276,10 +1448,19 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
           status: 'active',
           embedded: result.data[2] ? result.data[2].value : false,
         }
-        this.firestore.createSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id , 'participants', participant).then(() => {
-          this.trainerService.loadTrainingsAndParticipants(() => {
-            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
-          })
+        this.firestore.createSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id , 'participants', participant).then(async() => {
+          try {
+            await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+            // …openen/navigeer of modal sluiten
+          } catch (err) {
+            // Graceful fallback: direct openen met lokale data
+            this.trainerService.trainingItem = {}
+            // this.trainerService.caseItem = { id: casus.id, ...casus };
+          }
+          // this.trainerService.loadTrainingsAndParticipants(() => {
+          //   this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+          // })
         })
       }
     })
@@ -1296,20 +1477,35 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       return
     }
 
-    this.firestore.updateSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,'participants',participant.id,{status:'active'}).then(()=>{
-      this.trainerService.loadTrainingsAndParticipants(()=>{
-        this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
-      })
+    this.firestore.updateSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,'participants',participant.id,{status:'active'}).then(async()=>{
+      try {
+          await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+          this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.trainingItem = {}
+          // this.trainerService.caseItem = { id: casus.id, ...casus };
+        }
+      // this.trainerService.loadTrainingsAndParticipants(()=>{
+      //   this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+      // })
     })
   }
 
   deleteParticipant(participant:any){
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
-        this.firestore.deleteSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,'participants',participant.id).then(()=>{
-          this.trainerService.loadTrainingsAndParticipants(()=>{
-            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
-          })
+        this.firestore.deleteSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,'participants',participant.id).then(async()=>{
+          try {
+            await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+            // …openen/navigeer of modal sluiten
+          } catch (err) {
+            // Graceful fallback: direct openen met lokale data
+            this.trainerService.trainingItem = {}
+            // this.trainerService.caseItem = { id: casus.id, ...casus };
+          }
         })
       }
     })
@@ -1318,12 +1514,25 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   createTrainingCode(){
     if(!this.trainerService.trainingItem.code){
       this.toast.showLoader(this.translate.instant('trainings.generating_code'));
-      this.functions.httpsCallable('createTrainingCode')({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId}).subscribe((res:any)=>{
-        this.trainerService.loadTrainingsAndParticipants(()=>{
-          this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+      this.functions.httpsCallable('createTrainingCode')({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId}).pipe(takeUntil(this.leave$)).subscribe(async(res:any)=>{
+        try {
+          await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+          this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
           this.toast.hideLoader();
           this.toast.show(this.translate.instant('trainings.code_generated'))
-        })
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.trainingItem = {}
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('trainings.code_generated'))
+          // this.trainerService.caseItem = { id: casus.id, ...casus };
+        }
+        // this.trainerService.loadTrainingsAndParticipants(()=>{
+        //   this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+        //   this.toast.hideLoader();
+        //   this.toast.show(this.translate.instant('trainings.code_generated'))
+        // })
       })
     }
     else{
@@ -1334,10 +1543,16 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   deleteTrainingCode(){
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
-        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,{code:'',code_created:''}).then(()=>{
-          this.trainerService.loadTrainingsAndParticipants(()=>{
-            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
-          })
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,{code:'',code_created:''}).then(async ()=>{
+          try {
+            await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+          } catch (err) {
+            this.trainerService.trainingItem = {}
+          }
+          // this.trainerService.loadTrainingsAndParticipants(()=>{
+          //   this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+          // })
         })
       }
     })
@@ -1483,7 +1698,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       newTraining.status = 'concept';
       newTraining.participants = [];
       newTraining.items = fileData.items || [];
-      newTraining.trainer_id = this.nav.activeOrganisationId;
+      newTraining.trainerId = this.nav.activeOrganisationId;
       newTraining.photo = fileData.photo || '';
       newTraining.created = Date.now();
     } catch (error) {
@@ -1531,7 +1746,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       this.showPart = 'items'
       return
     }
-    this.functions.httpsCallable('publishTraining')({trainingId:this.trainerService.trainingItem.id,extra:extra,trainerId:this.nav.activeOrganisationId}).subscribe((res:any)=>{
+    this.functions.httpsCallable('publishTraining')({trainingId:this.trainerService.trainingItem.id,extra:extra,trainerId:this.nav.activeOrganisationId}).pipe(takeUntil(this.leave$)).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
       console.log('publishTraining',res)
       if(res?.status!= 200){
         this.toast.hideLoader()
@@ -1539,7 +1754,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         return
       }
       if(res?.result?.sessionId){
-        this.firestore.getDocListen(`customers/${this.nav.activeOrganisationId}/checkout_sessions/`, res.result.sessionId).subscribe((value: any) => {
+        this.firestore.getDocListen(`customers/${this.nav.activeOrganisationId}/checkout_sessions/`, res.result.sessionId).pipe(takeUntil(this.leave$)).subscribe((value: any) => {
           if (value?.url) {
             this.toast.hideLoader()
             window.location.assign(value.url);
@@ -1713,14 +1928,23 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       }
     }  
     let countChecking=0
-    let checking = setInterval(() => {
+    let checking = setInterval(async() => {
       countChecking++
       if(this.countingImports == this.totalImports){
         clearInterval(checking)
-        this.trainerService.loadTrainingsAndParticipants(() => {
-          this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
-          // this.toast.show(this.translate.instant('trainings.import_participants')+this.countingImports,4000,'middle')
-        })
+        try {
+          await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+          this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.trainingItem = {}
+          // this.trainerService.caseItem = { id: casus.id, ...casus };
+        }
+        // this.trainerService.loadTrainingsAndParticipants(() => {
+        //   this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+        //   // this.toast.show(this.translate.instant('trainings.import_participants')+this.countingImports,4000,'middle')
+        // })
       }
       else if(countChecking>50){
         clearInterval(checking)

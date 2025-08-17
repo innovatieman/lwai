@@ -64,7 +64,7 @@ exports.getMyActiveTrainings = functions
           const trainingRef = admin
             .firestore()
             .collection('trainers')
-            .doc(training.trainer_id)
+            .doc(training.trainerId)
             .collection('trainings')
             .doc(training.id); // <-- correcte ID
 
@@ -77,7 +77,7 @@ exports.getMyActiveTrainings = functions
             id: trainingDoc.id,
             ...trainingDoc.data(),
             basics: training, // <-- alles uit participant_training
-            trainer_id: training.trainer_id,
+            trainerId: training.trainerId,
           };
 
           if(trainingData.available_date && trainingData.available_date > moment().format('YYYY-MM-DD')){
@@ -90,7 +90,7 @@ exports.getMyActiveTrainings = functions
           const trainerDoc = await admin
             .firestore()
             .collection('trainers')
-            .doc(training.trainer_id)
+            .doc(training.trainerId)
             .get();
 
           trainingData.trainer = trainerDoc.exists
@@ -99,7 +99,7 @@ exports.getMyActiveTrainings = functions
 
           return trainingData;
         } catch (err) {
-          console.error(`Fout bij ophalen training ${training.id}:`, err);
+          console.error(`Fout bij ophalen training ${training.id} van trainer ${training.trainerId}:`, err);
           return null;
         }
       })
@@ -124,7 +124,7 @@ exports.getMyActiveTrainings = functions
           id: enrichedTrainings[i].id,
           title: enrichedTrainings[i].title,
           user_info: enrichedTrainings[i].user_info,
-          trainer_id: enrichedTrainings[i].trainer_id,
+          trainerId: enrichedTrainings[i].trainerId,
           trainer: enrichedTrainings[i].trainer,
           status_access: enrichedTrainings[i].status_access,
           available_date: enrichedTrainings[i].available_date,
@@ -216,7 +216,7 @@ exports.registerWithCode = functions
     .collection('trainings')
     .doc(trainingId)
     .set({
-      trainer_id: trainerId,
+      trainerId: trainerId,
       entered:moment().unix(),
       status: status,
     })
@@ -278,7 +278,7 @@ exports.registerWithCode = functions
         const itemsRef =
              admin.firestore()
               .collection('trainers')
-              .doc(training.trainer_id)
+              .doc(training.trainerId)
               .collection('trainings')
               .doc(training.id)
               .collection('items');
@@ -320,8 +320,8 @@ exports.addParticipantTraining = functions
       .doc(trainingId)
       .set({
         id: trainingId,
-        trainer_id: trainerId,
-        participant_id: participantId,
+        trainerId: trainerId,
+        participantId: participantId,
         status: data.status,
         created: data.created,
       })
@@ -385,8 +385,8 @@ exports.deleteParticipantTraining = functions
         .doc(trainingId)
         .set({
           id: trainingId,
-          participant_id: participantId,
-          trainer_id: trainerId,
+          participantId: participantId,
+          trainerId: trainerId,
           status: status,
           created: data.created,
         })
@@ -566,7 +566,7 @@ exports.getMyActiveOrganisationsTrainings = functions
             ...doc.data(),
             id: doc.id,
             basics: organisation,
-            trainer_id: doc.ref.parent.parent.id, // Trainer ID uit de parent van de training
+            trainerId: doc.ref.parent.parent.id, // Trainer ID uit de parent van de training
           }));
 
           const validTrainings = trainingsList.filter((training: any) => {

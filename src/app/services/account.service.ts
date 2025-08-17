@@ -36,6 +36,7 @@ export class AccountService {
   payments: any;
   products: any;
   products_trainer: any;
+  products_elearnings: any;
   customers: any;
   subscriptionsStripe: any;
   db: any;
@@ -105,6 +106,7 @@ export class AccountService {
 
     this.fetchProducts()
     this.fetchProductsTrainer()
+    this.fetchProductsElearnings()
     // this.fetchSubscriptionsStripe()
 
   }
@@ -116,6 +118,7 @@ export class AccountService {
   }
 
   async fetchProducts() {
+    console.log('Fetching products...');
     this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
       this.products = products.map((product:any)=>{
         let item = {
@@ -136,7 +139,7 @@ export class AccountService {
         })
         return item
       })
-      // console.log(this.products)
+      console.log(this.products)
     })
   }
 
@@ -161,6 +164,30 @@ export class AccountService {
         return item
       })
       console.log(this.products)
+    })
+  }
+
+  async fetchProductsElearnings() {
+    this.firestoreService.queryDouble('products','metadata.type','elearning','==','active',true,'==').subscribe((products:any)=>{
+      this.products_elearnings = products.map((product:any)=>{
+        let item = {
+          id: product.payload.doc.id,
+          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
+          ...product.payload.doc.data()
+        }
+        //get subcollection prices
+        this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+          item.prices = prices.map((price:any)=>{
+            return {
+              id: price.payload.doc.id,
+              ...price.payload.doc.data()
+            }
+          })
+        })
+        return item
+      })
+      console.log(this.products_elearnings)
     })
   }
 
@@ -244,7 +271,117 @@ export class AccountService {
     }
   }
 
+  async buyMultiple(items: any[]) {
+    const user = await this.auth.userInfo;
+    if (!user) {
+      console.error("User not authenticated");
+      return;
+    }
 
+    this.toast.showLoader();
+
+    // ✅ Credits check en opslaan
+    const creditsItem = items.find((item) => item.credits);
+    if (creditsItem) {
+      localStorage.setItem('buying Credits', creditsItem.credits);
+      localStorage.setItem('oldCredits', this.auth.credits.total);
+    }
+
+    let hasElearnings = items.some((item) => item.metadata?.type === 'elearning');
+
+    // ✅ Stripe customer ID ophalen of aanmaken
+    let stripeId: any = '';
+    if (this.auth.customer?.stripeCustomerId) {
+      stripeId = this.auth.customer.stripeCustomerId;
+    }
+
+    if (!stripeId) {
+      let newCustomer = await this.functions.httpsCallable('createCustomerId')({ email: user.email }).toPromise();
+      stripeId = newCustomer.result?.stripeId;
+    }
+
+    if (!stripeId) {
+      this.toast.hideLoader();
+      this.toast.show(this.translate.instant('error_messages.failure'));
+      return;
+    }
+
+    // ✅ Bepaal of alle items subscription zijn of niet
+    const hasOnlySubscriptions = items.every((item) => item.metadata?.type === 'subscription');
+    const hasOnlyOneTime = items.every((item) => item.prices[0].type === 'one_time');
+
+    const successPath = hasElearnings ? 'marketplace/elearnings/success' : (hasOnlySubscriptions ? '/account/subscriptions/success' : '/account/credits/success');
+    const cancelPath = hasElearnings ? 'marketplace/elearnings/error' : (hasOnlySubscriptions ? '/account/subscriptions/error' : '/account/credits/error');
+
+    // ✅ Bouw line_items array
+    const line_items = items.map(item => ({
+      price: item.prices[0].id,
+      quantity: 1
+    }));
+
+    // ✅ Bouw checkout session data
+    console.log(window.location.origin + successPath, window.location.origin + cancelPath);
+    let checkoutSessionData: any = {
+      line_items,
+      success_url: window.location.origin + '/' + successPath,
+      cancel_url: window.location.origin + '/' + cancelPath,
+      automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
+      metadata: {
+        userId: user.uid
+      },
+      customer: stripeId
+    };
+
+    // ✅ Mode bepalen (alleen 'subscription' of 'payment')
+    if (hasOnlyOneTime) {
+      checkoutSessionData['mode'] = 'payment';
+      checkoutSessionData['payment_intent_data'] = {
+        setup_future_usage: 'off_session'
+      };
+      checkoutSessionData['invoice_creation'] = {
+        enabled: true
+      };
+    } else {
+      checkoutSessionData['mode'] = 'subscription';
+    }
+
+    console.log(checkoutSessionData);
+
+    try {
+      const checkoutSessionRef = this.firestore.collection(`customers/${user.uid}/checkout_sessions`);
+      const docRef = await checkoutSessionRef.add(checkoutSessionData);
+
+      console.log("Checkout session created:", docRef.id);
+
+      this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`, docRef.id).subscribe((value: any) => {
+        setTimeout(() => {
+          this.toast.hideLoader();
+        }, 2000);
+
+        if (value.url) {
+          window.location.assign(value.url);
+        } else if (value.error) {
+          console.error("Stripe error:", value.error);
+        }
+      });
+
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      this.toast.hideLoader();
+      this.toast.show(this.translate.instant('error_messages.failure'));
+    }
+  }
+
+
+  getUnlimitedChatProduct(){
+    return this.products.find((product:any) => product.credits === 1000000) || null;
+  }
+
+  getProductElearningById(id:string){
+    // console.log('Fetching elearning product with ID:', id, this.products_elearnings);
+    return this.products_elearnings.find((product:any) => product.id === id) || null;
+  }
   // async fetchSubscriptionsStripe() {
   //   this.firestoreService.queryDouble('products','metadata.type','subscription','==','active',true,'==').subscribe((products:any)=>{
   //     this.subscriptionsStripe = products.map((product:any)=>{

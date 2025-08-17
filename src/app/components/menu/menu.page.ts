@@ -159,7 +159,7 @@ export class MenuPage implements OnInit {
     if(this.pages){
       this.appPages = this.pages
     }
-    console.log(this.appPages)
+    // console.log(this.appPages)
     const path = window.location.pathname;
     this.auth.isAuthenticated().subscribe((auth) => {
       if(auth){

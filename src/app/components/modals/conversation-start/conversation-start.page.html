@@ -1,7 +1,7 @@
-<div header padding20 flex center-ver>
+<div header padding20 flex center-ver *ngIf="pageLoaded&&!directStart">
   <div class="title">
     <h3 class="subtitle-top" noMargin>
-      {{'conversation_start.the_case' | translate}}
+      {{'conversation_start.the_case' | translate}} {{step}}
       <span *ngIf="step!=4"> - </span>
       <!-- <span *ngIf="step==0">De basis</span>
       <span *ngIf="step==1">Extra gegevens</span>
@@ -19,7 +19,10 @@
   </ion-button>
 </div>
 
-<div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}">
+<!-- <div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}" *ngIf="!pageLoaded">
+  <ion-spinner *ngIf="!pageLoaded" color="primary" class="loadingSpinner"></ion-spinner>
+</div> -->
+<div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}" *ngIf="pageLoaded&&!directStart">
 
   <!-- <div class="modalIntro" *ngIf="!step">Geef aan om welke casus het gaat en wat er precies speelt.</div>
   <div class="modalIntro" *ngIf="step==1">Hoe meer informatie je hier geeft, des te beter wordt het gesprek gesimuleerd. Deze gegevens zijn niet verplicht</div>
@@ -414,7 +417,7 @@
   </ion-toolbar>
 </ion-footer> -->
 
-<div class="buttons">
+<div class="buttons" *ngIf="pageLoaded&&!directStart">
   
   <div flex center-ver>
     <ion-button *ngIf="step!=0" color="secondary" class="saveButton" (click)="slide(step-1,true)" [disabled]="step==3&&!promptChecked">

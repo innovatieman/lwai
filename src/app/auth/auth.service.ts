@@ -33,6 +33,7 @@ export class AuthService {
   private subscriptionsLoaded = new BehaviorSubject<boolean>(false);
   private organisationsLoaded = new BehaviorSubject<boolean>(false);
   activeCourses: any[] = [];
+  myElearnings: any[] = [];
   organisationTrainings: any[] = [];
   allCourses: any[] = [];
   profile:any = {}
@@ -98,6 +99,7 @@ export class AuthService {
         this.getCustomer(user.uid)
         this.getProfile(user.uid)
         this.getActiveCourses(user)
+        this.getMyElearnings(user.uid)
         this.getVersion()
         this.getMyOrganisations(user)
         this.loadGameProgress(user.uid);
@@ -760,7 +762,7 @@ export class AuthService {
     }
   
     areSubscriptionsLoaded(): Observable<boolean> {
-      console.log('subscriptions loaded',this.subscriptionsLoaded.value, this.organisationsLoaded.value)
+      // console.log('subscriptions loaded',this.subscriptionsLoaded.value, this.organisationsLoaded.value)
       return this.subscriptionsLoaded.asObservable() && this.organisationsLoaded.asObservable();
     }
     // Geef een Observable terug van de abonnementen
@@ -834,34 +836,7 @@ export class AuthService {
 
     getActiveCourses(user: any,callback?:Function,unsubscribe?:boolean) {
       this.activeCourses = [];
-      // this.firestoreService.querySub('users', userId, 'courses','status','active').subscribe((courses) => {
-      //   this.activeCourses = courses.map((course: any) => {
-      //     return { id: course.payload.doc.id, ...course.payload.doc.data() }
-      //   })
-        
-      // // Haal de activeCourseIds direct op uit this.userInfo
-      // // const courseObservables = this.userInfo.activeCourseIds.map((courseId:string) =>
-      // //   this.firestoreService.getSubDoc('users', userId, 'courses', courseId)
-      // // );
-    
-      // // Combineer alle observables
-      // // combineLatest(courseObservables).subscribe((courses:any) => {
-      // //   const uniqueCourses = new Map(); // Gebruik Map om duplicaten te vermijden
-    
-      // //   courses.forEach((course: any) => {
-      // //     let item: any = course.payload.data();
-      // //     if(item){
-      // //       item.id = course.payload.id;
-      // //       if (item.status === 'active' && !uniqueCourses.has(item.id)) {
-      // //         uniqueCourses.set(item.id, item);
-      // //       }
-      // //     }
-      // //   });
-    
-      // //   // Converteer de unieke waarden naar een array
-      // //   this.activeCourses = Array.from(uniqueCourses.values());
-      // // });
-      // });
+      
       const participantSubscription = this.firestoreService.getSub('participant_trainings', user.email, 'trainings').subscribe((trainings:any)=>{
         this.myTrainingsList = trainings.map((training:any) => {
           return { id: training.payload.doc.id, ...training.payload.doc.data() }
@@ -896,6 +871,58 @@ export class AuthService {
       // })
 
     }
+
+    getMyElearnings(user_uid: any,callback?:Function,unsubscribe?:boolean) {
+      this.myElearnings = [];
+      // Query voor cases die toegankelijk zijn voor de gebruiker
+      // console.log('getMyElearnings',user_uid)
+      this.firestore
+        .collection(`users/${user_uid}/my_elearnings`)
+        .snapshotChanges()
+        .pipe(
+          // Map documenten naar objecten
+          map(docs =>
+            docs.map((e: any) => ({
+              id: e.payload.doc.id,
+              ...e.payload.doc.data(),
+            }))
+          ),
+          // Haal vertalingen op voor de huidige taal
+          switchMap(cases =>
+            combineLatest(
+              cases.map(doc =>
+                this.firestore
+                  .collection(`users/${user_uid}/my_elearnings/${doc.id}/items`)
+                  .get()
+                  .pipe(
+                    map(itemsSnapshot => {
+                      const items = itemsSnapshot.docs.map(itemDoc => ({
+                        id: itemDoc.id,
+                        ...(itemDoc.data() || {}),
+                      }));
+                      return { ...doc, allItems:items };
+                    })
+                  )
+              )
+            )
+          )
+        )
+        .subscribe(elearnings => {
+          // Combineer hoofdgegevens en vertalingen
+          this.myElearnings = elearnings.map(doc => ({
+            ...doc,
+          }));
+          console.log('myElearnings',this.myElearnings)
+          if (callback) {
+            callback();
+          }
+        });
+        // setTimeout(() => {
+        //   console.log(this.all)
+        // }, 3000);
+    }
+
+
 
     getMyOrganisations(user: any,callback?:Function,unsubscribe?:boolean) {
       this.activeCourses = [];
@@ -1008,7 +1035,11 @@ export class AuthService {
   
     getActiveCourse(courseId:string,organisation?:boolean): any {
       if(!organisation){
-        return this.activeCourses.find((course) => course.id === courseId)
+        let course = this.activeCourses.find((course) => course.id === courseId)
+        if(!course){
+          course = this.myElearnings.find((course) => course.id === courseId)
+        }
+        return course
       }
       else if(organisation){
         if(!this.mySelectedOrganisation || !this.mySelectedOrganisation.trainings){
@@ -1023,6 +1054,9 @@ export class AuthService {
       let training:any =  {}
       if(!organisation){
         training = this.activeCourses.find((training) => training.id === trainingId)
+        if(!training){
+          training = this.myElearnings.find((training) => training.id === trainingId)
+        }
       }
       else if(organisation&&this.mySelectedOrganisation?.trainings){
         if(!this.mySelectedOrganisation.trainings.length){

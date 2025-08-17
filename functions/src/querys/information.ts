@@ -169,6 +169,31 @@ exports.getConversationsByDateRange = functions.region('europe-west1').https.onC
   }
 );
 
+exports.admin_all_open_conversations = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onCall(async (data:any,context:any)=>{
+    if(!context.auth){
+        return new responder.Message('Not authorized',401)
+    }
+
+    let user = await admin.firestore().collection('users').doc(context.auth.uid).get()
+    if(!user.exists){
+        return new responder.Message('User not found',404)
+    }
+    let userData = user.data()
+    if(!userData?.isAdmin){
+        return new responder.Message('User not authorized',401)
+    }
+
+    try {
+        const snapshot = await admin.firestore().collectionGroup('conversations').where('closed', '==', false).limit(2).get();
+        const conversations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return new responder.Message(conversations,200);
+    } catch (error) {
+        console.error('Error fetching open conversations:', error);
+        return new responder.Message('Failed to fetch open conversations',500);
+    }
+});
+
+
 // exports.admin_get_conversation = functions.region('europe-west1').https.onCall(async (data:any,context:any)=>{
 //     if(!context.auth){
 //         return {error:'Not authorized',code:401}

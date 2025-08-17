@@ -113,7 +113,8 @@ export class CaseinfoPage implements OnInit {
         }
       }
       if(this.auth.organisations.length==1){
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
+        delete item.id
         this.firestore.createSub('trainers',this.nav.activeOrganisationId,'cases',item).then((res:any)=>{
           this.toast.show(this.translate.instant('cases.case_copied_to_trainer'))
         })
@@ -146,7 +147,7 @@ export class CaseinfoPage implements OnInit {
         await this.shortMenu.present();
         await this.shortMenu.onWillDismiss().then((result:any)=>{
           if(this.selectMenuservice.selectedItem){
-            item.trainer_id = this.selectMenuservice.selectedItem.id
+            item.trainerId = this.selectMenuservice.selectedItem.id
             this.firestore.createSub('trainers',this.selectMenuservice.selectedItem.id,'cases',item).then((res:any)=>{
                 this.toast.show(this.translate.instant('cases.case_copied_to_trainer'))
               })

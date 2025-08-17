@@ -9,10 +9,21 @@
               <div font-20 weight700>Load conversations</div>
               <fa-icon font-24 slot="end" [icon]="icon.get('faUser')"></fa-icon>
           </ion-item>
-
-          
-
         </div>
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+          <ion-item detail="false" lines="none" button (click)="loadOpenConversations()">
+              <div font-20 weight700>Load open conversations</div>
+              <fa-icon font-24 slot="end" [icon]="icon.get('faUser')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <!-- <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+          <ion-item detail="false" lines="none" button (click)="updateConversations()">
+              <div font-20 weight700>Update conversations</div>
+              <fa-icon font-24 slot="end" [icon]="icon.get('faUser')"></fa-icon>
+          </ion-item>
+        </div> -->
       </ion-col>
     </ion-row>
   </ion-grid>

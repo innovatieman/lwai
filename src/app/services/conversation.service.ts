@@ -908,7 +908,7 @@ export class ConversationService implements OnDestroy {
       trainerId: this.activeConversation.trainerId,
       trainingId: this.activeConversation.trainingId,
     }
-    // console.log(obj)
+    console.log(obj.instructionType,obj)
     const response = await fetch(url, {
       method: "POST",
       headers: {

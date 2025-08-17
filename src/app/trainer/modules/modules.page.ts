@@ -20,6 +20,7 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { MenuPage } from 'src/app/components/menu/menu.page';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ActivatedRoute } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-modules',
@@ -39,6 +40,10 @@ export class ModulesPage implements OnInit {
   showPart:string = 'items';
   modulesBreadCrumbs:any[] = []
   selectedTags:any[] = [];
+  private leave$ = new Subject<void>();
+
+  trackByItem = (_: number, item: { id: string }) => item.id;
+
   constructor(
     public nav: NavService,
     public icon:IconsService,
@@ -61,33 +66,40 @@ export class ModulesPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    let route = location.pathname.split('/')
-    this.auth.userInfo$.subscribe(userInfo => {
-      if (userInfo) {
-        this.auth.hasActive('trainer').subscribe((trainer)=>{
-          if(trainer &&!this.itemsLoaded){
-              this.trainerService.loadModules(()=>{
-                this.updateVisibleItems();
-                this.itemsLoaded = true
-              });
-              this.trainerService.loadCases(()=>{
-                console.log('cases',this.trainerService.cases)
-              })
-              this.trainerService.loadInfoItems(()=>{})
+    // let route = location.pathname.split('/')
+    // this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
+    //   if (userInfo) {
+    //     this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
+    //       if(trainer &&!this.itemsLoaded){
+    //         this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+    //           this.updateVisibleItems();
+    //           // this.itemsLoaded = true
+    //         })
+    //           // this.trainerService.loadModules(()=>{
+    //           //   this.updateVisibleItems();
+    //           //   this.itemsLoaded = true
+    //           // });
+    //           // this.trainerService.loadCases(()=>{
+    //           //   console.log('cases',this.trainerService.cases)
+    //           // })
+    //           // this.trainerService.loadInfoItems(()=>{})
           
-          }
-        })
-      }
-    })
-    
-    this.nav.organisationChange.subscribe((res)=>{
-      this.trainerService.loadModules(()=>{
-        this.updateVisibleItems();
-        this.itemsLoaded = true
-      });
-      this.trainerService.loadCases(()=>{})
-      this.trainerService.loadInfoItems(()=>{})
-    })
+    //       }
+    //     })
+    //   }
+    // })
+
+    // this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
+    //   this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+    //     this.updateVisibleItems();
+    //   })
+    //   // this.trainerService.loadModules(()=>{
+    //   //   this.updateVisibleItems();
+    //   //   this.itemsLoaded = true
+    //   // });
+    //   // this.trainerService.loadCases(()=>{})
+    //   // this.trainerService.loadInfoItems(()=>{})
+    // })
 
     // this.route.params.subscribe((params:any)=>{
 
@@ -112,6 +124,44 @@ export class ModulesPage implements OnInit {
   }
 
   ionViewWillEnter(){
+
+    this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
+      if (userInfo) {
+        this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
+          if(trainer ){
+            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+              this.updateVisibleItems();
+            },{modules:()=>{
+              this.updateVisibleItems();
+            }})
+              // this.trainerService.loadModules(()=>{
+              //   this.updateVisibleItems();
+              //   this.itemsLoaded = true
+              // });
+              // this.trainerService.loadCases(()=>{
+              //   console.log('cases',this.trainerService.cases)
+              // })
+              // this.trainerService.loadInfoItems(()=>{})
+          
+          }
+        })
+      }
+    })
+
+    this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
+      this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+        this.updateVisibleItems();
+      },{modules:()=>{
+        this.updateVisibleItems();
+      }})
+      // this.trainerService.loadModules(()=>{
+      //   this.updateVisibleItems();
+      //   this.itemsLoaded = true
+      // });
+      // this.trainerService.loadCases(()=>{})
+      // this.trainerService.loadInfoItems(()=>{})
+    })
+
     if(this.trainerService.moduleItem?.id){
       setTimeout(() => {
         this.trainerService.moduleItem = JSON.parse(JSON.stringify(this.trainerService.getModule(this.trainerService.moduleItem.id)))
@@ -121,22 +171,47 @@ export class ModulesPage implements OnInit {
     }
   }
 
+  ionViewWillLeave() {
+    this.leave$.next();
+    this.leave$.complete();
+  }
+
+  // dropHandler(event: any) {
+  //   if (event.dropEffect === 'move' && event.index !== undefined) {
+  //     const draggedItem = event.data;
+  //     const previousIndex = this.trainerService.moduleItem.items.findIndex((item: any) => item.id === draggedItem.id);
+  //     const currentIndex = event.index;
+
+  //     if (previousIndex !== -1 && previousIndex !== currentIndex) {
+  //       this.trainerService.moduleItem.items.splice(previousIndex, 1);
+  //       this.trainerService.moduleItem.items.splice(currentIndex, 0, draggedItem);
+  //       // update order between items
+  //       for(let i=0;i<this.trainerService.moduleItem.items.length;i++){
+  //         this.trainerService.moduleItem.items[i].order = i
+  //       }
+
+
+  //       this.update('items',true,this.trainerService.moduleItem);
+  //     }
+  //   }
+  // }
+
   dropHandler(event: any) {
     if (event.dropEffect === 'move' && event.index !== undefined) {
-      const draggedItem = event.data;
-      const previousIndex = this.trainerService.moduleItem.items.findIndex((item: any) => item.id === draggedItem.id);
-      const currentIndex = event.index;
+      const dragged = event.data;
+      const prev = this.trainerService.moduleItem.items.findIndex((x: any) => x.id === dragged.id);
+      const curr = event.index;
 
-      if (previousIndex !== -1 && previousIndex !== currentIndex) {
-        this.trainerService.moduleItem.items.splice(previousIndex, 1);
-        this.trainerService.moduleItem.items.splice(currentIndex, 0, draggedItem);
-        // update order between items
-        for(let i=0;i<this.trainerService.moduleItem.items.length;i++){
-          this.trainerService.moduleItem.items[i].order = i
-        }
+      if (prev !== -1 && prev !== curr) {
+        const arr = this.trainerService.moduleItem.items;
+        arr.splice(prev, 1);
+        arr.splice(curr, 0, dragged);
+        arr.forEach((x: any, i: number) => x.order = i);
 
-
-        this.update('items',true,this.trainerService.moduleItem);
+        // bewaar signature van de nieuwe lokale staat
+        this.trainerService.rememberLocalOrder(this.trainerService.moduleItem.id, this.trainerService.moduleItem.items);
+      
+        this.update('items', true, this.trainerService.moduleItem); // enkel veld
       }
     }
   }
@@ -159,8 +234,9 @@ export class ModulesPage implements OnInit {
 
   selectModule(module:any){
     // this.trainerService.moduleItem.items[currentIndex].order = currentIndex
-    console.log('selectModule',module)
+    // console.log('selectModule',module)
     this.connectedCases = this.getConnectedCases(module)
+    // console.log('connectedCases',JSON.parse(JSON.stringify(this.connectedCases)))
     this.connectedInfoItems = this.getConnectedInfoItems(module)
     let existsingItemsLength = 0
     if(!module.items){
@@ -170,6 +246,7 @@ export class ModulesPage implements OnInit {
       module.module_type = 'free'
     }
     existsingItemsLength = module.items.length
+    // console.log('existingItem',JSON.parse(JSON.stringify(module.items)))
     for(let i=0;i<this.connectedCases.length;i++){
       let checkExists = module.items.filter((e:any) => {
         return e.id === this.connectedCases[i].id
@@ -243,25 +320,43 @@ export class ModulesPage implements OnInit {
         required: true,
       }
     ], (result: any) => {
+      this.toast.showLoader();
       if (result.data) {
         let module = {
           title: result.data[0].value,
           created: Date.now(),
         }
-        this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'modules', module).then(() => {
-          this.trainerService.loadModules(()=>{
-            this.connectedCases = []
-            let item = this.trainerService.modules.filter((e:any) => {
-              return e.created === module.created
-            })
-            if(item.length){
-              this.trainerService.moduleItem = item[0]
-            }
-            else{
-              this.trainerService.moduleItem = {}
-            }
-          })
-        })
+        this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'modules', module).then(async () => {
+        this.connectedCases = []
+        try {
+          const found = await this.trainerService.waitForItem('module', module.created, 5000, 'created');
+          this.trainerService.moduleItem = found;
+          this.toast.hideLoader();
+          this.updateVisibleItems();
+          // …openen/navigeer of modal sluiten
+        } catch (err) {
+          // Graceful fallback: direct openen met lokale data
+          this.trainerService.moduleItem = {}
+          this.toast.hideLoader();
+          this.updateVisibleItems();
+
+          // this.trainerService.caseItem = { id: casus.id, ...casus };
+        }
+      });
+
+        //   this.trainerService.loadModules(()=>{
+        //     this.connectedCases = []
+        //     let item = this.trainerService.modules.filter((e:any) => {
+        //       return e.created === module.created
+        //     })
+        //     if(item.length){
+        //       this.trainerService.moduleItem = item[0]
+        //     }
+        //     else{
+        //       this.trainerService.moduleItem = {}
+        //     }
+        //   })
+        // })
       }
     })
   }
@@ -325,37 +420,68 @@ export class ModulesPage implements OnInit {
     if(!item?.id){
       item = this.trainerService.moduleItem
     }
+    this.toast.showLoader()
     let copy = JSON.parse(JSON.stringify(item))
     let old_id = copy.id
     delete copy.id
     copy.created = Date.now()
     copy.title = copy.title + ' (copy)'
-    this.firestore.createSub('trainers',this.nav.activeOrganisationId,'modules',copy).then(()=>{
-      this.trainerService.loadModules(()=>{
-        this.connectedCases = []
-        let item = this.trainerService.modules.filter((e:any) => {
-          return e.created === copy.created
-        })
-        if(item.length){
-          this.trainerService.breadCrumbs = []
-          this.selectModule(item[0])
-          for(let i=0;i<this.trainerService.cases.length;i++){
-            if(this.trainerService.cases[i].modules && this.trainerService.cases[i].modules.indexOf(old_id) > -1){
-              this.trainerService.cases[i].modules.push(this.trainerService.moduleItem.id)
-              this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',this.trainerService.cases[i].id,this.trainerService.cases[i].modules,'modules',null,true)
-            }
-          }
-          for(let i=0;i<this.trainerService.infoItems.length;i++){
-            if(this.trainerService.infoItems[i].modules && this.trainerService.infoItems[i].modules.indexOf(old_id) > -1){
-              this.trainerService.infoItems[i].modules.push(this.trainerService.moduleItem.id)
-              this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',this.trainerService.infoItems[i].id,this.trainerService.infoItems[i].modules,'modules',null,true)
-            }
+    this.firestore.createSub('trainers',this.nav.activeOrganisationId,'modules',copy).then(async () => {
+      this.connectedCases = []
+      try {
+        const found = await this.trainerService.waitForItem('module', copy.created, 5000, 'created');
+        // this.trainerService.moduleItem = found;
+        this.trainerService.breadCrumbs = []
+        this.selectModule(found)
+
+        for(let i=0;i<this.trainerService.cases.length;i++){
+          if(this.trainerService.cases[i].modules && this.trainerService.cases[i].modules.indexOf(old_id) > -1){
+            this.trainerService.cases[i].modules.push(this.trainerService.moduleItem.id)
+            this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',this.trainerService.cases[i].id,this.trainerService.cases[i].modules,'modules',null,true)
           }
         }
-        else{
-          this.trainerService.moduleItem = {}
+        for(let i=0;i<this.trainerService.infoItems.length;i++){
+          if(this.trainerService.infoItems[i].modules && this.trainerService.infoItems[i].modules.indexOf(old_id) > -1){
+            this.trainerService.infoItems[i].modules.push(this.trainerService.moduleItem.id)
+            this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',this.trainerService.infoItems[i].id,this.trainerService.infoItems[i].modules,'modules',null,true)
+          }
         }
-      })
+        this.toast.hideLoader();
+        this.updateVisibleItems();
+          // …openen/navigeer of modal sluiten
+      } catch (err) {
+        // Graceful fallback: direct openen met lokale data
+        this.trainerService.moduleItem = {}
+        this.toast.hideLoader();
+        this.updateVisibleItems();
+        // this.trainerService.caseItem = { id: casus.id, ...casus };
+      }
+
+      // this.trainerService.loadModules(()=>{
+      //   this.connectedCases = []
+      //   let item = this.trainerService.modules.filter((e:any) => {
+      //     return e.created === copy.created
+      //   })
+      //   if(item.length){
+      //     this.trainerService.breadCrumbs = []
+      //     this.selectModule(item[0])
+      //     for(let i=0;i<this.trainerService.cases.length;i++){
+      //       if(this.trainerService.cases[i].modules && this.trainerService.cases[i].modules.indexOf(old_id) > -1){
+      //         this.trainerService.cases[i].modules.push(this.trainerService.moduleItem.id)
+      //         this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',this.trainerService.cases[i].id,this.trainerService.cases[i].modules,'modules',null,true)
+      //       }
+      //     }
+      //     for(let i=0;i<this.trainerService.infoItems.length;i++){
+      //       if(this.trainerService.infoItems[i].modules && this.trainerService.infoItems[i].modules.indexOf(old_id) > -1){
+      //         this.trainerService.infoItems[i].modules.push(this.trainerService.moduleItem.id)
+      //         this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',this.trainerService.infoItems[i].id,this.trainerService.infoItems[i].modules,'modules',null,true)
+      //       }
+      //     }
+      //   }
+      //   else{
+      //     this.trainerService.moduleItem = {}
+      //   }
+      // })
     })
   }
 
@@ -363,33 +489,38 @@ export class ModulesPage implements OnInit {
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
         this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'modules',module.id).then(()=>{
-          this.trainerService.loadModules(()=>{
-            this.connectedCases = []
-            this.trainerService.moduleItem = {}
-            this.trainerService.breadCrumbs = []
-            for(let i=0;i<this.trainerService.cases.length;i++){
-              if(this.trainerService.cases[i].modules && this.trainerService.cases[i].modules.indexOf(module.id) > -1){
-                this.trainerService.cases[i].modules = this.trainerService.cases[i].modules.filter((e:any) => {
-                  return e !== module.id
-                })
-                if(!this.trainerService.cases[i].modules.length){
-                  this.trainerService.cases[i].modules = []
-                }
-                this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',this.trainerService.cases[i].id,this.trainerService.cases[i].modules,'modules',null,true)
+          this.connectedCases = []
+          this.trainerService.moduleItem = {}
+          this.trainerService.breadCrumbs = []
+          this.updateVisibleItems();
+          for(let i=0;i<this.trainerService.cases.length;i++){
+            if(this.trainerService.cases[i].modules && this.trainerService.cases[i].modules.indexOf(module.id) > -1){
+              this.trainerService.cases[i].modules = this.trainerService.cases[i].modules.filter((e:any) => {
+                return e !== module.id
+              })
+              if(!this.trainerService.cases[i].modules.length){
+                this.trainerService.cases[i].modules = []
               }
+              this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',this.trainerService.cases[i].id,this.trainerService.cases[i].modules,'modules',null,true)
             }
-            for(let i=0;i<this.trainerService.infoItems.length;i++){
-              if(this.trainerService.infoItems[i].modules && this.trainerService.infoItems[i].modules.indexOf(module.id) > -1){
-                this.trainerService.infoItems[i].modules = this.trainerService.infoItems[i].modules.filter((e:any) => {
-                  return e !== module.id
-                })
-                if(!this.trainerService.infoItems[i].modules.length){
-                  this.trainerService.infoItems[i].modules = []
-                }
-                this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',this.trainerService.infoItems[i].id,this.trainerService.infoItems[i].modules,'modules',null,true)
+          }
+          for(let i=0;i<this.trainerService.infoItems.length;i++){
+            if(this.trainerService.infoItems[i].modules && this.trainerService.infoItems[i].modules.indexOf(module.id) > -1){
+              this.trainerService.infoItems[i].modules = this.trainerService.infoItems[i].modules.filter((e:any) => {
+                return e !== module.id
+              })
+              if(!this.trainerService.infoItems[i].modules.length){
+                this.trainerService.infoItems[i].modules = []
               }
+              this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',this.trainerService.infoItems[i].id,this.trainerService.infoItems[i].modules,'modules',null,true)
             }
-          })
+          }
+
+          // this.trainerService.loadModules(()=>{
+          //   this.connectedCases = []
+          //   this.trainerService.moduleItem = {}
+          //   this.trainerService.breadCrumbs = []
+          // })
         })
       }
     })
@@ -745,7 +876,7 @@ shortMenu:any
 
 
     if(this.selectMenuservice.selectedItem){
-      console.log(this.selectMenuservice.selectedItem.id)
+      // console.log(this.selectMenuservice.selectedItem.id)
 
       let list:any[] =[]
       if(this.selectMenuservice.selectedItem.id == 'modules'){
@@ -774,15 +905,20 @@ shortMenu:any
         this.toast.show(this.translate.instant('modules.no_available_items'))
         return
       }
-      this.modalService.selectItem('Selecteer', list, (result: any) => {
+      this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
         if (result.data) {
           if(this.selectMenuservice.selectedItem.id == 'modules'){
             for(let i=0;i<result.data.length;i++){
-              this.trainerService.moduleItem.items.push({
-                type: 'module',
-                ...result.data[i],
-                order:999,
-              })
+              if(!this.trainerService.checkForLoopModules(result.data[i],[this.trainerService.moduleItem.id])){
+                this.trainerService.moduleItem.items.push({
+                  type: 'module',
+                  ...result.data[i],
+                  order:999,
+                })
+              }
+              else{
+                this.toast.show(this.translate.instant('modules.cannot_add_module_to_itself'))
+              }
             }
           }
           else if(this.selectMenuservice.selectedItem.id == 'cases'){
@@ -854,7 +990,7 @@ shortMenu:any
     }
   }
   deleteItem(item:any){
-    console.log('deleteItem',item)
+    // console.log('deleteItem',item)
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
         let index = this.trainerService.moduleItem.items.findIndex((e:any) => {
@@ -950,7 +1086,7 @@ shortMenu:any
               training.title = result.data[0].value
               training.created = Date.now()
               training.moduleId = training.id
-              training.trainer_id = this.nav.activeOrganisationId
+              training.trainerId = this.nav.activeOrganisationId
               training.status = 'concept'
               training.type_credits = 'unlimited'
               training.credits = 0
@@ -959,24 +1095,32 @@ shortMenu:any
               training.amount_period = 2
               delete training.id
               delete training.type
-              this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', training).then(() => {
-                this.trainerService.loadTrainings(() => {
-                  this.trainerService.trainingItem = this.trainerService.getTraining('',training.created)
-                  
-                  this.createItems(training.items,training.moduleId,() => {
-                    this.trainerService.loadTrainingsAndParticipants(() => {
-                      this.trainerService.trainingItem = this.trainerService.getTraining('',training.created)
-                      this.trainerService.breadCrumbs = []
-                      this.trainerService.breadCrumbs.push({
-                        type: 'training',
-                        item: this.trainerService.trainingItem,
-                      })
-                      this.nav.go('trainer/trainings')
-                      this.toast.hideLoader()
-                    })
+              console.log('training',training)
+              this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', training).then(async () => {
+                console.log('created training',training)
+                const found = await this.trainerService.waitForItem('training', training.created, 5000, 'created');
+                console.log('found',found)
+                this.trainerService.trainingItem = found;
+                
+                this.createItems(training.items,training.moduleId,() => {
+                  this.trainerService.breadCrumbs = []
+                  this.trainerService.breadCrumbs.push({
+                    type: 'training',
+                    item: this.trainerService.trainingItem,
                   })
+                  this.nav.go('trainer/trainings')
+                  this.toast.hideLoader()
 
+                  // this.trainerService.loadTrainingsAndParticipants(() => {
+                  //   this.trainerService.trainingItem = this.trainerService.getTraining('',training.created)
+                  // })
                 })
+
+                // this.trainerService.loadTrainings(() => {
+                //   this.trainerService.trainingItem = this.trainerService.getTraining('',training.created)
+                  
+
+                // })
               })
             }
           })
@@ -991,7 +1135,7 @@ shortMenu:any
         item = this.trainerService.getCase(item.id)
         item.item_type = 'case'
         item.trainingId = this.trainerService.trainingItem.id
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
         item.moduleId = moduleId
         item.order = i
         this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id,item).then(() => {})
@@ -1000,7 +1144,7 @@ shortMenu:any
         item = this.trainerService.getInfoItem(item.id)
         item.item_type = 'infoItem'
         item.trainingId = this.trainerService.trainingItem.id
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
         item.moduleId = moduleId
         item.order = i
         this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id,item).then(() => {})
@@ -1009,7 +1153,7 @@ shortMenu:any
         item = this.trainerService.getModule(item.id)
         item.item_type = 'module'
         item.trainingId = this.trainerService.trainingItem.id
-        item.trainer_id = this.nav.activeOrganisationId
+        item.trainerId = this.nav.activeOrganisationId
         item.moduleId = moduleId
         item.order = i
         this.firestore.setSubSub('trainers', this.nav.activeOrganisationId, 'trainings', this.trainerService.trainingItem.id, 'items', item.id,item).then(() => {})
@@ -1075,5 +1219,8 @@ shortMenu:any
       this[action]();
     }
   }
+
+
+  
 
 }
