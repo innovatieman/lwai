@@ -121,6 +121,7 @@ exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'
     const elearningId = data.elearningId;
     const updates = data.updates;
     const items = data.items;
+    const deleteItems = data.deleteItems;
 
     // const elearningRef = doc where originalTrainingId is equal to elearningId
     const elearningRef = admin.firestore().collection('elearnings').where('originalTrainingId', '==', elearningId).limit(1);
@@ -144,7 +145,7 @@ exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'
       return new responder.Message('User does not have permission to adjust this elearning', 403);
     }
     // Validate updates
-    if ((!updates || typeof updates !== 'object') && (!data.items || !Array.isArray(data.items))) {
+    if ((!updates || typeof updates !== 'object') && (!data.items || !Array.isArray(data.items)) && (!data.deleteItems || !Array.isArray(data.deleteItems))) {
       return new responder.Message('Invalid updates data', 400);
     }
     if(items && Array.isArray(items)) {
@@ -162,6 +163,16 @@ exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'
           const newItemRef = elearningDocRef.doc();
           batch.set(newItemRef, item);
         }
+      });
+      await batch.commit();
+    }
+    else if(deleteItems && Array.isArray(deleteItems)) {
+      const elearningItemsRef = admin.firestore().collection('elearnings').doc(elearningDoc.id).collection('items');
+      const batch = admin.firestore().batch();
+      deleteItems.forEach((item:any) => {
+          // Delete existing item
+          const itemRef = elearningItemsRef.doc(item);
+          batch.delete(itemRef);
       });
       await batch.commit();
     }

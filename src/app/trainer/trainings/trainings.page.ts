@@ -22,7 +22,7 @@ import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ActivatedRoute } from '@angular/router';
 import { tutorialService } from 'src/app/services/tutorial.service';
 import * as moment from 'moment';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-trainings',
@@ -1269,43 +1269,133 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
   }
 
-  deleteItem(item:any){
-    this.unusedItems = []
-    this.usedItems = []
-    this.findAllUsedItems(this.trainerService.breadCrumbs[0].item)
-    
-    // let trainingId = this.trainerService.trainingItem.id
-    // this.trainerService.trainingItem = this.trainerService.getTraining(trainingId,this.trainerService.trainingItem.created)
-    this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
-      if(result){
+  // deleteItem(item:any){
+  //   this.unusedItems = []
+  //   this.usedItems = []
+  //   // this.findAllUsedItems(this.trainerService.breadCrumbs[0].item)
+  //   // let originalUsedItems = JSON.parse(JSON.stringify(this.usedItems))
+  //   // let trainingId = this.trainerService.trainingItem.id
+  //   // this.trainerService.trainingItem = this.trainerService.getTraining(trainingId,this.trainerService.trainingItem.created)
+  //   this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
+  //     if(result){
 
-        this.deleteItemToModuleById(this.trainerService.breadCrumbs[0].item, this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id,item.id)
-        this.update('items',true)
-        setTimeout(() => {
-          this.findAllUsedItems(this.trainerService.breadCrumbs[0].item)
-          if(this.unusedItems.length){
-            for(let i=0;i<this.unusedItems.length;i++){
-              this.firestore.deleteSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',this.unusedItems[i])
-            }
-            this.unusedItems = []
-            this.usedItems = []
+  //       this.deleteItemToModuleById(this.trainerService.breadCrumbs[0].item, this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id,item.id)
+  //       this.update('items',true)
+  //       setTimeout(() => {
+  //         console.log('temp',JSON.parse(JSON.stringify(this.trainerService.breadCrumbs[0].item)))
+  //         this.findAllUsedItems(this.trainerService.breadCrumbs[0].item)
+  //         console.log('unusedItems',this.unusedItems)
+  //         console.log('usedItems',this.usedItems)
+
+  //         if(this.unusedItems.length){
+  //           for(let i=0;i<this.unusedItems.length;i++){
+  //             console.log('delete item',this.unusedItems[i])
+  //             this.firestore.deleteSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',this.unusedItems[i])
+  //           }
+  //           if(this.trainerService.breadCrumbs[0].item.status == 'published' && this.trainerService.breadCrumbs[0].item.publishType == 'elearning'){
+  //             console.log('delete elearning items',{
+  //               elearningId: this.trainerService.breadCrumbs[0].item.id,
+  //               trainerId: this.nav.activeOrganisationId,
+  //               deleteItems: [{id:this.unusedItems}]
+  //             })
+  //             this.functions.httpsCallable('adjustElearning')({
+  //               elearningId: this.trainerService.breadCrumbs[0].item.id,
+  //               trainerId: this.nav.activeOrganisationId,
+  //               deleteItems: [{id:this.unusedItems}]
+  //             }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
+  //               console.log('adjustElearning response',res)
+  //             });
+  //           }
+  //           this.unusedItems = []
+  //           this.usedItems = []
             
-            setTimeout(() => {
-              this.trainerService.breadCrumbs[0].item = this.trainerService.getTraining(this.trainerService.breadCrumbs[0].item.id)
-              if(this.trainerService.breadCrumbs.length>1){
-                this.trainerService.trainingItem = this.trainerService.getTrainingModule(this.trainerService.breadCrumbs[0].item,this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id)
-                this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item = this.trainerService.trainingItem
-              }
-              // this.trainerService.loadTrainingsAndParticipants(()=>{
-              //   setTimeout(() => {
-              //   }, 10);
-              // })
-            }, 1000);
-          }
-        }, 1000);
+  //           setTimeout(() => {
+  //             this.trainerService.breadCrumbs[0].item = this.trainerService.getTraining(this.trainerService.breadCrumbs[0].item.id)
+  //             if(this.trainerService.breadCrumbs.length>1){
+  //               this.trainerService.trainingItem = this.trainerService.getTrainingModule(this.trainerService.breadCrumbs[0].item,this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id)
+  //               this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item = this.trainerService.trainingItem
+  //             }
+  //             // this.trainerService.loadTrainingsAndParticipants(()=>{
+  //             //   setTimeout(() => {
+  //             //   }, 10);
+  //             // })
+  //           }, 1000);
+  //         }
+  //       }, 1000);
+  //     }
+  //   })
+  // }
+
+  
+  async deleteItem(item: any): Promise<void> {
+    this.unusedItems = [];
+    this.usedItems = [];
+
+    const result = await this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete'));
+    if (!result) return;
+
+    this.deleteItemToModuleById(
+      this.trainerService.breadCrumbs[0].item,
+      this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length - 1].item.id,
+      item.id
+    );
+    this.update('items', true);
+
+    // Wacht even om zeker te zijn dat Firestore update klaar is
+    await new Promise(res => setTimeout(res, 500));
+
+    this.findAllUsedItems(this.trainerService.breadCrumbs[0].item);
+
+    if (this.unusedItems.length) {
+      for (let i = 0; i < this.unusedItems.length; i++) {
+        await this.firestore.deleteSubSub(
+          'trainers',
+          this.nav.activeOrganisationId,
+          'trainings',
+          this.trainerService.breadCrumbs[0].item.id,
+          'items',
+          this.unusedItems[i]
+        );
       }
-    })
+
+      if (
+        this.trainerService.breadCrumbs[0].item.status === 'published' &&
+        this.trainerService.breadCrumbs[0].item.publishType === 'elearning'
+      ) {
+        await this.functions.httpsCallable('adjustElearning')({
+          elearningId: this.trainerService.breadCrumbs[0].item.id,
+          trainerId: this.nav.activeOrganisationId,
+          deleteItems: this.unusedItems
+        }).pipe(take(1)).subscribe(result=>{
+          // console.log('adjustElearning response', result);
+        });
+      }
+
+      this.unusedItems = [];
+      this.usedItems = [];
+
+      // Refresh state
+      await this.refreshStateAfterDelete();
+    }
   }
+
+
+  async refreshStateAfterDelete(): Promise<void> {
+    const training = await this.trainerService.getTraining(this.trainerService.breadCrumbs[0].item.id);
+    this.trainerService.breadCrumbs[0].item = training;
+
+    if (this.trainerService.breadCrumbs.length > 1) {
+      const module = await this.trainerService.getTrainingModule(
+        this.trainerService.breadCrumbs[0].item,
+        this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length - 1].item.id
+      );
+      this.trainerService.trainingItem = module;
+      this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length - 1].item = module;
+    } else {
+      this.trainerService.trainingItem = training;
+    }
+  }
+
 
   back(){
     console.log(this.trainerService.breadCrumbs)

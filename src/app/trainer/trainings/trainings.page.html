@@ -355,7 +355,7 @@
                       
                       <ion-item detail="false" pointer lines="none" listCard class="ionItemTypes" marginBottom *ngIf="trainerService.breadCrumbs.length<2">
                           <ion-label position="stacked">{{'cases.tags' | translate}}</ion-label>
-                          <input id="txtautocomplete" class="native-input sc-ion-input-md" list="txtautocompletelist" style="min-height:40px;" [(ngModel)]="trainerService.trainingItem.tag" (keydown.enter)="addTag()">
+                          <input id="txtautocomplete" class="native-input sc-ion-input-md" list="txtautocompletelist" style="min-height:40px;" [(ngModel)]="trainerService.trainingItem.tag" (keydown.enter)="addTag()" (blur)="addTag()" [disabled]="trainerService.trainingItem.status=='closed'">
                           <ion-button fill="solid" slot="end" [disabled]="!trainerService.trainingItem.tag" (click)="addTag()" style="position:relative;top:20px;width:36px;height:36px;font-size:18px;left:-30px">
                             <fa-icon [icon]="icon.get('faPlus')"></fa-icon>
                           </ion-button>
@@ -765,8 +765,8 @@
                     <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.organisation" (click)="trainerService.publishType='organisation'">{{'trainings.publish_switch_organization' | translate}}</ion-button>
 
                     <div class="spacer"></div>
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning'">{{'buttons.publish_elearning' | translate}}</ion-button>
-                    <div class="spacer"></div>
+                    <!-- <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning'">{{'buttons.publish_elearning' | translate}}</ion-button>
+                    <div class="spacer"></div> -->
                     <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.publish_for_participants' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
@@ -832,8 +832,8 @@
                   <div marginTop flex center-ver>
                     <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='training';centerSelectItems()">{{'trainings.publish_switch_training' | translate}}</ion-button>
                     <div class="spacer"></div>
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning'">{{'buttons.publish_elearning' | translate}}</ion-button>
-                    <div class="spacer"></div>
+                    <!-- <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning'">{{'buttons.publish_elearning' | translate}}</ion-button>
+                    <div class="spacer"></div> -->
                     <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="publishTrainingOrganisation()">{{'buttons.publish_for_organisation' | translate}}</ion-button>
                   </div>
                 </ion-card-content>

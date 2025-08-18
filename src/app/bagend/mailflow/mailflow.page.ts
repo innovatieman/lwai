@@ -3,6 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { Subject, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { IconsService } from 'src/app/services/icons.service';
@@ -21,7 +22,7 @@ export class MailflowPage implements OnInit {
   selectedItem: any = null;
   newMailItem: any = {
     title: 'Nieuwe E-Mail',
-    from: 'Alicia Labs Conversations <user_agent@alicialabs.nl>',
+    from: 'AliciaLabs Conversations <alicia@alicialabs.nl>',
     subject: '',
     body: '',
     flow: 'registration',
@@ -40,6 +41,37 @@ export class MailflowPage implements OnInit {
     }
   };
   selectedFlows: string[] = []
+
+  // Mogelijke exclude toggles
+  excludeKeys: string[] = [
+    'has_training',
+    'has_no_training',
+    'has_organisation',
+    'has_no_organisation',
+    'has_conversation',
+    'has_no_conversation',
+    'is_customer',
+    'is_no_customer',
+  ];
+
+  // Labels voor weergave
+  excludeLabels: { [key: string]: string } = {
+    has_training: 'Met Training',
+    has_no_training: 'Geen Training',
+    has_organisation: 'Met Organisatie',
+    has_no_organisation: 'Geen Organisatie',
+    has_conversation: 'Gesprek Gevoerd',
+    has_no_conversation: 'Gesprek Niet Gevoerd',
+    is_customer: 'Is Een Klant',
+    is_no_customer: 'Is Geen Klant',
+  };
+
+  // Huidige filterstatus (standaard uit)
+  excludeFilter: { [key: string]: boolean } = {};
+
+  // Gefilterde lijst
+  filteredMails: any[] = [];
+  private leave$ = new Subject<void>();
   constructor(
     private fire:AngularFirestore,
     public icon:IconsService,
@@ -56,10 +88,25 @@ export class MailflowPage implements OnInit {
 
   ngOnInit() {
     this.getAllMails();
+    // Initieel alle mails tonen
+    this.filteredMails = this.allMails;
+    this.excludeKeys.forEach(key => this.excludeFilter[key] = false);
+  }
+
+  ionViewWillEnter() {
+    this.getAllMails();
+    // Initieel alle mails tonen
+    this.filteredMails = this.allMails;
+    this.excludeKeys.forEach(key => this.excludeFilter[key] = false);
+  }
+
+  ionViewWillLeave() {
+    this.leave$.next();
+    this.leave$.complete();
   }
 
   getAllMails() {
-    this.fire.collection('mailflow').valueChanges({ idField: 'id' }).subscribe((mails: any[]) => {
+    this.fire.collection('mailflow').valueChanges({ idField: 'id' }).pipe(takeUntil(this.leave$)).subscribe((mails: any[]) => {
       this.allMails = mails;
       for(let mail of this.allMails) {
         if(!mail.exclude) {
@@ -248,7 +295,7 @@ export class MailflowPage implements OnInit {
   startMailFlow(){
     this.toast.show('Dit is voor test doeleinden en doet nu even niets.');
     return
-    this.functions.httpsCallable('testMailFlow')({ days: 1 }).subscribe((response:any)=>{
+    this.functions.httpsCallable('testMailFlow')({ days: 1 }).pipe(take(1)).subscribe((response:any)=>{
       console.log('Mail flow started:', response);
     });
   }
@@ -288,6 +335,31 @@ export class MailflowPage implements OnInit {
 
   flowSelected(flow:string){
     return this.selectedFlows.includes(flow)
+  }
+
+  hasAnyExcludeFilter(): boolean {
+    return Object.values(this.excludeFilter).some(v => v);
+  }
+
+  resetExcludeFilters() {
+    this.excludeKeys.forEach(key => this.excludeFilter[key] = false);
+    this.updateFilteredMails();
+  }
+
+  updateFilteredMails() {
+    if (!this.hasAnyExcludeFilter()) {
+      this.filteredMails = this.allMails;
+      return;
+    }
+
+    this.filteredMails = this.allMails.filter(mail => {
+      if (!mail.exclude) return false;
+
+      // Check of mail voldoet aan alle actieve filters
+      return this.excludeKeys.every(key => {
+        return !this.excludeFilter[key] || mail.exclude[key];
+      });
+    });
   }
 
 }

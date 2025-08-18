@@ -14,6 +14,7 @@ export class ToastService {
   isLoading:boolean = false
   isLoadingLong:boolean = false
   loaderStart:any
+  private loading: HTMLIonLoadingElement | null = null;
 
   public dismissButton = [
     {
@@ -66,37 +67,72 @@ export class ToastService {
     
   }
 
-  async showLoader(message?:string,duration?:number) {
-    if(!message){
-      message = this.translate.instant('modal_intros.loader')
+  async showLoader(message: string = 'Even geduld...') {
+    // Als er al een loader is, toon geen nieuwe
+    if (this.loading) {
+      return;
     }
-    if(this.loader){
-      return
+
+    this.loading = await this.loadingController.create({
+      message,
+      spinner: 'circles',
+      cssClass:'loader',
+      // translucent: true,
+      backdropDismiss: false,
+    });
+
+    try {
+      await this.loading.present();
+    } catch (err) {
+      // Bij navigatie of race conditions
+      console.warn('Loader kon niet worden getoond:', err);
+      this.loading = null;
     }
-    this.isLoading=true
-    return await this.loadingController.create({
-      message: message,
-      duration: duration,
-      spinner:'circles',
-      cssClass:'loader'
-    }).then(a=>{
-      this.loader = a
-      this.loader.present().then(()=>{
-        if(!this.isLoading){
-          a.dismiss()
-        }
-      })
-    })
   }
 
-  hideLoader(){
-    this.isLoading=false
-    if(this.loader){
-      this.loader.dismiss()
-      this.loader = undefined
+  async hideLoader() {
+    if (this.loading) {
+      try {
+        await this.loading.dismiss();
+      } catch (err) {
+        // loader was al gesloten of pagina was al weg
+        console.warn('Loader kon niet worden gesloten:', err);
+      }
+      this.loading = null;
     }
-      
   }
+
+  // async showLoader(message?:string,duration?:number) {
+  //   if(!message){
+  //     message = this.translate.instant('modal_intros.loader')
+  //   }
+  //   if(this.loader){
+  //     return
+  //   }
+  //   this.isLoading=true
+  //   return await this.loadingController.create({
+  //     message: message,
+  //     duration: duration,
+  //     spinner:'circles',
+  //     cssClass:'loader'
+  //   }).then(a=>{
+  //     this.loader = a
+  //     this.loader.present().then(()=>{
+  //       if(!this.isLoading){
+  //         a.dismiss()
+  //       }
+  //     })
+  //   })
+  // }
+
+  // hideLoader(){
+  //   this.isLoading=false
+  //   if(this.loader){
+  //     this.loader.dismiss()
+  //     this.loader = undefined
+  //   }
+      
+  // }
 
 
   public async selectDate(date:any,callback:Function,showTime?:boolean|null,extraData?:any){

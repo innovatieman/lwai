@@ -8,8 +8,8 @@
       <!-- <h3 style="padding: 0 15px;color:var(--ion-color-primary)" font-title>{{title}}</h3> -->
     </ion-toolbar>
     <ion-toolbar style="padding:0 10px;">
-      <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" *ngIf="!extraData||!extraData.multiple" [placeholder]="translate.instant('search')"></ion-searchbar>
-      <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" (keyup)="selectAll(true)" *ngIf="extraData&&extraData.multiple" [placeholder]="translate.instant('search')"></ion-searchbar>
+      <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" *ngIf="!extraData||!extraData.multiple" [placeholder]="translate.instant('buttons.search')"></ion-searchbar>
+      <ion-searchbar style="--border-radius:30px" [(ngModel)]="search" (keyup)="selectAll(true)" *ngIf="extraData&&extraData.multiple" [placeholder]="translate.instant('buttons.search')"></ion-searchbar>
     </ion-toolbar>
   </ion-header>
   <div class="inner-content">
@@ -45,7 +45,7 @@
               <ion-label color="medium">{{'Select all' | translate}}</ion-label>
               <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->
             </ion-item>
-            <ion-item detail="false" *ngFor="let listItem of list | filterSearch : search : false : ['name']" button (click)="listItem.selected=!listItem.selected">
+            <ion-item detail="false" *ngFor="let listItem of list | filterSearch : search : false : ['name','title']" button (click)="listItem.selected=!listItem.selected">
               <ion-checkbox mode="md" [(ngModel)]="listItem.selected" (click)="preventBubble($event)" style="margin-right: 10px;max-width:30px"></ion-checkbox>
               <ion-label *ngIf="listItem[extraData.field]" color="medium">{{listItem[extraData.field]}}</ion-label>
               <!-- <ion-note color="primary">{{listItem.note}}</ion-note> -->

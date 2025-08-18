@@ -26,17 +26,17 @@
   
           </div>
 
-          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='elearnings','notActiveItem':activeTab!='elearnings'}" >
+          <!-- <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='elearnings','notActiveItem':activeTab!='elearnings'}" >
             <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/elearnings')" class="itemButton" [detail]="false">
               <div font-20 weight700>{{'marketplace.elearnings' | translate}}</div>
               <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faBookOpen')"></fa-icon>
             </ion-item>
   
-          </div>
+          </div> -->
 
-          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.activeCourses?.length" class="notActiveItem">
+          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.activeCourses?.length || auth.myElearnings?.length" class="notActiveItem">
             <ion-item detail="false" lines="none" button (click)="nav.go('start/my_trainings/')" class="itemButton">
-                <div font-20 weight700>{{'buttons.my_trainings' | translate}}</div>
+                <div font-20 weight700>{{'buttons.your_trainings' | translate}}</div>
                 <fa-icon font-24 slot="end" [icon]="icon.get('faGraduationCap')"></fa-icon>
             </ion-item>
           </div>

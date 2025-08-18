@@ -120,7 +120,7 @@ export class MenuMobileComponent  implements OnInit {
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
             if(this.auth.activeCourses?.length){
-              list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+              list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
               list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
@@ -139,7 +139,7 @@ export class MenuMobileComponent  implements OnInit {
                 list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
                 list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
                 if(this.auth.activeCourses?.length){
-                  list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+                  list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
                 }
                 if(this.auth.myOrganisationsList?.length){
                   list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
@@ -155,7 +155,7 @@ export class MenuMobileComponent  implements OnInit {
                 list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
                 list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
                 if(this.auth.activeCourses?.length){
-                  list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+                  list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
                 }
                 if(this.auth.myOrganisationsList?.length){
                   list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});
@@ -171,12 +171,12 @@ export class MenuMobileComponent  implements OnInit {
             }
             break;
           case 'my_trainings':
-            list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+            list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
             if(this.auth.activeCourses?.length){
-              list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+              list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
               list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
@@ -192,7 +192,7 @@ export class MenuMobileComponent  implements OnInit {
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
             if(this.auth.activeCourses?.length){
-              list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+              list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
               list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',menuAction:'selectOrganisation'});
@@ -516,7 +516,7 @@ export class MenuMobileComponent  implements OnInit {
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
             if(this.auth.activeCourses?.length){
-              list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+              list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
               list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});
@@ -529,12 +529,12 @@ export class MenuMobileComponent  implements OnInit {
           
           case 'manual':
             list.push({title:this.translate.instant('marketplace.add_training'),icon:'faPlus',url:'marketplace/manual'});
-            list.push({title:this.translate.instant('marketplace.elearnings'),icon:'faBookOpen',url:'marketplace/elearnings'});
+            // list.push({title:this.translate.instant('marketplace.elearnings'),icon:'faBookOpen',url:'marketplace/elearnings'});
             list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
             if(this.auth.activeCourses?.length){
-              list.push({title:this.translate.instant('buttons.my_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
+              list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
             if(this.auth.myOrganisationsList?.length){
               list.push({title:this.translate.instant('buttons.my_organisation'),icon:'faBuilding',url:'start/my_organisation'});

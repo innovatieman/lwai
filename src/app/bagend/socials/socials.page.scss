@@ -2,3 +2,11 @@
     padding:15px 0px;
     width:100%;
 }
+.selectColumn,
+.detailColumn {
+height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
+overflow-y: auto;  // Activeer verticale scroll wanneer nodig
+padding-right: 10px;  // Optionele padding voor scrollbalk
+max-height:calc(var(--vh, 1vh) * 100 - 76px);
+padding-bottom:20px;
+}

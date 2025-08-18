@@ -327,21 +327,21 @@ export class ModulesPage implements OnInit {
           created: Date.now(),
         }
         this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'modules', module).then(async () => {
-        this.connectedCases = []
-        try {
-          const found = await this.trainerService.waitForItem('module', module.created, 5000, 'created');
-          this.trainerService.moduleItem = found;
-          this.toast.hideLoader();
-          this.updateVisibleItems();
-          // …openen/navigeer of modal sluiten
-        } catch (err) {
-          // Graceful fallback: direct openen met lokale data
-          this.trainerService.moduleItem = {}
-          this.toast.hideLoader();
-          this.updateVisibleItems();
+          this.connectedCases = []
+          try {
+            const found = await this.trainerService.waitForItem('module', module.created, 5000, 'created');
+            this.trainerService.moduleItem = found;
+            this.toast.hideLoader();
+            this.updateVisibleItems();
+            // …openen/navigeer of modal sluiten
+          } catch (err) {
+            // Graceful fallback: direct openen met lokale data
+            this.trainerService.moduleItem = {}
+            this.toast.hideLoader();
+            this.updateVisibleItems();
 
-          // this.trainerService.caseItem = { id: casus.id, ...casus };
-        }
+            // this.trainerService.caseItem = { id: casus.id, ...casus };
+          }
       });
 
         //   this.trainerService.loadModules(()=>{
@@ -1037,7 +1037,7 @@ shortMenu:any
   }
 
   back(){
-    console.log(this.trainerService.breadCrumbs)
+    // console.log(this.trainerService.breadCrumbs)
     if(this.trainerService.breadCrumbs.length>1){
       this.trainerService.breadCrumbs.pop()
       let item = this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1]

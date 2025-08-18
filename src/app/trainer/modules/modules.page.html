@@ -252,7 +252,7 @@
                       
                       <ion-item detail="false" pointer lines="none" listCard class="ionItemTypes">
                           <ion-label position="stacked">{{'cases.tags' | translate}}</ion-label>
-                          <input id="txtautocomplete" class="native-input sc-ion-input-md" list="txtautocompletelist" style="min-height:40px;" [(ngModel)]="trainerService.moduleItem.tag" (keydown.enter)="addTag()">
+                          <input id="txtautocomplete" class="native-input sc-ion-input-md" list="txtautocompletelist" style="min-height:40px;" [(ngModel)]="trainerService.moduleItem.tag" (keydown.enter)="addTag()" (blur)="addTag()">
                           <ion-button fill="solid" slot="end" [disabled]="!trainerService.moduleItem.tag" (click)="addTag()" style="position:relative;top:20px;width:36px;height:36px;font-size:18px;left:-30px">
                             <fa-icon [icon]="icon.get('faPlus')"></fa-icon>
                           </ion-button>

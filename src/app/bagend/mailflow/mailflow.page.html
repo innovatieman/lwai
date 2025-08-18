@@ -33,11 +33,24 @@
             </div>
           </div>
 
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px">
+            <h2 font-20 weight700 style="margin:10px 0px;padding: 0px 15px;" flex center-ver>
+              <span>Filters</span>
+              <div class="spacer"></div>
+              <fa-icon font-24 [icon]="icon.get('faTimes')" *ngIf="hasAnyExcludeFilter()" (click)="resetExcludeFilters()" style="cursor:pointer"></fa-icon>
+            </h2>
+
+            <ion-item lines="none" *ngFor="let key of excludeKeys" style="margin-bottom:0px">
+              <ion-label>{{ excludeLabels[key] }}</ion-label>
+              <ion-toggle slot="end" color="primary" [(ngModel)]="excludeFilter[key]" (ionChange)="updateFilteredMails()"></ion-toggle>
+            </ion-item>
+          </div>
+
 
       </ion-col>
 
       <ion-col [size]="media.smallDevice ? 12 : 9" class="contentColumn">
-        <ion-card *ngFor="let mail of allMails | filterKey : 'flow' : selectedFlows" fullwidth marginBottom borderRadius16>
+        <ion-card *ngFor="let mail of filteredMails | filterKey : 'flow' : selectedFlows" fullwidth marginBottom borderRadius16>
           <ion-card-header (click)="mail.showMail = !mail.showMail">
             <ion-card-title flex center-ver>
               <div>

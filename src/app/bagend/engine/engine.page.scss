@@ -12,6 +12,15 @@ ion-range{
     --padding-bottom: 7px;
     color: var(--color-global);
 }
+
+  .selectColumn,
+  .detailColumn {
+    height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
+    overflow-y: auto;  // Activeer verticale scroll wanneer nodig
+    padding-right: 10px;  // Optionele padding voor scrollbalk
+    max-height:calc(var(--vh, 1vh) * 100 - 76px);
+    padding-bottom:20px;
+  }
 // [listCardTop]{
 //     border-bottom-left-radius: 0px;
 //     border-bottom-right-radius: 0px;

@@ -247,10 +247,13 @@ export class InfoItemsPage implements OnInit {
           const found = await this.trainerService.waitForItem('infoItem', infoItem.created, 5000, 'created');
           this.trainerService.infoItem = found;
           this.updateVisibleItems();
+          this.toast.hideLoader();
           // …openen/navigeer of modal sluiten
         } catch (err) {
           // Graceful fallback: direct openen met lokale data
           this.trainerService.infoItem = {}; // { id: res.id, ...res };
+          this.updateVisibleItems();
+          this.toast.hideLoader()
         }
       });
         

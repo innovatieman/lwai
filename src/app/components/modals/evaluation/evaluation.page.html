@@ -16,19 +16,19 @@
   <ion-grid *ngIf="options.skills&&options?.firstTime && options.conversation?.messages?.length > 10">
     <ion-row *ngIf="options.skills">
       <ion-col size="4">
-        <div class="skillBonus impact">+{{skillScore['impact'].score - skillScore['impact'].prevScore}}</div>
+        <div class="skillBonus impact"><span *ngIf="skillScore['impact'].score - skillScore['impact'].prevScore > 0">+</span> {{skillScore['impact'].score - skillScore['impact'].prevScore}}</div>
         <div font-20 weight700 center>
           <div>{{'standards.impact' | translate}}</div>
         </div>
       </ion-col>
       <ion-col size="4">
-        <div class="skillBonus impact">+{{skillScore['flow'].score - skillScore['flow'].prevScore}}</div>
+        <div class="skillBonus impact"><span *ngIf="skillScore['flow'].score - skillScore['flow'].prevScore > 0">+</span> {{skillScore['flow'].score - skillScore['flow'].prevScore}}</div>
         <div font-20 weight700 center>
           <div>{{'standards.flow' | translate}}</div>
         </div>
       </ion-col>
       <ion-col size="4">
-        <div class="skillBonus impact">+{{skillScore['logic'].score - skillScore['logic'].prevScore}}</div>
+        <div class="skillBonus impact"><span *ngIf="skillScore['logic'].score - skillScore['logic'].prevScore > 0">+</span> {{skillScore['logic'].score - skillScore['logic'].prevScore}}</div>
         <div font-20 weight700 center>
           <div>{{'standards.logic' | translate}}</div>
         </div>

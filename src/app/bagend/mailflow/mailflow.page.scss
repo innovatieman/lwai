@@ -1,6 +1,15 @@
 ion-item{
     margin-bottom:20px;
 }
+.selectColumn,
+.contentColumn {
+height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
+overflow-y: auto;  // Activeer verticale scroll wanneer nodig
+overflow-x: hidden;
+padding-right: 10px;  // Optionele padding voor scrollbalk
+max-height:calc(var(--vh, 1vh) * 100 - 81px);
+padding-bottom:20px;
+}
 .flowType{
     font-weight: bold;
     padding:5px 10px;
@@ -25,6 +34,11 @@ ion-item{
     background-color: #fff3e0;
     color: #e65100;
     border: solid 1px #e65100;
+}
+.flowType.direct{
+    background-color: rgba(0, 128, 0, 0.3);
+    color: #004d00;
+    border: solid 1px #004d00;
 }
 .mailItem{
     border-bottom: solid 1px #ccc;
