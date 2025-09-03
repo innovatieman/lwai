@@ -401,3 +401,52 @@ exports.editAutoRenew = functions
 
     return new responder.Message('setting updated', 200)
   });
+
+exports.updateTrainerInElearnings = functions.region('europe-west1')
+  .runWith({ memory: '1GB' })
+  .firestore
+  .document('trainers/{trainerId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+    const trainerId = context.params.trainerId;
+
+    // Controleer of relevante velden zijn gewijzigd
+    const relevantFieldsChanged =
+      before.logo !== after.logo ||
+      before.name !== after.name ||
+      before.trainer_details !== after.trainer_details
+
+    if (!relevantFieldsChanged) {
+      console.log('No relevant fields changed, skipping elearnings update.');
+      return null;
+    }
+
+    // Nieuwe trainerdata samenstellen
+    const updatedTrainerData = {
+      trainerId,
+      logo: after.logo || '',
+      name: after.name || '',
+      trainer_details: after.trainer_details || '',
+    };
+
+    const elearningsRef = admin.firestore().collection('elearnings');
+    const snapshot = await elearningsRef.where('trainerId', '==', trainerId).get();
+
+    if (snapshot.empty) {
+      // console.log(`No elearnings found for trainerId ${trainerId}`);
+      return null;
+    }
+
+    const batch = admin.firestore().batch();
+
+    snapshot.forEach(doc => {
+      const docRef = elearningsRef.doc(doc.id);
+      batch.update(docRef, { trainer: updatedTrainerData });
+    });
+
+    await batch.commit();
+    // console.log(`Updated ${snapshot.size} elearnings for trainerId ${trainerId}`);
+
+    return null;
+  });

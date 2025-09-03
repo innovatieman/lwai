@@ -5,6 +5,7 @@
         "longDateTime":"D MMMM YYYY HH:mm",
         "shortDate":"DD-MM-YY",
         "shortDateTime":"D-MM-YY HH:mm",
+        "fullDateTime":"DD-MM-YY HH:mm",
         "month_long":"MMMM YYYY"
     },
     "date_formats_angular":{
@@ -33,7 +34,9 @@
         "training":"Training",
         "no_attachments":"Geen bijlagen aanwezig",
         "employees":"Medewerkers",
-        "update_available":"Update beschikbaar"
+        "update_available":"Update beschikbaar",
+        "login":"Log in",
+        "register":"Registreer"
     },
     "menu":{
         "login": "Inloggen",
@@ -141,13 +144,18 @@
         "publish_elearning":"Publiceer e-training",
         "upgrade":"Upgrade",
         "continue":"Vervolg",
-        "buy":"Koop"
+        "buy":"Koop",
+        "undo":"Ongedaan maken",
+        "activate":"Activeren",
+        "send_message":"Stuur bericht"
     },
     "messages":{
         "saved":"Gegevens opgeslagen",
         "success":"Gelukt!",
         "busy_saving":"Bezig met opslaan...",
-        "deleted":"Verwijderd"
+        "deleted":"Verwijderd",
+        "busy_loading":"Bezig met laden...",
+        "email_sent":"Het bericht is verzonden"
     },
     "modal_intros":{
         "info_phases":"Bij dit gesprek zijn een aantal elementen (of fases) van belang.",
@@ -242,7 +250,8 @@
         "started_on":"Gestart op",
         "no_results":"Geen resultaten",
         "your_cases":"Jouw cases en suggesties",
-        "create_cases":"Maak je eigen case"
+        "create_cases":"Maak je eigen case",
+        "no_results_organisation":"Er zijn op dit moment geen actieve trainingen of cases beschikbaar in jouw organisatie."
     },
     "page_login":{
         "title":"Log in op uw account",
@@ -267,9 +276,12 @@
         "title_verify":"Verifieer je<br>e-mailadres",
         "subtitle_verify":"Je ontvangt binnen 1 minuut een e-mail. Vul de code in, die je in je e-mail hebt ontvangen.",
         "title_new_password":"Nieuw wachtwoord",
-        "subtitle_new_password":"Vul je nieuwe wachtwoord in."
+        "subtitle_new_password":"Vul je nieuwe wachtwoord in.",
+        "busy_logging":"Inloggen...",
+        "login_failed":"Inloggen mislukt. Controleer je e-mailadres en wachtwoord en probeer het opnieuw."
     },
     "page_register":{
+        "register_login":"Registreren / inloggen",
         "title":"Account aanmaken",
         "subtitle":"Je kunt zo direct aan de slag. Even snel een account aanmaken en je kan beginnen.",
         "name":"Naam",
@@ -288,7 +300,10 @@
         "terms4":"Privacybeleid",
         "show_offerCode":"Ik heb een code ontvangen",
         "hide_offerCode":"Verberg de code",
-        "offerCode":"Voer hier je code in"
+        "offerCode":"Voer hier je code in",
+        "busy_registering":"Registreren...",
+        "busy_loading":"Gegevens laden voor de eerste keer...",
+        "registration_failed":"Registratie mislukt."
     },
     "page_verify":{
         "verifying":"Account verifiëren",
@@ -394,6 +409,7 @@
         "credits_source_payment":"Aankoop",
         "credits_source_offer":"Speciale code",
         "credits_source_undefined":"Standaard",
+        "credits_source_training":"Training",
         "credits_left":"Credits over",
         "credits_open":"Openstaande credits",
         "more_credits":"Meer credits",
@@ -592,7 +608,8 @@
         "no_connected_items":"Deze module heeft (nog) geen onderdelen.",
         "new_training":"Nieuwe training",
         "new_training_name":"Hoe heet de nieuwe training?",
-        "cannot_add_module_to_itself":"Er ontstaat een oneindige lus als je deze module toevoegt aan zichzelf. Kies een andere module."
+        "cannot_add_module_to_itself":"Er ontstaat een oneindige lus als je deze module toevoegt aan zichzelf. Kies een andere module.",
+        "training_content_title":"Uitgebreide beschrijving van de training. Wordt alleen weergegeven bij een hoofdmodule."
     },
     "trainings":{
         "edit_training":"Bewerken",
@@ -630,11 +647,14 @@
         "costs_extra_period":"Extra maand(en) (bovenop de standaard 2 maanden)",
         "amount_period":"Aantal maanden toegang",
         "type_credits_period":"Credits zijn geldig voor de duur van de training (max 1 jaar)",
-        "active_training":"Actieve trainingen",
-        "concept_training":"Concept trainingen",
-        "closed_training":"Afgesloten trainingen",
+        "active_training":"Trainingen",
+        "concept_training":"Concept",
+        "closed_training":"Afgesloten",
+        "organisation_training":"Organisatie",
+        "games_training":"Games",
         "no_connected_items":"Dit deel van de training heeft (nog) geen onderdelen.",
         "close_training_verify":"Weet je zeker dat je deze training wilt afsluiten? De deelnemers kunnen de training dan niet meer volgen. Dit kan niet ongedaan gemaakt worden.",
+        "close_training_verify_elearning":"Weet je zeker dat je deze e-training wilt afsluiten? De deelnemers kunnen de e-training dan niet meer kopen of activeren. De gebruiker die de training al hebben, kunnen er gebruik van blijven maken. Het afsluiten kan niet ongedaan gemaakt worden.",
         "available_date":"Beschikbaar vanaf",
         "available_till":"Beschikbaar tot",
         "available_from_start":"Beschikbaar vanaf de start",
@@ -658,8 +678,28 @@
         "max_participants_reached":"Het maximum aantal deelnemers is bereikt. Als je meer deelnemers wilt toevoegen, moet je het aantal deelnemers verhogen in de bij het Creditbeheer van de training.",
         "progress":"Voortgang",
         "no_progress":"Er is nog geen voortgang in deze training.",
-        "price_elearning":"Bepaal de prijs van je e-learning incl. BTW",
-        "elearning_margin_alicialabs":"AliciaLabs marge is 20% van de prijs."
+        "price_elearning":"Bepaal de prijs van je e-learning per persoon incl. BTW",
+        "elearning_margin_alicialabs":"AliciaLabs marge is 20% van de prijs.",
+        "elearning_publish_marketplace_title":"Publiceer je training op onze Marktplaats",
+        "elearning_publish_marketplace_description":"Je training wordt zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar. Je kunt zelf de prijs bepalen en krijgt 80% van de opbrengst van deze prijs. Wij regelen de marketing voor AliciaLabs en het betalingsproces voor je.<br>Aan gebruikers wordt apart gevraagd of ze onbepaalde credits willen aanschaffen om de training te volgen, als ze deze nog niet hebben.",
+        "elearning_publish_private_title":"Gebruik (ook) je eigen kanaal om je training te verkopen",
+        "elearning_publish_private_description":"Je kunt gebruikers uitnodigen om deel te nemen aan je training via je eigen kanalen. De prijs bepaal je helemaal zelf en de opbrengst is voor jou. Na het publiceren verschijnt er een rechtstreekse link die je aan gebruikers kunt geven.<br>De gebruikers krijgen automatisch credits om de training te volgen. De hoeveelheid (en de bijbehorende kosten) kun je hieronder instellen. Deze worden in rekening gebracht bij jou als trainer. Je ontvangt hier maandelijks een verzamelfactuur van.",
+        "elearning_private_url_info":"Verstuur deze link naar gebruikers die toegang mogen krijgen tot de training.",
+        "max_customers":"Hoeveel klanten mogen gebruik maken van deze link?<br><span style='font-size:0.8em;color:gray'>(0 = onbeperkt)</span>",
+        "allowed_domains":"Welke domeinen mogen deze link gebruiken? (bijv. jouwbedrijf.nl)<br><span style=font-size:0.8em;color:gray>Laat leeg voor alle domeinen. Meerdere domeinen scheiden met komma.</span>",
+        "link_copied":"De link is gekopieerd naar je klembord.",
+        "link_not_copied":"De link kon niet naar je klembord worden gekopieerd. Kopieer het handmatig.",
+        "publishing_elearning":"Bezig met publiceren van de e-learning",
+        "elearning_created":"De e-learning is aangemaakt. Je kunt deze nu delen met gebruikers.",
+        "add_invoice_address":"Je hebt nog geen factuuradres opgegeven. Voeg deze toe in je organisatiegegevens.",
+        "price_elearning_org_min":"Bepaal de minimum prijs voor een organisatie (excl. BTW)",
+        "price_elearning_org_max":"Bepaal de maximum prijs voor een organisatie (excl. BTW)",
+        "elearning_organisation_price_info":"Organisaties die deze training willen afnemen, betalen de prijs per persoon excl. BTW x het aantal medewerkers met een minimum en maximum bedrag zoals je hier zelf kunt aangeven.",
+        "private_autorenew":"Wil je dat deze training automatisch verlengd wordt na 1 jaar?<br><span style='font-size:0.8em;color:gray'>Voor een organisatie worden er geen kosten in rekening gebracht. Voor een individuele gebruiker een bedrag van € 25,- t.b.v. de credits.</span>",
+        "training_content_title":"Uitgebreide beschrijving van de training",
+        "amount_credits_unlimited":"Dit bedrag wordt bij jou als trainer in rekening gebracht. Met dit bedrag heeft elke deelnemer onbeperkt credits voor een jaar om gesprekken te voeren in de training.",
+        "amount_credits_4k":"Dit bedrag wordt bij jou als trainer in rekening gebracht, wanneer de training wordt geactiveerd via de onderstaande link. Met dit bedrag heeft elke deelnemer 4000 credits voor een jaar om gesprekken te voeren in de training. Dat zijn ongeveer 15-20 uitgebreide gesprekken.",
+        "amount_credits":"Hoeveel aan credits wil je per deelnemer beschikbaar stellen?"
     },
     "generate_case":{
         "title_step_0":"De basis",
@@ -770,7 +810,11 @@
             "expert_question_1":"Welke expertise heeft de AI-gesprekspartner?",
             "expert_question_2":"Is er specifieke kennis die de AI-gesprekspartner van internet moet halen? Geef hier de url(s) aan.",
             "expert_help_1":"De AI-gesprekspartner is een expert op een bepaald gebied. Geef aan welke expertise de AI-gesprekspartner heeft.",
-            "expert_help_2":"Als de AI-gesprekspartner specifieke kennis nodig heeft, kun je hier de url's aangeven waar de AI-gesprekspartner deze kennis kan vinden. De AI-gesprekspartner zal deze kennis gebruiken om het gesprek te voeren. Dit kan bijvoorbeeld een website zijn met informatie over het onderwerp van het gesprek, of een specifieke pagina met informatie over de AI-gesprekspartner zelf."
+            "expert_help_2":"Als de AI-gesprekspartner specifieke kennis nodig heeft, kun je hier de url's aangeven waar de AI-gesprekspartner deze kennis kan vinden. De AI-gesprekspartner zal deze kennis gebruiken om het gesprek te voeren. Dit kan bijvoorbeeld een website zijn met informatie over het onderwerp van het gesprek, of een specifieke pagina met informatie over de AI-gesprekspartner zelf.",
+            "examinator_question_1":"Welke kennis wordt getoetst?",
+            "examinator_question_2":"Wat zijn de toetsingscriteria, ofwel wanneer heeft de gebruiker voldoende kennis getoond?",
+            "examinator_help_1":"De AI-gesprekspartner is een examinator die de kennis van de gebruiker toetst. Geef aan welke kennis getoetst wordt.",
+            "examinator_help_2":"Geef aan wat de toetsingscriteria zijn, ofwel wanneer de gebruiker voldoende kennis heeft getoond."
         }
     },
     "edit_html":{
@@ -977,13 +1021,14 @@
         "training_title_photo":"Deze foto is te zien op het titelblad. Je kunt een foto uploaden, maken, uit onze bibliotheek kiezen of laten genereren door AI (dit laatste kost 5 credits).",
         "training_elements":"Hier kun je modules, cases en kennis-items selecteren en onderdeel maken van de training. Als je de training hebt aangemaakt vanuit een module, dan staat hier de inhoud van die module al weergegeven. Als je hier aanpassingen in doet, dan worden deze niet meer opgeslagen in de oorspronkelijke cases, kennis-items en modules. Als iets in een training geplaatst wordt, dan wordt er een kopie gemaakt voor deze specifieke training.",
         "training_publish":"Om de training open te kunnen stellen voor deelnemers, moet je de training publiceren. Na publicatie kun je de deelnemers koppelen of een deelname-link aanmaken.",
-        "training_intro_publish":"Er zijn kosten verbonden aan het openstellen van een training voor deelnemers. Deze kosten hangen af van het aantal deelnemers en van hoeveel casussen je wilt laten oefenen.",
+        "training_intro_publish":"Er zijn kosten verbonden aan het openstellen van een training voor deelnemers. Deze kosten hangen af van het aantal deelnemers.",
+        "training_intro_publish_elearning":"Het publiceren van een e-training geeft geen directe kosten. Deze hangen af van de verkoop. Stel hieronder in hoe je de e-training wilt verkopen.",
         "training_intro_publish_organisation":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training.",
         "training_intro_publish_organisation_and_trainer":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training. Je kunt de training ook openstellen voor deelnemers buiten jouw organisatie, maar dan moet je de training publiceren als trainer. Daar zijn kosten aan verbonden.",
-        "training_costs_publish":"<strong>Basisbedrag</strong><br>Voor elke training betaal je een vast basisbedrag van <strong>€100</strong>, tenzij je een Trainer Pro pakket hebt.<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €10 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li></ul><br><strong>Extra deelnemers of gesprekken</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen of de openstelling verlengen.<br><br><strong>NB:</strong> Het aantal kennis-items in je training heeft geen invloed op het gebruik van credits. Alleen het oefenen van casussen telt mee.",
-        "training_costs_publish_trainer_pro":"<strong>Basisbedrag</strong><br>Je hebt als Trainer Pro geen basiskosten per training.<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €10 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li></ul><br><strong>Extra deelnemers of gesprekken</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen of de openstelling verlengen.<br><br><strong>NB:</strong> Het aantal kennis-items in je training heeft geen invloed op het gebruik van credits. Alleen het oefenen van casussen telt mee.",
+        "training_costs_publish":"<strong>Basisbedrag</strong><br>Voor elke training betaal je een vast basisbedrag van <strong>€100</strong>, tenzij je een Trainer Pro pakket hebt.<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €10 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li></ul><br><strong>Extra deelnemers</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen of de openstelling verlengen.",
+        "training_costs_publish_trainer_pro":"<strong>Basisbedrag</strong><br>Je hebt als Trainer Pro geen basiskosten per training.<br><br><strong><em>Onbeperkt gebruik</em></strong></p><ul><li>Deelnemers kunnen onbeperkt oefenen met alle casussen in jouw training, zolang de training loopt.</li><li>Kosten: €10 per deelnemer voor de eerste 2 maanden.</li><li>Wil je de training langer openstellen? Dan betaal je €5 per deelnemer per extra maand.</li></ul><br><strong>Extra deelnemers</strong><br>Tijdens de training kun je altijd extra deelnemers toevoegen of de openstelling verlengen.",
         "training_add_participants":"Je kunt op drie manieren deelnemers toevoegen aan de training:<br><br><strong><em>Zelf deelnemers toevoegen</em></strong></p><ul><li>Klik op het plusje (+) en vul de e-mailadressen van de deelnemers in. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><br><strong><em>Deelnemers importeren</em></strong></p><ul><li>Wanneer je een lijst hebt van namen en e-mailadressen van de deelnemers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand. Als zij zich met dat e-mailadres registreren en inloggen bij AliciaLabs, krijgen ze automatisch toegang tot de training.</li></ul><p><br><strong><em>Link toesturen aan deelnemers &#128279;</em></strong></p><ul><li>Je kunt ook een toegangslink aanmaken en deze naar de deelnemers sturen. Als ze op de link klikken, kunnen ze zich registreren en inloggen bij AliciaLabs en krijgen ze direct toegang tot de training. Als iemand al is ingelogd kan de registratiecode binnen AliciaLabs gebruikt worden om toegang te krijgen tot de training.</li></ul><p><br><strong>Dashboard</strong>",
-        "dashboard_trainer_info":"Je naam, of organisatie naam, en logo worden getoond op het dashboard van de deelnemers. Dit is de naam waaronder je geregistreerd bent bij AliciaLabs.",
+        "dashboard_trainer_info":"Je naam, of organisatie naam, en logo worden getoond op het dashboard van de deelnemers. Dit is de naam waaronder je geregistreerd bent bij AliciaLabs.<br><br>Je kunt een e-mailadres toevoegen waar deelnemers contact mee kunnen opnemen als ze vragen hebben over de training. Dit e-mailadres wordt niet getoond aan deelnemers. Wanneer je hier geen adres invult worden berichten aan de eerste Admin gestuurd.<br><br>Je kunt hier ook een Beschrijving van jezelf of je organisatie geven. Deze wordt getoond aan deelnemers als ze op jouw naam of logo klikken.",
         "training_available_date":"Deze training of deel van de training is voor de deelnemers beschikbaar vanaf de ingestelde datum. Als deze datum leeg is of in het verleden ligt, dan is (dit deel van) de training direct beschikbaar voor de deelnemers.",
         "training_available_till":"Deze training of deel van de training is voor de deelnemers beschikbaar tot en met de ingestelde datum. Als deze datum leeg is, dan is (dit deel van) de training beschikbaar tot de training wordt gesloten.",
         "module_tags":"Hier kun je tags toevoegen aan de module of training. Deze tags worden gebruikt om de module te categoriseren en kunnen helpen bij het zoeken naar modules.",
@@ -993,7 +1038,9 @@
         "add_employee_info":"Hier kun je een e-mailadres invoeren van iemand die je als medewerker wilt toevoegen aan de organisatie.",
         "training_add_employees":"Je kunt op twee manieren medewerkers toevoegen aan de organisatie:<br><br><strong><em>Zelf medewerkers toevoegen</em></strong></p>Klik op het plusje (+) en vul de e-mailadressen van de medewerkers in.<p><strong><em>Medewerkers importeren</em></strong></p>Wanneer je een lijst hebt van namen en e-mailadressen van de medewerkers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand.",
         "add_knowledge_item_text":"Hier kun je eventuele extra specifieke kennis toevoegen die de AI kan gebruiken bij de feedback in cases. Let op: De AI heeft al een behoorlijke kennisbasis, dus dit is alleen nodig als je specifieke kennis wilt toevoegen die niet al in de AI zit.",
-        "add_knowledge_expert_text":"Hier kun je kennis toevoegen die de AI kan gebruiken bij expert gesprekken. Deze kennis wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek."
+        "add_knowledge_expert_text":"Hier kun je kennis toevoegen die de AI kan gebruiken bij expert gesprekken. Deze kennis wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek.",
+        "training_content":"Beschrijf hier uitgebreid de inhoud van de training. Dit wordt getoond wanneer wordt geklikt op de training.",
+        "trainer_details":"Geef hier meer informatie over jezelf of je organisatie. Dit wordt getoond wanneer een gebruiker jouw informatie bekijkt.<br>Deze informatie kan gevonden worden door op je logo te klikken bij je trainingen."
     },
     "dashboard":{
         "organisation":"Organisatie",
@@ -1045,20 +1092,73 @@
         "knowledge_delete":"Weet je zeker dat je deze kennis wilt verwijderen? Als deze nog geselecteerd is bij een case, zal deze niet meer beschikbaar zijn voor de AI-gesprekspartner. Dit kan niet ongedaan gemaakt worden.",
         "edit_expert_book_summary":"Bewerk samenvatting",
         "edit_expert_book_summary_instructions":"Hier kun je de samenvatting van het expert boek bewerken. Deze samenvatting wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek. De samenvatting mag maximaal 1500 tekens bevatten.",
-        "expert_add_book_instructions":"Voeg een extra document toe aan de expert kennis."
+        "expert_add_book_instructions":"Voeg een extra document toe aan de expert kennis.",
+        "bankaccount":"Bankrekening",
+        "bank_invoice":"Bank en factuurgegevens",
+        "bankaccount_for_return":"Bankrekening voor uitbetaling",
+        "bankaccount_iban":"IBAN",
+        "bankaccount_bic":"BIC",
+        "bankaccount_name":"Naam rekeninghouder",
+        "invalid_bank_account":"Ongeldige gegevens",
+        "invalid_iban":"Ongeldig IBAN-nummer",
+        "invoice_information":"Factuurinformatie",
+        "invoice_name_organisation":"Naam organisatie",
+        "invoice_vat_number":"BTW-nummer",
+        "invoice_address":"Adres",
+        "invoice_zip":"Postcode",
+        "invoice_city":"Plaats",
+        "invoice_country":"Land",
+        "invoice_email":"E-mailadres voor factuur",
+        "invoice_reference":"Onder vermelding van",
+        "invoice_all_fields":"Vul alle velden in",
+        "invalid_email":"Ongeldig e-mailadres",
+        "trainer_details":"Vertel meer over jezelf of je organisatie",
+        "email":"E-mail. Waar gebruikers je op kunnen benaderen.",
+        "trainer_info_example":"Bekijk als gebruiker"
     },
     "marketplace":{
         "add_training":"Training toevoegen",
         "code":"Voer de code in",
         "code_input":"Voeg hier de code toe die je van je trainer hebt ontvangen.",
-        "elearnings":"E-trainings",
+        "elearnings":"E-trainingen",
         "elearning":"E-training",
         "organisation":"Organisatie",
         "training":"Training",
         "free":"Gratis",
         "add_unlimited_credits":"Om deze training goed te kunnen volgen, heb je credits nodig. Je kunt onbeperkt oefenen met deze training door een abonnement te nemen met onbeperkte credits. Wil je voor € 25 per jaar onbeperkt oefenen met deze (en alle andere) training?",
         "unlimited_credits":"Ja, ik wil graag onbeperkte credits voor een jaar voor € 25.",
-        "success_purchase":"Je hebt de training succesvol gekocht. Deze is nu beschikbaar bij de trainingen in je dashboard."
+        "success_purchase":"Je hebt de training succesvol gekocht. Deze is nu beschikbaar bij de trainingen in je dashboard.",
+        "customers":"Klanten",
+        "customers_and_revenue":"Klanten en omzet",
+        "revenue":"Omzet",
+        "revenue_total":"Totale omzet incl. BTW",
+        "revenue_margin":"Marge AliciaLabs",
+        "revenue_profit":"Winst",
+        "revenue_unpaid":"Nog niet uitbetaald",
+        "revenue_paid":"Uitbetaald",
+        "revenue_and_profit":"Omzet en Winst",
+        "revenue_tax":"BTW (21%)",
+        "revenue_ex_tax":"Omzet excl. BTW",
+        "request_payout":"Verzoek om uitbetaling",
+        "request_payout_verify":"Weet je zeker dat je een verzoek om uitbetaling wilt doen? Je kunt dit verzoek niet ongedaan maken.",
+        "payout_request_sent":"Je verzoek om uitbetaling is verstuurd. We zullen je verzoek zo snel mogelijk verwerken.",
+        "bank_account_required":"Je hebt nog geen bankrekening opgegeven. Om een uitbetaling te kunnen doen, moet je eerst een bankrekening toevoegen bij je organisatiegegevens.",
+        "sold_etrainings":"Verkochte e-trainingen",
+        "not_logged_in":"Log eerst in of maak een account aan om trainingen te kunnen kopen.",
+        "activation_failed_code":"De code is ongeldig of kan niet worden geactiveerd op jouw account.",
+        "activation_failed_used":"De code is al gebruikt door het maximaal aantal gebruikers.",
+        "activation_successful":"De code is succesvol geactiveerd. De training nu beschikbaar bij de trainingen in je dashboard.",
+        "activation_already_used":"Deze training is al voor je beschikbaar bij de trainingen in je dashboard.",
+        "filter_trainers":"Zoek trainer",
+        "activation_not_private":"Deze training is niet activeren met een code. Je kunt deze training kopen in de marketplace.",
+        "with_credits":"Incl. credits",
+        "buy_for_org":"Koop voor organisatie",
+        "activate_for_org":"Activeer voor organisatie",
+        "confirm_purchase_title": "Bevestig aankoop",
+        "confirm_purchase_organisation_text": "Met de aanschaf van deze training voor jouw organisatie, krijgen alle medewerkers van jouw organisatie toegang tot deze training. De prijs is afgestemd op het aantal medewerkers in jouw organisatie.<br><br>Weet je zeker dat je deze training voor jouw organisatie wilt aanschaffen?",
+        "no_trainer_details":"De trainer heeft nog geen details over zichzelf of de organisatie opgegeven.",
+        "checking_code":"We controleren je url...",
+        "code_not_found":"De code is ongeldig of niet gevonden."
     },
     "media":{
         "photo_upload":"Upload foto",

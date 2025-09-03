@@ -41,8 +41,31 @@ export class DashboardPage implements OnInit {
   segmentsLoaded:boolean = false;
   isTrainer:boolean = false;
   isTrainerPro:boolean = false;
+  originalBankAccount:any = {}
+  originalInvoice:any = {}
+  showCustomerList:boolean = false;
   private leave$ = new Subject<void>();
   [x:string]: any;
+  showHtml:boolean = false
+
+  configModules={
+    toolbar: {
+      container:[
+        ['bold', 'italic', 'underline'],
+        [{ 'color': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'align': [] }],
+        [{'indent': '-1'}, {'indent': '+1'}],
+        ['link'],
+        ['clean'],
+        ['HTML'],
+      ],
+      clipboard: {
+        matchVisual: false
+      }
+    }
+  }
   constructor(
     public nav: NavService,
     public trainerService:TrainerService,
@@ -64,43 +87,138 @@ export class DashboardPage implements OnInit {
     this.accountService.ngOnInit()
   }
 
-ionViewWillLeave() {
+  showEditor(){
+    this.showHtml = false
+    setTimeout(() => {
+      let elements = document.getElementsByClassName("ql-container")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','height:calc(100% - 40px);border:0;')
+      }
+      elements = document.getElementsByClassName("ql-toolbar")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','border:0;')
+      }
+      setTimeout(() => {
+
+        let htmlBtn:any = document.querySelector('.ql-HTML');
+        htmlBtn.innerHTML = 'HTML'
+        htmlBtn.style.width = '50px'
+        htmlBtn.addEventListener('click', (event:any)=> {
+          if(event.target?.parentElement?.parentElement?.parentElement?.id){
+            let field = event.target.parentElement.parentElement.parentElement.id.replace('quill_','')
+            if(this.trainerService.trainerInfo[field]!=undefined){
+              this.trainerService.trainerInfo[field] = this.cleanHtml(this.trainerService.trainerInfo[field])
+            }
+          }
+          this.showHtml = true 
+        });
+      },300)
+    },100)
+  }
+  
+  cleanHtml(html:string){
+    return html
+    .split('</ol><p><br></p><p>').join('</ol>')
+        .split('</p><p><br></p><ol>').join('<ol>')
+        .split('</ul><p><br></p><p>').join('</ul>')
+        .split('</p><p><br></p><ul>').join('<ul>')
+        .split('<p><br></p>').join('<br>')
+        .split('</p><br><p>').join('<br><br>')
+        .split('</p><p>').join('<br>')
+        .split('&nbsp;').join(' ')
+  }
+
+
+  ionViewWillLeave() {
     this.leave$.next();
     this.leave$.complete();
   }
 
-ionViewWillEnter(){
-  this.route.params.pipe(takeUntil(this.leave$)).subscribe(params=>{
-      if(params['tab']){
-        this.showPart = params['tab']
-      }
-      if(params['status']){
-        if(params['status']=='success'){
-          this.modalService.showText(this.translate.instant('page_account.payment_success'),this.translate.instant('messages.success'))
+  ionViewWillEnter(){
+    this.route.params.pipe(takeUntil(this.leave$)).subscribe(params=>{
+        if(params['tab']){
+          console.log('tab',params['tab'])
+          this.showPart = params['tab']
         }
-        else if(params['status']=='error'){
-          this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+        if(params['status']){
+          if(params['status']=='success'){
+            this.modalService.showText(this.translate.instant('page_account.payment_success'),this.translate.instant('messages.success'))
+          }
+          else if(params['status']=='error'){
+            this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+          }
+          this.nav.go('trainer/dashboard/')
         }
-        this.nav.go('account/'+ this.showPart)
-      }
-        
-    })
-    setTimeout(() => {
-      // console.log('triggerTutorial')
-      if(this.media.smallDevice){
-        this.tutorial.triggerTutorial('trainer/dashboard','onload_mobile')
-      }
-      else{
-        this.tutorial.triggerTutorial('trainer/dashboard','onload')
-      }
-    }, 1000);
+        console.log(this.trainerService.trainerInfo)
+        if(!this.trainerService.trainerInfo.bank_account){
+          this.trainerService.trainerInfo.bank_account = {
+            iban: '',
+            bic: '',
+            name: ''
+          }
+          this.update('bank_account')
+        }
+        if(!this.trainerService.trainerInfo.invoice){
+          this.trainerService.trainerInfo.invoice = {
+            name: '',
+            vat_number: '',
+            address: '',
+            zip: '',
+            city: '',
+            country: '',
+            email: '',
+            reference: '',
+          }
+          this.update('invoice')
+        }
+        this.originalBankAccount = JSON.parse(JSON.stringify(this.trainerService.trainerInfo.bank_account))
+        this.originalInvoice = JSON.parse(JSON.stringify(this.trainerService.trainerInfo.invoice))
+      })
 
-    this.auth.isAdmin().pipe(takeUntil(this.leave$)).subscribe((isAdmin:boolean)=>{
-      this.isAdmin = isAdmin;
-    })
-}
 
-ionViewDidEnter() {
+      this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
+        if (userInfo) {
+          this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
+            if(trainer){
+
+              this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId)
+
+              setTimeout(() => {
+                // console.log('triggerTutorial')
+                if(this.media.smallDevice){
+                  this.tutorial.triggerTutorial('trainer/dashboard','onload_mobile')
+                }
+                else{
+                  this.tutorial.triggerTutorial('trainer/dashboard','onload')
+                }
+              }, 1000);
+            }
+          })
+        }
+      })
+      
+      this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
+        this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId)
+      })
+
+
+
+      setTimeout(() => {
+        // console.log('triggerTutorial')
+        if(this.media.smallDevice){
+          this.tutorial.triggerTutorial('trainer/dashboard','onload_mobile')
+        }
+        else{
+          this.tutorial.triggerTutorial('trainer/dashboard','onload')
+        }
+      }, 1000);
+
+      this.auth.isAdmin().pipe(takeUntil(this.leave$)).subscribe((isAdmin:boolean)=>{
+        this.isAdmin = isAdmin;
+      })
+  }
+
+  ionViewDidEnter() {
     this.auth.hasActive('trainer').pipe(
       take(1)
     ).subscribe((trainer) => {
@@ -126,13 +244,35 @@ ionViewDidEnter() {
     }, 2000);
   }
 
-  update(field:string,required?:boolean){
+  update(field:string,required?:boolean,html?:boolean){
     if(!this.trainerService.trainerInfo[field]&&required){
       return
+    }
+    if(html){
+      this.trainerService.trainerInfo[field] = this.trainerService.trainerInfo[field]
+      .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
     }
     this.firestore.update('trainers',this.nav.activeOrganisationId,{[field]:this.trainerService.trainerInfo[field]})
   }
 
+  showTrainerInfo(trainerInfo:any, event:any){
+    if(event){
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if(!trainerInfo || !trainerInfo){
+      return;
+    }
+
+    this.modalService.showTrainerInfo(trainerInfo, (response:any)=>{})
+  }
   
   request_amount_employees(type:string){
 
@@ -1066,4 +1206,116 @@ ionViewDidEnter() {
     })
   }
 
+  updateBankAccount(){
+    if(!this.trainerService.checkIsTrainerPro()){
+      return;
+    }
+    if(this.originalBankAccount.iban || this.originalBankAccount.bic || this.originalBankAccount.name){
+      if(!this.trainerService.validBank(this.originalBankAccount)){
+        this.toast.show(this.translate.instant('dashboard.invalid_bank_account'), 3000, 'middle');
+        return;
+      }
+      if(!this.trainerService.validIban(this.originalBankAccount.iban)){
+        this.toast.show(this.translate.instant('dashboard.invalid_iban'), 3000, 'middle');
+        return
+      }
+    }
+    this.trainerService.trainerInfo.bank_account = {
+      iban: this.originalBankAccount.iban.trim().toUpperCase(),
+      bic: this.originalBankAccount.bic.trim().toUpperCase(),
+      name: this.originalBankAccount.name.trim()
+    }
+
+    this.update('bank_account')
+  }
+
+  changesInBankAccount(){
+    if(this.originalBankAccount && this.trainerService.trainerInfo.bank_account){
+      return this.originalBankAccount.iban.toUpperCase() != this.trainerService.trainerInfo.bank_account.iban.toUpperCase() ||
+             this.originalBankAccount.bic != this.trainerService.trainerInfo.bank_account.bic ||
+             this.originalBankAccount.name != this.trainerService.trainerInfo.bank_account.name;
+    }
+    return false;
+  }
+
+  undoBankAccount(){
+    this.originalBankAccount = {
+      iban: this.trainerService.trainerInfo.bank_account?.iban || '',
+      bic: this.trainerService.trainerInfo.bank_account?.bic || '',
+      name: this.trainerService.trainerInfo.bank_account?.name || ''
+    };
+  }
+
+  updateInvoice(){
+    if(!this.trainerService.checkIsTrainerPro()){
+      return;
+    }
+
+    if(!this.originalInvoice.name && !this.originalInvoice.zip && !this.originalInvoice.city && !this.originalInvoice.address && !this.originalInvoice.vat_number && !this.originalInvoice.country && !this.originalInvoice.email && !this.originalInvoice.reference){
+      this.trainerService.trainerInfo.invoice = {
+        name: this.originalInvoice.name.trim(),
+        zip: this.originalInvoice.zip.trim().toUpperCase(),
+        city: this.originalInvoice.city.trim().toUpperCase(),
+        country: this.originalInvoice.country.trim().toUpperCase(),
+        address: this.originalInvoice.address.trim(),
+        vat_number: this.originalInvoice.vat_number.trim().toUpperCase(),
+        email: this.originalInvoice.email.trim().toLowerCase(),
+        reference: this.originalInvoice.reference.trim()
+      };
+
+      this.update('invoice')
+      return;
+    }
+
+    if(!this.originalInvoice.name || !this.originalInvoice.zip || !this.originalInvoice.city || !this.originalInvoice.address || !this.originalInvoice.vat_number || !this.originalInvoice.country || !this.originalInvoice.email || !this.originalInvoice.reference){
+      this.toast.show(this.translate.instant('dashboard.invoice_all_fields'), 3000, 'middle');
+      return;
+    }
+    // if(this.originalInvoice.name || this.originalInvoice.zip || this.originalInvoice.city || this.originalInvoice.address || this.originalInvoice.vat_number || this.originalInvoice.country || this.originalInvoice.email || this.originalInvoice.reference){
+
+    if(!this.helper.validEmail(this.originalInvoice.email)){
+      this.toast.show(this.translate.instant('dashboard.invalid_email'), 3000, 'middle');
+      return;
+    }
+    // }
+    this.trainerService.trainerInfo.invoice = {
+      name: this.originalInvoice.name.trim(),
+      zip: this.originalInvoice.zip.trim().toUpperCase(),
+      city: this.originalInvoice.city.trim().toUpperCase(),
+      country: this.originalInvoice.country.trim().toUpperCase(),
+      address: this.originalInvoice.address.trim(),
+      vat_number: this.originalInvoice.vat_number.trim().toUpperCase(),
+      email: this.originalInvoice.email.trim().toLowerCase(),
+      reference: this.originalInvoice.reference.trim()
+    }
+
+    this.update('invoice')
+  }
+
+  changesInInvoice(){
+    if(this.originalInvoice && this.trainerService.trainerInfo.invoice){
+      return this.originalInvoice.name != this.trainerService.trainerInfo.invoice.name ||
+             this.originalInvoice.zip.trim().toUpperCase() != this.trainerService.trainerInfo.invoice.zip ||
+             this.originalInvoice.city.trim().toUpperCase() != this.trainerService.trainerInfo.invoice.city ||
+             this.originalInvoice.country.trim().toUpperCase() != this.trainerService.trainerInfo.invoice.country ||
+             this.originalInvoice.address.trim()!= this.trainerService.trainerInfo.invoice.address ||
+             this.originalInvoice.vat_number.trim().toUpperCase() != this.trainerService.trainerInfo.invoice.vat_number ||
+             this.originalInvoice.email.trim().toLowerCase() != this.trainerService.trainerInfo.invoice.email ||
+             this.originalInvoice.reference.trim() != this.trainerService.trainerInfo.invoice.reference;
+    }
+    return false;
+  }
+
+  undoInvoice(){
+    this.originalInvoice = {
+      name: this.trainerService.trainerInfo.invoice?.name || '',
+      zip: this.trainerService.trainerInfo.invoice?.zip || '',
+      city: this.trainerService.trainerInfo.invoice?.city || '',
+      country: this.trainerService.trainerInfo.invoice?.country || '',
+      address: this.trainerService.trainerInfo.invoice?.address || '',
+      vat_number: this.trainerService.trainerInfo.invoice?.vat_number || '',
+      email: this.trainerService.trainerInfo.invoice?.email || '',
+      reference: this.trainerService.trainerInfo.invoice?.reference || ''
+    };
+  }
 }

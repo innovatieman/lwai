@@ -163,7 +163,8 @@ exports.creditsBought = functions.region('europe-west1').runWith({ memory: '1GB'
             },
             trainingId,
             status: price ? 'To be paid' : 'complete',
-            price: price ? parseInt(price) : 0
+            price: price ? parseInt(price) : 0,
+            marketplace: true,
         })
     }
 
@@ -408,7 +409,7 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
   
     try {
       // 🔄 Ophalen van bestaande Stripe klant
-        const customerRef = admin.firestore().collection('customers').doc(uid);
+        const customerRef = admin.firestore().collection('customers').doc(trainerId);
         const customerDoc = await customerRef.get();
         const customerData = customerDoc.data();
         let stripeCustomerId = customerData?.stripeCustomerId;
@@ -424,7 +425,7 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
     if(!invoice_redirect){
         const session = await admin.firestore()
         .collection('customers')
-        .doc(uid)
+        .doc(trainerId)
         .collection('checkout_sessions')
         .add({
             mode: 'payment',
@@ -442,6 +443,7 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
             }],
             metadata: {
                 uid: uid,
+                trainerId: trainerId,
                 participants: participants.toString(),
                 trainingId: trainingId,
                 credits: trainingPrice.credits,

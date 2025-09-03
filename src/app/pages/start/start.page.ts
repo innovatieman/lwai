@@ -443,6 +443,19 @@ export class StartPage implements OnInit {
   //   return conversation
   // }
 
+    showTrainerInfo(trainerInfo:any, event:any){
+      console.log('show trainer info',trainerInfo)  
+    if(event){
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if(!trainerInfo){
+      return;
+    }
+
+    this.modalService.showTrainerInfo(trainerInfo.trainer ? trainerInfo.trainer : trainerInfo, (response:any)=>{})
+  }
+
   isActiveConversation(conversation:any):boolean{
     let active = false
     this.conversations$.forEach((e:any) => {

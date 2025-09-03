@@ -46,12 +46,14 @@ export class TrainingsPage implements OnInit {
   itemsLoaded:boolean = false;
   showPart:string = 'items';
   showTitleInfo:boolean = true;
+  showCustomerList:boolean = false;
   numberList:any = this.helpers.createNumberList(1,100)
   showImportOption:boolean = false
-  trainingFilter:any = ['published']
+  trainingFilter:any = ['concept']
   selectedTags:any[] = []
   extraCostOptions:any = {}
   showHtml:boolean = false
+  publishTypes:any[] = []
   private leave$ = new Subject<void>();
 
    configModules={
@@ -71,9 +73,9 @@ export class TrainingsPage implements OnInit {
           matchVisual: false
         }
       }
-    }
+  }
   
-    trackByItem = (_: number, item: { id: string }) => item.id;
+  trackByItem = (_: number, item: { id: string }) => item.id;
 
   constructor(
     public nav: NavService,
@@ -99,6 +101,31 @@ export class TrainingsPage implements OnInit {
 
   ngOnInit() {
     
+    // this.firestore.create('invoices',{
+    //   "trainerId": "tSF4l602pWTokwWIBD4bI6putru2",
+    //   email: "customer@alicialabs.com",
+    //   "name": "Alicia Labs",
+    //   "address": {
+    //     "line1": "Hoofdstraat 1",
+    //     "city": "Amsterdam",
+    //     "postal_code": "1000AA",
+    //     "country": "NL"
+    //   },
+    //   "items": [
+    //     {
+    //       "description": "1x Trainingssessie",
+    //       "amount": 10000, // in centen
+    //       "currency": "eur",
+    //       // "quantity": 1
+    //     }
+    //   ],
+    //   "tax_percent": 21
+      
+
+    // }).then(docRef => {
+    //   console.log("Document written with ID: ", docRef);
+    // });
+
 
     // this.route.params.subscribe((params:any)=>{
 
@@ -124,7 +151,9 @@ export class TrainingsPage implements OnInit {
                   this.selectTraining(this.trainerService.getTraining('',params.training_id))
                 }
               })
-            })
+            },{trainings:()=>{
+              this.updateVisibleItems();
+            }})
 
               // this.trainerService.loadTrainingsAndParticipants(()=>{
               //   // console.log('loadedTrainingsAndParticipants')
@@ -160,11 +189,13 @@ export class TrainingsPage implements OnInit {
     })
     
     this.nav.organisationChange.pipe(takeUntil(this.leave$)).subscribe((res)=>{
-      this.trainerService.trainings = []
-      this.updateVisibleItems();
+      // this.trainerService.trainings = []
+      // this.updateVisibleItems();
       this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
         this.updateVisibleItems();
-      })
+      },{trainings:()=>{
+        this.updateVisibleItems();
+      }})
       // this.trainerService.loadTrainingsAndParticipants(()=>{
       //   // console.log('loadTrainingsAndParticipants2')  
       //   this.updateVisibleItems();
@@ -187,7 +218,6 @@ export class TrainingsPage implements OnInit {
   }
 
   ionViewWillLeave() {
-    console.log('TrainingsPage left');
     this.leave$.next();
     this.leave$.complete();
   }
@@ -315,6 +345,39 @@ export class TrainingsPage implements OnInit {
     }
   }
 
+  copyPublishSituation:any = {
+    marketplace: false,
+    private: false,
+    amount_credits: 1000000,
+    price_elearning: 0,
+    price_elearning_org_min: 0,
+    price_elearning_org_max: 0,
+    max_customers: 0,
+    allowed_domains: ''
+  }
+
+  changesInPublishSituation(){
+    return this.copyPublishSituation.private !== this.trainerService.trainingItem.private
+  }
+
+  republishElearning(){
+    this.trainerService.trainingItem.private = this.copyPublishSituation.private;
+    this.update('private')
+  }
+
+  get privateUrl(){
+    return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/marketplace/elearnings?trainingId=' + this.trainerService.trainingItem.id + '&specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '&open=1&private=1';
+  }
+  copyPrivateTrainingUrl(){
+    // this.toast.show('Deel deze link met de deelnemers: ' + this.privateUrl, 5000);
+    navigator.clipboard.writeText(this.privateUrl).then(() => {
+      this.toast.show(this.translate.instant('trainings.link_copied'), 3000);
+    }).catch(err => {
+      console.error('Error copying text: ', err);
+      this.toast.show(this.translate.instant('trainings.link_not_copied'), 3000);
+    });
+  }
+
   selectTraining(training:any,clearBreadCrumbs?:boolean){
     // console.log('selectTraining',JSON.parse(JSON.stringify(training)))
     this.showPart = 'items'
@@ -339,6 +402,18 @@ export class TrainingsPage implements OnInit {
       type: 'training',
       item: training,
     })
+    this.copyPublishSituation = {
+      marketplace: training.marketplace || false,
+      private: training.private || false,
+      amount_credits: training.amount_credits || 1000000,
+      price_elearning: training.price_elearning || 0,
+      price_elearning_org_min: training.price_elearning_org_min || 0,
+      price_elearning_org_max: training.price_elearning_org_max || 0,
+    }
+    if(!training.amount_credits){
+      this.trainerService.trainingItem.amount_credits = 1000000;
+      this.update('amount_credits')
+    }
     // console.log('selectTraining',this.trainerService.trainingItem)
     // console.log('breadCrumbs',this.trainerService.breadCrumbs)
     this.reloadMenu();
@@ -366,6 +441,7 @@ export class TrainingsPage implements OnInit {
     ], (result: any) => {
       console.log(result)
       if (result.data) {
+        this.toast.showLoader();
         let module = {
           title: result.data[0].value,
           created: Date.now(),
@@ -376,17 +452,29 @@ export class TrainingsPage implements OnInit {
           trainerId: this.nav.activeOrganisationId,
           items: [],
           type_credits:'unlimited',
-          user_info: ''
+          user_info: '',
+          marketplace: true,
+          private: false,
+          price_elearning: 0,
+          max_customers: 0,
+          allowed_domains: ''
         }
         this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', module).then(async () => {
         this.connectedCases = []
         try {
           const found = await this.trainerService.waitForItem('training', module.created, 5000, 'created');
-          this.trainerService.trainingItem = found;
-          // …openen/navigeer of modal sluiten
+          // this.trainerService.trainingItem = found;
+          this.selectTraining(found, true);
+          this.filterWith('concept');
+          this.updateVisibleItems();
+          this.toast.hideLoader();
+
         } catch (err) {
           // Graceful fallback: direct openen met lokale data
-          this.trainerService.trainingItem = {}
+          this.trainerService.trainingItem = {};
+          this.filterWith('concept');
+          this.updateVisibleItems();
+          this.toast.hideLoader();
           // this.trainerService.caseItem = { id: casus.id, ...casus };
         }
 
@@ -424,9 +512,20 @@ export class TrainingsPage implements OnInit {
     delete copy.credits
     delete copy.results
     delete copy.organizedResults
+    delete copy.specialCode
     copy.created = Date.now()
     copy.title = copy.title + ' (copy)'
     copy.status = 'concept'
+    copy.trainerId = this.nav.activeOrganisationId;
+    copy.publishType = ''
+    copy.marketplace = copy.marketplace || false;
+    copy.amount_credits = copy.amount_credits || 1000000;
+    copy.private = false;
+    copy.price_elearning = copy.price_elearning || 0;
+    copy.price_elearning_org_min = copy.price_elearning_org_min || 0;
+    copy.price_elearning_org_max = copy.price_elearning_org_max || 0;
+    copy.max_customers = copy.max_customers || 0;
+    copy.allowed_domains = copy.allowed_domains || '';
     this.firestore.createSub('trainers',this.nav.activeOrganisationId,'trainings',copy,(result:any)=>{
       if(result && result.id){
         // let oldItem = this.trainerService.getTraining(old_id)
@@ -511,6 +610,25 @@ export class TrainingsPage implements OnInit {
     this.updateVisibleItems();
   }
 
+
+  countItems(input:any){
+    if(!input || !input.length){
+      return 0
+    }
+    
+    let items = JSON.parse(JSON.stringify(this.trainerService.trainings))
+    let extraItems:any[] = []
+    for(let i=0;i<input.length;i++){
+      if(input[i].key2){
+        extraItems = JSON.parse(JSON.stringify(items))
+        extraItems = this.filterKeyPipe.transform(items, input[i].key2, input[i].value2)
+      }
+      items = this.filterKeyPipe.transform(items, input[i].key, input[i].value)
+      items = [...items, ...extraItems]
+    }
+    return items.length
+  }
+
   updateVisibleItems() {
     // <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
 
@@ -540,13 +658,33 @@ export class TrainingsPage implements OnInit {
       this.selectedTags
     );
 
+    let extraFiltered4:any[] = [];
+
+    extraFiltered4 = this.filterKeyPipe.transform(
+      extraFiltered3,
+      'publishType',
+      this.publishTypes
+    );
+
+    if(this.publishTypes[0] == 'training'){
+
+      const extraFilteredHere = this.filterKeyPipe.transform(
+        extraFiltered3,
+        'publishType',
+        'empty'
+        // this.publishTypes
+      );
+
+      extraFiltered4 = [...extraFilteredHere, ...extraFiltered4];
+    }
+
     // const extraFiltered3 = this.filterKeyPipe.transform(
     //   extraFiltered2,
     //   'free_question',
     //   this.extraFilters.photo
     // );
 
-    this.filteredItems = extraFiltered3;
+    this.filteredItems = extraFiltered4;
     // this.filteredCases = this.filteredCases.sort((a, b) => a.order_rating - b.order_rating);
     this.visibleItems = this.filteredItems.slice(0, this.maxItems);
     if (this.infiniteScroll) {
@@ -723,7 +861,6 @@ export class TrainingsPage implements OnInit {
       },isArray)
 
       if(trainingItem.status=='published' && trainingItem.publishType == 'elearning'){
-        console.log('adjustElearning',field,trainingItem[field])
         this.functions.httpsCallable('adjustElearning')({
           elearningId: trainingItem.id,
           trainerId: this.nav.activeOrganisationId,
@@ -731,7 +868,7 @@ export class TrainingsPage implements OnInit {
             [field]: trainingItem[field]
           }
         }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
-          console.log('adjustElearning response',res)
+          // console.log('adjustElearning response',res)
         });
       }
     }
@@ -1669,7 +1806,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       return
     }
     setTimeout(() => {
-      for(let i=1;i<4;i++){
+      for(let i=1;i<5;i++){
         let select:any = document.getElementById('select'+i)
         if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
@@ -1678,7 +1815,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }, 10);
 
     setTimeout(() => {
-      for(let i=1;i<4;i++){
+      for(let i=1;i<5;i++){
         let select:any = document.getElementById('select'+i)
         if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
@@ -1687,7 +1824,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }, 150);
 
     setTimeout(() => {
-      for(let i=1;i<4;i++){
+      for(let i=1;i<5;i++){
         let select:any = document.getElementById('select'+i)
         if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
@@ -1698,7 +1835,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       }
     }, 300);
     setTimeout(() => {
-      for(let i=1;i<4;i++){
+      for(let i=1;i<5;i++){
         let select:any = document.getElementById('select'+i)
         if(select && select.shadowRoot && select.shadowRoot.querySelector('.select-wrapper')){
           select.shadowRoot.querySelector('.select-wrapper').setAttribute('style', 'justify-content: center !important');
@@ -1722,6 +1859,10 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     obj.amount_period = 2
     obj.type_credits = 'unlimited'
     obj.status = 'concept'
+    obj.publishType = ''
+    obj.amount_credits = 1000000
+    obj.marketplace = true
+    obj.private = false
     delete obj.code
     delete obj.code_created
 
@@ -1790,6 +1931,14 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       newTraining.items = fileData.items || [];
       newTraining.trainerId = this.nav.activeOrganisationId;
       newTraining.photo = fileData.photo || '';
+      newTraining.marketplace = true;
+      newTraining.amount_credits = fileData.amount_credits || 1000000;
+      newTraining.private = false;
+      newTraining.price_elearning = fileData.price_elearning || 0;
+      newTraining.price_elearning_org_min = fileData.price_elearning_org_min || 0;
+      newTraining.price_elearning_org = fileData.price_elearning_org || 0;
+      newTraining.max_customers = 0;
+      newTraining.allowed_domains = '';
       newTraining.created = Date.now();
     } catch (error) {
       this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
@@ -1869,10 +2018,9 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   async publishTrainingOrganisation(){
-    console.log({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId})
-    this.toast.showLoader(this.translate.instant('trainings.publising_training'))
+    // console.log({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId})
     if(!this.trainerService.trainingItem.available_date){
-      this.toast.hideLoader()
+      // this.toast.hideLoader()
       this.modalService.inputFields(this.translate.instant('trainings.available_date'), this.translate.instant('trainings.date_before_publish'), [
         {
           type: 'date',
@@ -1893,17 +2041,24 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       // this.showPart = 'items'
       return
     }
+    this.toast.showLoader(this.translate.instant('trainings.publising_training'))
     this.functions.httpsCallable('publishTrainingOrganisation')({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId}).subscribe((res:any)=>{
-      console.log('publishTraining',res)
+      // console.log('publishTraining',res)
       if(res?.status!= 200){
         this.toast.hideLoader()
         this.toast.show(res.result)
+        setTimeout(() => {
+            this.toast.hideLoader()
+        }, 500);
         return
       }
       else{
         this.trainerService.trainingItem.status = 'published'
         this.trainerService.trainingItem.publishType = 'organisation'
         this.toast.hideLoader()
+        setTimeout(() => {
+            this.toast.hideLoader()
+        }, 500);
         this.toast.show(this.translate.instant('trainings.creation_training_complete_organisation'),6000,'middle')
         this.filterWith('published')
         this.backBreadCrumbs()
@@ -2051,6 +2206,22 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }
     return false
   }
+  filterPublishTypeHas(type:string){
+    if(this.publishTypes.indexOf(type) > -1){
+      return true
+    }
+    return false
+  }
+  filterPublishTypeWith(type:string){
+    if(type){
+      this.publishTypes = [type]
+    }
+    else{
+      this.publishTypes = []
+    }
+    this.updateVisibleItems()
+  }
+
   filterWith(type:string){
     console.log('filterWith',type)
     if(type){
@@ -2123,17 +2294,48 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     if(!item){
       item = this.trainerService.breadCrumbs[0].item
     }
-    this.modalService.showConfirmation(this.translate.instant('trainings.close_training_verify')).then(async (result:any) => {
+
+    let infoText = 'trainings.close_training_verify'
+    if(item.publishType == 'elearning'){
+      infoText = 'trainings.close_training_verify_elearning'
+    }
+
+    this.modalService.showConfirmation(this.translate.instant(infoText)).then(async (result:any) => {
       if(result){
         if((!item.available_till || item.available_till > moment().format('YYYY-MM-DD')) ){
           item.available_till = moment().format('YYYY-MM-DD')
         }
         this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',item.id,{status:'closed',available_till:item.available_till}).then(()=>{
-          this.trainerService.loadTrainingsAndParticipants(()=>{
-            this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
-            this.trainerService.breadCrumbs = []
-            this.filterWith('closed')
+          console.log('Training closed',{
+            elearningId: item.id,
+            trainerId: this.nav.activeOrganisationId,
+            close: true
           })
+          this.functions.httpsCallable('adjustElearning')({
+            elearningId: item.id,
+            trainerId: this.nav.activeOrganisationId,
+            close: true
+          }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
+            console.log('adjustElearning response',res)
+          });
+          this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+              this.updateVisibleItems();
+              this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+              this.trainerService.breadCrumbs = []
+              this.filterWith('closed')
+              
+            },{trainings:()=>{
+              this.updateVisibleItems();
+              this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+              this.trainerService.breadCrumbs = []
+              this.filterWith('closed')
+            }})
+
+          // this.trainerService.loadTrainingsAndParticipants(()=>{
+          //   this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+          //   this.trainerService.breadCrumbs = []
+          //   this.filterWith('closed')
+          // })
         })
       }
     })
@@ -2464,22 +2666,47 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     if(!this.trainerService.checkIsTrainerPro()){
         return
     }
-    this.toast.showLoader(this.translate.instant('trainings.publising_elearning'))
-    console.log('publishElearning',this.trainerService.breadCrumbs[0].item)
+
+    if(!this.trainerService.validInvoiceAddress()){
+      this.toast.show(this.translate.instant('trainings.add_invoice_address'), 4000, 'middle');
+      return
+    }
+
+    this.toast.showLoader(this.translate.instant('trainings.publishing_elearning'))
+    // console.log('publishElearning',this.trainerService.breadCrumbs[0].item)
     this.functions.httpsCallable('createElearning')({
       trainingId: this.trainerService.breadCrumbs[0].item.id,
       trainerId: this.nav.activeOrganisationId,
     }).subscribe((res:any)=>{
-      console.log('createElearning',res)
+      // console.log('createElearning',res)
       if(res?.status == 200){
         this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings', this.trainerService.breadCrumbs[0].item.id,{status:'published',publishType:'elearning'}).then(()=>{
-          this.trainerService.loadTrainingsAndParticipants(()=>{
-            this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
-            this.trainerService.breadCrumbs = []
-            this.filterWith('published')
-            this.toast.hideLoader();
-            this.toast.show(this.translate.instant('trainings.elearning_created'), 4000, 'middle');
-          })
+          
+          this.setSpecialCode(true)
+          this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+              this.updateVisibleItems();
+              this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+              this.trainerService.breadCrumbs = []
+              this.filterWith('published')
+              this.toast.hideLoader();
+              this.toast.show(this.translate.instant('trainings.elearning_created'), 4000, 'middle');
+            },{trainings:()=>{
+              this.updateVisibleItems();
+              this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+              this.trainerService.breadCrumbs = []
+              this.filterWith('published')
+              this.toast.hideLoader();
+              this.toast.show(this.translate.instant('trainings.elearning_created'), 4000, 'middle');
+            }})
+
+
+          // this.trainerService.loadTrainingsAndParticipants(()=>{
+          //   this.trainerService.trainingItem = {}// = this.trainerService.getTraining(item.id)
+          //   this.trainerService.breadCrumbs = []
+          //   this.filterWith('published')
+          //   this.toast.hideLoader();
+          //   this.toast.show(this.translate.instant('trainings.elearning_created'), 4000, 'middle');
+          // })
         })
       }
       else{
@@ -2487,5 +2714,41 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         this.toast.show(this.translate.instant('error_messages.failure'), 4000, 'middle');
       }
   })
+  }
+
+  
+
+  setSpecialCode(always:boolean = false){
+    if(this.trainerService.trainingItem.private){
+      let specialCode = this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId)
+      // console.log(specialCode)
+      this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'specialcode',specialCode,{specialCode:specialCode})
+      if(always || (this.trainerService.trainingItem.publishType=='elearning'&& this.trainerService.trainingItem.status=='published')) {
+        this.functions.httpsCallable('adjustElearning')({
+          elearningId: this.trainerService.breadCrumbs[0].item.id,
+          trainerId: this.nav.activeOrganisationId,
+          specialCode: specialCode,
+          allowedDomains:this.trainerService.trainingItem.allowed_domains || '',
+          max_customers:this.trainerService.trainingItem.max_customers || 0
+        }).pipe(take(1)).subscribe(result=>{});
+      }
+    }
+  }
+
+  calcSpecialCode(trainingId:any,trainerId:any){
+    let specialCode = '';
+    const numberList1 = ['3','7','4','9','6'];
+    const numberList2 = ['8','1','5','0','4'];
+    const numberListId = ['3','0','7'];
+    for(let i = 0; i < numberList1.length; i++) {
+      specialCode += trainingId[numberList1[i]];
+    }
+    for(let i = 0; i < numberListId.length; i++) {
+      specialCode += trainerId[numberListId[i]];
+    }
+    for(let i = 0; i < numberList2.length; i++) {
+      specialCode += trainingId[numberList2[i]];
+    }
+    return specialCode
   }
 }

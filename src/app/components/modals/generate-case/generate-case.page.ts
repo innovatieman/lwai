@@ -56,6 +56,7 @@ export class GenerateCasePage implements OnInit {
     "deep":2,
     "work":2,
     "expert":2,
+    "examinator":2,
   }
   specificQuestionsOutput:any=[]
   

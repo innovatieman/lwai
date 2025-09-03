@@ -68,7 +68,7 @@
             </div> 
         </div>
 
-        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainerInfo.logo">
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
             <div fullwidth style="height:100px">
                 <div font-30 flex center-ver center-hor fullheight weight700 uppercase>{{trainerService.trainerInfo.name}}</div>
             </div> 
@@ -85,28 +85,53 @@
           </ion-item>
           <input hidden #import_training type="file" accept=".alicialabs" (change)="selectImportFile($event)"/>
         </div>
+        
 
 
         <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id" [ngClass]="{'activeItem': filterHas('concept'),'notActiveItem': !filterHas('concept')}">
-          <ion-item detail="false" lines="none" button (click)="filterWith('concept')" class="itemButton"  noMargin>
+          <ion-item detail="false" lines="none" button (click)="filterWith('concept');filterPublishTypeWith('')" class="itemButton"  noMargin>
               <div font-20 weight700>{{'trainings.concept_training' | translate}}</div>
-              <span weight500 font-18 slot="end">({{(trainerService.trainings | filterKey : 'status' : ['concept']).length}})</span>
+              <span weight500 font-18 slot="end">({{countItems([{key: 'status', value: 'concept'}])}})</span>
               <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
         </div>
 
-        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id" [ngClass]="{'activeItem': filterHas('published'),'notActiveItem': !filterHas('published')}" >
-          <ion-item detail="false" lines="none" button (click)="filterWith('published')" class="itemButton"  noMargin>
+        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id && countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'empty', key2: 'publishType', value2: 'training'}])" [ngClass]="{'activeItem': filterHas('published') && filterPublishTypeHas('training'),'notActiveItem': !filterHas('published') || !filterPublishTypeHas('training')}" >
+          <ion-item detail="false" lines="none" button (click)="filterWith('published');filterPublishTypeWith('training')" class="itemButton"  noMargin>
               <div font-20 weight700>{{'trainings.active_training' | translate}}</div>
-              <span weight500 font-18 slot="end">({{(trainerService.trainings | filterKey : 'status' : ['published']).length}})</span>
+              <span weight500 font-18 slot="end">({{countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'empty', key2: 'publishType', value2: 'training'}])}})</span>
               <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
         </div>
 
-        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id" [ngClass]="{'activeItem': filterHas('closed'),'notActiveItem': !filterHas('closed')}">
-          <ion-item detail="false" lines="none" button (click)="filterWith('closed')" class="itemButton"  noMargin>
+        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id && countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'elearning'}])" [ngClass]="{'activeItem': filterHas('published') && filterPublishTypeHas('elearning'),'notActiveItem': !filterHas('published') || !filterPublishTypeHas('elearning')}" >
+          <ion-item detail="false" lines="none" button (click)="filterWith('published');filterPublishTypeWith('elearning')" class="itemButton"  noMargin>
+              <div font-20 weight700>{{'marketplace.elearnings' | translate}}</div>
+              <span weight500 font-18 slot="end">({{countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'elearning'}])}})</span>
+              <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id && countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'organisation'}])" [ngClass]="{'activeItem': filterHas('published') && filterPublishTypeHas('organisation'),'notActiveItem': !filterHas('published') || !filterPublishTypeHas('organisation')}" >
+          <ion-item detail="false" lines="none" button (click)="filterWith('published');filterPublishTypeWith('organisation')" class="itemButton"  noMargin>
+              <div font-20 weight700>{{'trainings.organisation_training' | translate}}</div>
+              <span weight500 font-18 slot="end">({{countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'organisation'}])}})</span>
+              <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id && countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'game'}])" [ngClass]="{'activeItem': filterHas('published') && filterPublishTypeHas('game'),'notActiveItem': !filterHas('published') || !filterPublishTypeHas('game')}" >
+          <ion-item detail="false" lines="none" button (click)="filterWith('published');filterPublishTypeWith('game')" class="itemButton"  noMargin>
+              <div font-20 weight700>{{'trainings.games_training' | translate}}</div>
+              <span weight500 font-18 slot="end">({{countItems([{key: 'status', value: 'published'}, {key: 'publishType', value: 'game'}])}})</span>
+              <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id && countItems([{key: 'status', value: 'closed'}])" [ngClass]="{'activeItem': filterHas('closed'),'notActiveItem': !filterHas('closed')}">
+          <ion-item detail="false" lines="none" button (click)="filterWith('closed');filterPublishTypeWith('')" class="itemButton"  noMargin>
               <div font-20 weight700>{{'trainings.closed_training' | translate}}</div>
-              <span weight500 font-18 slot="end">({{(trainerService.trainings | filterKey : 'status' : ['closed']).length}})</span>
+              <span weight500 font-18 slot="end">({{countItems([{key: 'status', value: 'closed'}])}})</span>
               <fa-icon font-24 slot="end" [icon]="icon.get('faArrowRight')"></fa-icon>
           </ion-item>
         </div>
@@ -132,7 +157,7 @@
             <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
           </ion-item>
 
-          <ion-item detail="false" lines="none" button (click)="deleteTraining(trainerService.trainingItem)" class="itemButton"  noMargin>
+          <ion-item detail="false" lines="none" button (click)="deleteTraining(trainerService.trainingItem)" class="itemButton"  noMargin *ngIf="trainerService.trainingItem?.status!='published'">
             <div font-20 weight700>{{'trainings.delete_training' | translate}}</div>
             <fa-icon font-24 slot="end" trash [icon]="icon.get('faTrashAlt')"></fa-icon>
           </ion-item>
@@ -160,24 +185,38 @@
           </ion-item>
         </div>
 
-        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && trainerService.trainingItem?.status=='published' && trainerService.trainingItem.publishType!='organisation'" [ngClass]="{'activeMenuItem':showPart=='credits'}">
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && trainerService.trainingItem?.status=='published' && trainerService.trainingItem.publishType!='organisation' && trainerService.trainingItem?.publishType!='elearning'" [ngClass]="{'activeMenuItem':showPart=='credits'}">
           <ion-item detail="false" lines="none" button (click)="showPart='credits';centerSelectItems()" class="itemButton" noMargin >
             <div font-20 weight700>{{'trainings.credit_management' | translate}}</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faCoins')"></fa-icon>
           </ion-item>
         </div>
 
-        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && (trainerService.trainingItem?.status=='published' || trainerService.trainingItem?.status=='closed') && trainerService.trainingItem.publishType!='organisation'" [ngClass]="{'activeMenuItem':showPart=='participants'}">
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && (trainerService.trainingItem?.status=='published' || trainerService.trainingItem?.status=='closed') && trainerService.trainingItem.publishType!='organisation'  && trainerService.trainingItem?.publishType!='elearning'" [ngClass]="{'activeMenuItem':showPart=='participants'}">
           <ion-item detail="false" lines="none" [disabled]="trainerService.trainingItem?.status=='concept'" button (click)="showPart='participants'" class="itemButton" noMargin >
             <div font-20 weight700>{{'cases.participants' | translate}}</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faUsers')"></fa-icon>
           </ion-item>
         </div>
 
-        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && (trainerService.trainingItem?.status=='published' || trainerService.trainingItem?.status=='closed') && trainerService.trainingItem.publishType!='organisation'" [ngClass]="{'activeMenuItem':showPart=='results'}">
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && (trainerService.trainingItem?.status=='published' || trainerService.trainingItem?.status=='closed') && trainerService.trainingItem.publishType!='organisation'  && trainerService.trainingItem?.publishType!='elearning'" [ngClass]="{'activeMenuItem':showPart=='results'}">
           <ion-item detail="false" lines="none" button (click)="showPart='results'" class="itemButton" noMargin >
             <div font-20 weight700>{{'trainings.progress' | translate}}</div>
             <fa-icon font-24 slot="end" [icon]="icon.get('faChartLine')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && (trainerService.trainingItem?.status=='published' || trainerService.trainingItem?.status=='closed') && trainerService.trainingItem?.publishType=='elearning'" [ngClass]="{'activeMenuItem':showPart=='publish_elearning'}">
+          <ion-item detail="false" lines="none" [disabled]="trainerService.trainingItem?.status=='concept'" button (click)="showPart='publish_elearning'" class="itemButton" noMargin >
+            <div font-20 weight700>{{'buttons.publish' | translate}}</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faCloudUploadAlt')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id && (trainerService.trainingItem?.status=='published' || trainerService.trainingItem?.status=='closed') && trainerService.trainingItem?.publishType=='elearning'" [ngClass]="{'activeMenuItem':showPart=='customers'}">
+          <ion-item detail="false" lines="none" [disabled]="trainerService.trainingItem?.status=='concept'" button (click)="showPart='customers'" class="itemButton" noMargin >
+            <div font-20 weight700>{{'marketplace.customers_and_revenue' | translate}}</div>
+            <fa-icon font-24 slot="end" [icon]="icon.get('faUsers')"></fa-icon>
           </ion-item>
         </div>
 
@@ -334,9 +373,9 @@
                       </ion-item>
 
                       <ion-item detail="false" marginBottom listCard lines="none" [disabled]="trainerService.trainingItem.status=='closed'">
-                        <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_user_info','cases.short_info',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
-                        
-                        <ion-label marginLeft font-20 position="stacked">{{'cases.text' | translate}}</ion-label>
+                        <fa-icon style="position: absolute; right: 16px; top: 16px;" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_content','trainings.training_content_title',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+
+                        <ion-label marginLeft font-20 position="stacked">{{'trainings.training_content_title' | translate}}</ion-label>
                         <quill-editor *ngIf="!showHtml" [(ngModel)]="trainerService.trainingItem.training_content" [modules]="configModules" (onEditorCreated)="showEditor()" (onBlur)="changeItem(trainerService.breadCrumbs[0].item.items,trainerService.trainingItem.id,'training_content',trainerService.trainingItem.training_content,true)"></quill-editor>
 
                         <ion-toolbar *ngIf="showHtml" style="padding-left:0px;--background: none">
@@ -599,6 +638,92 @@
               </ion-col>
           </ion-row>
 
+          <ion-row noPadding *ngIf="trainerService.trainingItem?.id && showPart=='customers'">
+            <ion-card basicPadding fullwidth [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}">
+              <ion-card-header>
+                <ion-card-title flex center-ver>
+                  <span weight600 titleIcon>{{'marketplace.customers_and_revenue' | translate}}</span>
+                  <span class="spacer"></span>
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div singleLine></div> 
+                <div font-16 marginLeft text-primary uppercase weight600 flex center-ver>
+                  <span> {{'marketplace.revenue' | translate}} ({{trainerService.purchaseItems(trainerService.trainingItem.id).length}})</span>
+                  <div class="spacer"></div>
+                </div>
+                <div>
+                  <ion-card marginBottom basicPadding borderPrimary fullwidth>
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_total' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.total | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_tax' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.tax | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'marketplace.revenue_ex_tax' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.without_tax | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_margin' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{(trainerService.revenue(trainerService.trainingItem.id).all.without_tax - trainerService.revenue(trainerService.trainingItem.id).all.profit) | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'marketplace.revenue_profit' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.profit | number : '1.2-2'}}</span>
+                    </div> 
+
+
+
+                    <div marginTop marginBottom></div>
+                    <div flex center-ver weight600>
+                      <span >{{'marketplace.revenue_unpaid' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).unpaid.profit | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_paid' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).paid.profit | number : '1.2-2'}}</span>
+                    </div> 
+
+                  </ion-card>
+                </div> 
+                <div *ngIf="trainerService.revenue(trainerService.trainingItem.id).unpaid.profit" flex center-ver>
+                  <div class="spacer"></div>
+                  <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
+                    {{'marketplace.request_payout' | translate}}
+                  </ion-button>
+                </div>
+
+                <div singleLine></div> 
+
+                <div font-16 marginLeft text-primary uppercase weight600 pointer (click)="showCustomerList=!showCustomerList" *ngIf="trainerService.purchaseItems(trainerService.trainingItem.id).length" flex center-ver>
+                  <span> {{'marketplace.customers' | translate}} ({{trainerService.purchaseItems(trainerService.trainingItem.id).length}})</span>
+                  <div class="spacer"></div>
+                  <fa-icon chevron pointer titleIcon font-24 text-secondary [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform':showCustomerList ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                </div>
+                <div *ngIf="showCustomerList">
+                  <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.purchaseItems(trainerService.trainingItem.id)">
+                    <ion-card-title flex center-ver>
+                      <span weight600>{{customer.user.displayName}}</span>
+                      <!-- <span marginLeft weight400 font-14 lowercase>({{customer.user.email}})</span> -->
+                      <span class="spacer"></span>
+                    <!-- <fa-icon pointer titleIcon font-24 *ngIf="trainerService.trainingItem?.status=='published'" (click)="sendEmail(customer.user.email)" [icon]="icon.get('faEnvelope')"></fa-icon> -->
+                    </ion-card-title>
+                  </ion-card>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-row>
+
           <ion-row noPadding *ngIf="trainerService.trainingItem?.id && showPart=='results'">
             <ion-col [size]="media.smallDevice ? 12 : 12" noPadding>
                 <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}">
@@ -671,7 +796,7 @@
           <ion-row noPadding *ngIf="trainerService.trainingItem?.id && showPart=='publish' && trainerService.trainingItem?.status!='published'">
             <ion-col [size]="media.smallDevice ? 12 : 12" noPadding>
               
-              <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}" *ngIf="!trainerService.trainerInfo.organisation || trainerService.publishType=='training'">
+              <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}" *ngIf="!trainerService.trainerInfo.organisation && trainerService.publishType=='training'">
                 <ion-card-header>
                   <ion-card-title flex center-ver>
                     <span weight600>{{'buttons.publish' | translate}}</span>
@@ -765,9 +890,9 @@
                     <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.organisation" (click)="trainerService.publishType='organisation'">{{'trainings.publish_switch_organization' | translate}}</ion-button>
 
                     <div class="spacer"></div>
-                    <!-- <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning'">{{'buttons.publish_elearning' | translate}}</ion-button>
-                    <div class="spacer"></div> -->
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.publish_for_participants' | translate}}</ion-button>
+                    <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning';centerSelectItems()">{{'buttons.publish_elearning' | translate}}</ion-button>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton cardButton" color="primary" fill="solid" size="small" [disabled]="trainerService.trainingItem.terms" (click)="publishTraining()">{{'buttons.publish_for_participants' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
               </ion-card>
@@ -777,32 +902,81 @@
                   <ion-card-title flex center-ver>
                     <span weight600>{{'buttons.publish' | translate}}</span>
                     <span class="spacer"></span>
-                    <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_publish','buttons.publish',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                    <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_intro_publish_elearning','buttons.publish',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                   </ion-card-title>
                 </ion-card-header>
                 <ion-card-content>
                   <div marginBottom font-18 weight500 *ngIf="!trainerService.trainerInfo.organisation">{{'tooltips.training_intro_publish_elearning' | translate}}</div>
                   <ion-row font-18 noPadding id="selectRow1">
-                    <ion-col size="8"><div weight700>{{'trainings.price_elearning' | translate}}</div></ion-col>
-                    <ion-col size="4">
+                    <ion-col size="12">
+                      <ion-checkbox label-placement="end" mode="md" class="checkbox" color="primary" [(ngModel)]="trainerService.trainingItem.marketplace" (ionChange)="update('marketplace')">
+                        <span>{{'trainings.elearning_publish_marketplace_title' | translate}}</span>
+                      </ion-checkbox><br>
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.elearning_publish_marketplace_description')"></ion-text>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.marketplace"><div weight500 style="padding:10px 0px">{{'trainings.price_elearning' | translate}}</div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.marketplace">
                       <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.price_elearning" (ionChange)="update('price_elearning')" font-20 weight700>
                         <ion-icon name="logo-euro" slot="start"></ion-icon>
                       </ion-input>
                     </ion-col>
-                  </ion-row>
 
-                
-                  <ion-card-title flex center-ver style="margin-top:10px">
-                    <span weight600>{{'trainings.cost_overview' | translate}}</span>
-                    <div class="spacer"></div>
-                    <fa-icon pointer titleIcon font-24 text-secondary (click)="this.trainerService.checkIsTrainerPro() ? trainerService.tooltip('training_costs_publish_trainer_pro','trainings.cost_overview',$event) : trainerService.tooltip('training_costs_publish','trainings.cost_overview',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
-                  </ion-card-title>
+                    <ion-col size="12">
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.elearning_organisation_price_info')"></ion-text>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.marketplace"><div weight500 style="padding:10px 0px">{{'trainings.price_elearning_org_min' | translate}}</div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.marketplace">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.price_elearning_org_min" (ionChange)="update('price_elearning_org_min')" font-20 weight700>
+                        <ion-icon name="logo-euro" slot="start"></ion-icon>
+                      </ion-input>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.marketplace"><div weight500 style="padding:10px 0px">{{'trainings.price_elearning_org_max' | translate}}</div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.marketplace">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.price_elearning_org_max" (ionChange)="update('price_elearning_org_max')" font-20 weight700>
+                        <ion-icon name="logo-euro" slot="start"></ion-icon>
+                      </ion-input>
+                    </ion-col>
 
-                  <ion-row basicPadding font-18 border-bottom style="margin-top:10px">
-                    
-                    <ion-col size="8" weight700><div>{{'trainings.elearning_margin_alicialabs' | translate}}</div></ion-col>
-                    <ion-col size="4" weight700 align-right><div>{{helpers.currencyChar('EUR (€)')}} {{(trainerService.trainingItem.price_elearning * 0.2) | number : '1.2-2' }}</div></ion-col>
-                    
+                    <ion-col size="12">
+                      <div singleLine></div> 
+                    </ion-col>
+                    <ion-col size="12">
+                      <ion-checkbox label-placement="end" mode="md" class="checkbox" color="primary" [(ngModel)]="trainerService.trainingItem.private" (ionChange)="update('private');setSpecialCode()">
+                        <span>{{'trainings.elearning_publish_private_title' | translate}}</span>
+                      </ion-checkbox><br>
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.elearning_publish_private_description')"></ion-text>
+                    </ion-col>
+
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.private"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.max_customers') | sanitizeHtml"></div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.private">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.max_customers" (ionChange)="update('max_customers')" font-20 weight700>
+                      </ion-input>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.private"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.allowed_domains') | sanitizeHtml"></div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.private">
+                      <ion-input id="input1" class="inputAmount" style="font-size:14px" type="text" step="1" min="0" [(ngModel)]="trainerService.trainingItem.allowed_domains" (ionChange)="update('allowed_domains')" font-20 weight700>
+                      </ion-input>
+                    </ion-col>
+
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.private">
+                      <div weight700>
+                        {{'trainings.amount_credits' | translate}}<br>
+                        <div weight400 italic font-12 *ngIf="trainerService.trainingItem.amount_credits==1000000">{{'trainings.amount_credits_unlimited' | translate}}</div>
+                        <div weight400 italic font-12 *ngIf="trainerService.trainingItem.amount_credits==4000">{{'trainings.amount_credits_4k' | translate}}</div>
+                      </div>
+                    </ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.private">
+                      <div center class="inputAmount" flex >
+                        <ion-select style="width:65px" interface="popover" font-20 weight700 [(ngModel)]="trainerService.trainingItem.amount_credits" (ionChange)="update('amount_credits')">
+                          <ion-select-option [value]="1000000">€ 25</ion-select-option>
+                          <ion-select-option [value]="4000">€ 10</ion-select-option>
+                        </ion-select>
+                      </div>
+                    </ion-col>
+
+                    <ion-col size="12">
+                      <div singleLine></div> 
+                    </ion-col>
                   </ion-row>
 
 
@@ -811,12 +985,12 @@
                     <div class="spacer"></div>
                     <ion-button class="saveButton cardButton" fill="outline" size="small" [disabled]="trainerService.trainingItem.terms" (click)="trainerService.publishType='training';centerSelectItems()">{{'buttons.publish_for_participants' | translate}}</ion-button>
                     <div class="spacer"></div>
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="publishElearning()">{{'buttons.publish_elearning' | translate}}</ion-button>
+                    <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="publishElearning()">{{'buttons.publish_elearning' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
               </ion-card>
 
-              <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}" *ngIf="!trainerService.trainerInfo.trainer || trainerService.publishType=='organisation'">
+              <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}" *ngIf="!trainerService.trainerInfo.trainer || (trainerService.trainerInfo.organisation &&(trainerService.publishType=='organisation' || trainerService.publishType=='training'))">
                 <ion-card-header>
                   <ion-card-title flex center-ver>
                     <span weight600>{{'buttons.publish' | translate}}</span>
@@ -832,9 +1006,9 @@
                   <div marginTop flex center-ver>
                     <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='training';centerSelectItems()">{{'trainings.publish_switch_training' | translate}}</ion-button>
                     <div class="spacer"></div>
-                    <!-- <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning'">{{'buttons.publish_elearning' | translate}}</ion-button>
-                    <div class="spacer"></div> -->
-                    <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="publishTrainingOrganisation()">{{'buttons.publish_for_organisation' | translate}}</ion-button>
+                    <ion-button class="saveButton cardButton" fill="outline" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='elearning';centerSelectItems()">{{'buttons.publish_elearning' | translate}}</ion-button>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" (click)="publishTrainingOrganisation()">{{'buttons.publish_for_organisation' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
               </ion-card>
@@ -955,6 +1129,109 @@
             </ion-col>
           </ion-row>
 
+          <ion-row noPadding *ngIf="trainerService.trainingItem?.id && showPart=='publish_elearning' && trainerService.trainingItem?.status=='published'">
+
+            <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}" *ngIf="trainerService.trainerInfo.trainer">
+                <ion-card-header>
+                  <ion-card-title flex center-ver>
+                    <span weight600>{{'buttons.publish' | translate}}</span>
+                    <span class="spacer"></span>
+                    <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_publish','buttons.publish',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
+                  </ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                  <ion-row font-18 noPadding id="selectRow1">
+                    <ion-col size="12">
+                      <ion-checkbox label-placement="end" mode="md" class="checkbox" color="primary" [(ngModel)]="copyPublishSituation.marketplace" [disabled]="true">
+                        <span>{{'trainings.elearning_publish_marketplace_title' | translate}}</span>
+                      </ion-checkbox><br>
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.elearning_publish_marketplace_description')"></ion-text>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="copyPublishSituation.marketplace"><div weight500 style="padding:10px 0px">{{'trainings.price_elearning' | translate}}</div></ion-col>
+                    <ion-col size="4" *ngIf="copyPublishSituation.marketplace">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="copyPublishSituation.price_elearning" [disabled]="true" font-20 weight700>
+                        <ion-icon name="logo-euro" slot="start"></ion-icon>
+                      </ion-input>
+                    </ion-col>
+
+                    <ion-col size="12">
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.elearning_organisation_price_info')"></ion-text>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.marketplace"><div weight500 style="padding:10px 0px">{{'trainings.price_elearning_org_min' | translate}}</div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.marketplace">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.price_elearning_org_min" (ionChange)="update('price_elearning_org_min')" font-20 weight700>
+                        <ion-icon name="logo-euro" slot="start"></ion-icon>
+                      </ion-input>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.marketplace"><div weight500 style="padding:10px 0px">{{'trainings.price_elearning_org_max' | translate}}</div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.marketplace">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.price_elearning_org_max" (ionChange)="update('price_elearning_org_max')" font-20 weight700>
+                        <ion-icon name="logo-euro" slot="start"></ion-icon>
+                      </ion-input>
+                    </ion-col>
+                    
+                    <ion-col size="12">
+                      <div singleLine></div> 
+                    </ion-col>
+                    
+                    <ion-col size="12">
+                      <ion-checkbox label-placement="end" mode="md" class="checkbox" color="primary" [(ngModel)]="trainerService.trainingItem.private" (ionChange)="update('private');setSpecialCode()">
+                        <span>{{'trainings.elearning_publish_private_title' | translate}}</span>
+                      </ion-checkbox><br>
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.elearning_publish_private_description')"></ion-text>
+                    </ion-col>
+
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.private"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.max_customers') | sanitizeHtml"></div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.private">
+                      <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="trainerService.trainingItem.max_customers" (ionChange)="update('max_customers')" font-20 weight700>
+                      </ion-input>
+                    </ion-col>
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.private"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.allowed_domains') | sanitizeHtml"></div></ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.private">
+                      <ion-input id="input2" class="inputAmount" style="font-size:14px" type="text" step="1" min="0" [(ngModel)]="trainerService.trainingItem.allowed_domains" (ionChange)="update('allowed_domains')" font-20 weight700>
+                      </ion-input>
+                    </ion-col>
+
+                    <ion-col size="8" *ngIf="trainerService.trainingItem.private">
+                      <div weight700>
+                        {{'trainings.amount_credits' | translate}}<br>
+                        <div weight400 italic font-12 *ngIf="trainerService.trainingItem.amount_credits==1000000">{{'trainings.amount_credits_unlimited' | translate}}</div>
+                        <div weight400 italic font-12 *ngIf="trainerService.trainingItem.amount_credits==4000">{{'trainings.amount_credits_4k' | translate}}</div>
+                      </div>
+                    </ion-col>
+                    <ion-col size="4" *ngIf="trainerService.trainingItem.private">
+                      <div center class="inputAmount" flex >
+                        <ion-select style="width:65px" interface="popover" font-20 weight700 [(ngModel)]="trainerService.trainingItem.amount_credits" (ionChange)="update('amount_credits')">
+                          <ion-select-option [value]="1000000">€ 25</ion-select-option>
+                          <ion-select-option [value]="4000">€ 10</ion-select-option>
+                        </ion-select>
+                      </div>
+                    </ion-col>
+
+                    <ion-col size="12" *ngIf="trainerService.trainingItem.private">
+                      <div marginTop  flex center-ver >
+                        <div basicPadding style="text-align:left" class="inputAmount" fullwidth>
+                          <span style="word-break: break-all;">{{privateUrl}}</span>
+                        </div>
+                        <div class="spacer"></div>
+                        <div>
+                          <fa-icon pointer titleIcon font-24 text-secondary [icon]="icon.get('faCopy')" (click)="copyPrivateTrainingUrl()"></fa-icon>
+                        </div>
+                      </div>
+                      <div font-12 italic>{{'trainings.elearning_private_url_info' | translate}}</div>
+                    </ion-col>
+                  </ion-row>
+
+
+
+                  <!-- <div marginTop flex center-ver>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" *ngIf="changesInPublishSituation()" (click)="republishElearning()">{{'buttons.change' | translate}}</ion-button>
+                  </div> -->
+                </ion-card-content>
+              </ion-card>
+
+          </ion-row>
         </ion-col>
         <ion-infinite-scroll (ionInfinite)="loadMore($event)">
           <ion-infinite-scroll-content></ion-infinite-scroll-content>

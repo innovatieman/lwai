@@ -59,7 +59,7 @@
               </div> 
           </div>
 
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainerInfo.logo">
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
               <div fullwidth style="height:100px">
                   <div font-30 flex center-ver center-hor fullheight weight700 uppercase>{{trainerService.trainerInfo.name}}</div>
               </div> 
@@ -76,6 +76,7 @@
             <fa-icon font-24 slot="end" [icon]="icon.get('faFileImport')"></fa-icon>
           </ion-item>
           <input hidden #import_item type="file" accept=".alicialabs" (change)="selectImportFile($event)"/>
+          
 
           <!-- <ion-item detail="false" lines="none" button (click)="exportCases()" *ngIf="!trainerService.infoItem?.id" class="itemButton">
               <div font-20 weight700>{{'cases.export_csv' | translate}}</div>

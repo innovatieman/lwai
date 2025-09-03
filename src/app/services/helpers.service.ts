@@ -157,6 +157,12 @@ export class HelpersService {
     return Math.ceil(nr)
   }
 
+  validEmail(email:string):boolean {
+    if(!email){return false}
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    // let re = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-z]{2,15}$/;
+    return re.test(String(email).toLowerCase());
+  }
 
   public sortString(array:any[],key:string,descending?:boolean){
     let nwArray = JSON.parse(JSON.stringify(array))

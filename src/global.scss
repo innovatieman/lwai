@@ -292,6 +292,10 @@ ion-checkbox{
     font-size: 18px;
     margin-left:20px;
 }
+[overflow-y]{
+    overflow-x: hidden;
+    overflow-y: auto;
+}
 
 [backgroundGlobal]{
     background: var(--background-global);
@@ -871,6 +875,16 @@ main{
     font-size: 16px;
     --border-radius: 38px!important;
 }
+.saveButtonSmall{
+    --padding-start: 28px!important;
+    --padding-end: 28px!important;
+    min-height: 36px!important;
+    text-transform: none;
+    font-weight: 600;
+    letter-spacing: normal;
+    font-size: 14px;
+    --border-radius: 38px!important;
+}
 .detailColumn{
     max-height:calc(100%);
     overflow:hidden;
@@ -1200,6 +1214,7 @@ main{
         --background:rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.07);
         padding:0px;
         --border-radius:24px;
+        text-align: left;
     }
     
 }
@@ -1246,3 +1261,36 @@ main{
 .backArrowModule:hover{
     left:-10px;
 }
+
+.ql-size-large{
+    font-size: 24px;
+}
+.ql-size-small{
+    font-size: 14px;
+}
+.ql-size-huge{
+    font-size: 32px;
+}
+
+.filterSmall{
+    position: fixed;
+    z-index: 11;
+    top:110px;
+    left:0;
+    width: 100%;
+    max-height:calc(((var(--vh, 1vh) * 100) - 110px));
+    height: calc(((var(--vh, 1vh) * 100) - 110px));
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+  }
+  .filterSmallTitle{
+    position: fixed;
+    z-index: 11;
+    top:60px;
+    left:0;
+    width: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: white;
+  }

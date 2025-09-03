@@ -80,11 +80,17 @@ export class FirestoreService {
       obj[field] = data
       return this.fire.collection(collection).doc(doc).collection(subcollection).doc(id).update(obj)
       .then(_=> {
+        if(callback){
+          callback()
+        }
       })
       .catch(err => console.log(err, 'You do not have access!'))
     }
     return this.fire.collection(collection).doc(doc).collection(subcollection).doc(id).set(data)
     .then(_=> {
+      if(callback){
+        callback()
+      }
     })
     .catch(err => console.log(err, 'You do not have access!  - '+collection + ' => '+doc+' => ' + subcollection))
   }
@@ -102,11 +108,17 @@ export class FirestoreService {
       obj[field] = data
       return this.fire.collection(collection).doc(doc).collection(subcollection).doc(subDoc).collection(subSubcollection).doc(id).update(obj)
       .then(_=> {
+        if(callback){
+          callback()
+        }
       })
       .catch(err => console.log(err, 'You do not have access!'))
     }
     return this.fire.collection(collection).doc(doc).collection(subcollection).doc(subDoc).collection(subSubcollection).doc(id).set(data)
     .then(_=> {
+      if(callback){
+        callback()
+      }
     })
     .catch(err => console.log(err, 'You do not have access!  - '+collection + ' => '+doc+' => ' + subcollection + ' => ' + subDoc + ' => ' + subSubcollection))
   }

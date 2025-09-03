@@ -66,11 +66,44 @@ export class CasesPage implements OnInit {
     private popoverController:PopoverController,
   ) { }
 
-  ngOnInit() {
-    
 
+  // speak(text: string): void {
+  //   console.log('Speaking:', text);
+  //   const utterance = new SpeechSynthesisUtterance(text);
+  //   utterance.lang = 'en-EN'; // English
+  //   utterance.rate = 1; // Spreeksnelheid
+  //   utterance.pitch = 1; // Toonhoogte
+
+  //   // (optioneel) andere stemmen ophalen
+  //   const voices = speechSynthesis.getVoices();
+  //   console.log('Available voices:', voices);
+  //   const englishVoice = voices.find(v => v.lang === 'en-EN');
+  //   if (englishVoice) {
+  //     utterance.voice = englishVoice;
+  //   }
+
+  //   speechSynthesis.speak(utterance);
+  // }
+
+
+
+  ngOnInit() {
+    // setTimeout(() => {
+    //   this.speak('Would you like to create a case? Click the plus button below to get started.');
+    // }, 2000);
 
   }
+
+
+  // resetIds(){
+  //   console.log(this.trainerService.cases)
+  //   for(let i=0;i<this.trainerService.cases.length;i++){
+  //     if(this.trainerService.cases[i].id2 != this.trainerService.cases[i].id){
+  //       this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'cases',this.trainerService.cases[i].id2,{id:this.trainerService.cases[i].id2})
+  //     }
+  //   }
+  // }
+
 
   ionViewWillEnter(){
     this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
@@ -254,10 +287,14 @@ export class CasesPage implements OnInit {
         try {
           const found = await this.trainerService.waitForItem('case', casus.created, 5000, 'created');
           this.trainerService.caseItem = found;
+          this.toast.hideLoader();
+          this.updateVisibleCases();
           // …openen/navigeer of modal sluiten
         } catch (err) {
           // Graceful fallback: direct openen met lokale data
           this.trainerService.caseItem = {}
+          this.toast.hideLoader();
+          this.updateVisibleCases();
           // this.trainerService.caseItem = { id: casus.id, ...casus };
         }
       });
@@ -288,7 +325,7 @@ export class CasesPage implements OnInit {
     this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
       if(result){
         let id = caseItem.id
-        // console.log('deleting case',id)
+        console.log('deleting case',id)
         this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'cases',caseItem.id).then(()=>{
           console.log('deleted case')
           this.updateVisibleCases();
@@ -708,7 +745,7 @@ export class CasesPage implements OnInit {
     //   this.currentFilterTypes.subjectTypes,
     //   this.extraFilters.open_to_user
     // );
-  
+    // console.log('updating visible cases', this.trainerService.cases);
     const searched = this.filterSearchPipe.transform(
       this.trainerService.cases,
       this.searchTerm,
@@ -1081,6 +1118,7 @@ export class CasesPage implements OnInit {
     const base64 = this.encodeObjectToBase64(obj); // encode naar base64
 
     const blob = new Blob([base64], { type: 'text/plain;charset=utf-8' });
+    // const blob = new Blob([JSON.stringify(obj)], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     let title = 'case'

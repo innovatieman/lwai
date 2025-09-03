@@ -139,7 +139,7 @@ export class AccountService {
         })
         return item
       })
-      console.log(this.products)
+      // console.log(this.products)
     })
   }
 
@@ -187,11 +187,15 @@ export class AccountService {
         })
         return item
       })
-      console.log(this.products_elearnings)
+      // console.log(this.products_elearnings)
     })
   }
 
-  async buy(item: any) {
+  async buy(item: any,metadata?: any) {
+
+    this.buyMultiple([item],metadata);
+    return
+
     const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
@@ -271,14 +275,12 @@ export class AccountService {
     }
   }
 
-  async buyMultiple(items: any[]) {
-    const user = await this.auth.userInfo;
-    if (!user) {
-      console.error("User not authenticated");
-      return;
-    }
+  async buyMultiple(items: any[],metadata?: any) {
 
-    this.toast.showLoader();
+    const user = await this.auth.userInfo;
+    if (!user) return;
+
+    const stripeProductIds = items.map(i => i.id); // 🔒 alleen IDs meegeven
 
     // ✅ Credits check en opslaan
     const creditsItem = items.find((item) => item.credits);
@@ -288,89 +290,150 @@ export class AccountService {
     }
 
     let hasElearnings = items.some((item) => item.metadata?.type === 'elearning');
-
-    // ✅ Stripe customer ID ophalen of aanmaken
-    let stripeId: any = '';
-    if (this.auth.customer?.stripeCustomerId) {
-      stripeId = this.auth.customer.stripeCustomerId;
-    }
-
-    if (!stripeId) {
-      let newCustomer = await this.functions.httpsCallable('createCustomerId')({ email: user.email }).toPromise();
-      stripeId = newCustomer.result?.stripeId;
-    }
-
-    if (!stripeId) {
-      this.toast.hideLoader();
-      this.toast.show(this.translate.instant('error_messages.failure'));
-      return;
-    }
-
-    // ✅ Bepaal of alle items subscription zijn of niet
+  // ✅ Bepaal of alle items subscription zijn of niet
     const hasOnlySubscriptions = items.every((item) => item.metadata?.type === 'subscription');
-    const hasOnlyOneTime = items.every((item) => item.prices[0].type === 'one_time');
+    // const hasOnlyOneTime = items.every((item) => item.prices[0].type === 'one_time');
 
-    const successPath = hasElearnings ? 'marketplace/elearnings/success' : (hasOnlySubscriptions ? '/account/subscriptions/success' : '/account/credits/success');
-    const cancelPath = hasElearnings ? 'marketplace/elearnings/error' : (hasOnlySubscriptions ? '/account/subscriptions/error' : '/account/credits/error');
+    const successPath = window.location.origin + '/' + (hasElearnings ? 'marketplace/elearnings/success' : (hasOnlySubscriptions ? '/account/subscriptions/success' : '/account/credits/success'));
+    const cancelPath = window.location.origin + '/' + (hasElearnings ? 'marketplace/elearnings/error' : (hasOnlySubscriptions ? '/account/subscriptions/error' : '/account/credits/error'));
 
-    // ✅ Bouw line_items array
-    const line_items = items.map(item => ({
-      price: item.prices[0].id,
-      quantity: 1
-    }));
 
-    // ✅ Bouw checkout session data
-    console.log(window.location.origin + successPath, window.location.origin + cancelPath);
-    let checkoutSessionData: any = {
-      line_items,
-      success_url: window.location.origin + '/' + successPath,
-      cancel_url: window.location.origin + '/' + cancelPath,
-      automatic_tax: { enabled: true },
-      allow_promotion_codes: true,
-      metadata: {
-        userId: user.uid
-      },
-      customer: stripeId
-    };
-
-    // ✅ Mode bepalen (alleen 'subscription' of 'payment')
-    if (hasOnlyOneTime) {
-      checkoutSessionData['mode'] = 'payment';
-      checkoutSessionData['payment_intent_data'] = {
-        setup_future_usage: 'off_session'
-      };
-      checkoutSessionData['invoice_creation'] = {
-        enabled: true
-      };
-    } else {
-      checkoutSessionData['mode'] = 'subscription';
-    }
-
-    console.log(checkoutSessionData);
+    this.toast.showLoader();
 
     try {
-      const checkoutSessionRef = this.firestore.collection(`customers/${user.uid}/checkout_sessions`);
-      const docRef = await checkoutSessionRef.add(checkoutSessionData);
+      let callObj:any = { stripeProductIds, successPath, cancelPath };
+      if(items[0].organisationId){
+        callObj['organisationId'] = items[0].organisationId;
+      }
+      if(metadata){
+        callObj['metadata'] = metadata;
+      }
+      console.log('Creating checkout session with:', callObj);
+      const result = await this.functions
+        .httpsCallable('createCheckoutSession')(callObj)
+        .toPromise();
 
-      console.log("Checkout session created:", docRef.id);
-
-      this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`, docRef.id).subscribe((value: any) => {
-        setTimeout(() => {
-          this.toast.hideLoader();
-        }, 2000);
-
-        if (value.url) {
-          window.location.assign(value.url);
-        } else if (value.error) {
-          console.error("Stripe error:", value.error);
-        }
-      });
-
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
       this.toast.hideLoader();
+
+      if (result?.url) {
+        window.location.assign(result.url);
+      }
+    } catch (error) {
+      this.toast.hideLoader();
+      console.error(error);
       this.toast.show(this.translate.instant('error_messages.failure'));
     }
+
+
+
+
+
+
+
+
+
+
+
+      // const user = await this.auth.userInfo;
+      // if (!user) {
+      //   console.error("User not authenticated");
+      //   return;
+      // }
+
+      // this.toast.showLoader();
+
+      // // ✅ Credits check en opslaan
+      // const creditsItem = items.find((item) => item.credits);
+      // if (creditsItem) {
+      //   localStorage.setItem('buying Credits', creditsItem.credits);
+      //   localStorage.setItem('oldCredits', this.auth.credits.total);
+      // }
+
+      // let hasElearnings = items.some((item) => item.metadata?.type === 'elearning');
+
+      // // ✅ Stripe customer ID ophalen of aanmaken
+      // let stripeId: any = '';
+      // if (this.auth.customer?.stripeCustomerId) {
+      //   stripeId = this.auth.customer.stripeCustomerId;
+      // }
+
+      // if (!stripeId) {
+      //   let newCustomer = await this.functions.httpsCallable('createCustomerId')({ email: user.email }).toPromise();
+      //   stripeId = newCustomer.result?.stripeId;
+      // }
+
+      // if (!stripeId) {
+      //   this.toast.hideLoader();
+      //   this.toast.show(this.translate.instant('error_messages.failure'));
+      //   return;
+      // }
+
+      // // ✅ Bepaal of alle items subscription zijn of niet
+      // const hasOnlySubscriptions = items.every((item) => item.metadata?.type === 'subscription');
+      // const hasOnlyOneTime = items.every((item) => item.prices[0].type === 'one_time');
+
+      // const successPath = hasElearnings ? 'marketplace/elearnings/success' : (hasOnlySubscriptions ? '/account/subscriptions/success' : '/account/credits/success');
+      // const cancelPath = hasElearnings ? 'marketplace/elearnings/error' : (hasOnlySubscriptions ? '/account/subscriptions/error' : '/account/credits/error');
+
+      // // ✅ Bouw line_items array
+      // const line_items = items.map(item => ({
+      //   price: item.prices[0].id,
+      //   quantity: 1
+      // }));
+
+      // // ✅ Bouw checkout session data
+      // console.log(window.location.origin + successPath, window.location.origin + cancelPath);
+      // let checkoutSessionData: any = {
+      //   line_items,
+      //   success_url: window.location.origin + '/' + successPath,
+      //   cancel_url: window.location.origin + '/' + cancelPath,
+      //   automatic_tax: { enabled: true },
+      //   allow_promotion_codes: true,
+      //   metadata: {
+      //     userId: user.uid,
+      //     organisationId: items[0].organisationId || ''
+      //   },
+      //   customer: stripeId
+      // };
+
+      // // ✅ Mode bepalen (alleen 'subscription' of 'payment')
+      // if (hasOnlyOneTime) {
+      //   checkoutSessionData['mode'] = 'payment';
+      //   checkoutSessionData['payment_intent_data'] = {
+      //     setup_future_usage: 'off_session'
+      //   };
+      //   checkoutSessionData['invoice_creation'] = {
+      //     enabled: true
+      //   };
+      // } else {
+      //   checkoutSessionData['mode'] = 'subscription';
+      // }
+
+      // console.log(checkoutSessionData);
+
+      // try {
+      //   const checkoutSessionRef = this.firestore.collection(`customers/${user.uid}/checkout_sessions`);
+      //   const docRef = await checkoutSessionRef.add(checkoutSessionData);
+
+      //   console.log("Checkout session created:", docRef.id);
+
+      //   this.firestoreService.getDocListen(`customers/${user.uid}/checkout_sessions/`, docRef.id).subscribe((value: any) => {
+      //     setTimeout(() => {
+      //       this.toast.hideLoader();
+      //     }, 2000);
+
+      //     if (value.url) {
+      //       window.location.assign(value.url);
+      //     } else if (value.error) {
+      //       console.error("Stripe error:", value.error);
+      //     }
+      //   });
+
+      // } catch (error) {
+      //   console.error("Error creating checkout session:", error);
+      //   this.toast.hideLoader();
+      //   this.toast.show(this.translate.instant('error_messages.failure'));
+      // }
   }
 
 

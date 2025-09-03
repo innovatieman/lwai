@@ -4,13 +4,12 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { TrainerCoursesPageRoutingModule } from './trainer-courses-routing.module';
+import { TrainerInfoPageRoutingModule } from './trainer-info-routing.module';
 
-import { TrainerCoursesPage } from './trainer-courses.page';
+import { TrainerInfoPage } from './trainer-info.page';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PipesModule } from 'src/app/pipes/pipes.module';
-import { ComponentsModule } from 'src/app/components/components.module';
-import { QuillModule } from 'ngx-quill';
+import { ComponentsModule } from '../../components.module';
 import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
@@ -18,13 +17,12 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     FormsModule,
     IonicModule,
-    TrainerCoursesPageRoutingModule,
-    ComponentsModule,
-    PipesModule,
+    TrainerInfoPageRoutingModule,
     FontAwesomeModule,
-    QuillModule,
-    TranslateModule
+    PipesModule,
+    ComponentsModule,
+    TranslateModule.forChild()
   ],
-  declarations: [TrainerCoursesPage]
+  declarations: [TrainerInfoPage]
 })
-export class TrainerCoursesPageModule {}
+export class TrainerInfoPageModule {}

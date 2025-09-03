@@ -46,6 +46,10 @@ export class ExamplePage implements OnInit {
 
   }
 
+  log(data:any){
+    console.log(data)
+  }
+
   ionViewWillEnter(){
      this.route.params.pipe(takeUntil(this.leave$)).subscribe(params => {
       this.id = params['id'];
@@ -141,7 +145,7 @@ export class ExamplePage implements OnInit {
   selectSubModule(module:any){
       // console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)
-      // console.log(this.modulesBreadCrumbs)
+      console.log(this.modulesBreadCrumbs)
   }
 
   selectTrainingItem(item:any){

@@ -91,15 +91,27 @@ export class ToastService {
   }
 
   async hideLoader() {
+    // console.log('hide loader called',this.loading);
     if (this.loading) {
       try {
         await this.loading.dismiss();
       } catch (err) {
         // loader was al gesloten of pagina was al weg
-        console.warn('Loader kon niet worden gesloten:', err);
+        // console.warn('Loader kon niet worden gesloten:', err);
       }
       this.loading = null;
     }
+    setTimeout(async() => {
+      if (this.loading) {
+        try {
+          await this.loading.dismiss();
+        } catch (err) {
+          // loader was al gesloten of pagina was al weg
+          // console.warn('Loader kon niet worden gesloten:', err);
+        }
+        this.loading = null;
+      }
+    }, 1000);
   }
 
   // async showLoader(message?:string,duration?:number) {

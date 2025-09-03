@@ -163,7 +163,10 @@ export class EnginePage implements OnInit {
     this.toast.showLoader('Loading data')
     this.load('categories',()=>{
       this.activateItem(this.getCategory('main'))
-      this.toast.hideLoader()
+      console.log('hide loader')
+      setTimeout(() => {
+        this.toast.hideLoader()
+      }, 2000);
     })
     this.load('formats')
     this.load('attitudes',()=>{

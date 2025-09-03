@@ -12,6 +12,7 @@ import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 import { DndModule } from 'ngx-drag-drop';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   imports: [
@@ -23,7 +24,8 @@ import { DndModule } from 'ngx-drag-drop';
     PipesModule,
     FontAwesomeModule,
     TranslateModule,
-    DndModule
+    DndModule,
+    QuillModule
   ],
   declarations: [ModulesPage]
 })

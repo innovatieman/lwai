@@ -57,7 +57,7 @@
               </div> 
           </div>
 
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainerInfo.logo">
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
               <div fullwidth style="height:100px">
                   <div font-30 flex center-ver center-hor fullheight weight700 uppercase>{{trainerService.trainerInfo.name}}</div>
               </div> 
@@ -248,6 +248,26 @@
                           <fa-icon slot="end" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('module_user_info','cases.short_info',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                           </ion-textarea>
                       </ion-item>     
+
+                      <ion-item detail="false" marginBottom listCard lines="none">
+                        <fa-icon style="position: absolute; right: 16px; top: 16px;" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_content','modules.training_content_title',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+
+                        <ion-label marginLeft font-20 position="stacked">{{'modules.training_content_title' | translate}}</ion-label>
+                        <quill-editor *ngIf="!showHtml" [(ngModel)]="trainerService.moduleItem.training_content" [modules]="configModules" (onEditorCreated)="showEditor()" (onBlur)="update('training_content')"></quill-editor>
+
+                        <ion-toolbar *ngIf="showHtml" style="padding-left:0px;--background: none">
+                          <ion-buttons slot="start">
+                            <ion-button (click)="showEditor()">
+                              <fa-icon [icon]="icon.get('faArrowLeft')" style="margin-right:15px;" slot="start">keyboard_arrow_left</fa-icon>
+                              {{'buttons.back' | translate}}
+                            </ion-button>
+                          </ion-buttons>
+                        </ion-toolbar>
+
+                        <ion-textarea *ngIf="showHtml" rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="trainerService.moduleItem.training_content" (ionChange)="update('training_content')">
+                          <!-- <div slot="label">Content</div> -->
+                        </ion-textarea>
+                      </ion-item>
                       
                       
                       <ion-item detail="false" pointer lines="none" listCard class="ionItemTypes">
@@ -295,7 +315,11 @@
                   <ion-card-content>
 
                   
-                      <div dndDropzone (dndDrop)="dropHandler($event)" class="card-container">
+                      <div dndDropzone 
+                        (dndDrop)="dropHandler($event)" 
+                        class="card-container"
+                        (dndStart)="onDndStart($event)"
+                        (dndEnd)="onDndEnd()">
 
                         <div dndPlaceholderRef></div>
 
@@ -307,12 +331,12 @@
                              class="card-wrapper" [ngStyle]="{'width':'calc('+helpers.cardSizeSmallPerc+' - 32px)'}" relative>
                           <ion-card noMargin noPadding pointer fullheight caseCard *ngIf="item.type=='case'">
                             <ion-card-content noPadding fullHeight>
-                              <div backgroundImage class="avatarImage" *ngIf="trainerService.getCase(item.id).photo" [ngStyle]="{'background-image': 'url(' + trainerService.getCase(item.id).photo + ')'}"></div>
-                              <div backgroundImage class="avatarImage" *ngIf="!trainerService.getCase(item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                              <div backgroundImage class="avatarImage" *ngIf="trainerService.getCase(item.id)?.photo" [ngStyle]="{'background-image': 'url(' + trainerService.getCase(item.id).photo + ')'}"></div>
+                              <div backgroundImage class="avatarImage" *ngIf="!trainerService.getCase(item.id)?.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
                               <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                                 <ion-card-header>
-                                  <ion-card-title font-18 weight600>{{trainerService.getCase(item.id).title}}</ion-card-title>
-                                  <ion-card-subtitle font-14 weight400>{{trainerService.getCase(item.id).user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                                  <ion-card-title font-18 weight600>{{trainerService.getCase(item.id)?.title}}</ion-card-title>
+                                  <ion-card-subtitle font-14 weight400>{{trainerService.getCase(item.id)?.user_info | maxLength : 60 : true}}</ion-card-subtitle>
                                 </ion-card-header>
                               </div>
                               <div center flex center-ver center-hor>

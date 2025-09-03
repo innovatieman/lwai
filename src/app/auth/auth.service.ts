@@ -273,9 +273,18 @@ export class AuthService {
     return null;
   }
 
+  userCredentials: any = {
+    email: '',
+    password: ''
+  };
   async getUserInfo() {
     this.user$.subscribe(user => {
       if (user) {
+        this.userCredentials = {
+          email: user.email || '',
+          emailVerified: user.emailVerified || false
+        }
+        // console.log('userCredentials', this.userCredentials);
         this.firestore.doc(`users/${user.uid}`).valueChanges().subscribe((data: any) => {
           this.userInfo = data;
           if (this.userInfo) {
@@ -316,7 +325,7 @@ export class AuthService {
   // }
 
   async login(email: string, password: string): Promise<void> {
-    this.toast.showLoader('Inloggen...')
+    this.toast.showLoader(this.translate.instant('page_login.busy_logging'));
     try {
       const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
       await userCredential.user?.reload();
@@ -339,7 +348,7 @@ export class AuthService {
     } catch (error) {
       this.toast.hideLoader();
       console.error('Login error:', error);
-      this.toast.show('Login mislukt');
+      this.toast.show(this.translate.instant('page_login.login_failed'));
       throw error;
     }
   }
@@ -356,7 +365,7 @@ export class AuthService {
   //   }
   // }
 
-  async signInWithProvider(provider: AuthProvider | OAuthProvider, providerName: string) {
+  async signInWithProvider(provider: AuthProvider | OAuthProvider, providerName: string, stayOnPage?: boolean): Promise<void> {
     try {
       const useRedirect = providerName === 'apple';
       let userCredential;
@@ -364,7 +373,8 @@ export class AuthService {
       if (useRedirect) {
         await this.afAuth.signInWithRedirect(provider);
         return;
-      } else {
+      }
+      else {
         userCredential = await this.afAuth.signInWithPopup(provider);
       }
   
@@ -376,35 +386,39 @@ export class AuthService {
           language: this.translate.currentLang,
           email: email
         });
-        this.nav.go('start/welcome');
-        this.nav.redirectUrl = null
-      } else {
-        if(this.nav.redirectUrl){
-          this.nav.go(this.nav.redirectUrl)
-          this.nav.redirectUrl = null
-        }else{
-          this.nav.go('start')
+        if(!stayOnPage){
+          this.nav.go('start/welcome');
+          this.nav.redirectUrl = null;
         }
-
       }
-  
+      else {
+        if(!stayOnPage){
+          if(this.nav.redirectUrl){
+            this.nav.go(this.nav.redirectUrl)
+            this.nav.redirectUrl = null
+          }else{
+            this.nav.go('start')
+          }
+        }
+      }
+
     } catch (error) {
-      console.error(`${providerName} login mislukt:`, error);
-      this.toast.show(`${providerName.charAt(0).toUpperCase() + providerName.slice(1)} login mislukt`);
+      console.error(`${providerName} login failed:`, error);
+      this.toast.show(`${providerName.charAt(0).toUpperCase() + providerName.slice(1)} login failed`);
     }
   }
   
   // 👇 Deze 3 functies koppel je aan je buttons
-  signInWithGoogle() {
-    this.signInWithProvider(new GoogleAuthProvider(), 'google');
+  signInWithGoogle(onPage: boolean = false) {
+    this.signInWithProvider(new GoogleAuthProvider(), 'google', onPage);
   }
-  
-  signInWithFacebook() {
-    this.signInWithProvider(new FacebookAuthProvider(), 'facebook');
+
+  signInWithFacebook(onPage: boolean = false) {
+    this.signInWithProvider(new FacebookAuthProvider(), 'facebook', onPage);
   }
-  
-  signInWithApple() {
-    this.signInWithProvider(new OAuthProvider('apple.com'), 'apple');
+
+  signInWithApple(onPage: boolean = false) {
+    this.signInWithProvider(new OAuthProvider('apple.com'), 'apple', onPage);
   }
 
 
@@ -469,18 +483,16 @@ export class AuthService {
   // Registreer een nieuwe gebruiker
   async register(email: string, password: string): Promise<void> {
     try {
-      this.toast.showLoader('Registreren...');
+      this.toast.showLoader(this.translate.instant('page_register.busy_registering'));
       email = email.toLowerCase();
       await this.afAuth.createUserWithEmailAndPassword(email, password);
-      console.log('registered')
       // this.modalService.showText('Je ontvangt een e-mail om je account te verifiëren.','Registratie gelukt');
       setTimeout(() => {
         this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:email})
       }, 2000);
       // this.functions.httpsCallable('editUserLang')({language:this.translate.currentLang})
-      console.log('Register success');
       this.toast.hideLoader();
-      this.toast.showLoader('Gegevens laden voor de eerste keer');
+      this.toast.showLoader(this.translate.instant('page_register.busy_loading'));
       setTimeout(() => {
         this.toast.hideLoader();
         this.nav.go('wait-verify'); 
@@ -492,11 +504,68 @@ export class AuthService {
           this.login(email,password)
         }
         else{
-          this.toast.show('Registratie mislukt');
+          this.toast.show(this.translate.instant('page_register.registration_failed'));
           throw error;
         }
       }
   }
+
+
+  async registerOnPage(email: string, password: string,callback?:Function): Promise<void> {
+    try {
+      this.toast.showLoader(this.translate.instant('page_register.busy_registering'));
+      email = email.toLowerCase();
+      await this.afAuth.createUserWithEmailAndPassword(email, password);
+      // this.modalService.showText('Je ontvangt een e-mail om je account te verifiëren.','Registratie gelukt');
+      setTimeout(() => {
+        this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:email})
+      }, 2000);
+      // this.functions.httpsCallable('editUserLang')({language:this.translate.currentLang})
+      this.toast.hideLoader();
+      this.toast.showLoader(this.translate.instant('page_register.busy_loading'));
+      setTimeout(() => {
+        this.toast.hideLoader();
+        // this.nav.go('wait-verify'); 
+      }, 3000);
+      } catch (error:any) {
+        this.toast.hideLoader();
+        // console.error('Register error:', error);
+        if(error.toString().includes('email-already-in-use')){
+          this.loginOnPage(email,password,callback)
+        }
+        else{
+          this.toast.show(this.translate.instant('page_register.registration_failed'));
+          throw error;
+        }
+      }
+  }
+
+  async loginOnPage(email: string, password: string,callback?:Function): Promise<void> {
+    this.toast.showLoader(this.translate.instant('page_login.busy_logging'));
+    try {
+      const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
+      await userCredential.user?.reload();
+      this.toast.hideLoader();
+      if (userCredential.user?.emailVerified) {
+        if(this.userInfo.language && this.userInfo.language!=this.translate.currentLang){
+          this.nav.setLang(this.userInfo.language)
+        }
+        if(callback){
+          callback()
+        }
+      } else {
+        // console.log('User is not verified');
+        // this.nav.go('wait-verify');
+        // this.nav.redirectUrl = null
+      }
+    } catch (error) {
+      this.toast.hideLoader();
+      console.error('Login error:', error);
+      this.toast.show(this.translate.instant('page_login.login_failed'));
+      throw error;
+    }
+  }
+  
 
   resendEmailVerification(callback?:Function){
     this.functions.httpsCallable('reSendVerificationEmail')({email:this.userInfo.email,displayName:this.userInfo.displayName}).subscribe((response:any)=>{
@@ -912,7 +981,7 @@ export class AuthService {
           this.myElearnings = elearnings.map(doc => ({
             ...doc,
           }));
-          console.log('myElearnings',this.myElearnings)
+          // console.log('myElearnings',this.myElearnings)
           if (callback) {
             callback();
           }
@@ -943,6 +1012,7 @@ export class AuthService {
             if(unsubscribe){
               employeeSubscription.unsubscribe()
             }
+            // console.log(response)
             if(response.status==200){
               this.organisationTrainings = response.result
               if(this.organisationTrainings.length==1){

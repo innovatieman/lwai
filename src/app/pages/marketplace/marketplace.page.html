@@ -1,170 +1,441 @@
-<app-header page="account"></app-header>
-<main>
+<app-header page="account" *ngIf="activeTab!='filter'"></app-header>
+<main [full]="activeTab!='filter' ? false : true">
+  <div fullwidth fullheight flex center-ver center-hor *ngIf="!firstLoaded && activeTab=='filter'">
+    <div flex center-ver center-hor >
+      <ion-spinner name="lines-sharp" style="height:100px;width:100px"></ion-spinner>
+    </div>
+  </div>
+
+  <div *ngIf="showFilterSmall" class="filterSmallTitle">
+      <div basicPadding>
+          <ion-card-title uppercase weight700 font-20 text-secondary flex center-ver>
+              <span>{{'marketplace.filter_trainers' | translate}}</span>
+              <span class="spacer"></span>
+              <fa-icon [icon]="icon.get('faTimes')" (click)="clearFilter()" *ngIf="!filterIsEmpty"></fa-icon>
+              <fa-icon titleIcon [icon]="icon.get('faChevronUp')" (click)="showFilterSmall = !showFilterSmall"></fa-icon>    
+          </ion-card-title>
+      </div> 
+  </div>
+  <div *ngIf="showFilterSmall" class="filterSmall">
+    <div style="padding:10px 0px;border-radius:16px;margin-top:15px;background:white;">
+          <div *ngIf="searchParams.trainerIds?.length">
+            <span *ngFor="let trainerId of searchParams.trainerIds">
+             <div class="typeItem" center-ver center-hor>
+                  <span>{{getTrainer(trainerId).name | uppercase}}</span>
+                  <fa-icon [icon]="icon.get('faTimes')" trash titleIcon (click)="selectTrainer(trainerId)"></fa-icon>
+              </div>
+            </span>
+            
+          </div>
+          <div *ngIf="showFilterTrainers || showFilterSmall">
+            <ion-item detail="false" button class="itemButton" style="--background-hover:none;--padding-start:0;--padding-end:0" >
+                <ion-searchbar [(ngModel)]="searchTrainers" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'--background' : 'white'}"></ion-searchbar>
+            </ion-item>
+          </div>
+          <div *ngIf="showFilterTrainers || showFilterSmall">
+            <div *ngFor="let trainerGroup of listAllTrainers() | filterKey : 'nameLower' : searchTrainers.toLowerCase() | sortBy : -1 : 'name' | splitArray : countChunks(11) ; index as groupIndex">
+              <div *ngIf="groupIndex === pageTrainers">
+                <ion-item *ngFor="let trainer of trainerGroup" button lines="none" detail="false" [ngClass]="{'activeItem':trainerSelected(trainer.id),'notActiveItem':!trainerSelected(trainer.id)}" (click)="selectTrainer(trainer.id)" class="itemButton">
+                  <div font-20 weight700>{{trainer.name}}</div>
+                  <ion-thumbnail slot="end" *ngIf="trainer.logo" noMargin flex center-ver center-hor borderRadius16 style="background:white;max-width:46px;max-height:46px;overflow:hidden;">
+                    <img [src]="trainer.logo | sanitizeHtml : 'urlResource'" style="width:40px;height:40px;border-radius:0;object-fit:contain;">
+                  </ion-thumbnail>
+                </ion-item>
+              </div>
+            </div>
+
+          </div>
+
+    </div>
+  </div>
+
+  <div *ngIf="showLogin && media.smallDevice && firstLoaded && !auth.userInfo?.email" class="filterSmall" style="background:0">
+    <div style="margin:20px;">
+      <ion-card basicPadding noMargin  borderPrimary>
+        <div font-16 center text-primary uppercase weight600>{{'page_register.register_login' | translate}}</div>
+          <!-- <div font-14 italic>{{'page_register.subtitle' | translate}}</div> -->
+          <div marginTop>
+            <ion-item detail="false" >
+              <ion-input type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{15,}$" placeholder="{{'page_register.email' | translate}}" [(ngModel)]="authentication.email" required></ion-input>
+            </ion-item>
+            <ion-item detail="false" marginBottom>
+              <ion-input type="password" placeholder="{{'page_register.password' | translate}}" [(ngModel)]="authentication.password" required></ion-input>
+            </ion-item>
+            <ion-button class="saveButton" size="small" expand="block" (click)="authenticate()" [disabled]="!authentication.email || !authentication.password || !helper.validEmail(authentication.email) || authentication.password.length < 6">
+              <span>{{'buttons.submit' | translate}}</span>
+            </ion-button>
+          </div>
+          <div class="social-buttons" style="margin: 10px 0px;">
+          <button class="google-btn" (click)="auth.signInWithGoogle(true)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>
+            <span>Google</span>
+          </button>
+          <button class="apple-btn" flex center-ver (click)="auth.signInWithApple(true)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+            <span>Apple</span>
+          </button>
+        </div>
+        <div class="social-buttons">
+          <button class="facebook-btn" (click)="auth.signInWithFacebook(true)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.9981 11.9991C23.9981 5.37216 18.626 0 11.9991 0C5.37216 0 0 5.37216 0 11.9991C0 17.9882 4.38789 22.9522 10.1242 23.8524V15.4676H7.07758V11.9991H10.1242V9.35553C10.1242 6.34826 11.9156 4.68714 14.6564 4.68714C15.9692 4.68714 17.3424 4.92149 17.3424 4.92149V7.87439H15.8294C14.3388 7.87439 13.8739 8.79933 13.8739 9.74824V11.9991H17.2018L16.6698 15.4676H13.8739V23.8524C19.6103 22.9522 23.9981 17.9882 23.9981 11.9991Z"/></svg>
+            <span>Facebook</span>
+          </button>
+        </div>
+      </ion-card>
+    </div>
+  </div>
+  <div *ngIf="showLogin && media.smallDevice && firstLoaded && auth.userInfo?.email && !auth.userCredentials?.emailVerified && !isVerified" style="background:0" class="filterSmall">
+    <div style="margin:20px;">
+      <ion-card basicPadding noMargin  borderPrimary>
+        <div font-18 marginBottom align-center>{{'page_wait_verify.step_0_text' | translate}}</div>
+      
+        <code-input marginBottom class="codeInput"
+            [isCodeHidden]="false"
+            [codeLength]="6"
+            (codeChanged)="onCodeChanged($event)"
+            (codeCompleted)="onCodeCompleted($event)">
+        </code-input>   
+        <div text-danger center weight500 marginBottom *ngIf="verifyCode.invalid">{{'page_wait_verify.code_invalid' | translate}}</div>
+        <div text-danger center weight500 marginBottom *ngIf="verifyCode.expired">{{'page_wait_verify.code_expired' | translate}}</div>
+        <div text-success center weight500 marginBottom *ngIf="verifyCode.valid">{{'page_wait_verify.code_valid' | translate}}</div>
+        <div center>
+          <ion-button class="saveButton" color="dark" fill="outline" (click)="resend()">{{'page_wait_verify.resend' | translate}}</ion-button>
+          <ion-button marginTop class="saveButton" color="medium" style="opacity: 0.6;" fill="outline" (click)="verifyOption()">{{'page_wait_verify.verify_option_button' | translate}}</ion-button>
+        </div>
+        <div basicPadding italic align-center *ngIf="emailResend &&!showVerifyOption">{{emailResend}}</div>
+      </ion-card>
+    </div>
+  </div>
+  
   <ion-grid>
-    <ion-row *ngIf="media.smallDevice" style="height:52px;">
-      <app-menu-mobile></app-menu-mobile>
+    <ion-row *ngIf="media.smallDevice && activeTab!='filter'" [ngStyle]="{'height':item_id ? '56px' :'118px'}">
+      <app-menu-mobile *ngIf="!item_id && auth.userInfo.email"></app-menu-mobile>
+      <ion-button style="position:absolute;top:8px;z-index:11" *ngIf="!auth.userInfo.email&&firstLoaded" class="saveButtonSmall" color="warning" (click)="showLogin=!showLogin">{{'standards.register' | translate}} / {{'standards.login' | translate}}</ion-button>
+
+      <ion-col *ngIf="media.smallDevice" [size]="12" class="selectColumn" style="padding-bottom:0;overflow-y:hidden;">
+          <ion-row noPadding>
+              
+              <!-- <ion-col size="12">
+                  <div style="height:52px;"></div> 
+              </ion-col> -->
+              
+              <ion-col size="9" *ngIf="activeTab=='elearnings'&&!item_id"></ion-col>
+
+              <ion-col size="3" noPadding *ngIf="activeTab=='elearnings'&&!item_id">
+                  <ion-card pointer noMargin style="padding:12px" center id="btn_filter" *ngIf="!showLogin" (click)="showFilterSmall = !showFilterSmall">
+                      <ion-card-title font-18 weight700 >
+                          <fa-icon [ngStyle]="{'color':searchParams.trainerIds?.length ? 'var(--ion-color-primary)' : 'var(--ion-color-secondary)'}" [icon]="icon.get('faFilter')"></fa-icon>
+                      </ion-card-title>
+                  </ion-card>
+              </ion-col>
+
+              <ion-col size="3" noPadding *ngIf="activeTab=='elearnings'&&item_id">
+                  <ion-card pointer noMargin style="padding:12px" center (click)="item_id = '';nav.go('marketplace/elearnings')">
+                      <ion-card-title font-20 weight700 >
+                          <fa-icon text-secondary [icon]="icon.get('faArrowLeft')"></fa-icon>
+                      </ion-card-title>
+                  </ion-card>
+              </ion-col>
+
+          </ion-row>
+
+          
+      </ion-col>
+      <ion-col *ngIf="media.smallDevice  && activeTab=='elearnings'&&!item_id && !showLogin" [size]="12" class="selectColumn" style="padding-bottom:0;overflow-y:hidden;">
+        <ion-card noMargin flex fullwidth center-ver style="padding:5px 10px;margin-top:5px!important">
+            <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchParams.search" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'background' : media.smallDevice ? 'white' : 'initial','--background' : media.smallDevice ? 'white' : 'initial'}"></ion-searchbar>
+        </ion-card>
+      </ion-col>
+      
     </ion-row>
 
     <ion-row>
-      <ion-col *ngIf="!media.smallDevice" [size]="3" class="selectColumn" style="padding-top:15px;">
+      <ion-col *ngIf="!media.smallDevice && activeTab!='filter'" [size]="3" class="selectColumn" style="padding-top:15px;">
+
+
+        <div *ngIf="!auth.userInfo?.email" marginBottom marginTop>
+          <ion-card basicPadding noMargin  borderPrimary>
+            <div font-16 center text-primary uppercase weight600>{{'page_register.register_login' | translate}}</div>
+              <!-- <div font-14 italic>{{'page_register.subtitle' | translate}}</div> -->
+              <div marginTop>
+                <ion-item detail="false" >
+                  <ion-input type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{15,}$" placeholder="{{'page_register.email' | translate}}" [(ngModel)]="authentication.email" required></ion-input>
+                </ion-item>
+                <ion-item detail="false" marginBottom>
+                  <ion-input type="password" placeholder="{{'page_register.password' | translate}}" [(ngModel)]="authentication.password" required></ion-input>
+                </ion-item>
+                <ion-button class="saveButton" size="small" expand="block" (click)="authenticate()" [disabled]="!authentication.email || !authentication.password || !helper.validEmail(authentication.email) || authentication.password.length < 6">
+                  <span>{{'buttons.submit' | translate}}</span>
+                </ion-button>
+              </div>
+              <div class="social-buttons" style="margin: 10px 0px;">
+              <button class="google-btn" (click)="auth.signInWithGoogle(true)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>
+                <span>Google</span>
+              </button>
+              <button class="apple-btn" flex center-ver (click)="auth.signInWithApple(true)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+                <span>Apple</span>
+              </button>
+            </div>
+            <div class="social-buttons">
+              <button class="facebook-btn" (click)="auth.signInWithFacebook(true)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.9981 11.9991C23.9981 5.37216 18.626 0 11.9991 0C5.37216 0 0 5.37216 0 11.9991C0 17.9882 4.38789 22.9522 10.1242 23.8524V15.4676H7.07758V11.9991H10.1242V9.35553C10.1242 6.34826 11.9156 4.68714 14.6564 4.68714C15.9692 4.68714 17.3424 4.92149 17.3424 4.92149V7.87439H15.8294C14.3388 7.87439 13.8739 8.79933 13.8739 9.74824V11.9991H17.2018L16.6698 15.4676H13.8739V23.8524C19.6103 22.9522 23.9981 17.9882 23.9981 11.9991Z"/></svg>
+                <span>Facebook</span>
+              </button>
+            </div>
+          </ion-card>
+        </div>
+
+        <div *ngIf="auth.userInfo?.email && !auth.userCredentials?.emailVerified && !isVerified" marginBottom marginTop>
+          <ion-card basicPadding noMargin  borderPrimary>
+            <div font-18 marginBottom align-center>{{'page_wait_verify.step_0_text' | translate}}</div>
           
-          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" >
-  
-            <ion-item detail="false" lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}">
-              <div font-20 weight700>{{'page_account.dashboard' | translate}}</div>
-              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faHome')"></fa-icon>
+            <code-input marginBottom class="codeInput"
+                [isCodeHidden]="false"
+                [codeLength]="6"
+                (codeChanged)="onCodeChanged($event)"
+                (codeCompleted)="onCodeCompleted($event)">
+            </code-input>   
+            <div text-danger center weight500 marginBottom *ngIf="verifyCode.invalid">{{'page_wait_verify.code_invalid' | translate}}</div>
+            <div text-danger center weight500 marginBottom *ngIf="verifyCode.expired">{{'page_wait_verify.code_expired' | translate}}</div>
+            <div text-success center weight500 marginBottom *ngIf="verifyCode.valid">{{'page_wait_verify.code_valid' | translate}}</div>
+            <div center>
+              <ion-button class="saveButton" color="dark" fill="outline" (click)="resend()">{{'page_wait_verify.resend' | translate}}</ion-button>
+              <ion-button marginTop class="saveButton" color="medium" style="opacity: 0.6;" fill="outline" (click)="verifyOption()">{{'page_wait_verify.verify_option_button' | translate}}</ion-button>
+            </div>
+            <div basicPadding italic align-center *ngIf="emailResend &&!showVerifyOption">{{emailResend}}</div>
+          </ion-card>
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.userInfo.email&&auth.userCredentials?.emailVerified" >
+
+          <ion-item detail="false" lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}">
+            <div font-20 weight700>{{'page_account.dashboard' | translate}}</div>
+            <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faHome')"></fa-icon>
+          </ion-item>
+
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px" *ngIf="(auth.activeCourses?.length || auth.myElearnings?.length) && auth.userInfo.email" class="notActiveItem">
+          <ion-item detail="false" lines="none" button (click)="nav.go('start/my_trainings/');searchParams = {}" class="itemButton">
+              <div font-20 weight700>{{'buttons.your_trainings' | translate}}</div>
+              <fa-icon font-24 slot="end" [icon]="icon.get('faGraduationCap')"></fa-icon>
+          </ion-item>
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" *ngIf="auth.userInfo.email&&auth.userCredentials?.emailVerified" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}" >
+
+          <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/manual')" class="itemButton" [detail]="false">
+            <div font-20 weight700>{{'marketplace.add_training' | translate}}</div>
+            <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faPlus')"></fa-icon>
+          </ion-item>
+
+        </div>
+
+        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='elearnings','notActiveItem':activeTab!='elearnings'}" >
+          <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/elearnings')" class="itemButton" [detail]="false">
+            <div font-20 weight700>{{'marketplace.elearnings' | translate}}</div>
+            <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faBookOpen')"></fa-icon>
+          </ion-item>
+
+        </div>
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin:15px 0px;" *ngIf="activeTab=='elearnings'&&!item_id">
+
+            <ion-item detail="false" lines="none" button class="itemButton" style="--background-hover:none;--padding-start:0;--padding-end:0" >
+                <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchParams.search" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'--background' : 'white'}"></ion-searchbar>
             </ion-item>
-  
+
+        </div>
+
+         <div style="padding:10px 0px;border-radius:16px;margin-top:15px;background:white;" *ngIf="activeTab=='elearnings'&&!item_id">
+          <ion-item detail="false" lines="none" button (click)="showFilterTrainers=!showFilterTrainers" class="itemButton">
+              <div font-20 weight700>{{'marketplace.filter_trainers' | translate}}</div>
+              <fa-icon font-24 slot="end" chevron [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': showFilterTrainers ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+          </ion-item>
+          <div *ngIf="searchParams.trainerIds?.length">
+            <span *ngFor="let trainerId of searchParams.trainerIds">
+             <div class="typeItem" center-ver center-hor>
+                  <span>{{getTrainer(trainerId).name | uppercase}}</span>
+                  <fa-icon [icon]="icon.get('faTimes')" trash titleIcon (click)="selectTrainer(trainerId)"></fa-icon>
+              </div>
+            </span>
+            
+          </div>
+          <div *ngIf="showFilterTrainers">
+            <ion-item detail="false" button class="itemButton" style="--background-hover:none;--padding-start:0;--padding-end:0" >
+                <ion-searchbar [(ngModel)]="searchTrainers" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'--background' : 'white'}"></ion-searchbar>
+            </ion-item>
+          </div>
+          <div *ngIf="showFilterTrainers">
+            <div *ngFor="let trainerGroup of listAllTrainers() | filterKey : 'nameLower' : searchTrainers.toLowerCase() | sortBy : -1 : 'name' | splitArray : countChunks(11) ; index as groupIndex">
+              <div *ngIf="groupIndex === pageTrainers">
+                <ion-item *ngFor="let trainer of trainerGroup" button lines="none" detail="false" [ngClass]="{'activeItem':trainerSelected(trainer.id),'notActiveItem':!trainerSelected(trainer.id)}" (click)="selectTrainer(trainer.id)" class="itemButton">
+                  <div font-20 weight700>{{trainer.name}}</div>
+                  <ion-thumbnail slot="end" *ngIf="trainer.logo" noMargin flex center-ver center-hor borderRadius16 style="background:white;max-width:46px;max-height:46px;overflow:hidden;">
+                    <img [src]="trainer.logo | sanitizeHtml : 'urlResource'" style="width:40px;height:40px;border-radius:0;object-fit:contain;">
+                  </ion-thumbnail>
+                </ion-item>
+              </div>
+            </div>
+
           </div>
 
-          <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}" >
-  
-            <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/manual')" class="itemButton" [detail]="false">
-              <div font-20 weight700>{{'marketplace.add_training' | translate}}</div>
-              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faPlus')"></fa-icon>
-            </ion-item>
-  
-          </div>
-
-          <!-- <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" [ngClass]="{'activeItem':activeTab=='elearnings','notActiveItem':activeTab!='elearnings'}" >
-            <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/elearnings')" class="itemButton" [detail]="false">
-              <div font-20 weight700>{{'marketplace.elearnings' | translate}}</div>
-              <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faBookOpen')"></fa-icon>
-            </ion-item>
-  
-          </div> -->
-
-          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.activeCourses?.length || auth.myElearnings?.length" class="notActiveItem">
-            <ion-item detail="false" lines="none" button (click)="nav.go('start/my_trainings/')" class="itemButton">
-                <div font-20 weight700>{{'buttons.your_trainings' | translate}}</div>
-                <fa-icon font-24 slot="end" [icon]="icon.get('faGraduationCap')"></fa-icon>
+          <div *ngIf="showFilterTrainers && countChunks(11) > 1" style="border-top:solid 1px #ddd;margin-top:10px;">
+            <ion-item detail="false" button class="itemButton" style="--background-hover:none;--padding-start:0;--padding-end:0" >
+              <ion-button slot="start" fill="clear" (click)="pageTrainerList(-1)" [disabled]="pageTrainers === 0">
+                <fa-icon [icon]="icon.get('faChevronLeft')"></fa-icon>
+              </ion-button>
+              <ion-button slot="end" fill="clear" (click)="pageTrainerList(1)" [disabled]="pageTrainers >= countChunks(11) - 1">
+                <fa-icon [icon]="icon.get('faChevronRight')"></fa-icon>
+              </ion-button>
             </ion-item>
           </div>
+          
+        </div>
 
 
 
 
       </ion-col>
+      <!-- <ion-content [ngStyle]="{'--background':'none','height':activeTab!='filter'?'calc((var(--vh) * 100) - 121px)':'calc((var(--vh) * 100) - 0px)'}" class="contentColumn" scrollY> -->
+      <ion-content id="mainContent" #mainContent style="--background:none;" [ngStyle]="{'flex':media.smallDevice ? 'none' : 1,'height':activeTab=='filter' ? (media.smallDevice ? 'calc((var(--vh) * 100) - 11px)' : 'calc((var(--vh) * 100) - 10px)') :  (media.smallDevice ? (item_id ? 'calc((var(--vh) * 100) - 118px)' : 'calc((var(--vh) * 100) - 180px)') : 'calc((var(--vh) * 100) - 61px)')}" fullwidth>
 
-      <ion-col [size]="media.smallDevice ? 12 : 9" class="detailColumn" center-left>
-        <ion-card basicPadding *ngIf="activeTab=='manual'">
-            <ion-card-header>
-                <ion-card-title flex center-ver>
-                    <span weight600 titleIcon>{{'marketplace.add_training' | translate}}</span>
-                    <span class="spacer"></span>
-                </ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div marginBottom>{{'marketplace.code_input' | translate}}</div>
-              <ion-item marginBottom detail="false" lines="none" listCard>
-                  <ion-label position="stacked">{{'marketplace.code' | translate}}</ion-label>
-                  <ion-input style="margin-left:10px" weight700 type="text"  [(ngModel)]="newTrainingCode"></ion-input>
-              </ion-item> 
-              <div flex center-ver>
-                <div class="spacer"></div>
-                <ion-button class="saveButton" [disabled]="!newTrainingCode" (click)="addManualTraining()">
-                  <span>{{'buttons.submit' | translate}}</span>
-                </ion-button>
-              </div>
-            </ion-card-content>
-        </ion-card>
-
-        <ion-row *ngIf="activeTab=='elearnings' && !item_id" style="padding-bottom: 20px;">
-            <ion-col [size]="helper.cardSizeSmall" *ngFor="let item of elearnings; let i = index"  class="caseItem_with_ribbon" marginBottom>
-  
-                <ion-card noPadding fullheight caseCard>
-                    <ion-card-content noPadding fullHeight>
-                        <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
-                        <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                        
-                        <div flex center center-ver center-hor style="height:calc(100% - 275px)">
-                            <ion-card-header>
-                                <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
-                                <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
-                            </ion-card-header>
-                        </div>
-                        <div center flex center-ver center-hor style="padding:0px 10px">
-                            <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
-                                <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
-                            </div>
-                            <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
-                                <div>
-                                    <div font-12 *ngIf="item.price_elearning!=0">€ {{item.price_elearning | number :'1.0-0'}}</div>
-                                </div>
-                            </ion-button> -->
-                            <div class="spacer"></div>
-                            <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('marketplace/elearnings/'+item.id)">{{'buttons.watch' | translate}}</ion-button>
-                        </div>
-                    </ion-card-content>
-
-                  <div class="price" *ngIf="item.price_elearning">€ {{item.price_elearning | number : '1.0-0'}}</div>
-                  <div class="price" *ngIf="!item.price_elearning || item.price_elearning == 0">{{'marketplace.free' | translate}}</div>
-                </ion-card>
-  
-            </ion-col>
-              
-        </ion-row>
-
-        <ion-row *ngIf="activeTab=='elearnings' && item_id && item_id!=='success' && item_id !== 'error'">
-          <ion-col size="12">
-
-              <ion-card fullwidth [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
-                <ion-card-header>
-                    <ion-card-title font-24>
-                      <span>{{elearningItem(item_id).title}}</span>
-                    </ion-card-title>
-                </ion-card-header>
-                <div basicPadding>
-
-                  <div *ngIf="elearningItem(item_id).photo" [ngStyle]="{'height':!media.smallDevice?'400px':'200px'}" marginBottom>
-                    <img [src]="elearningItem(item_id).photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
-                  </div>
-                  <div [innerHTML]="elearningItem(item_id).user_info | sanitizeHtml" font-18 weight600 marginBottom  class="textContainer"></div>
-
-                    <!-- <div>
-                      <div class="textContainer" font-18>
-                        <table>
-                          <tr>
-                            <td basicPadding weight700>Aantal modules</td>
-                            <td basicPadding>{{countItems(elearningItem(item_id), 'module')}}</td>
-                          </tr>
-                          <tr>
-                            <td basicPadding weight700>Aantal cases</td>
-                            <td basicPadding>{{countItems(elearningItem(item_id), 'case')}}</td>
-                          </tr>
-                          <tr>
-                            <td basicPadding weight700>Aantal Kennisitems</td>
-                            <td basicPadding>{{countItems(elearningItem(item_id), 'infoItem')}}</td>
-                          </tr>
-                        </table>
-
-                      </div>
-                    </div> -->
-
-                </div>
-                <div basicPadding *ngIf="showCreditsOption" font-16 style="border-top:solid 1px #ddd;margin-top:10px;">
-
-                  <p>{{'marketplace.add_unlimited_credits' | translate}}</p>
-                  <ion-checkbox label-placement="end" mode="md" font-16 [(ngModel)]="unlimitedCreditsOption">
-                    {{'marketplace.unlimited_credits' | translate}}
-                  </ion-checkbox>
-                </div>
-                <div basicPadding flex center-ver>
-                  <ion-button color=secondary fill="clear" (click)="item_id = '';nav.go('marketplace/elearnings')">
-                      <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
-                      <span marginLeft>{{'buttons.back' | translate}}</span>
-                  </ion-button>
+        <ion-col [size]="(media.smallDevice && activeTab!='filter') || (activeTab=='filter' && firstLoaded) ? 12 : 9" class="detailColumn" center-left>
+          <ion-card basicPadding *ngIf="activeTab=='manual'">
+              <ion-card-header>
+                  <ion-card-title flex center-ver>
+                      <span weight600 titleIcon>{{'marketplace.add_training' | translate}}</span>
+                      <span class="spacer"></span>
+                  </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div marginBottom>{{'marketplace.code_input' | translate}}</div>
+                <ion-item marginBottom detail="false" lines="none" listCard>
+                    <ion-label position="stacked">{{'marketplace.code' | translate}}</ion-label>
+                    <ion-input style="margin-left:10px" weight700 type="text"  [(ngModel)]="newTrainingCode"></ion-input>
+                </ion-item> 
+                <div flex center-ver>
                   <div class="spacer"></div>
-                  <ion-button class="saveButton" [disabled]="!elearningItem(item_id).open_to_public" (click)="buyItem(elearningItem(item_id),showCreditsOption)">{{'buttons.buy_for' | translate}} € {{(elearningItem(item_id).price_elearning + ((showCreditsOption && unlimitedCreditsOption) ? 25 : 0)) | number : '1.0-0'}}</ion-button>
-                </div> 
-            </ion-card>
-          </ion-col>
+                  <ion-button class="saveButton" [disabled]="!newTrainingCode" (click)="addManualTraining()">
+                    <span>{{'buttons.submit' | translate}}</span>
+                  </ion-button>
+                </div>
+              </ion-card-content>
+          </ion-card>
+
+          <ion-row *ngIf="(activeTab=='elearnings' || activeTab=='filter')  && !item_id && !showLogin" style="padding-bottom: 20px;">
+              <ion-col [size]="activeTab!='filter' ? helper.cardSizeSmall : helper.cardSizeLarge" *ngFor="let item of visibleItems; let i = index"  class="caseItem_with_ribbon" marginBottom>
+    
+                  <ion-card noPadding fullheight caseCard>
+                      <ion-card-content noPadding fullHeight>
+                          <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
+                          <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                          
+                          <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                              <ion-card-header>
+                                  <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
+                                  <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                              </ion-card-header>
+                          </div>
+                          <div center flex center-ver center-hor style="padding:0px 10px">
+                              <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item,$event)">
+                                  <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
+                              </div>
+                              <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
+                                  <div>
+                                      <div font-12 *ngIf="item.price_elearning!=0">€ {{item.price_elearning | number :'1.0-0'}}</div>
+                                  </div>
+                              </ion-button> -->
+                              <div class="spacer"></div>
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('marketplace/'+activeTab+'/'+item.id)">{{'buttons.watch' | translate}}</ion-button>
+                          </div>
+                      </ion-card-content>
+
+                    <div class="price" *ngIf="item.price_elearning">
+                      <span>€ {{(item.price_elearning + (auth.credits_unlimited_type ? 0 : 25)) | number : '1.0-0'}}</span>
+                      <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type">({{'marketplace.with_credits' | translate}})</span>
+                    </div>
+                    <div class="price" *ngIf="!item.price_elearning || item.price_elearning == 0">{{'marketplace.free' | translate}}</div>
+                  </ion-card>
+    
+              </ion-col>
+              <ion-col [size]="helper.cardSizeSmall" *ngIf="!visibleItems.length">
+                  <ion-card noPadding pointer fullheight>
+                      <ion-card-content noPadding fullHeight flex center-hor>
+                          <div flex center center-ver center-hor>
+                              <ion-card-header>
+                                  <ion-card-title *ngIf="firstLoaded" font-18 weight600>{{'cases.no_results' | translate}}</ion-card-title>
+                                  <ion-card-title *ngIf="!firstLoaded" font-18 weight600>{{'messages.busy_loading' | translate}}</ion-card-title>
+                              </ion-card-header>
+                          </div>
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+                
+          </ion-row>
+
+          <ion-row *ngIf="(activeTab=='elearnings' || activeTab=='filter')  && item_id && item_id!=='success' && item_id !== 'error'">
+            <ion-col size="12">
+
+                <ion-card fullwidth [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
+                  <ion-card-header>
+                      <ion-card-title font-24>
+                        <span>{{elearningItem(item_id).title}}</span>
+                      </ion-card-title>
+                  </ion-card-header>
+                  <div basicPadding>
+
+                    <div *ngIf="elearningItem(item_id).photo" [ngStyle]="{'height':!media.smallDevice?'400px':'200px'}" marginBottom>
+                      <img [src]="elearningItem(item_id).photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div [innerHTML]="elearningItem(item_id).training_content | sanitizeHtml" font-18 marginBottom  class="textContainer"></div>
+
+                  </div>
+                  <div basicPadding *ngIf="showCreditsOption" font-16 style="border-top:solid 1px #ddd;margin-top:10px;">
+
+                    <p>{{'marketplace.add_unlimited_credits' | translate}}</p>
+                    <ion-checkbox label-placement="end" mode="md" font-16 [(ngModel)]="unlimitedCreditsOption">
+                      {{'marketplace.unlimited_credits' | translate}}
+                    </ion-checkbox>
+                  </div>
+                  <div basicPadding flex center-ver>
+                    <ion-button *ngIf="!media.smallDevice" color=secondary fill="clear" (click)="item_id = '';nav.go('marketplace/elearnings')">
+                        <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                        <span marginLeft>{{'buttons.back' | translate}}</span>
+                    </ion-button>
+                    <div class="spacer"></div>
+
+                    <div *ngIf="auth?.organisations?.length">
+
+                      <ion-button class="saveButton" fill="outline" *ngIf="!hasValidSpecialCode(elearningItem(item_id))" (click)="buyItemOrganisation(elearningItem(item_id))">
+                        {{'marketplace.buy_for_org' | translate}}
+                      </ion-button>
+                      <ion-button class="saveButton" color="warning" *ngIf="hasValidSpecialCode(elearningItem(item_id))" (click)="activateWithCodeOrganisation(elearningItem(item_id))">{{'marketplace.activate_for_org' | translate}}</ion-button>
+    
+                    </div>
 
 
-        </ion-row>
+
+                    <ion-button class="saveButton" *ngIf="!hasValidSpecialCode(elearningItem(item_id))" (click)="buyItem(elearningItem(item_id),showCreditsOption)">
+                      {{'buttons.buy_for' | translate}} € {{(elearningItem(item_id).price_elearning + ((showCreditsOption && unlimitedCreditsOption) ? 25 : 0) + (!showCreditsOption && !auth.credits_unlimited_type ? 25 : 0)) | number : '1.0-0'}}
+                      <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type && (!showCreditsOption || unlimitedCreditsOption)">({{'marketplace.with_credits' | translate}})</span>
+                    </ion-button>
+                    <ion-button class="saveButton" color="success" *ngIf="hasValidSpecialCode(elearningItem(item_id))" (click)="activateWithCode(elearningItem(item_id))">{{'buttons.activate' | translate}}</ion-button>
+                  </div>
+              </ion-card>
+            </ion-col>
 
 
-      </ion-col>  
+          </ion-row>
+
+
+        </ion-col>  
+        <ion-infinite-scroll (ionInfinite)="loadMore($event)">
+          <ion-infinite-scroll-content></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </ion-content>
     </ion-row>
   </ion-grid>
 </main>

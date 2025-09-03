@@ -21,12 +21,14 @@ export class SplitArrayPipe implements PipeTransform {
     }
     // console.log(nwArray)
     if(start!=undefined && end){
+      console.log(nwArray.slice(start,end))
       return nwArray.slice(start,end)
     }
     if(start!=undefined){
       return nwArray.slice(start)
     }
 
+    
 
     return nwArray;
 

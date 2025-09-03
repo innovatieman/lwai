@@ -299,6 +299,33 @@ exports.registerWithCode = functions
           
   }
 
+  async function loadETrainingsWithItems(trainingsData: any[]) {
+    // Haal alle trainingitems vanuit subcollectie items
+    return Promise.all(
+      trainingsData.map(async (training) => {
+        const itemsRef =
+             admin.firestore()
+              .collection('trainers')
+              .doc(training.trainerId)
+              .collection('my_elearnings')
+              .doc(training.id)
+              .collection('items');
+        const itemsSnap = await itemsRef.get();
+        if (itemsSnap.empty) {
+          training.allItems = [];
+          return training;
+        }
+        const itemsList = itemsSnap.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        training.allItems = itemsList;
+        // klaar
+        return training;
+      })
+    );
+          
+  }
 
 
 exports.addParticipantTraining = functions
@@ -521,8 +548,31 @@ exports.getMyActiveOrganisationsTrainings = functions
       id: doc.id,
     }));
 
+
+
     // haal info van de door user verwerkte items per training op via subcollectie items per training
     const itemsPromises = organisationsList.map(async (organisation: any) => {
+
+      const organisationSettingsRef = admin
+        .firestore()
+        .collection('trainers')
+        .doc(organisation.id)
+        .collection('settings')
+        .doc('organisation');
+      const organisationSettingsDoc = await organisationSettingsRef.get();
+      if (organisationSettingsDoc.exists) {
+        organisation.settings = organisationSettingsDoc.data();
+        if(organisation.settings?.expires && organisation.settings?.expires < moment().unix()){
+          organisation.notActive = true;
+        }
+      } else {
+        organisation.notActive = true;
+      }
+
+      if(organisation.notActive){
+        organisation.used_items = [];
+        return organisation;
+      }
       const itemsRef = admin
         .firestore()
         .collection('participant_organisations')
@@ -561,7 +611,23 @@ exports.getMyActiveOrganisationsTrainings = functions
             .where('publishType', '==', 'organisation')
 
           const trainingsSnap = await trainingsRef.get();
-          if (trainingsSnap.empty) return null;
+          if (trainingsSnap.empty){
+            const organisationRef = admin
+            .firestore()
+            .collection('trainers')
+            .doc(organisation.id);
+            const organisationDoc = await organisationRef.get();
+            if (!organisationDoc.exists) return null;
+            const organisationData = organisationDoc.data();
+
+            return {
+              id: organisation.id,
+              name: organisationData.name || '',
+              logo: organisationData.logo || '',
+              trainer_details: organisationData.trainer_details || '',
+              trainings: [],
+            };
+          };
           const trainingsList = trainingsSnap.docs.map(doc => ({
             ...doc.data(),
             id: doc.id,
@@ -593,6 +659,7 @@ exports.getMyActiveOrganisationsTrainings = functions
             id: organisation.id,
             name: organisationData.name || '',
             logo: organisationData.logo || '',
+            trainer_details: organisationData.trainer_details || '',
             trainings: enrichedTrainings,
           };
         } catch (err) {
@@ -601,8 +668,40 @@ exports.getMyActiveOrganisationsTrainings = functions
         }
       })
     );
-    const validOrganisations = organisationsData.filter(o => o !== null);
-    if (validOrganisations.length === 0) {
+    let validOrganisations = organisationsData.filter(o => o !== null);
+    validOrganisations = validOrganisations.filter((org: any) => org.notActive !== true);
+
+
+    await Promise.all(
+      validOrganisations.map(async (organisation: any) => {
+        try {
+
+          const trainingsRef = admin
+            .firestore()
+            .collection('trainers')
+            .doc(organisation.id)
+            .collection('my_elearnings')
+            .where('expires', '>=', moment().unix())
+
+          const trainingsSnap = await trainingsRef.get();
+          if (trainingsSnap.empty) return organisation;
+          const trainingsList = trainingsSnap.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id,
+          }));
+
+          const enrichedTrainings = await loadETrainingsWithItems(trainingsList);
+
+          organisation.trainings = [...organisation.trainings, ...enrichedTrainings];
+          return organisation;
+        } catch (err) {
+          console.error(`Fout bij ophalen organisatie ${organisation.id}:`, err);
+          return null;
+        }
+      })
+    );
+
+    if(validOrganisations.length === 0){
       return new responder.Message([], 200);
     }
     return new responder.Message(validOrganisations, 200);  

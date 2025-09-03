@@ -11,6 +11,7 @@ import { ComponentsModule } from 'src/app/components/components.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
     PipesModule,
     FontAwesomeModule,
     TranslateModule,
+    QuillModule
   ],
   declarations: [DashboardPage]
 })

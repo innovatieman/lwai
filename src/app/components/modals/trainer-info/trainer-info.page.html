@@ -1,0 +1,19 @@
+<ion-card noPadding noMargin fullheight class="caseItem" [ngStyle]="{'height':media.screenSize=='xs'?'100%':'600px','border-radius':media.screenSize=='xs'?'0px':'24px'}">
+  <fa-icon style="position: absolute; right: 16px; top: 16px; z-index:10;" pointer font-24 text-secondary (click)="modalController.dismiss()" [icon]="icon.get('faTimes')"></fa-icon>
+  <ion-card-content noPadding fullHeight flex flex-column>
+    <div flex relative center-ver fullwidth basicPadding style="border-bottom: solid 2px rgba(var(--ion-color-primary-rgb), 0.4);">
+      <div backgroundImage class="avatarImage" *ngIf="trainerInfo.logo" [ngStyle]="{'background-image': 'url(' + trainerInfo.logo + ')','height':media.smallDevice?'100px':'150px','width':media.smallDevice?'100px':'150px','min-width':media.smallDevice?'100px':'150px'}"></div>
+      <div flex center-ver center-hor class="avatarImage" *ngIf="!trainerInfo.logo" [ngStyle]="{'height':media.smallDevice?'100px':'150px','width':media.smallDevice?'100px':'150px','min-width':media.smallDevice?'100px':'150px'}">
+        <fa-icon [icon]="icon.get('faGraduationCap')" [ngStyle]="{'font-size': media.smallDevice ? '50px' : '75px','color':'rgba(var(--ion-color-primary-rgb),0.4)'}"></fa-icon>
+      </div>
+      <div center fullwidth basicPadding uppercase [ngStyle]="{'font-size': media.smallDevice ? '18px' : '22px'}" weight700>{{trainerInfo.name}}</div>
+      <ion-button class="saveButtonSmall cardButton emailButton" [ngStyle]="{'bottom': media.smallDevice ? '-2px' : '10px'}" fill="outline" size="small" (click)="sendEmail()">{{'buttons.send_message' | translate}}</ion-button>
+
+    </div>
+    <div fullwidth basicPadding overflow-y font-18 [ngStyle]="{'min-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)','max-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)'}" *ngIf="trainerInfo.trainer_details" [innerHtml]="trainerInfo.trainer_details | sanitizeHtml"></div>
+    <div fullwidth basicPadding overflow-y font-18 italic [ngStyle]="{'min-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)','max-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)'}" *ngIf="!trainerInfo.trainer_details">{{'marketplace.no_trainer_details' | translate}}</div>
+
+
+
+  </ion-card-content>
+</ion-card>

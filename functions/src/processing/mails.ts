@@ -452,3 +452,67 @@ exports.emailUnsubscribe = onRequest(
     }
   }
 );
+
+exports.sendEmailToTrainer = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onCall(async (data, context) => {
+  const { trainerId, subject, content } = data;
+
+  
+  // Validatie
+  if (!context.auth || !context.auth.token.email) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+  }
+  const userRef = admin.firestore().collection('users').doc(context.auth.uid);
+  const userDoc = await userRef.get();
+  if (!userDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'User not found.');
+  }
+  const userData = userDoc.data();
+  const displayNameUser = userData?.displayName || 'Unknown User';
+
+  if (!trainerId || !subject || !content) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing data fields.');
+  }
+
+  const trainerDoc = await admin.firestore().collection('trainers').doc(trainerId).get();
+
+  if (!trainerDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'Trainer not found');
+  }
+
+  const trainerData = trainerDoc.data();
+  let trainerEmail = trainerData?.email || null;
+
+  // Indien trainer geen e-mail heeft, pak de eerste admin
+  if (!trainerEmail && Array.isArray(trainerData?.admins) && trainerData.admins.length > 0) {
+    const firstAdminId = trainerData.admins[0];
+
+    const adminUserDoc = await admin.firestore().collection('users').doc(firstAdminId).get();
+    const adminUserData = adminUserDoc.data();
+
+    if (adminUserData?.email) {
+      trainerEmail = adminUserData.email;
+    }
+  }
+
+  if (!trainerEmail) {
+    throw new functions.https.HttpsError('not-found', 'No valid email found for trainer or first admin');
+  }
+
+  // Bouw emaildocument
+  const emailDoc = {
+    to: trainerEmail,
+    bcc: 'logging@alicialabs.com',
+    template: 'free',
+    language: 'en',
+    data: {
+      content,
+      subject:'You have a message from ' + displayNameUser + ': ' + subject,
+    },
+    subject,
+    replyTo: context.auth.token.email,
+  };
+
+  await admin.firestore().collection('emailsToProcess').add(emailDoc);
+
+  return { success: true };
+});

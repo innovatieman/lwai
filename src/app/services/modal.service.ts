@@ -15,6 +15,7 @@ import { EvaluationPage } from '../components/modals/evaluation/evaluation.page'
 import { SelectImageLibraryPage } from '../components/modals/select-image-library/select-image-library.page';
 import { CaseinfoPage } from '../components/modals/caseinfo/caseinfo.page';
 import { GenerateCasePage } from '../components/modals/generate-case/generate-case.page';
+import { TrainerInfoPage } from '../components/modals/trainer-info/trainer-info.page';
 
 @Injectable({
   providedIn: 'root',
@@ -132,6 +133,25 @@ export class ModalService {
     if(callback){
       modalItem.onWillDismiss().then(data=>{
         callback(data)
+      })
+    }
+    return await modalItem.present()
+  }
+
+  public async showTrainerInfo(trainerInfo:any,callback?:any){
+    const modalItem = await this.modalController.create({
+      component:TrainerInfoPage,
+      componentProps:{
+        trainerInfo:trainerInfo
+      },
+      backdropDismiss:true,
+      cssClass:'infoModal',
+    })
+    if(callback){
+      modalItem.onWillDismiss().then(response=>{
+        if(callback&&response.data){
+          callback(response.data)
+        }
       })
     }
     return await modalItem.present()

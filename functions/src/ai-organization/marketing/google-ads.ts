@@ -41,8 +41,7 @@ const client = new GoogleAdsApi({
 // Initializeer de customer context
 const customer = client.Customer({
   customer_id: '4655780811',         // jouw Google Ads klant-ID (zonder streepjes)
-  refresh_token: '',
-});
+  refresh_token: ''});
 
 
 

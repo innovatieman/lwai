@@ -56,7 +56,7 @@
               </div> 
           </div>
 
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainerInfo.logo">
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
               <div fullwidth style="height:100px">
                   <div font-30 flex center-ver center-hor fullheight weight700 uppercase>{{trainerService.trainerInfo.name}}</div>
               </div> 
@@ -97,6 +97,20 @@
             </ion-item>
           </div>
 
+          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro" [ngClass]="{'activeItem': showPart=='bank','notActiveItem': showPart!='bank'}">
+            <ion-item detail="false" lines="none" button (click)="showPart = 'bank'" class="itemButton"  noMargin>
+                <div font-20 weight700>{{'dashboard.bank_invoice' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faPiggyBank')"></fa-icon>
+            </ion-item>
+          </div>
+
+          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro && trainerService.trainerInfo?.purchaseItems?.length" [ngClass]="{'activeItem': showPart=='customers','notActiveItem': showPart!='customers'}">
+            <ion-item detail="false" lines="none" button (click)="showPart = 'customers'" class="itemButton"  noMargin>
+                <div font-20 weight700>{{'marketplace.customers_and_revenue' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faUsers')"></fa-icon>
+            </ion-item>
+          </div>
+
 
           <div style="padding:10px 0px;border-radius:16px;margin-top:15px" class="notActiveItem" *ngIf="auth.customer?.stripeCustomerId" (click)="auth.openStripeDashboard()">
             <ion-item detail="false" lines="none" button (click)="showPart = 'settings'" class="itemButton"  noMargin>
@@ -125,6 +139,7 @@
               <ion-card-title flex center-ver>
                   <span weight600 titleIcon>{{'dashboard.organisation' | translate}}</span>
                   <span class="spacer"></span>
+                  <ion-button class="saveButtonSmall cardButton" fill="outline" size="small" (click)="showTrainerInfo(trainerService.trainerInfo,$event)">{{'dashboard.trainer_info_example' | translate}}</ion-button>
                   <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('dashboard_trainer_info','dashboard.organisation',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
               </ion-card-title>
             </ion-card-header>
@@ -147,6 +162,31 @@
                     </ion-button>
                 </div>
               </ion-card>
+
+              <ion-item detail="false" lines="none" listCard marginBottom>
+                <ion-label marginLeft position="floating">{{'dashboard.email' | translate}}</ion-label>
+                <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="update('email')" [(ngModel)]="trainerService.trainerInfo.email"></ion-input>
+              </ion-item>
+
+              <ion-item detail="false" marginBottom listCard lines="none">
+                  <fa-icon style="position: absolute; right: 16px; top: 16px;" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('trainer_details','dashboard.trainer_details',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+
+                  <ion-label marginLeft font-20 position="stacked">{{'dashboard.trainer_details' | translate}}</ion-label>
+                  <quill-editor id="quill_trainer_details" *ngIf="!showHtml" [(ngModel)]="trainerService.trainerInfo.trainer_details" [modules]="configModules" (onEditorCreated)="showEditor()" (onBlur)="update('trainer_details',false,true)"></quill-editor>
+
+                  <ion-toolbar *ngIf="showHtml" style="padding-left:0px;--background: none">
+                    <ion-buttons slot="start">
+                      <ion-button (click)="showEditor()">
+                        <fa-icon [icon]="icon.get('faArrowLeft')" style="margin-right:15px;" slot="start">keyboard_arrow_left</fa-icon>
+                        {{'buttons.back' | translate}}
+                      </ion-button>
+                    </ion-buttons>
+                  </ion-toolbar>
+
+                  <ion-textarea *ngIf="showHtml" rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="trainerService.trainerInfo.trainer_details" (ionChange)="update('trainer_details',false,true)">
+                    <!-- <div slot="label">Content</div> -->
+                  </ion-textarea>
+                </ion-item>
 
             </ion-card-content>
           </ion-card>
@@ -393,6 +433,196 @@
               </ion-card>
             </ion-card-content>
           </ion-card>
+
+          <ion-card basicPadding *ngIf="showPart=='bank'">
+            <ion-card-header>
+              <ion-card-title flex center-ver>
+                <span weight600 titleIcon>{{'dashboard.bankaccount_for_return' | translate}}</span>
+                <span class="spacer"></span>
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+
+              <div flex center-ver marginBottom *ngIf="changesInBankAccount()">
+                <div class="spacer"></div>
+                <ion-button class="saveButton" color="medium" fill="clear" (click)="undoBankAccount()">{{'buttons.undo' | translate}}</ion-button>
+                <ion-button marginLeft class="saveButton" (click)="updateBankAccount()">{{'buttons.change' | translate}}</ion-button>
+              </div>
+
+              <ion-row>
+                <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.bankaccount_iban' | translate}}</div></ion-col>
+                <ion-col size="5">
+                  <ion-input class="inputAmount" type="text" uppercase [(ngModel)]="originalBankAccount.iban" font-20 weight700>
+                  </ion-input>
+                </ion-col>
+                <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.bankaccount_name' | translate}}</div></ion-col>
+                <ion-col size="5">
+                  <ion-input class="inputAmount" type="text" [(ngModel)]="originalBankAccount.name" font-20 weight700>
+                  </ion-input>
+                </ion-col>
+                <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.bankaccount_bic' | translate}}</div></ion-col>
+                <ion-col size="5">
+                  <ion-input class="inputAmount" type="text" [(ngModel)]="originalBankAccount.bic" font-20 weight700>
+                  </ion-input>
+                </ion-col>
+              </ion-row>
+
+              
+
+              <div singleLine marginBottom marginTop></div>
+
+              <ion-card-header>
+                <ion-card-title flex center-ver>
+                  <span weight600 titleIcon>{{'dashboard.invoice_information' | translate}}</span>
+                  <span class="spacer"></span>
+                </ion-card-title>
+              </ion-card-header>
+
+                <div flex center-ver marginBottom *ngIf="changesInInvoice()">
+                  <div class="spacer"></div>
+                  <ion-button class="saveButton" color="medium" fill="clear" (click)="undoInvoice()">{{'buttons.undo' | translate}}</ion-button>
+                  <ion-button marginLeft class="saveButton" (click)="updateInvoice()">{{'buttons.change' | translate}}</ion-button>
+                </div>
+
+                <ion-row>
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_name_organisation' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" [(ngModel)]="originalInvoice.name" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_vat_number' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" uppercase [(ngModel)]="originalInvoice.vat_number" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_address' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" [(ngModel)]="originalInvoice.address" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+                  
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_zip' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" uppercase [(ngModel)]="originalInvoice.zip" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_city' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" [(ngModel)]="originalInvoice.city" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_country' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" [(ngModel)]="originalInvoice.country" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_email' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" lowercase [(ngModel)]="originalInvoice.email" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_reference' | translate}}</div></ion-col>
+                  <ion-col size="5">
+                    <ion-input class="inputAmount" type="text" [(ngModel)]="originalInvoice.reference" font-20 weight700>
+                    </ion-input>
+                  </ion-col>
+                </ion-row>
+
+                
+
+            </ion-card-content>
+          </ion-card>
+
+            <ion-card basicPadding *ngIf="showPart=='customers' && trainerService.trainerInfo?.purchaseItems?.length">
+              <ion-card-header>
+                <ion-card-title flex center-ver>
+                  <span weight600 titleIcon>{{'marketplace.customers_and_revenue' | translate}}</span>
+                  <span class="spacer"></span>
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div singleLine></div> 
+                <div font-16 marginLeft text-primary uppercase weight600 flex center-ver>
+                  <span> {{'marketplace.revenue' | translate}} ({{trainerService.trainerInfo.purchaseItems.length}})</span>
+                  <div class="spacer"></div>
+                </div>
+                <div>
+                  <ion-card marginBottom basicPadding borderPrimary fullwidth>
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_total' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue().all.total | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_tax' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue().all.tax | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'marketplace.revenue_ex_tax' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue().all.without_tax | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_margin' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{(trainerService.revenue().all.total - trainerService.revenue().all.profit) | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'marketplace.revenue_profit' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue().all.profit | number : '1.2-2'}}</span>
+                    </div> 
+
+
+
+                    <div marginTop marginBottom></div>
+                    <div flex center-ver weight600>
+                      <span >{{'marketplace.revenue_unpaid' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue().unpaid.profit | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_paid' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue().paid.profit | number : '1.2-2'}}</span>
+                    </div> 
+
+                  </ion-card>
+                </div> 
+                <div *ngIf="trainerService.revenue(trainerService.trainingItem.id).unpaid.profit" flex center-ver>
+                  <div class="spacer"></div>
+                  <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
+                    {{'marketplace.request_payout' | translate}}
+                  </ion-button>
+                </div>
+
+                <div singleLine></div> 
+
+                <div font-16 marginLeft pointer text-primary uppercase weight600 *ngIf="trainerService.trainerInfo?.purchaseItems?.length" (click)="showCustomerList=!showCustomerList" flex center-ver>
+                  <span> {{'marketplace.sold_etrainings' | translate}} ({{trainerService.trainerInfo.purchaseItems.length}})</span>
+                  <div class="spacer"></div>
+                  <fa-icon chevron pointer titleIcon font-24 text-secondary [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform':showCustomerList ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+                </div>
+                <div *ngIf="showCustomerList">
+                  <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.trainerInfo.purchaseItems | sortBy : -1 : 'purchased'">
+                    <ion-card-title flex center-ver>
+                      <span weight600>{{trainerService.getTraining(customer.trainingId).title}} - € {{customer.price | number : '1.2-2'}}</span>
+                      <!-- <span marginLeft weight400 font-14 lowercase>({{customer.user.email}})</span> -->
+                      <span class="spacer"></span>
+                      <span textMedium italic weight500>{{helper.showLocalDate(customer.purchased,translate.instant('date_formats.fullDateTime'),0,true)}}</span>
+                    <!-- <fa-icon pointer titleIcon font-24 *ngIf="trainerService.trainingItem?.status=='published'" (click)="sendEmail(customer.user.email)" [icon]="icon.get('faEnvelope')"></fa-icon> -->
+                    </ion-card-title>
+                  </ion-card>
+                </div>
+              </ion-card-content>
+            </ion-card>
 
           <ion-card basicPadding *ngIf="showPart=='knowledge'">
             <ion-card-header>

@@ -180,3 +180,38 @@
   height: calc(100% - 10px);
   z-index: -2;
 }
+
+
+
+.card-container {
+  position: relative;
+  isolation: isolate;              // eigen compositing context
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  contain: layout paint;           // houd repaints binnen de container
+}
+
+.card-wrapper,
+ion-card {
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Bron-tegel in layout laten (geen reflow) */
+.dndDraggingSource { visibility: hidden; }
+
+/* Tijdens drag zware effecten uitzetten (voorkomt shimmer) */
+.drag-active .card-wrapper,
+.drag-active ion-card {
+  filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.drag-active ion-content .inner-scroll,
+.drag-active ion-content .scroll-y {
+  -webkit-overflow-scrolling: auto !important;
+}

@@ -21,7 +21,8 @@ import {
   faStop,faPersonPraying,faLandmark,faCheckCircle,faCommentSlash,faComment,faPaperPlane,faUserGraduate,faTree,faCartPlus,
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
   faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink, faDatabase,
-  faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift,faBookOpen
+  faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift,faBookOpen,
+  faPiggyBank
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -169,6 +170,7 @@ export class IconsService {
     faPeopleArrows,
     faPeopleCarry,
     faPersonPraying,
+    faPiggyBank,
     faPlay,
     faPlus,
     faPlusCircle,

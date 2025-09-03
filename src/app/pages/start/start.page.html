@@ -123,7 +123,7 @@
                     <ion-row noPadding *ngIf="showAll && !selectedModule?.id &&!trainingItem">
                         <ion-col size="12">
                             <ion-card noMargin flex fullwidth center-ver style="padding:5px 10px;margin-top:5px!important">
-                                <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" placeholder="Zoeken" fullwidth [ngStyle]="{'background' : media.smallDevice ? 'white' : 'initial','--background' : media.smallDevice ? 'white' : 'initial'}"></ion-searchbar>
+                                <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'background' : media.smallDevice ? 'white' : 'initial','--background' : media.smallDevice ? 'white' : 'initial'}"></ion-searchbar>
                         </ion-card>
                         </ion-col>
                     </ion-row>
@@ -132,13 +132,13 @@
 
                 <ion-col *ngIf="!media.smallDevice" [size]="3" class="selectColumn" style="margin-top:15px">
 
-                    <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="(auth.activeCourses?.length || auth.myElearnings?.length)  && selectedModule?.trainer">
+                    <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="(auth.activeCourses?.length || auth.myElearnings?.length)  && selectedModule?.trainer" pointer (click)="showTrainerInfo(selectedModule?.trainer, $event)">
                         <div fullwidth style="height:100px">
                             <img [src]="selectedModule?.trainer.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
                         </div> 
                     </div>
 
-                    <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="showAll=='my_organisation' && (modulesBreadCrumbs.length || selectedModule?.id)">
+                    <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="showAll=='my_organisation' && (modulesBreadCrumbs.length || selectedModule?.id) && !((auth.activeCourses?.length || auth.myElearnings?.length)  && selectedModule?.trainer)" pointer (click)="showTrainerInfo(auth.mySelectedOrganisation, $event)">
                         <div fullwidth style="height:100px">
                             <img *ngIf="auth.mySelectedOrganisation.logo" [src]="auth.mySelectedOrganisation.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
                             <div *ngIf="!auth.mySelectedOrganisation.logo" font-30 flex center-ver center-hor fullheight weight700 uppercase>
@@ -191,7 +191,7 @@
                         </ion-item>
                     </div>
 
-                    <div [id]="'btn_my_organisation_'+pathname" style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.myOrganisationsList?.length && auth.mySelectedOrganisation && (!selectedModule?.id)" [ngClass]="{'activeItem': showAll=='my_organisation','notActiveItem': showAll!='my_organisation'}">
+                    <div [id]="'btn_my_organisation_'+pathname" style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.myOrganisationsList?.length && auth.mySelectedOrganisation && (!selectedModule?.id) && auth.mySelectedOrganisation.name" [ngClass]="{'activeItem': showAll=='my_organisation','notActiveItem': showAll!='my_organisation'}">
                         <ion-item detail="false" lines="none" button (click)="gotoOrganisation()" class="itemButton">
                             <!-- <div font-20 weight700>{{'buttons.my_organisation' | translate}}</div> -->
                             <div font-20 weight700>{{auth.mySelectedOrganisation.name}}</div>
@@ -216,7 +216,7 @@
                     <div style="background:white;padding:10px 0px;border-radius:16px;margin:15px 0px;" *ngIf="showAll && showAll!='my_trainings' && showAll!='my_organisation'">
 
                         <ion-item detail="false" lines="none" button class="itemButton" style="--background-hover:none;--padding-start:0;--padding-end:0" >
-                            <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" placeholder="Zoeken" fullwidth [ngStyle]="{'--background' : 'white'}"></ion-searchbar>
+                            <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'--background' : 'white'}"></ion-searchbar>
                         </ion-item>
             
                     </div>
@@ -964,7 +964,7 @@
                                                 </ion-card-header>
                                             </div>
                                             <div center flex center-ver center-hor>
-                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                     <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
                                                 <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
@@ -997,7 +997,7 @@
                                                 </ion-card-header>
                                             </div>
                                             <div center flex center-ver center-hor>
-                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                     <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
                                                 <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
@@ -1044,7 +1044,7 @@
                                                 </ion-card-header>
                                             </div>
                                             <div center flex center-ver center-hor>
-                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                     <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
                                                 <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
@@ -1077,7 +1077,7 @@
                                                 </ion-card-header>
                                             </div>
                                             <div center flex center-ver center-hor>
-                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                     <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
                                                 <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
@@ -1098,7 +1098,7 @@
                             </ng-container>
                             
                             <ion-col size="12" marginBottom *ngIf="showAll=='my_trainings'&&selectedModule?.id && media.smallDevice">
-                                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;width:100%;">
+                                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;width:100%;" pointer (click)="showTrainerInfo(selectedModule.trainer,$event)">
                                     <div fullwidth style="height:100px">
                                         <img [src]="selectedModule.trainer.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
                                     </div> 
@@ -1403,6 +1403,19 @@
                             </ng-container>
 
                             <ng-container *ngIf="showAll=='my_organisation'&&!selectedModule?.id &&media.smallDevice && auth.mySelectedOrganisation?.trainings">
+                                
+                                <ion-col [size]="helper.cardSizeSmall" *ngIf="!auth.mySelectedOrganisation?.trainings.length">
+                                    <ion-card noPadding pointer fullheight>
+                                        <ion-card-content noPadding fullHeight flex center-hor>
+                                            <div flex center center-ver center-hor>
+                                                <ion-card-header>
+                                                    <ion-card-title font-18 weight600>{{'start.no_results_organisation' | translate}}</ion-card-title>
+                                                </ion-card-header>
+                                            </div>
+                                        </ion-card-content>
+                                    </ion-card>
+                                </ion-col>
+
                                 <ion-col marginBottom [size]="helper.cardSizeSmall" *ngFor="let item of auth.mySelectedOrganisation?.trainings | filterSearch : searchTerm : false : ['title','tags','user_info','id','trainer.name']">
 
                                     <ion-card noPadding pointer fullheight caseCard>
@@ -1417,7 +1430,7 @@
                                                 </ion-card-header>
                                             </div>
                                             <div center flex center-ver center-hor>
-                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                     <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
                                                 <!-- <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
@@ -1448,8 +1461,22 @@
                                     </ion-card>
                                 </ion-col>
                             </ng-container>
+                            
 
                             <ng-container *ngIf="showAll=='my_organisation'&&!selectedModule?.id &&!media.smallDevice && auth.mySelectedOrganisation?.trainings">
+                                
+                                <ion-col [size]="helper.cardSizeSmall" *ngIf="!auth.mySelectedOrganisation?.trainings.length">
+                                    <ion-card noPadding pointer fullheight>
+                                        <ion-card-content noPadding fullHeight flex center-hor>
+                                            <div flex center center-ver center-hor>
+                                                <ion-card-header>
+                                                    <ion-card-title font-18 weight600>{{'start.no_results_organisation' | translate}}</ion-card-title>
+                                                </ion-card-header>
+                                            </div>
+                                        </ion-card-content>
+                                    </ion-card>
+                                </ion-col>
+
                                 <ion-col [size]="helper.cardSizeSmall" *ngFor="let item of auth.mySelectedOrganisation?.trainings | filterSearch : searchTerm : false : ['title','tags','user_info','id']">
 
                                     <ion-card noPadding pointer fullheight caseCard>
@@ -1464,11 +1491,11 @@
                                                 </ion-card-header>
                                             </div>
                                             <div center flex center-ver center-hor>
-                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8>
+                                                <div *ngIf="item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                     <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
 
-                                                 <div *ngIf="auth.mySelectedOrganisation.logo" class="logoTraining" borderRadius8>
+                                                 <div *ngIf="auth.mySelectedOrganisation.logo && !item.trainer?.logo" class="logoTraining" borderRadius8 pointer (click)="showTrainerInfo(auth.mySelectedOrganisation,$event)">
                                                     <img [src]="auth.mySelectedOrganisation.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                 </div>
 
@@ -1492,7 +1519,7 @@
                             </ng-container>
                             
                             <ion-col size="12" marginBottom *ngIf="showAll=='my_organisation'&&selectedModule?.id && media.smallDevice">
-                                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;width:100%;">
+                                <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;width:100%;" pointer (click)="showTrainerInfo(auth.mySelectedOrganisation,$event)">
                                     <div fullwidth style="height:100px">
                                         <img [src]="auth.mySelectedOrganisation.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
                                     </div> 
@@ -1562,7 +1589,7 @@
                                                 <ion-card-content noPadding fullHeight>
                                                     <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
                                                     <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                                                    <div *ngIf="item.trainer?.logo" class="videoAvatarBadge" borderRadius0>
+                                                    <div *ngIf="item.trainer?.logo" class="videoAvatarBadge" borderRadius0 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                         <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                     </div>
                                                     <div flex center center-ver center-hor style="height:calc(100% - 275px)">
@@ -1685,7 +1712,7 @@
                                                 <ion-card-content noPadding fullHeight>
                                                     <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
                                                     <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                                                    <div *ngIf="item.trainer?.logo" class="videoAvatarBadge" borderRadius0>
+                                                    <div *ngIf="item.trainer?.logo" class="videoAvatarBadge" borderRadius0 pointer (click)="showTrainerInfo(item.trainer,$event)">
                                                         <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
                                                     </div>
                                                     <div flex center center-ver center-hor style="height:calc(100% - 275px)">

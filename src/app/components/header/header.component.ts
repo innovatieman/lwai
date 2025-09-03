@@ -147,18 +147,18 @@ export class HeaderComponent  implements OnInit {
     //   url: '/bagend/conversations',
     // },
   ]
-  trainerItems:any=[
-    {
-      title: 'Cursussen maken',
-      icon: 'faBook',
-      url: '/trainer/modules',
-    },
-    {
-      title: 'Actieve cursussen',
-      icon: 'faUsers',
-      url: '/trainer/dashboard',
-    },
-  ]
+  // trainerItems:any=[
+  //   {
+  //     title: 'Cursussen maken',
+  //     icon: 'faBook',
+  //     url: '/trainer/modules',
+  //   },
+  //   {
+  //     title: 'Actieve cursussen',
+  //     icon: 'faUsers',
+  //     url: '/trainer/dashboard',
+  //   },
+  // ]
   
   
   constructor(
@@ -252,7 +252,7 @@ export class HeaderComponent  implements OnInit {
   }
 
   async trainerMenu(){
-    console.log('trainerMenu',this.auth.organisations.length)
+    // console.log('trainerMenu',this.auth.organisations.length)
     if(this.auth.organisations.length==1){
       this.nav.activeOrganisationId = this.auth.organisations[0].id
       if(window.location.pathname.indexOf('trainer')==-1){

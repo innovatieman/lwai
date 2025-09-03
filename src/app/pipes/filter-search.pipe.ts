@@ -61,37 +61,55 @@ export class FilterSearchPipe implements PipeTransform {
             
 
             if(typeof filter == 'string'){
-              if(typeof value[i][fields[f]]!='undefined'&&typeof value[i][fields[f]] != 'string'){
-                // console.log(value[i][fields[f]].toString(),filter.toLowerCase(),value[i][fields[f]].toString().indexOf(filter.toLowerCase())>-1,valueChecked)
+
+              if(fields[f].indexOf('.')>-1){
+                let keys=fields[f].split('.')
                 if(!subKey||!value[i][subKey]){
-                  if(value[i][fields[f]].toString().indexOf(filter.toLowerCase())>-1&&!valueChecked){
+                  if(value[i][keys[0]][keys[1]].toString().toLowerCase().indexOf(filter.toLowerCase())>-1&&!valueChecked){
                     nwValue.push(value[i])
                     valueChecked = true
                   }
                 }
                 else{
-                  
-                  if(value[i][subKey[f]].toString().indexOf(filter.toLowerCase())>-1&&!valueChecked){
+                  if(value[i][subKey][keys[0]][keys[1]].toString().toLowerCase().indexOf(filter.toLowerCase())>-1&&!valueChecked){
                     nwValue.push(value[i])
                     valueChecked = true
                   }
                 }
               }
-              else if(typeof value[i][fields[f]]!='undefined' || (subKey && typeof value[i][subKey][fields[f]]!='undefined')){
-                if(!subKey||!value[i][subKey]){
-                  if(value[i][fields[f]].toLowerCase().indexOf(filter.toLowerCase())>-1&&!valueChecked){
-                    nwValue.push(value[i])
-                    valueChecked = true
+
+              else{
+                if(typeof value[i][fields[f]]!='undefined'&&typeof value[i][fields[f]] != 'string'){
+                  // console.log(value[i][fields[f]].toString(),filter.toLowerCase(),value[i][fields[f]].toString().indexOf(filter.toLowerCase())>-1,valueChecked)
+                  if(!subKey||!value[i][subKey]){
+                    if(value[i][fields[f]].toString().indexOf(filter.toLowerCase())>-1&&!valueChecked){
+                      nwValue.push(value[i])
+                      valueChecked = true
+                    }
+                  }
+                  else{
+                    
+                    if(value[i][subKey[f]].toString().indexOf(filter.toLowerCase())>-1&&!valueChecked){
+                      nwValue.push(value[i])
+                      valueChecked = true
+                    }
                   }
                 }
-                else{
-                  if(value[i][subKey][fields[f]].toLowerCase().indexOf(filter.toLowerCase())>-1&&!valueChecked){
-                    nwValue.push(value[i])
-                    valueChecked = true
+                else if(typeof value[i][fields[f]]!='undefined' || (subKey && typeof value[i][subKey][fields[f]]!='undefined')){
+                  if(!subKey||!value[i][subKey]){
+                    if(value[i][fields[f]].toLowerCase().indexOf(filter.toLowerCase())>-1&&!valueChecked){
+                      nwValue.push(value[i])
+                      valueChecked = true
+                    }
+                  }
+                  else{
+                    if(value[i][subKey][fields[f]].toLowerCase().indexOf(filter.toLowerCase())>-1&&!valueChecked){
+                      nwValue.push(value[i])
+                      valueChecked = true
+                    }
                   }
                 }
               }
-              
             }
             else{
               // if(value[i][fields[f]]){

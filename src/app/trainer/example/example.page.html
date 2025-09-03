@@ -52,7 +52,7 @@
               </div> 
           </div>
 
-          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainerInfo.logo">
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
               <div fullwidth style="height:100px">
                   <div font-30 flex center-ver center-hor fullheight weight700 uppercase>{{trainerService.trainerInfo.name}}</div>
               </div> 
@@ -81,7 +81,7 @@
                       <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].title}}</ion-card-title>
                       <ion-card-content>
                         <div font-16 weight500 *ngIf="!modulesBreadCrumbs.length">{{exampleItem(type,id).user_info}}</div>
-                        <div font-16 weight500 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info}}</div>
+                        <div font-16 weight500 *ngIf="modulesBreadCrumbs.length"> {{modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info}}</div>
                       </ion-card-content>
                   </ion-card>
               </ion-col>

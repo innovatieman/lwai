@@ -50,5 +50,7 @@ export * from './querys/cases'
 export * from './apis/knowledge'
 export * from './ai-organization/marketing/google-ads'
 export * from './modules/elearnings'
+export * from './payment/invoices'
+export * from './payment/buy'
 
 

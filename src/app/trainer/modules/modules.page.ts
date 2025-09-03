@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonInfiniteScroll, PopoverController } from '@ionic/angular';
+import { IonContent, IonInfiniteScroll, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
 import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
@@ -41,6 +41,26 @@ export class ModulesPage implements OnInit {
   modulesBreadCrumbs:any[] = []
   selectedTags:any[] = [];
   private leave$ = new Subject<void>();
+  showHtml:boolean = false
+
+  configModules={
+    toolbar: {
+      container:[
+        ['bold', 'italic', 'underline'],
+        [{ 'color': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'align': [] }],
+        [{'indent': '-1'}, {'indent': '+1'}],
+        ['link'],
+        ['clean'],
+        ['HTML'],
+      ],
+      clipboard: {
+        matchVisual: false
+      }
+    }
+  }
 
   trackByItem = (_: number, item: { id: string }) => item.id;
 
@@ -196,6 +216,29 @@ export class ModulesPage implements OnInit {
   //   }
   // }
 
+  showEditor(){
+    this.showHtml = false
+    setTimeout(() => {
+      let elements = document.getElementsByClassName("ql-container")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','height:calc(100% - 40px);border:0;')
+      }
+      elements = document.getElementsByClassName("ql-toolbar")
+      for(let i=0;i<elements.length;i++){
+        elements[i].setAttribute('style','border:0;')
+      }
+      setTimeout(() => {
+
+        let htmlBtn:any = document.querySelector('.ql-HTML');
+        htmlBtn.innerHTML = 'HTML'
+        htmlBtn.style.width = '50px'
+        htmlBtn.addEventListener('click', (event:any)=> {
+          this.showHtml = true 
+        });
+      },300)
+    },100)
+  }
+
   dropHandler(event: any) {
     if (event.dropEffect === 'move' && event.index !== undefined) {
       const dragged = event.data;
@@ -297,6 +340,39 @@ export class ModulesPage implements OnInit {
     moveItemInArray(this.trainerService.moduleItem.items, event.previousIndex, event.currentIndex);
   }
   
+  // 1×1 transparante PNG
+  private transparentImg = (() => {
+    const img = new Image();
+    img.src =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4//8/AwAI/AL+4B8bNwAAAABJRU5ErkJggg==';
+    return img;
+  })();
+
+  async onDndStart(evt: any): Promise<void> {
+    // evt.event is de native DragEvent in ngx-drag-drop
+    const de: DragEvent | undefined = evt?.event;
+    if (de?.dataTransfer?.setDragImage) {
+      de.dataTransfer.setDragImage(this.transparentImg, 0, 0);
+    }
+    // Safari: momentum scroll tijdelijk uit (zie #3)
+    await this.setMomentumScroll(false);
+    document.documentElement.classList.add('drag-active');
+  }
+
+  async onDndEnd(): Promise<void> {
+    await this.setMomentumScroll(true);
+    document.documentElement.classList.remove('drag-active');
+  }
+
+  @ViewChild(IonContent, { static: false }) content?: IonContent;
+
+  private async setMomentumScroll(enable: boolean) {
+    try {
+      const el = await this.content?.getScrollElement();
+      if (el) (el as any).style.webkitOverflowScrolling = enable ? 'touch' : 'auto';
+    } catch {}
+  }
+
   
   getConnectedCases(module:any){
     let connected = this.trainerService.cases.filter((e:any) => {
@@ -721,9 +797,13 @@ shortMenu:any
     const scrollPosition = window.scrollY;
     if(field){
       this.firestore.setSub('trainers',this.nav.activeOrganisationId,'modules',moduleItem.id,moduleItem[field],field,()=>{
+        console.log('updated')
         setTimeout(() => {
           window.scrollTo(0, scrollPosition);
         }, 100);
+        if(field!='items'){
+          this.updateAllModules(this.trainerService.moduleItem)
+        }
       },isArray)
     }
   }
@@ -963,10 +1043,37 @@ shortMenu:any
           }
 
           this.update('items',true)
+          // console.log('start update all modules')
+          this.updateAllModules(this.trainerService.moduleItem)
         }
       }, undefined, 'Items',{multiple:true,object:true,field:'title'})
     }
   }
+
+
+  updateAllModules(moduleItem:any){
+    // console.log('updateAllModules',moduleItem)
+    for(let i=0;i<this.trainerService.modules.length;i++){
+      for(let j=0;j<this.trainerService.modules[i].items.length;j++){
+        if(this.trainerService.modules[i].items[j].type=='module'&&this.trainerService.modules[i].items[j].id==moduleItem.id){
+          console.log('updating module in other module',this.trainerService.modules[i])
+          this.trainerService.modules[i].items[j] = {
+            type: 'module',
+            module_type: moduleItem.module_type || 'free',
+            title: moduleItem.title || '',
+            photo: moduleItem.photo || '',
+            user_info: moduleItem.user_info || '',
+            id: moduleItem.id,tags: moduleItem.tags || [],
+            order: this.trainerService.modules[i].items[j].order || 999,
+            items: moduleItem.items || [],
+          }
+
+          this.firestore.setSub('trainers',this.nav.activeOrganisationId,'modules',this.trainerService.modules[i].id,this.trainerService.modules[i].items,'items',null,true)
+        }
+      }
+    }
+  }
+
 
   editItem(item:any){
     if(item.type=='module'){
@@ -1093,9 +1200,17 @@ shortMenu:any
               training.amount_participants = 10
               training.expected_conversations = 3
               training.amount_period = 2
+              training.amount_credits = 1000000
+              training.marketplace = true
+              training.private = false
+              training.price_elearning = 0;
+              training.price_elearning_org_min = 0;
+              training.price_elearning_org_max = 0;
+              training.max_customers = 0;
+              training.allowed_domains = '';
               delete training.id
               delete training.type
-              console.log('training',training)
+              // console.log('training',training)
               this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', training).then(async () => {
                 console.log('created training',training)
                 const found = await this.trainerService.waitForItem('training', training.created, 5000, 'created');

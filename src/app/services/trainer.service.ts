@@ -5,7 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { InfoService } from './info.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { combineLatest, map, switchMap, defaultIfEmpty, of } from 'rxjs';
+import { combineLatest, map, switchMap, defaultIfEmpty, of, catchError, tap, Observable } from 'rxjs';
 import { BehaviorSubject, filter, firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { ModalService } from './modal.service';
 import { id } from '@swimlane/ngx-datatable';
@@ -13,6 +13,7 @@ import { NavService } from './nav.service';
 import { color } from 'highcharts';
 import { ToastService } from './toast.service';
 import { AccountService } from './account.service';
+import { HelpersService } from './helpers.service';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,7 @@ export class TrainerService {
   isOrgAdmin: boolean = false;
   segments:any[] = []
   segmentsOrganized:any = []
+  trainerInfoLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
   private currentOrgId?: string;
   private listenersStarted = false;
   
@@ -60,7 +62,8 @@ export class TrainerService {
     private modalService: ModalService,
     private nav:NavService,
     private toast:ToastService,
-    private accountService:AccountService
+    private accountService:AccountService,
+    private helper:HelpersService,
   ) { 
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
@@ -91,12 +94,14 @@ export class TrainerService {
         if(this.trainerInfo.affiliate){
           this.getAffiliates();
         }
+        this.trainerInfoLoaded.emit(true);
       });
     })
   }
 
   ensureLoadedForOrg(orgId: string,callback?: any,callbackSpecific?: any) {
     // console.log('ensureLoadedForOrg',orgId)
+
     if (!orgId) return;
     if (this.listenersStarted && this.currentOrgId === orgId) {
       if (callback) {
@@ -269,6 +274,46 @@ export class TrainerService {
               });
 
             });
+          this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+            .collection('purchases')
+            .snapshotChanges()
+            .pipe(
+              // Map documenten naar objecten
+              map(docs =>
+                docs.map((e: any) => ({
+                  id: e.payload.doc.id,
+                  ...e.payload.doc.data(),
+                }))
+              ),
+            )
+            .subscribe(purchaseItems => {
+              this.trainerInfo.purchaseItems = purchaseItems.map(doc => ({
+                ...doc,
+              }));
+
+              // get purchaseItems-documents from subcollection
+              this.trainerInfo.purchaseItems.forEach((item:any)=>{
+                item.documents = []
+                this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+                  .collection('purchases')
+                  .snapshotChanges()
+                  .pipe(
+                    // Map documenten naar objecten
+                    map(docs =>
+                      docs.map((e: any) => ({
+                        id: e.payload.doc.id,
+                        ...e.payload.doc.data(),
+                      }))
+                    ),
+                  )
+                  .subscribe(documents => {
+                    item.documents = documents.map(doc => ({
+                      ...doc,
+                    }));
+                  });
+              });
+
+            });
 
 
             if (this.trainerInfo.affiliate) {
@@ -369,7 +414,7 @@ export class TrainerService {
           docs.map((e: any) => ({
             id: e.payload.doc.id,
             ...e.payload.doc.data(),
-          }))
+          })),
         ),
         // Voor elk case-doc ook de vertaling ophalen (zelfde org, subcollectie)
         switchMap((cases: any[]) => {
@@ -386,13 +431,22 @@ export class TrainerService {
                   map((tDoc: any) => ({
                     ...c,
                     translation: tDoc.exists ? tDoc.data() : null,
-                  }))
-                )
+                  })),
+                  catchError((err) => {
+                    // console.error(`Fout bij vertaling ophalen voor case ${c.id}`, err);
+                    return of({ ...c, translation: null }); // fallback
+                  })
+                ),
+                catchError(err => {
+                  // console.error('loadCases pipeline error', err);
+                  return of([]);
+                })
             )
           );
         })
       )
       .subscribe((incomingCases: any[]) => {
+        // console.log('loadCases: received', incomingCases.length, 'cases');
         // 3) In-place reconcile: behoud object-referenties die de UI al vasthoudt
         this.patchArrayInPlace(this.cases, incomingCases, 'id', (target: any, src: any) => {
           Object.assign(target, src);
@@ -863,9 +917,14 @@ export class TrainerService {
             ...e.payload.doc.data(),
           }))
         ),
+        tap(trainings => {
+          if (trainings.length === 0 && callback) {
+            callback();
+          }
+        }),
         // Haal deelnemers op voor elke module
         switchMap(modules =>
-          combineLatest(
+          this.safeCombineLatest(
             modules.map(doc =>
               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
                 .collection('trainings')
@@ -978,6 +1037,10 @@ export class TrainerService {
       });
   }
 
+  safeCombineLatest<T>(observables: Observable<T>[]): Observable<T[]> {
+    return observables.length ? combineLatest(observables) : of([]);
+  }
+
   getModule(id:string){
     for (let i = 0; i < this.modules.length; i++) {
       if (this.modules[i].id == id) {
@@ -1010,7 +1073,7 @@ export class TrainerService {
   }
 
   getTraining(id:string,created?:number){
-    // console.log('getTraining',id,created)
+    // console.log('getTraining',id,this.trainings)
     if(id){
 
       for (let i = 0; i < this.trainings.length; i++) {
@@ -1434,7 +1497,8 @@ export class TrainerService {
       let metadata = {
         userId: this.auth.userInfo.uid,
         trainerId:this.nav.activeOrganisationId
-      };    
+      };
+      product.organisationId = this.nav.activeOrganisationId;
       this.buy(product,metadata)
     }
 
@@ -1468,6 +1532,8 @@ export class TrainerService {
   }
 
   async buy(item: any,metadata?: any) {
+    this.accountService.buyMultiple([item],metadata);
+    return;
     const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
@@ -1618,4 +1684,121 @@ export class TrainerService {
     }
     return false
   }
+
+  purchaseItems(trainingId:string){
+    if(!trainingId){
+      return []
+    }
+    if(!this.trainerInfo?.purchaseItems || this.trainerInfo?.purchaseItems.length<1 ){
+      return []
+    }
+    return this.trainerInfo.purchaseItems.filter((item:any) => item.trainingId == trainingId);
+  }
+
+  revenue(trainingId?:string){
+    let revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    let purchaseItems:any[] = []
+    if(trainingId){
+      purchaseItems = this.purchaseItems(trainingId);
+    }
+    else{
+      purchaseItems = this.trainerInfo?.purchaseItems || [];
+    }
+    for(let item of purchaseItems){
+      if(item.marketplace){
+        if(item.status === 'paid'){
+          revenue_market.paid.length++;
+          revenue_market.paid.total += item.price;
+          revenue_market.paid.without_tax = revenue_market.paid.total / 1.21; // 21% VAT
+          revenue_market.paid.tax = revenue_market.paid.total - revenue_market.paid.without
+          revenue_market.paid.profit = revenue_market.paid.without_tax * 0.8; // 80% profit margin
+        }else{
+          revenue_market.unpaid.length++;
+          revenue_market.unpaid.total += item.price;
+          revenue_market.unpaid.without_tax = revenue_market.unpaid.total / 1.21; // 21% VAT
+          revenue_market.unpaid.tax = revenue_market.unpaid.total - revenue_market.unpaid.without_tax;
+          revenue_market.unpaid.profit = revenue_market.unpaid.without_tax * 0.8; // 80% profit margin
+        }
+        revenue_market.all.length++;
+        revenue_market.all.total += item.price;
+        revenue_market.all.without_tax = revenue_market.all.total / 1.21; // 21% VAT
+        revenue_market.all.tax = revenue_market.all.total - revenue_market.all.without_tax;
+        revenue_market.all.profit = revenue_market.all.without_tax * 0.8; // 80% profit margin
+      }
+    }
+    return revenue_market;
+  }
+
+  validInvoiceAddress(invoice?:any): boolean {
+    if(!invoice){
+      invoice = this.trainerInfo?.invoice;
+    }
+    if(!invoice || !invoice.name || !invoice.vat_number || !invoice.address || !invoice.city || !invoice.zip || !invoice.country || !invoice.email || !this.helper.validEmail(invoice.email) || !invoice.reference){
+      return false;
+    }
+    return true;
+  }
+
+
+  validBank(bank_account?:any): boolean {
+    if(!bank_account){
+      bank_account = this.trainerInfo?.bank_account;
+    }
+    if(!bank_account || !bank_account.name || !bank_account.iban || !this.validIban(bank_account.iban) || !bank_account.bic){
+      return false
+    }
+    return true
+  }
+
+  validIban(iban: string): boolean {
+    if(!iban || typeof iban !== 'string') return false;
+    const trimmed = iban.replace(/\s+/g, '').toUpperCase();
+
+    // Basiscontrole: lengte tussen 15 en 34
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(trimmed)) return false;
+
+    const rearranged = trimmed.slice(4) + trimmed.slice(0, 4);
+
+    const converted = rearranged
+      .split('')
+      .map(char => {
+        const code = char.charCodeAt(0);
+        return code >= 65 && code <= 90 ? (code - 55).toString() : char;
+      })
+      .join('');
+
+    let remainder = converted;
+    while (remainder.length > 2) {
+      const block = remainder.slice(0, 9);
+      remainder = (parseInt(block, 10) % 97).toString() + remainder.slice(block.length);
+    }
+
+    return parseInt(remainder, 10) % 97 === 1;
+  }
+
+  requestPayout(){
+    if(!this.validBank()){
+      this.toast.show(this.translate.instant('marketplace.bank_account_required'), 4000, 'middle');
+      return
+    }
+    this.modalService.showConfirmation(this.translate.instant('marketplace.request_payout_verify')).then(async (result:any) => {
+      if(result){
+       this.firestore.create('user_messages',{
+            type:'payout_request',
+            subject:'Please process my payout request',
+            message:'I would like to request a payout for my earnings as a trainer (' + this.trainerInfo.name + '). My TrainerId is: ' + this.nav.activeOrganisationId+'<br><br>Thank you!<br><br>Kind regards,<br>'+this.auth.userInfo.displayName +'<br>'+this.auth.userInfo.email,
+            user:this.auth.userInfo.uid,
+            displayName:this.auth.userInfo.displayName,
+            email:this.auth.userInfo.email,
+            date:new Date(),
+            timestamp:new Date().getTime(),
+            read:false,
+            archived:false,
+            url:window.location.href
+          })
+          this.toast.show(this.translate.instant('marketplace.payout_request_sent'), 4000, 'middle');
+        }
+      })
+  }
+  
 }

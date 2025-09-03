@@ -204,12 +204,17 @@ export class AccountPage implements OnInit {
 
 
   async buy(item: any,metadata?: any) {
+
+    // this.accountService.buyMultiple([item])
+    // return
     const user = await this.auth.userInfo;
     if (!user) {
       console.error("User not authenticated");
       return;
     }
-  
+    console.log("Creating checkout session for product:", window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/success' : '/account/credits/success'));
+    return
+    
     this.toast.showLoader('Bezig met verwerking');
   
     if (item.credits) {
@@ -221,7 +226,6 @@ export class AccountPage implements OnInit {
     if (this.auth.customer?.stripeCustomerId) {
       stripeId = this.auth.customer.stripeCustomerId;
     }
-  
     if (!stripeId) {
       let newCustomer = await this.functions.httpsCallable('createCustomerId')({ email: user.email }).toPromise();
       stripeId = newCustomer.result?.stripeId;
@@ -237,6 +241,7 @@ export class AccountPage implements OnInit {
         userId: user.uid
       };
     }
+
     let checkoutSessionData: any = {
       price: item.prices[0].id,
       success_url: window.location.origin + (item.metadata?.type == 'subscription' ? '/account/subscriptions/success' : '/account/credits/success'),
