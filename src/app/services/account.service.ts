@@ -118,7 +118,7 @@ export class AccountService {
   }
 
   async fetchProducts() {
-    console.log('Fetching products...');
+    // console.log('Fetching products...');
     this.firestoreService.queryDouble('products','metadata.type','credits','==','active',true,'==').subscribe((products:any)=>{
       this.products = products.map((product:any)=>{
         let item = {
@@ -163,7 +163,7 @@ export class AccountService {
         })
         return item
       })
-      console.log(this.products)
+      // console.log(this.products)
     })
   }
 
@@ -308,7 +308,7 @@ export class AccountService {
       if(metadata){
         callObj['metadata'] = metadata;
       }
-      console.log('Creating checkout session with:', callObj);
+      // console.log('Creating checkout session with:', callObj);
       const result = await this.functions
         .httpsCallable('createCheckoutSession')(callObj)
         .toPromise();

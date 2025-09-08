@@ -48,9 +48,10 @@ export class TrainerService {
   isOrgAdmin: boolean = false;
   segments:any[] = []
   segmentsOrganized:any = []
-  trainerInfoLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
+  // trainerInfoLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
   private currentOrgId?: string;
   private listenersStarted = false;
+  public trainerInfoLoaded$ = new BehaviorSubject<boolean>(false);
   
   constructor(
     private functions: AngularFireFunctions,
@@ -69,7 +70,9 @@ export class TrainerService {
       if (userInfo) {
         this.isTrainer = userInfo.isTrainer;
         this.auth.hasActive('trainer').subscribe((trainer)=>{
-          this.loadTrainerInfo();
+          this.loadTrainerInfo(()=>{
+            this.trainerInfoLoaded$.next(true);
+          });
           this.isTrainer = trainer
         })
         
@@ -79,7 +82,9 @@ export class TrainerService {
     auth.isOrgAdmin().subscribe((isAdmin)=>{
       this.isOrgAdmin = isAdmin
       if(isAdmin && this.nav.activeOrganisationId){
-        this.loadTrainerInfo(()=>{},true)
+        this.loadTrainerInfo(()=>{
+          this.trainerInfoLoaded$.next(true);
+        },true)
       }
     })
 
@@ -94,7 +99,8 @@ export class TrainerService {
         if(this.trainerInfo.affiliate){
           this.getAffiliates();
         }
-        this.trainerInfoLoaded.emit(true);
+        this.trainerInfoLoaded$.next(true);
+        // this.trainerInfoLoaded.emit(true);
       });
     })
   }
@@ -165,174 +171,327 @@ export class TrainerService {
     }
   }
 
-  loadTrainerInfo(callback?:Function,unsubscribe?:boolean) {
-    if(!this.nav.activeOrganisationId){
-      this.trainerInfo = {}
-      return
+  // loadTrainerInfo(callback?:Function,unsubscribe?:boolean) {
+  //   if(!this.nav.activeOrganisationId){
+  //     this.trainerInfo = {}
+  //     return
+  //   }
+  //   let trainerSubscription = this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //     .get()
+  //     .subscribe((doc) => {
+  //       if (doc.exists) {
+  //         // console.log("exists")
+  //         this.trainerInfo = doc.data();
+  //         // get employees from subcollection
+  //         this.trainerInfo.id = doc.id
+  //         this.trainerInfo.employees = []
+  //         this.trainerInfo.settings = []
+  //         // this.isTrainerPro = this.trainerInfo.trainerPro == true
+  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //           .collection('employees')
+  //           .snapshotChanges()
+  //           .pipe(
+  //             // Map documenten naar objecten
+  //             map(docs =>
+  //               docs.map((e: any) => ({
+  //                 id: e.payload.doc.id,
+  //                 ...e.payload.doc.data(),
+  //               }))
+  //             ),
+  //           )
+  //           .subscribe(employees => {
+  //             this.trainerInfo.employees = employees.map(doc => ({
+  //               ...doc,
+  //             }));
+  //             if (callback) {
+  //               callback();
+  //             }
+  //           });
+  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //           .collection('settings')
+  //           .snapshotChanges()
+  //           .pipe(
+  //             // Map documenten naar objecten
+  //             map(docs =>
+  //               docs.map((e: any) => ({
+  //                 id: e.payload.doc.id,
+  //                 ...e.payload.doc.data(),
+  //               }))
+  //             ),
+  //           )
+  //           .subscribe(settings => {
+  //             this.trainerInfo.settings = settings.map(doc => ({
+  //               ...doc,
+  //               id: doc.id || '',
+  //             }));
+  //             if (this.trainerInfo.settings && this.trainerInfo.settings.length>0) {
+  //               for (let i = 0; i < this.trainerInfo.settings.length; i++) {
+  //                 if(this.trainerInfo.settings[i].trainerPro){
+  //                   this.isTrainerPro = this.trainerInfo.settings[i].trainerPro == true
+  //                   // console.log('isTrainerPro',this.isTrainerPro,this.trainerInfo.settings[i])
+  //                 }
+  //                 if(this.trainerInfo.settings[i].affiliate){
+  //                   this.trainerInfo.affiliate = this.trainerInfo.settings[i].affiliate
+  //                 }
+  //               }
+  //             }
+  //             if (callback) {
+  //               callback();
+  //             }
+  //           });
+  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //           .collection('knowledge')
+  //           .snapshotChanges()
+  //           .pipe(
+  //             // Map documenten naar objecten
+  //             map(docs =>
+  //               docs.map((e: any) => ({
+  //                 id: e.payload.doc.id,
+  //                 ...e.payload.doc.data(),
+  //               }))
+  //             ),
+  //           )
+  //           .subscribe(knowledgeItems => {
+  //             this.trainerInfo.knowledgeItems = knowledgeItems.map(doc => ({
+  //               ...doc,
+  //             }));
+
+  //             // get knowledgeItems-documents from subcollection
+  //             this.trainerInfo.knowledgeItems.forEach((item:any)=>{
+  //               item.documents = []
+  //               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //                 .collection('knowledge').doc(item.id)
+  //                 .collection('documents')
+  //                 .snapshotChanges()
+  //                 .pipe(
+  //                   // Map documenten naar objecten
+  //                   map(docs =>
+  //                     docs.map((e: any) => ({
+  //                       id: e.payload.doc.id,
+  //                       ...e.payload.doc.data(),
+  //                     }))
+  //                   ),
+  //                 )
+  //                 .subscribe(documents => {
+  //                   item.documents = documents.map(doc => ({
+  //                     ...doc,
+  //                   }));
+  //                 });
+  //             });
+
+  //           });
+  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //           .collection('purchases')
+  //           .snapshotChanges()
+  //           .pipe(
+  //             // Map documenten naar objecten
+  //             map(docs =>
+  //               docs.map((e: any) => ({
+  //                 id: e.payload.doc.id,
+  //                 ...e.payload.doc.data(),
+  //               }))
+  //             ),
+  //           )
+  //           .subscribe(purchaseItems => {
+  //             this.trainerInfo.purchaseItems = purchaseItems.map(doc => ({
+  //               ...doc,
+  //             }));
+
+  //             // get purchaseItems-documents from subcollection
+  //             this.trainerInfo.purchaseItems.forEach((item:any)=>{
+  //               item.documents = []
+  //               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+  //                 .collection('purchases')
+  //                 .snapshotChanges()
+  //                 .pipe(
+  //                   // Map documenten naar objecten
+  //                   map(docs =>
+  //                     docs.map((e: any) => ({
+  //                       id: e.payload.doc.id,
+  //                       ...e.payload.doc.data(),
+  //                     }))
+  //                   ),
+  //                 )
+  //                 .subscribe(documents => {
+  //                   item.documents = documents.map(doc => ({
+  //                     ...doc,
+  //                   }));
+  //                 });
+  //             });
+
+  //           });
+
+
+  //           if (this.trainerInfo.affiliate) {
+  //             this.getAffiliates();
+  //           }
+  //           if (this.trainerInfo.organisation) {
+  //             this.publishType = 'organisation';
+  //           }
+
+  //       } else {
+  //         // console.log("No such document!");
+  //       }
+  //     });
+  //     if(unsubscribe){
+  //       setTimeout(() => {
+  //         trainerSubscription.unsubscribe();
+  //       }, 300);
+  //     }
+
+  // }
+
+  loadTrainerInfo(callback?: Function, unsubscribe?: boolean) {
+    if (!this.nav.activeOrganisationId) {
+      this.trainerInfo = {};
+      return;
     }
-    let trainerSubscription = this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-      .get()
-      .subscribe((doc) => {
-        if (doc.exists) {
-          // console.log("exists")
-          this.trainerInfo = doc.data();
-          // get employees from subcollection
-          this.trainerInfo.id = doc.id
-          this.trainerInfo.employees = []
-          this.trainerInfo.settings = []
-          // this.isTrainerPro = this.trainerInfo.trainerPro == true
-          this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-            .collection('employees')
-            .snapshotChanges()
-            .pipe(
-              // Map documenten naar objecten
-              map(docs =>
-                docs.map((e: any) => ({
-                  id: e.payload.doc.id,
-                  ...e.payload.doc.data(),
-                }))
-              ),
-            )
-            .subscribe(employees => {
-              this.trainerInfo.employees = employees.map(doc => ({
-                ...doc,
-              }));
-              if (callback) {
-                callback();
-              }
-            });
-          this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-            .collection('settings')
-            .snapshotChanges()
-            .pipe(
-              // Map documenten naar objecten
-              map(docs =>
-                docs.map((e: any) => ({
-                  id: e.payload.doc.id,
-                  ...e.payload.doc.data(),
-                }))
-              ),
-            )
-            .subscribe(settings => {
-              this.trainerInfo.settings = settings.map(doc => ({
-                ...doc,
-                id: doc.id || '',
-              }));
-              if (this.trainerInfo.settings && this.trainerInfo.settings.length>0) {
-                for (let i = 0; i < this.trainerInfo.settings.length; i++) {
-                  if(this.trainerInfo.settings[i].trainerPro){
-                    this.isTrainerPro = this.trainerInfo.settings[i].trainerPro == true
-                    // console.log('isTrainerPro',this.isTrainerPro,this.trainerInfo.settings[i])
-                  }
-                  if(this.trainerInfo.settings[i].affiliate){
-                    this.trainerInfo.affiliate = this.trainerInfo.settings[i].affiliate
-                  }
-                }
-              }
-              if (callback) {
-                callback();
-              }
-            });
-          this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-            .collection('knowledge')
-            .snapshotChanges()
-            .pipe(
-              // Map documenten naar objecten
-              map(docs =>
-                docs.map((e: any) => ({
-                  id: e.payload.doc.id,
-                  ...e.payload.doc.data(),
-                }))
-              ),
-            )
-            .subscribe(knowledgeItems => {
-              this.trainerInfo.knowledgeItems = knowledgeItems.map(doc => ({
-                ...doc,
-              }));
 
-              // get knowledgeItems-documents from subcollection
-              this.trainerInfo.knowledgeItems.forEach((item:any)=>{
-                item.documents = []
-                this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-                  .collection('knowledge').doc(item.id)
-                  .collection('documents')
-                  .snapshotChanges()
-                  .pipe(
-                    // Map documenten naar objecten
-                    map(docs =>
-                      docs.map((e: any) => ({
-                        id: e.payload.doc.id,
-                        ...e.payload.doc.data(),
-                      }))
-                    ),
-                  )
-                  .subscribe(documents => {
-                    item.documents = documents.map(doc => ({
-                      ...doc,
-                    }));
-                  });
-              });
+    const docRef = this.fire.collection('trainers').doc(this.nav.activeOrganisationId);
 
-            });
-          this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-            .collection('purchases')
-            .snapshotChanges()
-            .pipe(
-              // Map documenten naar objecten
-              map(docs =>
-                docs.map((e: any) => ({
-                  id: e.payload.doc.id,
-                  ...e.payload.doc.data(),
-                }))
-              ),
-            )
-            .subscribe(purchaseItems => {
-              this.trainerInfo.purchaseItems = purchaseItems.map(doc => ({
-                ...doc,
-              }));
+    const stepsToWaitFor: number[] = [];
+    let completedSteps = 0;
 
-              // get purchaseItems-documents from subcollection
-              this.trainerInfo.purchaseItems.forEach((item:any)=>{
-                item.documents = []
-                this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-                  .collection('purchases')
-                  .snapshotChanges()
-                  .pipe(
-                    // Map documenten naar objecten
-                    map(docs =>
-                      docs.map((e: any) => ({
-                        id: e.payload.doc.id,
-                        ...e.payload.doc.data(),
-                      }))
-                    ),
-                  )
-                  .subscribe(documents => {
-                    item.documents = documents.map(doc => ({
-                      ...doc,
-                    }));
-                  });
-              });
+    const TOTAL_STEPS = 4; // employees, settings, knowledge, purchases
+    let subSubSteps = 0;   // for knowledge.documents and purchases.documents
 
-            });
+    const tryFinish = () => {
+      if (completedSteps === TOTAL_STEPS && subSubSteps === 2 && callback) {
+        callback();
+      }
+    };
 
+    const maybeCallback = () => {
+      completedSteps++;
+      tryFinish();
+    };
 
-            if (this.trainerInfo.affiliate) {
-              this.getAffiliates();
-            }
-            if (this.trainerInfo.organisation) {
-              this.publishType = 'organisation';
-            }
+    let trainerSubscription = docRef.get().subscribe(doc => {
+      if (!doc.exists) return;
 
-        } else {
-          // console.log("No such document!");
+      this.trainerInfo = doc.data();
+      this.trainerInfo.id = doc.id;
+      this.trainerInfo.employees = [];
+      this.trainerInfo.settings = [];
+      this.trainerInfo.knowledgeItems = [];
+      this.trainerInfo.purchaseItems = [];
+
+      // EMPLOYEES
+      docRef.collection('employees').snapshotChanges().pipe(
+        map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      ).subscribe({
+        next: employees => {
+          this.trainerInfo.employees = employees;
+          maybeCallback();
+        },
+        error: () => {
+          this.trainerInfo.employees = [];
+          maybeCallback();
         }
       });
-      if(unsubscribe){
-        setTimeout(() => {
-          trainerSubscription.unsubscribe();
-        }, 300);
-      }
 
+      // SETTINGS
+      docRef.collection('settings').snapshotChanges().pipe(
+        map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      ).subscribe({
+        next: settings => {
+          this.trainerInfo.settings = settings;
+          settings.forEach((s:any) => {
+            if (s.trainerPro) this.isTrainerPro = s.trainerPro;
+            if (s.affiliate) this.trainerInfo.affiliate = s.affiliate;
+          });
+          maybeCallback();
+        },
+        error: () => {
+          this.trainerInfo.settings = [];
+          maybeCallback();
+        }
+      });
+
+      // KNOWLEDGE
+      docRef.collection('knowledge').snapshotChanges().pipe(
+        map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      ).subscribe({
+        next: knowledgeItems => {
+          this.trainerInfo.knowledgeItems = knowledgeItems;
+
+          if (knowledgeItems.length === 0) {
+            maybeCallback();
+          } else {
+            subSubSteps += knowledgeItems.length;
+            knowledgeItems.forEach((item:any) => {
+              item.documents = [];
+              docRef.collection('knowledge').doc(item.id).collection('documents').snapshotChanges().pipe(
+                map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+              ).subscribe({
+                next: docs => {
+                  item.documents = docs;
+                  subSubSteps--;
+                  tryFinish();
+                },
+                error: () => {
+                  item.documents = [];
+                  subSubSteps--;
+                  tryFinish();
+                }
+              });
+            });
+            maybeCallback(); // For the parent collection
+          }
+        },
+        error: () => {
+          this.trainerInfo.knowledgeItems = [];
+          maybeCallback();
+        }
+      });
+
+      // PURCHASES
+      docRef.collection('purchases').snapshotChanges().pipe(
+        map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      ).subscribe({
+        next: purchaseItems => {
+          this.trainerInfo.purchaseItems = purchaseItems;
+
+          if (purchaseItems.length === 0) {
+            maybeCallback();
+          } else {
+            subSubSteps += purchaseItems.length;
+            purchaseItems.forEach((item:any) => {
+              item.documents = [];
+              docRef.collection('purchases').doc(item.id).collection('documents').snapshotChanges().pipe(
+                map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+              ).subscribe({
+                next: docs => {
+                  item.documents = docs;
+                  subSubSteps--;
+                  tryFinish();
+                },
+                error: () => {
+                  item.documents = [];
+                  subSubSteps--;
+                  tryFinish();
+                }
+              });
+            });
+            maybeCallback(); // For the parent collection
+          }
+        },
+        error: () => {
+          this.trainerInfo.purchaseItems = [];
+          maybeCallback();
+        }
+      });
+
+      // Eventuele extra setup
+      if (this.trainerInfo.affiliate) this.getAffiliates();
+      if (this.trainerInfo.organisation) this.publishType = 'organisation';
+    });
+
+    if (unsubscribe) {
+      setTimeout(() => {
+        trainerSubscription.unsubscribe();
+      }, 300);
+    }
   }
 
   getAffiliates(){

@@ -136,7 +136,7 @@
           </ion-item>
         </div>
 
-        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainingItem?.id&& allTags().length">
+        <!-- <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainingItem?.id&& allTags().length">
           <h2 font-20 weight700 style="margin:10px 0px;padding-left:15px">{{'cases.tags' | translate}}</h2>
           <div *ngFor="let tag of allTags()">
               <ion-item detail="false" pointer [ngClass]="{'selectedModule':tagSelected(tag)}" lines="none" font-18 weight500 noMargin (click)="toggleTag(tag)">
@@ -144,7 +144,22 @@
                   <fa-icon slot="end" text-light [icon]="icon.get('faTimes')" *ngIf="tagSelected(tag)"></fa-icon>
               </ion-item>
           </div>
-        </div>
+        </div> -->
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" marginBottom *ngIf="!trainerService.trainingItem?.id">
+            <h2 font-20 weight700 flex center-ver style="margin:10px 0px;padding-left:15px;padding-right:15px;">
+              <span>{{'cases.tags' | translate}}</span>
+              <div class="spacer"></div>
+              <fa-icon pointer titleIcon font-24 text-secondary *ngIf="allTags().length" (click)="removeTagMultiple()" [icon]="icon.get('faMinus')"></fa-icon>
+              <fa-icon pointer titleIcon font-24 text-secondary (click)="createTagMultiple()" [icon]="icon.get('faPlus')"></fa-icon>
+            </h2>
+            <div *ngFor="let tag of allTags()">
+                <ion-item detail="false" pointer [ngClass]="{'selectedModule':tagSelected(tag)}" lines="none" font-18 weight500 noMargin (click)="toggleTag(tag)">
+                    <ion-label>{{ tag | capitalize }}</ion-label>
+                    <fa-icon slot="end" text-light [icon]="icon.get('faTimes')" *ngIf="tagSelected(tag)"></fa-icon>
+                </ion-item>
+            </div>
+          </div>
           
         <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.trainingItem?.id">
           <ion-item detail="false" lines="none" button (click)="back()" class="itemButton" noMargin>

@@ -71,7 +71,7 @@ export class ModalService {
   }
 
   async generateCase(caseItem: any): Promise<boolean> {
-    console.log(caseItem);
+    // console.log(caseItem);
     const modalItem = await this.modalController.create({
       component: GenerateCasePage,
       backdropDismiss: false,

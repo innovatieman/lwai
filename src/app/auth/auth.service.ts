@@ -1129,7 +1129,7 @@ export class AuthService {
         }
       }
       else if(organisation&&this.mySelectedOrganisation?.trainings){
-        if(!this.mySelectedOrganisation.trainings.length){
+        if(!this.mySelectedOrganisation.trainings.length){ 
           return {}
         }
         if(!trainingId){

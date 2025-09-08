@@ -376,7 +376,7 @@
                 
           </ion-row>
 
-          <ion-row *ngIf="(activeTab=='elearnings' || activeTab=='filter')  && item_id && item_id!=='success' && item_id !== 'error'">
+          <ion-row *ngIf="(activeTab=='elearnings' || activeTab=='filter')  && item_id && item_id!=='success' && item_id !== 'error' && elearningItem(item_id).id && canBeShown(elearningItem(item_id)) && !showLogin" style="padding-bottom: 20px;">
             <ion-col size="12">
 
                 <ion-card fullwidth [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
@@ -390,7 +390,7 @@
                     <div *ngIf="elearningItem(item_id).photo" [ngStyle]="{'height':!media.smallDevice?'400px':'200px'}" marginBottom>
                       <img [src]="elearningItem(item_id).photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
                     </div>
-                    <div [innerHTML]="elearningItem(item_id).training_content | sanitizeHtml" font-18 marginBottom  class="textContainer"></div>
+                    <div [innerHTML]="elearningItem(item_id).training_content | sanitizeHtml" font-16 marginBottom  class="textContainer"></div>
 
                   </div>
                   <div basicPadding *ngIf="showCreditsOption" font-16 style="border-top:solid 1px #ddd;margin-top:10px;">
@@ -429,6 +429,22 @@
 
 
           </ion-row>
+
+          <ion-row *ngIf="(activeTab=='elearnings' || activeTab=='filter')  && item_id && item_id!=='success' && item_id !== 'error' && (!elearningItem(item_id).id || !canBeShown(elearningItem(item_id))) && !showLogin" style="padding-bottom: 20px;">
+            <ion-col [size]="12">
+                  <ion-card noPadding pointer fullheight>
+                      <ion-card-content noPadding fullHeight flex center-hor>
+                          <div flex center center-ver center-hor>
+                              <ion-card-header>
+                                  <ion-card-title *ngIf="firstLoaded" font-18 weight600>{{'marketplace.no_private_item_found' | translate}}</ion-card-title>
+                                  <ion-card-title *ngIf="!firstLoaded" font-18 weight600>{{'messages.busy_loading' | translate}}</ion-card-title>
+                              </ion-card-header>
+                          </div>
+                      </ion-card-content>
+                  </ion-card>
+              </ion-col>
+          </ion-row>
+
 
 
         </ion-col>  

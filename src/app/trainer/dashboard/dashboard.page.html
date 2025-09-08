@@ -434,7 +434,7 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-card basicPadding *ngIf="showPart=='bank'">
+          <ion-card basicPadding *ngIf="showPart=='bank'&&trainerDataLoaded">
             <ion-card-header>
               <ion-card-title flex center-ver>
                 <span weight600 titleIcon>{{'dashboard.bankaccount_for_return' | translate}}</span>

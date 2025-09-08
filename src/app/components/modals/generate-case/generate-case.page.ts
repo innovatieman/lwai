@@ -117,6 +117,9 @@ export class GenerateCasePage implements OnInit {
         this.caseItem.category_specifics = {}
       }
       if(!this.caseItem.communicationSkills){
+        this.caseItem.communicationSkills = []
+      }
+      else{
         for(let i=0;i<this.communicationSkills.length;i++){
           if(this.caseItem.communicationSkills?.includes(this.communicationSkills[i].id)){
             this.communicationSkills[i].selected = true
@@ -245,7 +248,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
   }
 
 
-  close(){
+  close(empty?:boolean){
     this.toast.hideTooltip()
     let communicationSkills = []
     for(let i=0;i<this.communicationSkills.length;i++){
@@ -254,12 +257,19 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
       }
     }
     this.caseItem.communicationSkills = communicationSkills
+    if(JSON.stringify(this.caseItemOriginal.communicationSkills) != JSON.stringify(this.caseItem.communicationSkills)){
+      this.update('communicationSkills',true)
+    }
+    if(empty){
+      this.modalCtrl.dismiss()
+      return
+    }
     this.modalCtrl.dismiss(this.caseItem)
   }
 
   update(field?:string,isArray:boolean = false){
     let caseItem = this.caseItem
-    console.log('update',field,caseItem)
+    // console.log('update',field,caseItem)
       if(field){
         this.firestore.setSub('trainers',this.nav.activeOrganisationId,'cases',caseItem.id,caseItem[field],field,()=>{
         },isArray)
@@ -268,7 +278,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
 
 
   generateReadableText(): string {
-    console.log('generateReadableText',this.caseItem)
+    // console.log('generateReadableText',this.caseItem)
     if (!this.caseItem) {
       return "Er is geen case-informatie beschikbaar.";
     }
@@ -385,7 +395,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
       this.toast.hideLoader()
       return data.content;
     } catch (error) {
-      console.error("Error tijdens fetch:", error);
+      console.error("Error fetch:", error);
       throw error;
     }
   }
@@ -397,7 +407,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
     }
     this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
     let text = this.generateReadableText()
-    console.log('text',text)
+    // console.log('text',text)
     let output = await this.getPromptOpenAI(text)
     this.caseItem.casus = output
     this.promptChecked = true
@@ -479,7 +489,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
   }
 
   showTipInfo(name:string){
-    console.log(name)
+    // console.log(name)
   }
 
 
@@ -538,7 +548,7 @@ public async inputFields(title:string,text:string,fields:any[],callback:Function
       this.showOtherCommunicationStyle = true
       setTimeout(() => {
         let input:any = document.querySelector('#otherCommunicationStyle')
-        console.log('input',input)
+        // console.log('input',input)
         if(input){
           input.setFocus()
         }

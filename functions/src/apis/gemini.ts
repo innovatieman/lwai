@@ -1801,7 +1801,7 @@ exports.case_prompt_gemini = onRequest(
         credits: creditsCost['case_prompt'],
       })
       
-      await updateCredits(body.userId, creditsCost['case_prompt']);
+      await updateCredits(body.userId, creditsCost['case_prompt']); 
       
       res.status(200).send({content:completeMessage});
 
@@ -3160,102 +3160,245 @@ async function getPreviousMessages(userId: string, conversationId: string, subCo
 //   } 
 // }
 
+// async function updateCredits(userId: string, creditsToSubtract: number): Promise<void> {
+
+//   let creditsCollectionRef = db.collection("users").doc(userId).collection("credits");
+
+//   const user = await db.collection("users").doc(userId).get();
+//   if (!user.exists) {
+//     throw new Error("User not found");
+//   }
+//   const userData = user.data();
+//   if (!userData || !userData.email) {
+//     throw new Error("User email not found");
+//   }
+//   const employeesRef = db.collectionGroup("employees").where("email", "==", userData.email);
+//   const employeesSnapshot = await employeesRef.get();
+//   console.log("Employees snapshot size:", employeesSnapshot.size);
+//   if (!employeesSnapshot.empty) {
+//     const employeeOrganisationId = employeesSnapshot.docs[0].ref.parent.parent?.id;
+//     console.log("Employee organisation ID:", employeeOrganisationId);
+//     if (employeeOrganisationId) {
+//       try {
+//         creditsCollectionRef = db.collection("trainers").doc(employeeOrganisationId).collection('credits');
+//       } catch (error) {
+//         console.error("Error bij het ophalen van de organisatie ID:", error);
+//         throw new Error("Failed to get organisation ID");
+//       }
+//     }
+//   }
+
+//   try {
+//     console.log('path: ', creditsCollectionRef.path);
+//     // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
+//     const creditsQuerySnapshot = await creditsCollectionRef
+//       .where('total', '>', 0)
+//       .orderBy('added', 'asc')
+//       .get();
+
+//     // let creditDocs = creditsQuerySnapshot.docs;
+//     let creditDocs: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>[] = creditsQuerySnapshot.docs;
+
+//     // Als er geen documenten zijn met total > 0, pak het laatst toegevoegde document (ook als total 0 of negatief is)
+//     if (creditDocs.length === 0) {
+//       const allCreditsSnapshot = await creditsCollectionRef
+//         .orderBy('added', 'desc')
+//         .limit(1)
+//         .get();
+
+//       if (!allCreditsSnapshot.empty) {
+//         creditDocs = allCreditsSnapshot.docs;
+//       } else {
+//         // Als er helemaal geen 'added' field bestaat, pak document met id 'credits'
+//         const fallbackDocRef = creditsCollectionRef.doc('credits');
+//         const fallbackDocSnap = await fallbackDocRef.get();
+
+//         if (fallbackDocSnap.exists) {
+//           creditDocs = [fallbackDocSnap];
+//         } else {
+//           throw new Error("Geen credits documenten gevonden.");
+//         }
+//       }
+//     }
+
+//     let remainingCredits = creditsToSubtract;
+//     const batch = db.batch(); // We doen alles in een batch update
+
+//     for (let i = 0; i < creditDocs.length; i++) {
+//       const doc = creditDocs[i];
+//       const data = doc.data();
+//       const currentTotal = data.total || 0;
+
+//       if (remainingCredits <= 0) {
+//         break; // Niks meer af te boeken
+//       }
+
+//       let newTotal;
+
+//       if (i === creditDocs.length - 1) {
+//         // Laatste document mag in de min
+//         newTotal = currentTotal - remainingCredits;
+//         remainingCredits = 0;
+//       } else {
+//         if (currentTotal >= remainingCredits) {
+//           newTotal = currentTotal - remainingCredits;
+//           remainingCredits = 0;
+//         } else {
+//           newTotal = 0;
+//           remainingCredits = remainingCredits - currentTotal;
+//         }
+//       }
+//       const docRef = creditsCollectionRef.doc(doc.id);
+//       batch.update(docRef, { total: newTotal });
+//     }
+
+//     await batch.commit();
+//     // console.log("Credits succesvol geüpdatet");
+//   } catch (error) {
+//     console.error("Error bij updaten credits:", error);
+//     throw new Error("Failed to update credits");
+//   }
+// }
+
 async function updateCredits(userId: string, creditsToSubtract: number): Promise<void> {
+  // Helper: probeert af te boeken in één credits-collectie.
+  async function trySubtractFromCreditsCollection(
+    creditsCollectionRef: FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>,
+    amount: number
+  ): Promise<boolean> {
+    try {
+      // console.log('Proberen in pad:', creditsCollectionRef.path);
 
-  let creditsCollectionRef = db.collection("users").doc(userId).collection("credits");
-
-  const user = await db.collection("users").doc(userId).get();
-  if (!user.exists) {
-    throw new Error("User not found");
-  }
-  const userData = user.data();
-  if (!userData || !userData.email) {
-    throw new Error("User email not found");
-  }
-  const employeesRef = db.collectionGroup("employees").where("email", "==", userData.email);
-  const employeesSnapshot = await employeesRef.get();
-  if (!employeesSnapshot.empty) {
-    const employeeOrganisationId = employeesSnapshot.docs[0].ref.parent.parent?.id;
-    if (employeeOrganisationId) {
-      try {
-        creditsCollectionRef = db.collection("trainers").doc(employeeOrganisationId).collection('credits');
-      } catch (error) {
-        console.error("Error bij het ophalen van de organisatie ID:", error);
-        throw new Error("Failed to get organisation ID");
-      }
-    }
-  }
-
-  try {
-
-    // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
-    const creditsQuerySnapshot = await creditsCollectionRef
-      .where('total', '>', 0)
-      .orderBy('added', 'asc')
-      .get();
-
-    // let creditDocs = creditsQuerySnapshot.docs;
-    let creditDocs: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>[] = creditsQuerySnapshot.docs;
-
-    // Als er geen documenten zijn met total > 0, pak het laatst toegevoegde document (ook als total 0 of negatief is)
-    if (creditDocs.length === 0) {
-      const allCreditsSnapshot = await creditsCollectionRef
-        .orderBy('added', 'desc')
-        .limit(1)
+      // Haal alle credit documenten op waar total > 0, gesorteerd op 'added' (oudste eerst)
+      const creditsQuerySnapshot = await creditsCollectionRef
+        .where('total', '>', 0)
+        .orderBy('added', 'asc')
         .get();
 
-      if (!allCreditsSnapshot.empty) {
-        creditDocs = allCreditsSnapshot.docs;
-      } else {
-        // Als er helemaal geen 'added' field bestaat, pak document met id 'credits'
-        const fallbackDocRef = creditsCollectionRef.doc('credits');
-        const fallbackDocSnap = await fallbackDocRef.get();
+      let creditDocs: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>[] =
+        creditsQuerySnapshot.docs;
 
-        if (fallbackDocSnap.exists) {
-          creditDocs = [fallbackDocSnap];
+      // Als er geen documenten zijn met total > 0, pak het laatst toegevoegde document (ook als total 0 of negatief is)
+      if (creditDocs.length === 0) {
+        const allCreditsSnapshot = await creditsCollectionRef
+          .orderBy('added', 'desc')
+          .limit(1)
+          .get();
+
+        if (!allCreditsSnapshot.empty) {
+          creditDocs = allCreditsSnapshot.docs;
         } else {
-          throw new Error("Geen credits documenten gevonden.");
+          // Als er helemaal geen 'added' field bestaat, pak document met id 'credits'
+          const fallbackDocRef = creditsCollectionRef.doc('credits');
+          const fallbackDocSnap = await fallbackDocRef.get();
+
+          if (fallbackDocSnap.exists) {
+            creditDocs = [fallbackDocSnap];
+          } else {
+            console.log(`Geen credits documenten gevonden in ${creditsCollectionRef.path}`);
+            return false; // deze collectie kan het niet afhandelen -> probeer volgende
+          }
         }
       }
-    }
 
-    let remainingCredits = creditsToSubtract;
-    const batch = db.batch(); // We doen alles in een batch update
+      let remainingCredits = amount;
+      const batch = db.batch(); // We doen alles in een batch update
 
-    for (let i = 0; i < creditDocs.length; i++) {
-      const doc = creditDocs[i];
-      const data = doc.data();
-      const currentTotal = data.total || 0;
+      for (let i = 0; i < creditDocs.length; i++) {
+        const doc = creditDocs[i];
+        const data = doc.data() || {};
+        const currentTotal = data.total || 0;
 
-      if (remainingCredits <= 0) {
-        break; // Niks meer af te boeken
-      }
+        if (remainingCredits <= 0) break; // Niks meer af te boeken
 
-      let newTotal;
+        let newTotal: number;
 
-      if (i === creditDocs.length - 1) {
-        // Laatste document mag in de min
-        newTotal = currentTotal - remainingCredits;
-        remainingCredits = 0;
-      } else {
-        if (currentTotal >= remainingCredits) {
+        if (i === creditDocs.length - 1) {
+          // Laatste document mag in de min
           newTotal = currentTotal - remainingCredits;
           remainingCredits = 0;
         } else {
-          newTotal = 0;
-          remainingCredits = remainingCredits - currentTotal;
+          if (currentTotal >= remainingCredits) {
+            newTotal = currentTotal - remainingCredits;
+            remainingCredits = 0;
+          } else {
+            newTotal = 0;
+            remainingCredits = remainingCredits - currentTotal;
+          }
+        }
+
+        const docRef = creditsCollectionRef.doc(doc.id);
+        batch.update(docRef, { total: newTotal });
+      }
+
+      // Als we niets hebben aangepast (bijv. omdat er geen docs waren), sla dan over
+      if (remainingCredits === amount) {
+        console.log(`Geen mutaties gedaan in ${creditsCollectionRef.path}`);
+        return false;
+      }
+
+      await batch.commit();
+      console.log(`Credits succesvol geüpdatet in ${creditsCollectionRef.path}`);
+      return true;
+    } catch (err) {
+      // Fout in deze collectie? Log en ga door met de volgende
+      console.error(`Fout bij proberen in ${creditsCollectionRef.path}:`, err);
+      return false;
+    }
+  }
+
+  // --- Start van hoofdlogica ---
+  // Begin met de fallback naar de user-zijn eigen credits
+  const userCreditsRef = db.collection("users").doc(userId).collection("credits");
+
+  // Valideer user en e-mailadres
+  const userSnap = await db.collection("users").doc(userId).get();
+  if (!userSnap.exists) {
+    throw new Error("User not found");
+  }
+  const userData = userSnap.data();
+  if (!userData || !userData.email) {
+    throw new Error("User email not found");
+  }
+
+  // Zoek alle organisaties waar deze email als employee voorkomt
+  const employeesRef = db.collectionGroup("employees").where("email", "==", userData.email);
+  const employeesSnapshot = await employeesRef.get();
+  console.log("Aantal gevonden employee-records:", employeesSnapshot.size);
+
+  // Bouw een lijst met kandidaat-collecties om in te boeken (unique, in vaste volgorde)
+  // 1) Alle trainers/{orgId}/credits (voor elke gevonden organisatie)
+  // 2) Als laatste: users/{userId}/credits
+  const seen = new Set<string>();
+  const candidateCollections: FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>[] = [];
+
+  if (!employeesSnapshot.empty) {
+    for (const doc of employeesSnapshot.docs) {
+      const orgId = doc.ref.parent.parent?.id;
+      if (orgId) {
+        const path = `trainers/${orgId}/credits`;
+        if (!seen.has(path)) {
+          seen.add(path);
+          candidateCollections.push(db.collection("trainers").doc(orgId).collection("credits"));
         }
       }
-      const docRef = creditsCollectionRef.doc(doc.id);
-      batch.update(docRef, { total: newTotal });
     }
-
-    await batch.commit();
-    // console.log("Credits succesvol geüpdatet");
-  } catch (error) {
-    console.error("Error bij updaten credits:", error);
-    throw new Error("Failed to update credits");
   }
+
+  // Altijd de user-credits als laatste fallback
+  const userPath = userCreditsRef.path;
+  if (!seen.has(userPath)) {
+    candidateCollections.push(userCreditsRef);
+  }
+
+  // Probeer in elke kandidaat-collectie tot het lukt
+  for (const creditsRef of candidateCollections) {
+    const ok = await trySubtractFromCreditsCollection(creditsRef, creditsToSubtract);
+    if (ok) return; // klaar
+  }
+
+  // Als we hier komen is het overal mislukt
+  throw new Error("Failed to update credits: geen geschikte credits gevonden in gekoppelde organisaties of gebruikersaccount.");
 }
 
 async function updateCreditsTraining(userEmail: string, creditsToSubtract: number,trainingId:string,trainerId:string): Promise<void> {

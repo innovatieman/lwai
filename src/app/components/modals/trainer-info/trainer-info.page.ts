@@ -25,7 +25,7 @@ export class TrainerInfoPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log(this.trainerInfo);
+    // console.log(this.trainerInfo);
   }
 
   async sendEmail(){

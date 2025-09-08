@@ -577,6 +577,28 @@ app-header{
     }
 }
 
+[basicTable]{
+    border-collapse: collapse;
+    width: 100%;
+    th, td {
+        border: 1px solid rgba(var(--ion-color-primary-rgb), 0.3);
+        padding: 3px 5px;
+        text-align: left;
+    }
+}
+blockquote {
+    position: relative;
+    box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 16px;
+    font-style: italic;
+}
+blockquote {
+    span,p{
+        color: rgb(14, 14, 14)!important;
+    }
+}
+
 [tab]:hover{
     background-color: var(--ion-color-light);
 }

@@ -406,30 +406,70 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
 
     const trainingPrice = (extra ? countExtraCostsTraining(trainingData,extra) : countCostsTraining(trainingData,trainerPro));
     trainingPrice.totalCosts;
+
+    const dummyEmail = `trainer_${trainerId}@ai-inbound.alicialabs.com`;
+    let dummyUser;
+    try {
+    // Probeer de dummy user op te halen
+    dummyUser = await admin.auth().getUserByEmail(dummyEmail);
+    // console.log('Dummy user gevonden:', dummyUser.uid);
+    } catch (error: any) {
+    if (error.code === 'auth/user-not-found') {
+        // Maak de dummy user aan
+        dummyUser = await admin.auth().createUser({
+        email: dummyEmail,
+        password: Math.random().toString(36).slice(-10), // random wachtwoord
+        displayName: `Trainer ${trainerId}`,
+        });
+        // console.log('Dummy user aangemaakt:', dummyUser.uid);
+    } else {
+        console.error('Fout bij ophalen of aanmaken dummy user:', error);
+        throw new functions.https.HttpsError('internal', 'Kon dummy user niet aanmaken');
+    }
+    }
+
   
     try {
       // 🔄 Ophalen van bestaande Stripe klant
-        const customerRef = admin.firestore().collection('customers').doc(trainerId);
+        const customerRef = admin.firestore().collection('customers').doc(dummyUser.uid);
         const customerDoc = await customerRef.get();
         const customerData = customerDoc.data();
         let stripeCustomerId = customerData?.stripeCustomerId;
 
+        await customerRef.update({admins: trainerData.admins || [uid] });
+
     if(!stripeCustomerId){
-        const customerStripe = await stripe.customers.create({ email: context.auth.token.email });
-        await customerRef.set({ stripeCustomerId: customerStripe.id, email: context.auth.token.email });
+        // const customerStripe = await stripe.customers.create({ email: context.auth.token.email });
+        // await customerRef.set({ stripeCustomerId: customerStripe.id, email: context.auth.token.email });
+        const customerStripe = await stripe.customers.create({ 
+            email: dummyEmail,
+            name: trainerData?.name || `Trainer ${trainerId}`,
+            metadata: {
+                trainerId: trainerId,
+                type: 'organisation',
+            }
+        });
+
+        await customerRef.set({ 
+            stripeCustomerId: customerStripe.id, 
+            email: dummyEmail,
+            trainerId: trainerId,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            admins: trainerData.admins || [uid],
+        });
         stripeCustomerId = customerStripe.id;
     }
 
-    
-
     if(!invoice_redirect){
+
         const session = await admin.firestore()
         .collection('customers')
-        .doc(trainerId)
+        .doc(dummyUser.uid)
         .collection('checkout_sessions')
         .add({
             mode: 'payment',
             customer: stripeCustomerId,
+            email: context.auth.token.email,
             line_items: [{
                 price_data: {
                     currency: 'eur',
@@ -467,7 +507,7 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
         });
 
         const sessionId = session.id;
-        return new responder.Message({ sessionId }, 200);
+        return new responder.Message({ sessionId, customerId: dummyUser.uid }, 200);
     }
 
     else{
@@ -636,8 +676,10 @@ function countCostsTraining(trainingItem:any, trainerPro:boolean){
       costs.extraPeriodCosts = (trainingItem.amount_period - 2) * (10 / 2) * trainingItem.amount_participants
       costs.expires = moment().add((2 + trainingItem.amount_period), 'months').unix()
     }
-
-    costs.totalCosts = costs.basicCosts + costs.extraCosts + costs.extraPeriodCosts
+    costs.totalCosts = 
+        (costs.basicCosts || 0) + 
+        (costs.extraCosts || 0) + 
+        (costs.extraPeriodCosts || 0);
 
     costs.tax = costs.totalCosts * 0.21
     costs.totalCostsPlusTax = costs.totalCosts + costs.tax
@@ -706,8 +748,12 @@ function countExtraCostsTraining(trainingItem:any,extraCostsOptions:any){
     if(extraCostsOptions.amount_period){
       costs.expires = moment.unix(trainingItem.published).add((trainingItem.amount_period + extraCostsOptions.amount_period), 'months').unix()
     }
+    costs.totalCosts = 
+    (costs.basicCosts || 0) + 
+    (costs.extraCosts || 0) + 
+    (costs.extraPeriodCosts || 0);
 
-    costs.totalCosts = costs.basicCosts + costs.extraCosts + costs.extraPeriodCosts
+    // costs.totalCosts = costs.basicCosts + costs.extraCosts + costs.extraPeriodCosts
 
     costs.tax = costs.totalCosts * 0.21
     costs.totalCostsPlusTax = costs.totalCosts + costs.tax

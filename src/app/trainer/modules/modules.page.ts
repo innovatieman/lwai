@@ -21,6 +21,7 @@ import { MenuPage } from 'src/app/components/menu/menu.page';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { id } from '@swimlane/ngx-datatable';
 
 @Component({
   selector: 'app-modules',
@@ -255,12 +256,12 @@ export class ModulesPage implements OnInit {
         this.trainerService.rememberLocalOrder(this.trainerService.moduleItem.id, this.trainerService.moduleItem.items);
       
         this.update('items', true, this.trainerService.moduleItem); // enkel veld
+        this.updateAllModules(this.trainerService.moduleItem);
       }
     }
   }
 
   backBreadCrumbs(){
-    console.log('backBreadCrumbs',this.trainerService.breadCrumbs)
     if(this.trainerService.breadCrumbs.length > 0){
       this.trainerService.breadCrumbs.pop()
     }
@@ -295,6 +296,7 @@ export class ModulesPage implements OnInit {
         return e.id === this.connectedCases[i].id
       })
       if(!checkExists.length){
+        console.log('hier')
         module.items.push({
           id: this.connectedCases[i].id,
           title: this.connectedCases[i].title,
@@ -439,8 +441,14 @@ export class ModulesPage implements OnInit {
 
   example(item?:any){
       this.trainerService.originEdit = 'trainer/modules'
+      console.log('example',item,this.trainerService.breadCrumbs)
       if(!item?.id){
-        item = this.trainerService.breadCrumbs[0].item
+        if(!this.trainerService.breadCrumbs[0]?.item?.id){
+          this.trainerService.breadCrumbs.splice(0,1)
+        }
+        if(this.trainerService.breadCrumbs.length){
+          item = this.trainerService.breadCrumbs[0].item
+        }
       }
       this.nav.go('trainer/example/module/'+item.id)
   }
@@ -797,7 +805,7 @@ shortMenu:any
     const scrollPosition = window.scrollY;
     if(field){
       this.firestore.setSub('trainers',this.nav.activeOrganisationId,'modules',moduleItem.id,moduleItem[field],field,()=>{
-        console.log('updated')
+        // console.log('updated')
         setTimeout(() => {
           window.scrollTo(0, scrollPosition);
         }, 100);
@@ -1051,27 +1059,78 @@ shortMenu:any
   }
 
 
-  updateAllModules(moduleItem:any){
-    // console.log('updateAllModules',moduleItem)
-    for(let i=0;i<this.trainerService.modules.length;i++){
-      for(let j=0;j<this.trainerService.modules[i].items.length;j++){
-        if(this.trainerService.modules[i].items[j].type=='module'&&this.trainerService.modules[i].items[j].id==moduleItem.id){
-          console.log('updating module in other module',this.trainerService.modules[i])
-          this.trainerService.modules[i].items[j] = {
-            type: 'module',
-            module_type: moduleItem.module_type || 'free',
-            title: moduleItem.title || '',
-            photo: moduleItem.photo || '',
-            user_info: moduleItem.user_info || '',
-            id: moduleItem.id,tags: moduleItem.tags || [],
-            order: this.trainerService.modules[i].items[j].order || 999,
-            items: moduleItem.items || [],
-          }
+  // updateAllModules(moduleItem:any){
+  //   // console.log('updateAllModules',moduleItem)
+  //   for(let i=0;i<this.trainerService.modules.length;i++){
+  //     for(let j=0;j<this.trainerService.modules[i].items.length;j++){
+  //       if(this.trainerService.modules[i].items[j].type=='module'&&this.trainerService.modules[i].items[j].id==moduleItem.id){
+  //         // console.log('updating module in other module',this.trainerService.modules[i])
+  //         this.trainerService.modules[i].items[j] = {
+  //           type: 'module',
+  //           module_type: moduleItem.module_type || 'free',
+  //           title: moduleItem.title || '',
+  //           photo: moduleItem.photo || '',
+  //           user_info: moduleItem.user_info || '',
+  //           id: moduleItem.id,
+  //           order: this.trainerService.modules[i].items[j].order || 999,
+  //           items: moduleItem.items || [],
+  //         }
 
-          this.firestore.setSub('trainers',this.nav.activeOrganisationId,'modules',this.trainerService.modules[i].id,this.trainerService.modules[i].items,'items',null,true)
+  //         this.firestore.setSub('trainers',this.nav.activeOrganisationId,'modules',this.trainerService.modules[i].id,this.trainerService.modules[i].items,'items',null,true)
+  //       }
+  //     }
+  //   }
+  // }
+
+  updateAllModules(moduleItem: any) {
+    for (let module of this.trainerService.modules) {
+      const updated = this.updateModuleInItems(module.items, moduleItem);
+      if (updated) {
+        this.firestore.setSub(
+          'trainers',
+          this.nav.activeOrganisationId,
+          'modules',
+          module.id,
+          module.items,
+          'items',
+          null,
+          true
+        );
+      }
+    }
+  }
+
+  // Recursieve hulpfunctie om door items én geneste moduleItems te lopen
+  private updateModuleInItems(items: any[], moduleItem: any): boolean {
+    let updated = false;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.type === 'module' && item.id === moduleItem.id) {
+        items[i] = {
+          type: 'module',
+          module_type: moduleItem.module_type || 'free',
+          title: moduleItem.title || '',
+          photo: moduleItem.photo || '',
+          user_info: moduleItem.user_info || '',
+          id: moduleItem.id,
+          order: item.order || 999,
+          items: moduleItem.items || [],
+        };
+        updated = true;
+      }
+
+      // Als dit een moduleItem is en er zijn geneste items, recursief doorlopen
+      if (item.type === 'module' && Array.isArray(item.items)) {
+        const nestedUpdated = this.updateModuleInItems(item.items, moduleItem);
+        if (nestedUpdated) {
+          updated = true;
         }
       }
     }
+
+    return updated;
   }
 
 
@@ -1336,6 +1395,85 @@ shortMenu:any
   }
 
 
-  
+  createTagMultiple(){
+    this.modalService.inputFields(this.translate.instant('cases.new_tag'), '',[{
+      title: 'Naam',
+      type: 'text',
+      value: '',
+      required: true,
+    }], (result: any) => {
+      if (result.data) {
+        // console.log(result)
+        let list = this.trainerService.modules.map((e:any) => {
+          return {
+            id: e.id,
+            title: e.title,
+          }
+        })
+        let tag = result.data[0].value.toLowerCase().trim()
+        this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
+          if (result.data) {
+            // console.log('selected tag',result.data)
+            for(let i=0;i<result.data.length;i++){
+              let item = this.trainerService.getModule(result.data[i].id)
+              if(!item.tags){
+                item.tags = []
+              }
+              if(item.tags.indexOf(tag) == -1){
+                item.tags.push(tag)
+                this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',item.id,{tags:item.tags}).then(() => {
+                  // console.log('tag added')
+                })
+              }
+            }
+          }
+        }, undefined, 'Tags',{object:true,multiple:true,field: 'title'});
+      }
+    })
+  }
 
+  removeTagMultiple(){
+    let tags = this.allTags()
+    if(!tags.length){
+      this.toast.show(this.translate.instant('modules.no_tags_defined'))
+      return
+    }
+    this.modalService.selectItem(this.translate.instant('modules.remove_tag'), tags, (result: any) => {
+      if (result.data) {
+        console.log('selected tag',result.data)
+        let tag = result.data.toLowerCase().trim()
+        let list = this.trainerService.modules.map((e:any) => {
+          if(e.tags && e.tags.indexOf(tag) > -1){
+            console.log('e',e)
+            return {
+              id: e.id,
+              title: e.title,
+            }
+          }
+          return undefined;
+        })
+        list = list.filter((e:any) => { return e !== undefined })
+        if(!list.length){
+          this.toast.show(this.translate.instant('modules.no_items_with_tag'))
+          return
+        }
+        this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
+          if (result.data) {
+            console.log('selected tag',result.data)
+            for(let i=0;i<result.data.length;i++){
+              let item = this.trainerService.getModule(result.data[i].id)
+              if(item.tags && item.tags.indexOf(tag) > -1){
+                item.tags = item.tags.filter((e:any) => {
+                  return e !== tag
+                })
+                this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',item.id,{tags:item.tags}).then(() => {
+                  console.log('tag removed')
+                })
+              }
+            }
+          }
+        }, undefined, 'Tags',{object:true,field: 'title',multiple:true});
+      }
+    })
+  }
 }

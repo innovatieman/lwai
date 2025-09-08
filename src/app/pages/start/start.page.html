@@ -802,7 +802,7 @@
 
                         </ion-row>
 
-                        <ion-row>
+                        <ion-row id="nanana">
                             <ion-col [size]="helper.cardSizeSmall" *ngIf="showAll=='cases'&&!visibleCases.length">
                                 <ion-card noPadding pointer fullheight>
                                     <ion-card-content noPadding fullHeight flex center-hor>
@@ -1123,6 +1123,9 @@
                                         <ion-col marginBottom *ngIf="itemAvailable(auth.getTrainingItem(selectedModule.id,item.id))" [size]="helper.cardSizeSmall">
                                             
                                             <ion-card noMargin noPadding pointer fullheight caseCard top10 *ngIf="item.type=='case'" (click)="showCaseInfo(auth.getTrainingItem(selectedModule.id,item.id),selectedModule.trainer.logo,selectedModule)">
+                                                <div class="shareButtonCase copyCaseTrainer">
+                                                    <fa-icon [icon]="icon.get('faCommentDots')" font-22 style="color:#7A90B6"></fa-icon>
+                                                </div>
                                                 <ion-card-content noPadding fullHeight>
                                                   <div backgroundImage class="avatarImage" *ngIf="auth.getTrainingItem(selectedModule.id,item.id).photo" [ngStyle]="{'background-image': 'url(' + auth.getTrainingItem(selectedModule.id,item.id).photo + ')'}"></div>
                                                   <div backgroundImage class="avatarImage" *ngIf="!auth.getTrainingItem(selectedModule.id,item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -1147,6 +1150,9 @@
                                             </ion-card>
                     
                                             <ion-card noMargin noPadding pointer fullheight caseCard top10 *ngIf="item.type=='infoItem'" (click)="showCaseInfo(auth.getTrainingItem(selectedModule.id,item.id),selectedModule.trainer.logo,selectedModule)">
+                                                <div class="shareButtonCase copyCaseTrainer">
+                                                    <fa-icon [icon]="icon.get('faBookOpen')" font-22 style="color:#7A90B6"></fa-icon>
+                                                </div>
                                                 <ion-card-content noPadding fullHeight>
                                                     <div backgroundImage class="avatarImage" *ngIf="auth.getTrainingItem(selectedModule.id,item.id).photo" [ngStyle]="{'background-image': 'url(' + auth.getTrainingItem(selectedModule.id,item.id).photo + ')'}"></div>
                                                     <div backgroundImage class="avatarImage" *ngIf="!auth.getTrainingItem(selectedModule.id,item.id).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -1165,6 +1171,9 @@
                                             </ion-card>
     
                                             <ion-card noPadding pointer fullheight caseCard *ngIf="item.type=='module'" (click)="selectSubModule(item);scrollItemsToTop()">
+                                                <!-- <div class="shareButtonCase copyCaseTrainer">
+                                                    <fa-icon [icon]="icon.get('faGripHorizontal')" font-22></fa-icon>
+                                                </div> -->
                                                 <ion-card-content noPadding fullHeight>
                                                     <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
                                                     <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -1357,7 +1366,7 @@
                             <ng-container *ngIf="showAll=='my_trainings'&&selectedModule?.id &&trainingItem">
                                 <ion-card fullwidth [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
                                     <ion-card-header>
-                                        <ion-card-title font-24>
+                                        <ion-card-title font-24 uppercase weight600 style="padding: 0 15px;">
                                           <span>{{auth.getTrainingItem(selectedModule.id,trainingItem.id).title}}</span>
                                         </ion-card-title>
                                     </ion-card-header>
@@ -1377,7 +1386,7 @@
 
                                         </div>
                                         <div *ngIf="auth.getTrainingItem(selectedModule.id,trainingItem.id).type!='image_only'">
-                                          <div [innerHTML]="auth.getTrainingItem(selectedModule.id,trainingItem.id).content | cleanHtml" class="textContainer"></div>
+                                          <div [innerHTML]="auth.getTrainingItem(selectedModule.id,trainingItem.id).content | sanitizeHtml" class="textContainer"></div>
                                         </div>
 
                                         <div marginTop *ngIf="auth.getTrainingItem(selectedModule.id,trainingItem.id).files?.length">
@@ -1393,10 +1402,34 @@
 
                                         </div>
                                     </div>
-                                    <div basicPadding>
+                                    <div basicPadding flex center-ver>
                                         <ion-button color=secondary fill="clear" (click)="readInfoItem()">
                                             <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
                                             <span marginLeft>{{'buttons.back' | translate}}</span>
+                                        </ion-button>
+
+                                        <div class="spacer"></div>
+                                        <!-- <ion-button>
+                                            {{currentItemIndex()}}
+                                        </ion-button> -->
+                                        <ion-button color=secondary fill="clear" *ngIf="nextItem()?.title && (nextItem()?.type=='infoItem' || nextItem()?.item_type=='infoItem')" (click)="readInfoItem(false,true);selectTrainingItem(nextItem());scrollItemsToTop()">
+                                            <span marginLeft>{{nextItem()?.title}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                                        </ion-button>
+
+                                        <ion-button color=secondary fill="clear" *ngIf="nextItem()?.title && (nextItem()?.type=='case' || nextItem()?.item_type=='case')" (click)="showCaseInfo(auth.getTrainingItem(selectedModule.id,nextItem().id,null,0,false),selectedModule.trainer.logo,selectedModule);readInfoItem(false)">
+                                            <span marginLeft>{{nextItem()?.title}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                                        </ion-button>
+
+                                        <ion-button color=secondary fill="clear" *ngIf="nextItem()?.title && (nextItem()?.type=='module' || nextItem()?.item_type=='module')" (click)="selectSubModule(nextItem());readInfoItem(false);scrollItemsToTop()">
+                                            <span marginLeft>{{nextItem()?.title}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                                        </ion-button>
+
+                                        <ion-button color=secondary fill="clear" *ngIf="!nextItem()?.title" (click)="readInfoItem(false)">
+                                            <span marginLeft>{{'modules.module_finished' | translate}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faTimes')"></fa-icon>
                                         </ion-button>
                                     </div> 
                                 </ion-card>
@@ -1544,6 +1577,9 @@
                                         <ion-col marginBottom *ngIf="itemAvailable(auth.getTrainingItem(selectedModule.id,item.id,null,0,true))" [size]="helper.cardSizeSmall">
                                             
                                             <ion-card noMargin noPadding pointer fullheight caseCard top10 *ngIf="item.type=='case'" (click)="showCaseInfo(auth.getTrainingItem(selectedModule.id,item.id,null,0,true),auth.mySelectedOrganisation.logo)">
+                                                <div class="shareButtonCase copyCaseTrainer">
+                                                    <fa-icon [icon]="icon.get('faCommentDots')" font-22 style="color:#7A90B6"></fa-icon>
+                                                </div>
                                                 <ion-card-content noPadding fullHeight>
                                                   <div backgroundImage class="avatarImage" *ngIf="auth.getTrainingItem(selectedModule.id,item.id,null,0,true).photo" [ngStyle]="{'background-image': 'url(' + auth.getTrainingItem(selectedModule.id,item.id,null,0,true).photo + ')'}"></div>
                                                   <div backgroundImage class="avatarImage" *ngIf="!auth.getTrainingItem(selectedModule.id,item.id,null,0,true).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -1568,6 +1604,9 @@
                                             </ion-card>
                     
                                             <ion-card noMargin noPadding pointer fullheight caseCard top10 *ngIf="item.type=='infoItem'">
+                                                <div class="shareButtonCase copyCaseTrainer">
+                                                    <fa-icon [icon]="icon.get('faBookOpen')" font-22 style="color:#7A90B6"></fa-icon>
+                                                </div>
                                                 <ion-card-content noPadding fullHeight>
                                                     <div backgroundImage class="avatarImage" *ngIf="auth.getTrainingItem(selectedModule.id,item.id,null,0,true).photo" [ngStyle]="{'background-image': 'url(' + auth.getTrainingItem(selectedModule.id,item.id,null,0,true).photo + ')'}"></div>
                                                     <div backgroundImage class="avatarImage" *ngIf="!auth.getTrainingItem(selectedModule.id,item.id,null,0,true).photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -1778,7 +1817,7 @@
                             <ng-container *ngIf="showAll=='my_organisation'&&selectedModule?.id &&trainingItem">
                                 <ion-card fullwidth [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
                                     <ion-card-header>
-                                        <ion-card-title font-24>
+                                        <ion-card-title font-24 uppercase weight600 style="padding: 0 15px;">
                                           <span>{{auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).title}}</span>
                                         </ion-card-title>
                                     </ion-card-header>
@@ -1798,7 +1837,7 @@
 
                                         </div>
                                         <div *ngIf="auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).type!='image_only'">
-                                          <div [innerHTML]="auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).content | cleanHtml" class="textContainer"></div>
+                                          <div [innerHTML]="auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).content | sanitizeHtml" class="textContainer"></div>
                                         </div>
 
                                         <div marginTop *ngIf="auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).files?.length">
@@ -1808,7 +1847,7 @@
                                                 <span class="spacer"></span>
                                               </ion-card-title>
                       
-                                            <ion-item pointer (click)="nav.goto(file.url,true)" *ngFor="let file of auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).files" borderSecondary borderRadius16 detail="false" lines="none">
+                                            <ion-item pointer marginBottom (click)="nav.goto(file.url,true)" *ngFor="let file of auth.getTrainingItem(selectedModule.id,trainingItem.id,null,0,true).files" borderSecondary borderRadius16 detail="false" lines="none">
                                                 <ion-label font-18 marginLeft>{{file.name}}</ion-label>
                                             </ion-item>
 
@@ -1820,10 +1859,33 @@
                                             <span marginLeft>{{'buttons.back' | translate}}</span>
                                         </ion-button>
                                         <div class="spacer"></div>
-                                        <ion-button color=secondary *ngIf="selectedModule.module_type=='game'" fill="clear" (click)="nextItem()">
+                                        <!-- <ion-button>
+                                            {{currentItemIndex()}}
+                                        </ion-button> -->
+                                        <ion-button color=secondary fill="clear" *ngIf="nextItem()?.title && (nextItem()?.type=='infoItem' || nextItem()?.item_type=='infoItem')" (click)="readInfoItem(true,true);selectTrainingItem(nextItem());scrollItemsToTop()">
+                                            <span marginLeft>{{nextItem()?.title}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                                        </ion-button>
+
+                                        <ion-button color=secondary fill="clear" *ngIf="nextItem()?.title && (nextItem()?.type=='case' || nextItem()?.item_type=='case')" (click)="showCaseInfo(auth.getTrainingItem(selectedModule.id,nextItem().id,null,0,true),auth.mySelectedOrganisation.logo);readInfoItem(true)">
+                                            <span marginLeft>{{nextItem()?.title}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                                        </ion-button>
+
+                                        <ion-button color=secondary fill="clear" *ngIf="nextItem()?.title && (nextItem()?.type=='module' || nextItem()?.item_type=='module')" (click)="selectSubModule(nextItem());readInfoItem(true);scrollItemsToTop()">
+                                            <span marginLeft>{{nextItem()?.title}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faArrowRight')"></fa-icon>
+                                        </ion-button>
+
+                                        <ion-button color=secondary fill="clear" *ngIf="!nextItem()?.title" (click)="readInfoItem(true)">
+                                            <span marginLeft>{{'modules.module_finished' | translate}}</span>
+                                            <fa-icon titleIcon [icon]="icon.get('faTimes')"></fa-icon>
+                                        </ion-button>
+
+                                        <!-- <ion-button color=secondary *ngIf="selectedModule.module_type=='game'" fill="clear" (click)="nextItem()">
                                             <span>{{'buttons.next' | translate}}</span>
                                             <fa-icon marginLeft [icon]="icon.get('faArrowRight')"></fa-icon>
-                                        </ion-button>
+                                        </ion-button> -->
                                     </div> 
                                 </ion-card>
                             </ng-container>

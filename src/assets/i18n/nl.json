@@ -609,7 +609,8 @@
         "new_training":"Nieuwe training",
         "new_training_name":"Hoe heet de nieuwe training?",
         "cannot_add_module_to_itself":"Er ontstaat een oneindige lus als je deze module toevoegt aan zichzelf. Kies een andere module.",
-        "training_content_title":"Uitgebreide beschrijving van de training. Wordt alleen weergegeven bij een hoofdmodule."
+        "training_content_title":"Uitgebreide beschrijving van de training. Wordt alleen weergegeven bij een hoofdmodule.",
+        "module_finished":"Module voltooid"
     },
     "trainings":{
         "edit_training":"Bewerken",
@@ -1158,7 +1159,8 @@
         "confirm_purchase_organisation_text": "Met de aanschaf van deze training voor jouw organisatie, krijgen alle medewerkers van jouw organisatie toegang tot deze training. De prijs is afgestemd op het aantal medewerkers in jouw organisatie.<br><br>Weet je zeker dat je deze training voor jouw organisatie wilt aanschaffen?",
         "no_trainer_details":"De trainer heeft nog geen details over zichzelf of de organisatie opgegeven.",
         "checking_code":"We controleren je url...",
-        "code_not_found":"De code is ongeldig of niet gevonden."
+        "code_not_found":"De code is ongeldig of niet gevonden.",
+        "no_private_item_found":"Deze e-training is niet gevonden of niet beschikbaar zonder toegangscode."
     },
     "media":{
         "photo_upload":"Upload foto",

@@ -53,7 +53,7 @@ export class ConversationStartPage implements OnInit {
   ngOnInit() {
 
     // console.log(location.pathname.substring(1))
-    console.log('conversation start page',this.caseItem)
+    // console.log('conversation start page',this.caseItem)
     if(this.caseItem){
       if(this.caseItem.goals){
         this.caseItem.goalsItems = JSON.parse(JSON.stringify(this.caseItem.goals))
@@ -374,7 +374,7 @@ export class ConversationStartPage implements OnInit {
         }
         return this.caseItem.editable_by_user.casus
       case 4:
-        return this.caseItem.editable_by_user.goals.phases||this.caseItem.editable_by_user.goals.free||this.caseItem.editable_by_user.goals.attitude
+        return this.caseItem.editable_by_user.goals.phases||this.caseItem.editable_by_user.goals.free||this.caseItem.editable_by_user.free_answer||this.caseItem.editable_by_user.goals.attitude
       case 5:
         return this.caseItem.editable_by_user.openingMessage
       

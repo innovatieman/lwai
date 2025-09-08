@@ -50,6 +50,9 @@ export class ExamplePage implements OnInit {
     console.log(data)
   }
 
+  
+
+
   ionViewWillEnter(){
      this.route.params.pipe(takeUntil(this.leave$)).subscribe(params => {
       this.id = params['id'];
@@ -148,32 +151,67 @@ export class ExamplePage implements OnInit {
       console.log(this.modulesBreadCrumbs)
   }
 
-  selectTrainingItem(item:any){
+  switchingItem:boolean = false
+  selectTrainingItem(item:any,moveInModule?:boolean){
     // console.log('select training item',item)
     // console.log(this.trainerService.breadCrumbs)
     // console.log(this.exampleItem(this.trainerService.breadCrumbs[0].type,item.id))
+
     if(item.type == 'infoItem'){
       if(this.trainerService.breadCrumbs.length && (this.trainerService.breadCrumbs[0].type=='training' || this.trainerService.breadCrumbs[0].type=='module')){
+        console.log('getting item from training')
+        if(moveInModule){
+          this.modulesBreadCrumbs.pop()
+        }
         this.modulesBreadCrumbs.push({type:'infoItem',item:this.exampleItem(item.type,item.id)})
       }
       else{
+        console.log('getting item from training')
+        if(moveInModule){
+          this.modulesBreadCrumbs.pop()
+          this.switchingItem = true
+        }
         this.modulesBreadCrumbs.push({type:'infoItem',item:item})
+        setTimeout(() => {
+          this.switchingItem = false
+        }, 50);
       }
     }
     else if(item.type == 'module'){
       if(this.trainerService.breadCrumbs.length && this.trainerService.breadCrumbs[0].type=='module'){
+        if(moveInModule){
+          this.modulesBreadCrumbs.pop()
+        }
+        // this.modulesBreadCrumbs.push({type:'module',item:item})
+        // this.type = 'module'
+        // this.modulesBreadCrumbs.push({type:'module',...this.exampleItem(this.trainerService.breadCrumbs[0].type,this.trainerService.breadCrumbs[0].item.id)})
+        this.modulesBreadCrumbs.push({type:'module',...this.exampleItem(item.type,item.id)})
         
-        this.modulesBreadCrumbs.push({type:'module',item:this.exampleItem(this.trainerService.breadCrumbs[0].type,this.trainerService.breadCrumbs[0].item.id)})
+        console.log(this.modulesBreadCrumbs)
       }
       else{
+        if(moveInModule){
+          this.modulesBreadCrumbs.pop()
+        }
         this.modulesBreadCrumbs.push({type:'module',item:item})
       }
     }
     else if(item.type == 'training'){
       this.modulesBreadCrumbs.push({type:'training',item:item})
     }
+    else if(item.type == 'case'){
+      this.modulesBreadCrumbs.pop()
+      this.showCaseInfo(this.exampleItem(item.type,item.id))
+    }
     // console.log(this.modulesBreadCrumbs)
     // this.trainingItem = item
+    if(moveInModule){
+       let chatDiv:any
+        setTimeout(() => {
+          chatDiv = document.getElementById('mainContent');
+          chatDiv.scrollTop = 0;//chatDiv.scrollHeight;
+        }, 50);
+      }
   }
 
   get latestBreadCrumbs(){
@@ -186,12 +224,55 @@ export class ExamplePage implements OnInit {
   }
 
   backBreadCrumbs(){
+    // console.log('backBreadCrumbs',this.modulesBreadCrumbs)
     if(this.modulesBreadCrumbs.length > 0){
       this.modulesBreadCrumbs.pop()
     }
   }
 
+  currentItemIndex(item:any){
+    if (!this.modulesBreadCrumbs || !this.modulesBreadCrumbs.length || !this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 2]?.items) {
+      // console.log(this.type,this.id,this.exampleItem('module',item.id))
+      if(!this.exampleItem('module',this.id)?.items){
+        return -1;
+      }
+      // console.log('exampleItem',this.exampleItem('module',item.id)?.items.findIndex((i:any)=>i.id == item.id));
+      return this.exampleItem('module',this.id)?.items.findIndex((i:any)=>i.id == item.id);
+    }
+    return this.modulesBreadCrumbs[this.modulesBreadCrumbs.length-2].items.findIndex((i:any)=>i.id == item.id)
+  }
+
+  maxItemIndex(): number {
+    if (!this.modulesBreadCrumbs || !this.modulesBreadCrumbs.length || !this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 2]?.items) {
+      if(!this.exampleItem(this.type,this.id)?.items){
+        return -1;
+      }
+      return this.exampleItem(this.type,this.id)?.items.length - 1;
+    }
+    return this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 2].items.length - 1;
+  }
+
+  nextItem(item:any){
+    let currentIndex = this.currentItemIndex(item);
+    let maxIndex = this.maxItemIndex();
+    if(currentIndex > -1 && currentIndex < maxIndex){
+      if (!this.modulesBreadCrumbs || !this.modulesBreadCrumbs.length || !this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 2]?.items) {
+        return this.exampleItem(this.type,this.id)?.items[currentIndex + 1];
+      }
+      return this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 2].items[currentIndex + 1];
+    }
+    return null;
+  }
+
+  // showBreadCrumbs(){
+  //   return JSON.stringify(this.modulesBreadCrumbs)
+  // }
+  // showItem(){
+  //   return JSON.stringify(this.exampleItem(this.type,this.id))
+  // }
+
   backToEdit(){
+    this.modulesBreadCrumbs = []
     if(this.trainerService.originEdit){
       this.nav.go(this.trainerService.originEdit)
     }
@@ -239,17 +320,17 @@ export class ExamplePage implements OnInit {
     }, 10);
   }
   useAction(action:string){
-    console.log('useAction',action)
+    // console.log('useAction',action)
     if(action.includes('.')){
       let parts = action.split('.');
       if(action.includes('(')){
         let params:any = action.substring(action.indexOf('(') + 1, action.indexOf(')'));
-        console.log('params',params)
+        // console.log('params',params)
         if(params && params.includes(':')){
           params = params.split(':')
           params = this[params[0]][params[1]]
         }
-        console.log('params',params)
+        // console.log('params',params)
         this[parts[0]][parts[1]](params);
       }
       else {

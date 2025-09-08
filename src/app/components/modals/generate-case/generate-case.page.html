@@ -12,7 +12,7 @@
   <fa-icon *ngIf="step==1" font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="showText(translate.instant('tooltips.case_type_specific_input') ,translate.instant('generate_case.title_step_1'))"></fa-icon>
   <fa-icon *ngIf="step==2" font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="showText(translate.instant('tooltips.case_extra_instructions') ,translate.instant('generate_case.title_step_2'))"></fa-icon>
   <fa-icon *ngIf="step==3" font-20 pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" (click)="showText(translate.instant('tooltips.case_instructions') ,translate.instant('generate_case.title_step_3'))"></fa-icon>
-  <ion-button (click)="modalCtrl.dismiss()" fill="clear" color="secondary">
+  <ion-button (click)="close(true)" fill="clear" color="secondary">
     <fa-icon [icon]="icon.get('faTimes')" font-20 slot="icon-only"></fa-icon>
   </ion-button>
 </div>

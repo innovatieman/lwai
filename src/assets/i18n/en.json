@@ -609,7 +609,8 @@
         "new_training":"New training",
         "new_training_name":"What is the name of the new training?",
         "cannot_add_module_to_itself":"An infinite loop would occur if you add this module to itself. Please choose another module.",
-        "training_content_title":"Detailed description of the training. Only displayed for a main module."
+        "training_content_title":"Detailed description of the training. Only displayed for a main module.",
+        "module_finished":"Module finished"
       },
     "trainings":{
         "edit_training":"Edit training",
@@ -1158,7 +1159,9 @@
     "confirm_purchase_organisation_text": "With the purchase of this training for your organization, all employees of your organization will have access to this training. The price is based on the number of employees in your organization.<br><br>Are you sure you want to purchase this training for your organization?",
     "no_trainer_details":"The trainer has not yet provided any details about themselves or the organization.",
     "checking_code":"We are checking your URL...",
-    "code_not_found":"The code is invalid or not found."
+    "code_not_found":"The code is invalid or not found.",
+    "no_private_item_found":"This e-training is not found or not available without access code."
+
   },
   "media":{
     "photo_upload":"Upload photo",

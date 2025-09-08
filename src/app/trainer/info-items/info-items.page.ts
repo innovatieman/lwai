@@ -428,6 +428,55 @@ export class InfoItemsPage implements OnInit {
     //   })
        
     // }
+
+  updateAllModules(infoItem: any) {
+    for (let module of this.trainerService.modules) {
+      const updated = this.updateInfoItemsInItems(module.items, infoItem);
+      if (updated) {
+        this.firestore.setSub(
+          'trainers',
+          this.nav.activeOrganisationId,
+          'modules',
+          module.id,
+          module.items,
+          'items',
+          null,
+          true
+        );
+      }
+    }
+  }
+
+  // Recursieve hulpfunctie om door items én geneste moduleItems te lopen
+  private updateInfoItemsInItems(items: any[], infoItem: any): boolean {
+    let updated = false;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.type === 'infoItem' && item.id === infoItem.id) {
+        items[i] = {
+          type: 'infoItem',
+          created: infoItem.created || Date.now(),
+          title: infoItem.title || '',
+          id: infoItem.id,
+          order: item.order || 999,
+        };
+        updated = true;
+      }
+
+      // Als dit een moduleItem is en er zijn geneste items, recursief doorlopen
+      if (item.type === 'module' && Array.isArray(item.items)) {
+        const nestedUpdated = this.updateInfoItemsInItems(item.items, infoItem);
+        if (nestedUpdated) {
+          updated = true;
+        }
+      }
+    }
+
+    return updated;
+  }
+
     
     update(field?:string,isArray:boolean = false,infoItem?:any){
       if(!infoItem?.id){
@@ -457,12 +506,26 @@ export class InfoItemsPage implements OnInit {
       }
       else{
         if(field){
+
+          infoItem[field] = infoItem[field] || ''
+          infoItem[field] = infoItem[field]
+          .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
           // console.log('update',field,infoItem)
           this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem.id,infoItem[field],field,()=>{
             setTimeout(() => {
               window.scrollTo(0, scrollPosition);
             }, 100);
           },isArray)
+          if(field == 'title'){
+            this.updateAllModules(infoItem)
+          }
         }
       }
     }
@@ -1098,12 +1161,20 @@ export class InfoItemsPage implements OnInit {
             });
             if (!response.ok) {
               console.error("Request failed:", response.status, response.statusText);
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
               return;
             }
             const responseData = await response.json();
             if(responseData?.imageURL){
-              infoItem.photo = responseData.imageURL
-              this.update('photo')
+              if(!landscape){
+                infoItem.photo = responseData.imageURL
+                this.update('photo')
+              }
+              else{
+                infoItem.extra_photo = responseData.imageURL
+                this.update('extra_photo')
+              }
             }
               console.log('hiding loader')
               this.toast.hideLoader()

@@ -299,14 +299,14 @@ exports.registerWithCode = functions
           
   }
 
-  async function loadETrainingsWithItems(trainingsData: any[]) {
+  async function loadETrainingsWithItems(trainingsData: any[],organisationId?:string) {
     // Haal alle trainingitems vanuit subcollectie items
     return Promise.all(
       trainingsData.map(async (training) => {
         const itemsRef =
              admin.firestore()
               .collection('trainers')
-              .doc(training.trainerId)
+              .doc(organisationId)
               .collection('my_elearnings')
               .doc(training.id)
               .collection('items');
@@ -583,6 +583,11 @@ exports.getMyActiveOrganisationsTrainings = functions
       const itemsSnap = await itemsRef.get();
       if (itemsSnap.empty) {
         organisation.used_items = [];
+        organisation.basics = {
+          id: organisation.id,
+          settings: organisation.settings,
+          used_items: [],
+        };
         return organisation;
       }
       const itemsList = itemsSnap.docs.map(doc => ({
@@ -590,6 +595,11 @@ exports.getMyActiveOrganisationsTrainings = functions
         id: doc.id,
       }));
       organisation.used_items = itemsList;
+      organisation.basics = {
+        id: organisation.id,
+        settings: organisation.settings,
+        used_items: itemsList,
+      };
       // klaar
       return organisation;
     });
@@ -656,7 +666,7 @@ exports.getMyActiveOrganisationsTrainings = functions
           const organisationData = organisationDoc.data();
 
           return {
-            id: organisation.id,
+            ...organisation,
             name: organisationData.name || '',
             logo: organisationData.logo || '',
             trainer_details: organisationData.trainer_details || '',
@@ -675,6 +685,11 @@ exports.getMyActiveOrganisationsTrainings = functions
     await Promise.all(
       validOrganisations.map(async (organisation: any) => {
         try {
+          organisation.basics = {
+            id: organisation.id,
+            settings: organisation.settings,
+            used_items: organisation.used_items || [],
+          };
 
           const trainingsRef = admin
             .firestore()
@@ -685,12 +700,22 @@ exports.getMyActiveOrganisationsTrainings = functions
 
           const trainingsSnap = await trainingsRef.get();
           if (trainingsSnap.empty) return organisation;
+          // if(!organisation.basics?.used_items){
+          //   organisation.basics.used_items = [];
+          // }
           const trainingsList = trainingsSnap.docs.map(doc => ({
             ...doc.data(),
             id: doc.id,
+            basics: {
+              ...(organisation.basics || {
+                id: organisation.id,
+                settings: organisation.settings,
+                used_items: organisation.used_items || [],
+              }),
+            }
           }));
 
-          const enrichedTrainings = await loadETrainingsWithItems(trainingsList);
+          const enrichedTrainings = await loadETrainingsWithItems(trainingsList, organisation.id);
 
           organisation.trainings = [...organisation.trainings, ...enrichedTrainings];
           return organisation;

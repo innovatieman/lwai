@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { max, Subject, take, takeUntil } from 'rxjs';
+import { filter, max, Subject, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MaxLengthPipe } from 'src/app/pipes/max-length.pipe';
 import { AccountService } from 'src/app/services/account.service';
@@ -44,6 +44,7 @@ export class DashboardPage implements OnInit {
   originalBankAccount:any = {}
   originalInvoice:any = {}
   showCustomerList:boolean = false;
+  trainerDataLoaded:boolean = false;
   private leave$ = new Subject<void>();
   [x:string]: any;
   showHtml:boolean = false
@@ -137,7 +138,6 @@ export class DashboardPage implements OnInit {
   ionViewWillEnter(){
     this.route.params.pipe(takeUntil(this.leave$)).subscribe(params=>{
         if(params['tab']){
-          console.log('tab',params['tab'])
           this.showPart = params['tab']
         }
         if(params['status']){
@@ -149,30 +149,34 @@ export class DashboardPage implements OnInit {
           }
           this.nav.go('trainer/dashboard/')
         }
-        console.log(this.trainerService.trainerInfo)
-        if(!this.trainerService.trainerInfo.bank_account){
-          this.trainerService.trainerInfo.bank_account = {
-            iban: '',
-            bic: '',
-            name: ''
-          }
-          this.update('bank_account')
-        }
-        if(!this.trainerService.trainerInfo.invoice){
-          this.trainerService.trainerInfo.invoice = {
-            name: '',
-            vat_number: '',
-            address: '',
-            zip: '',
-            city: '',
-            country: '',
-            email: '',
-            reference: '',
-          }
-          this.update('invoice')
-        }
-        this.originalBankAccount = JSON.parse(JSON.stringify(this.trainerService.trainerInfo.bank_account))
-        this.originalInvoice = JSON.parse(JSON.stringify(this.trainerService.trainerInfo.invoice))
+        this.trainerService.trainerInfoLoaded$.pipe(filter(loaded => loaded === true))
+        .subscribe(() => {
+            if(!this.trainerService.trainerInfo.bank_account){
+              this.trainerService.trainerInfo.bank_account = {
+                iban: '',
+                bic: '',
+                name: ''
+              }
+              this.update('bank_account')
+            }
+            if(!this.trainerService.trainerInfo.invoice){
+              this.trainerService.trainerInfo.invoice = {
+                name: '',
+                vat_number: '',
+                address: '',
+                zip: '',
+                city: '',
+                country: '',
+                email: '',
+                reference: '',
+              }
+              this.update('invoice')
+            }
+            this.originalBankAccount = JSON.parse(JSON.stringify(this.trainerService.trainerInfo.bank_account))
+            this.originalInvoice = JSON.parse(JSON.stringify(this.trainerService.trainerInfo.invoice))
+            this.trainerDataLoaded = true;
+          
+        })
       })
 
 
@@ -1230,6 +1234,9 @@ export class DashboardPage implements OnInit {
   }
 
   changesInBankAccount(){
+    if(!this.trainerService.trainerInfo?.bank_account || this.trainerService.trainerInfo.bank_account.iban==undefined || !this.originalBankAccount || this.originalBankAccount.iban==undefined){
+      return false
+    }
     if(this.originalBankAccount && this.trainerService.trainerInfo.bank_account){
       return this.originalBankAccount.iban.toUpperCase() != this.trainerService.trainerInfo.bank_account.iban.toUpperCase() ||
              this.originalBankAccount.bic != this.trainerService.trainerInfo.bank_account.bic ||
@@ -1293,6 +1300,9 @@ export class DashboardPage implements OnInit {
   }
 
   changesInInvoice(){
+    if(!this.trainerService.trainerInfo?.invoice || this.trainerService.trainerInfo.invoice.name == undefined || !this.originalInvoice || this.originalInvoice.name==undefined){
+      return false
+    }
     if(this.originalInvoice && this.trainerService.trainerInfo.invoice){
       return this.originalInvoice.name != this.trainerService.trainerInfo.invoice.name ||
              this.originalInvoice.zip.trim().toUpperCase() != this.trainerService.trainerInfo.invoice.zip ||

@@ -5,7 +5,7 @@
       <div *ngIf="caseItem.avatarName" class="videoAvatarBadge">{{'cases.badge_video' | translate}}</div>
       <div center >
         
-        <div *ngIf="caseItem.type!='product'&&isTrainer" class="shareButtonCase copyCaseTrainer" pointer (click)="copyItemAsTrainer(caseItem,$event)">
+        <div *ngIf="caseItem.type!='product'&&isTrainer&&!caseItem.trainingId" class="shareButtonCase copyCaseTrainer" pointer (click)="copyItemAsTrainer(caseItem,$event)">
             <ion-icon name="copy-outline" font-22></ion-icon>
         </div>
         
@@ -13,7 +13,7 @@
               <ion-card-title marginBottom font-18 weight600>{{caseItem.title}}</ion-card-title>
               <ion-card-subtitle font-14 weight400 style="text-transform:none" [innerHTML]="caseItem.user_info | sanitizeHtml"></ion-card-subtitle>
           </ion-card-header>
-          <div *ngIf="!caseItem.avatarName&&caseItem.type!='product'" class="shareButtonCase" pointer (click)="media.shareCase(caseItem,$event)">
+          <div *ngIf="!caseItem.avatarName&&caseItem.type!='product'&&!caseItem.trainingId" class="shareButtonCase" pointer (click)="media.shareCase(caseItem,$event)">
             <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
             <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
         </div>

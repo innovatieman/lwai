@@ -560,6 +560,54 @@ export class CasesPage implements OnInit {
     }, 100);
   }
 
+ updateAllModules(caseItem: any) {
+    for (let module of this.trainerService.modules) {
+      const updated = this.updateCaseInItems(module.items, caseItem);
+      if (updated) {
+        this.firestore.setSub(
+          'trainers',
+          this.nav.activeOrganisationId,
+          'modules',
+          module.id,
+          module.items,
+          'items',
+          null,
+          true
+        );
+      }
+    }
+  }
+
+  // Recursieve hulpfunctie om door items én geneste moduleItems te lopen
+  private updateCaseInItems(items: any[], caseItem: any): boolean {
+    let updated = false;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.type === 'case' && item.id === caseItem.id) {
+        items[i] = {
+          type: 'case',
+          created: caseItem.created || Date.now(),
+          title: caseItem.title || '',
+          id: caseItem.id,
+          order: item.order || 999,
+        };
+        updated = true;
+      }
+
+      // Als dit een moduleItem is en er zijn geneste items, recursief doorlopen
+      if (item.type === 'module' && Array.isArray(item.items)) {
+        const nestedUpdated = this.updateCaseInItems(item.items, caseItem);
+        if (nestedUpdated) {
+          updated = true;
+        }
+      }
+    }
+
+    return updated;
+  }
+
   update(field?:string,isArray:boolean = false,caseItem?:any){
     if(!caseItem?.id){
       caseItem = this.trainerService.caseItem
@@ -582,6 +630,10 @@ export class CasesPage implements OnInit {
             window.scrollTo(0, scrollPosition);
           }, 100);
         },isArray)
+        if(field == 'title'){
+          console.log('updating all modules with new title')
+          this.updateAllModules(caseItem)
+        }
       }
     }
   }

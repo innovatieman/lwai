@@ -97,6 +97,14 @@ export class CreateTrainerPage implements OnInit {
             active:true,
             max_employees,
           })
+           this.firestore.setSub('trainers', res.id, 'credits', '0',{
+            expires: moment().add(1, 'year').unix(), // 1 year from now
+            active:true,
+            amount:10000000,
+            total:10000000,
+            added:moment().unix(),
+            source:"Organisation credits",
+          })
         }
         this.toast.show('Trainer created successfully');
         this.trainerItem = {

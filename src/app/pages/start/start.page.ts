@@ -412,7 +412,7 @@ export class StartPage implements OnInit {
   }
 
   showCaseInfo(caseItem:any, logo?:string,training?:any){
-    console.log('show case info',caseItem)
+    // console.log('show case info',caseItem)
     if(logo){
       caseItem.logo = logo
     }
@@ -423,7 +423,7 @@ export class StartPage implements OnInit {
       caseItem.trainerId =  training.trainerId || training.trainer_id
     }
     this.modalService.showCaseInfo(caseItem, (response:any)=>{
-      console.log('case info response',response)
+      // console.log('case info response',response)
       if(response.data == 'read'){
         // Mark the case as read
         this.selectTrainingItem(caseItem);
@@ -864,13 +864,17 @@ export class StartPage implements OnInit {
       this.modulesBreadCrumbs.push(module)
     }
 
-    selectTrainingItem(item:any,event?:Event){
+    selectTrainingItem(item:any,event?:Event,moveInModule?:boolean){
       if(event){
         event.preventDefault()
         event.stopPropagation()
       }
       // console.log('select item',item)
-      this.trainingItem = item
+      this.trainingItem = ''
+      setTimeout(() => {
+        this.trainingItem = item
+      }, 10);
+      // this.scrollItemsToTop()
     }
 
     backBreadCrumbs(){
@@ -904,8 +908,49 @@ export class StartPage implements OnInit {
       return count
     }
 
+    currentItemIndex(){
+      // return -1
+      if(this.modulesBreadCrumbs?.length){
+        // console.log('current item index',this.modulesBreadCrumbs,this.trainingItem)
+        let items = this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 1].items
+        return items.findIndex((i:any) => i.id === this.trainingItem.id);
+      }
+      if(this.selectedModule?.items){
+        console.log('current item index',this.selectedModule,this.trainingItem)
+        return this.selectedModule.items.findIndex((i:any) => i.id === this.trainingItem.id);
+      }
+      return -1
+    }
 
-    readInfoItem(organisation?:boolean){
+    maxItemIndex(){
+      if(this.modulesBreadCrumbs?.length){
+        let items = this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 1].items
+        return items.length - 1
+      }
+      if(this.selectedModule?.items){
+        return this.selectedModule.items.length - 1
+      }
+      return -1
+    }
+
+    nextItem(){
+      let currentIndex = this.currentItemIndex();
+      let maxIndex = this.maxItemIndex();
+      if(currentIndex > -1 && currentIndex < maxIndex){
+        let nextIndex = currentIndex + 1
+        let items = this.modulesBreadCrumbs?.length ? this.modulesBreadCrumbs[this.modulesBreadCrumbs.length - 1].items : this.selectedModule.items
+        return this.auth.getTrainingItem(this.selectedModule.id,items[nextIndex].id,this.modulesBreadCrumbs,0,this.myOrganisationTraining())  
+      }
+      return null
+
+    }
+
+    myOrganisationTraining(){
+      return location.pathname.indexOf('my_organisation') > -1
+    }
+
+    readInfoItem(organisation?:boolean,saveTrainingItem?:boolean){
+      // console.log('read info item',this.selectedModule)
       let checked = false
       for(let i = 0; i < this.selectedModule.basics.used_items.length; i++){
         if(this.selectedModule.basics.used_items[i].id == this.trainingItem.id){
@@ -928,7 +973,9 @@ export class StartPage implements OnInit {
           })
         }
       }
-      this.trainingItem = null
+      if(!saveTrainingItem){
+        this.trainingItem = null
+      }
     }
 
     itemIsFinished(item:any,organisation?:boolean){
@@ -962,24 +1009,24 @@ export class StartPage implements OnInit {
       return false
     }
 
-    nextItem(){
-      console.log('read info item',this.selectedModule)
-      if(this.selectedModule.module_type == 'game'){
-        console.log(this.auth.getGameItemStatus(this.selectedModule.id,this.trainingItem.id))
-        if(this.auth.getGameItemStatus(this.selectedModule.id,this.trainingItem.id).status != 'finished'){
-          this.firestore.createSub('users',this.auth.userInfo.uid,'game_progress',{
-            module_id:this.selectedModule.id,
-            item_id:this.trainingItem.id,
-            read:moment().unix(),
-            status:'finished'
-          })
-        }
-        else{
-          console.log('item already finished')
-        }
-      }
-      console.log('next item');
-    }
+    // nextItem(){
+    //   console.log('read info item',this.selectedModule)
+    //   if(this.selectedModule.module_type == 'game'){
+    //     console.log(this.auth.getGameItemStatus(this.selectedModule.id,this.trainingItem.id))
+    //     if(this.auth.getGameItemStatus(this.selectedModule.id,this.trainingItem.id).status != 'finished'){
+    //       this.firestore.createSub('users',this.auth.userInfo.uid,'game_progress',{
+    //         module_id:this.selectedModule.id,
+    //         item_id:this.trainingItem.id,
+    //         read:moment().unix(),
+    //         status:'finished'
+    //       })
+    //     }
+    //     else{
+    //       console.log('item already finished')
+    //     }
+    //   }
+    //   console.log('next item');
+    // }
 
     itemAvailable(item:any){
       if(!item.available_date && !item.available_till){

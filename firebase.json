@@ -16,6 +16,18 @@
         {
           "source": "/:lang/:id",
           "function": "directToCase"
+        },
+        {
+          "source": "/etraining/direct/:id",
+          "function": "directToTrainings"
+        },
+        {
+          "source": "/etraining/direct/:id/:specialcode",
+          "function": "directToTrainings"
+        },
+        {
+          "source": "/etraining/direct/:id/:specialcode/:private",
+          "function": "directToTrainings"
         }
       ],
       "redirects": [

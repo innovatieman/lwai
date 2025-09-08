@@ -3,7 +3,7 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-import { Subject, take, takeUntil } from 'rxjs';
+import { filter, Subject, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MenuPage } from 'src/app/components/menu/menu.page';
 import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
@@ -157,8 +157,9 @@ export class MarketplacePage implements OnInit {
     this.accountService.fetchProducts();
     this.accountService.fetchProductsElearnings();
 
-    this.trainerService.trainerInfoLoaded.subscribe((loaded) => {
-      this.trainerInfoLoaded = loaded;
+    this.trainerService.trainerInfoLoaded$.pipe(filter(loaded => loaded === true))
+        .subscribe(() => {
+      this.trainerInfoLoaded = true;
     });
   }
 
@@ -254,6 +255,17 @@ export class MarketplacePage implements OnInit {
       }
     })
   }
+
+  canBeShown(item:any){
+    if(item.marketplace){
+      return true;
+    }
+    if(this.hasValidSpecialCode(item)){
+      return true;
+    }
+    return false;
+  }
+
 
   getElearnings(callback?:any) {
     this.firestoreService.query('elearnings', 'open_to_public', true).pipe(takeUntil(this.leave$)).subscribe((elearnings:any[]) => {

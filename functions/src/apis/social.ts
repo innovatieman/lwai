@@ -38,142 +38,6 @@ const allowedSenders = [
 // const linkedInToken = 'AQXEa6U_NE8H5NoZUd-mGMVRkCrtMn6-KCIx7CbLo3p1EZe3tjghDdLglmA8-eAvDkFrXANqP1NBazTtghNdW2UYBQr7hiS7Z1TAalL1LKWjr1e9jQauBz6CowGNOfi_aaT2E5fPg61SZJZqyxXyXMw80BL7ohQ8CBvkmJysL2kxpRjGglcCkizLz9f60bXJ-AsFoiNJKm-esgnqNalNHIp0LajPSQCCqukcmVFL4__LN6CazrOSIiQsbRZcJ3rZemGdS9PvHcW6EPL6lwnfKCo8047_tdvdR1rGPMaOHq0IQfLNMIKCa_Q4-3Lb_1WVN80Sn7gDYREZoPeGRNQl_oAQWvGKEw'
 const db = admin.firestore();
 
-// exports.fetchEmailsSocial = functions.region('europe-west1')
-//   .pubsub
-//   .schedule('1 7 * * *')
-//   .timeZone('Europe/Amsterdam')
-//   .onRun(async (): Promise<null> => 
-//     const imapConfig: any = {
-//       user: "social_writer@alicialabs.com",
-//       password: "oijno[poi4325fer$%frg",
-//       host: "mail.antagonist.nl",
-//       port: 993,
-//       tls: true,
-//       socketTimeout: 30000,
-//     };
-
-//     const imap: any = new Imap(imapConfig);
-
-//     const openInbox = (): Promise<any> => {
-//       return new Promise((resolve: any, reject: any) => {
-//         imap.openBox("INBOX", false, (err: any, box: any) => {
-//           if (err) reject(err);
-//           else resolve(box);
-//         });
-//       });
-//     };
-
-//     const fetchEmails = (): Promise<any[]> => {
-//       return new Promise((resolve: any, reject: any) => {
-//         imap.search(["ALL"], (err: any, results: any) => {
-//           if (err) return reject(err);
-//           if (!results || results.length === 0) return resolve([]);
-
-//           const emails: any[] = [];
-//           const f: any = imap.fetch(results, { bodies: "" });
-
-//           f.on("message", (msg: any, seqno: any) => {
-//             msg.on("body", (stream: any) => {
-//               simpleParser(stream, (err: any, mail: any) => {
-//                 if (err) {
-//                   console.error(`[IMAP] Parse error mail ${seqno}:`, err);
-//                 } else {
-//                   emails.push({ seqno, mail });
-//                 }
-//               });
-//             });
-//           });
-
-//           f.once("error", (err: any) => reject(err));
-//           f.once("end", () => resolve(emails));
-//         });
-//       });
-//     };
-
-//     const processEmails = async (emails: any[]): Promise<void> => {
-//       for (const { seqno, mail } of emails) {
-//         try {
-//           await db.collection("social_writer_emails").add({
-//             from: mail.from.text,
-//             subject: mail.subject,
-//             text: mail.text,
-//             html: mail.html,
-//             date: mail.date,
-//           });
-
-//           await new Promise((resolve: any, reject: any) => {
-//             imap.addFlags(seqno, "\\Deleted", (err: any) => {
-//                 if (err) {
-//                   console.error(`[IMAP] Mark delete failed for mail ${seqno}:`, err);
-//                   reject(err);
-//                 } else {
-//                   console.log(`[IMAP] Mail ${seqno} gemarkeerd als verwijderd`);
-//                   imap.expunge((expErr: any) => {
-//                     if (expErr) {
-//                       console.error(`[IMAP] Expunge failed for mail ${seqno}:`, expErr);
-//                       reject(expErr);
-//                     } else {
-//                       console.log(`[IMAP] Expunge uitgevoerd voor mail ${seqno}`);
-//                       resolve(null);
-//                     }
-//                   });
-//                 }
-//             });
-//           });
-
-//           console.log(`[IMAP] Verwerkt & gemarkeerd als verwijderd mail ${seqno}`);
-//         } catch (err: any) {
-//           console.error(`[IMAP] Verwerking mislukt voor mail ${seqno}:`, err);
-//         }
-//       }
-//     };
-
-//     try {
-//       console.log("[IMAP] Verbinden...");
-//       await new Promise((resolve: any, reject: any) => {
-//         imap.once("ready", resolve);
-//         imap.once("error", reject);
-//         imap.connect();
-//       });
-
-//       await openInbox();
-//       console.log("[IMAP] Inbox geopend");
-
-//       const emails: any[] = await fetchEmails();
-//       console.log(`[IMAP] ${emails.length} e-mails gevonden`);
-
-//       if (emails.length > 0) {
-//         await processEmails(emails);
-
-//         // Expunge na verwerking
-//         await new Promise((resolve: any, reject: any) => {
-//           imap.closeBox(true, (err: any) => {
-//             if (err) reject(err);
-//             else resolve(null);
-//           });
-//         });
-
-//         console.log("[IMAP] Expunge uitgevoerd");
-//       } else {
-//         await new Promise((resolve: any, reject: any) => {
-//           imap.closeBox(false, (err: any) => {
-//             if (err) reject(err);
-//             else resolve(null);
-//           });
-//         });
-//       }
-
-//       imap.end();
-//       console.log("[IMAP] Inbox gesloten & verbinding beëindigd");
-//       return null;
-//     } catch (err: any) {
-//       console.error("[IMAP] Fout:", err);
-//       imap.end();
-//       throw err;
-//     }
-// });
-
-
 
 exports.handleAiInboundEmail = onRequest(
     { region: 'europe-west1', maxInstances: 1, timeoutSeconds: 60 },
@@ -223,6 +87,20 @@ exports.handleAiInboundEmail = onRequest(
                 break;
             }
         }
+
+        if(fields.to&&fields.to.substring(0,8)=='trainer_'){
+            await db.collection("mails_to_trainers").add({
+                from: fields.from || null,
+                to: fields.to || null,
+                subject: fields.subject || null,
+                date: Date.now(),
+                email: fields.email || null,
+            });
+            console.log('[SendGrid] Mail to trainer opgeslagen:', fields.to);
+            res.status(200).send('OK');
+            return;
+        }
+
         if(!allowed){
             console.log('[SendGrid] Ongeldig afzender:', fields.from);
             res.status(200).send('OK');

@@ -366,7 +366,10 @@ export class TrainingsPage implements OnInit {
   }
 
   get privateUrl(){
-    return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/marketplace/elearnings?trainingId=' + this.trainerService.trainingItem.id + '&specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '&open=1&private=1';
+    // if(location.host.substring(0,9)=='localhost'){
+      return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/marketplace/elearnings?trainingId=' + this.trainerService.trainingItem.id + '&specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '&open=1&private=1';
+    // }
+    // return 'https://marketplace.alicialabs.com/etraining/direct/' + this.trainerService.trainingItem.id + '/' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '/1';
   }
   copyPrivateTrainingUrl(){
     // this.toast.show('Deel deze link met de deelnemers: ' + this.privateUrl, 5000);
@@ -1992,8 +1995,8 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
         this.toast.show(res.result)
         return
       }
-      if(res?.result?.sessionId){
-        this.firestore.getDocListen(`customers/${this.nav.activeOrganisationId}/checkout_sessions/`, res.result.sessionId).pipe(takeUntil(this.leave$)).subscribe((value: any) => {
+      if(res?.result?.sessionId && res?.result?.customerId){
+        this.firestore.getDocListen(`customers/${res.result.customerId}/checkout_sessions/`, res.result.sessionId).pipe(takeUntil(this.leave$)).subscribe((value: any) => {
           if (value?.url) {
             this.toast.hideLoader()
             window.location.assign(value.url);
@@ -2751,4 +2754,87 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }
     return specialCode
   }
+
+  createTagMultiple(){
+    this.modalService.inputFields(this.translate.instant('cases.new_tag'), '',[{
+      title: 'Naam',
+      type: 'text',
+      value: '',
+      required: true,
+    }], (result: any) => {
+      if (result.data) {
+        // console.log(result)
+        let list = this.trainerService.trainings.map((e:any) => {
+          return {
+            id: e.id,
+            title: e.title,
+          }
+        })
+        let tag = result.data[0].value.toLowerCase().trim()
+        this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
+          if (result.data) {
+            // console.log('selected tag',result.data)
+            for(let i=0;i<result.data.length;i++){
+              let item = this.trainerService.getTraining(result.data[i].id)
+              if(!item.tags){
+                item.tags = []
+              }
+              if(item.tags.indexOf(tag) == -1){
+                item.tags.push(tag)
+                this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',item.id,{tags:item.tags}).then(() => {
+                  // console.log('tag added')
+                })
+              }
+            }
+          }
+        }, undefined, 'Tags',{object:true,multiple:true,field: 'title'});
+      }
+    })
+  }
+
+  removeTagMultiple(){
+    let tags = this.allTags()
+    if(!tags.length){
+      this.toast.show(this.translate.instant('modules.no_tags_defined'))
+      return
+    }
+    this.modalService.selectItem(this.translate.instant('modules.remove_tag'), tags, (result: any) => {
+      if (result.data) {
+        console.log('selected tag',result.data)
+        let tag = result.data.toLowerCase().trim()
+        let list = this.trainerService.trainings.map((e:any) => {
+          if(e.tags && e.tags.indexOf(tag) > -1){
+            console.log('e',e)
+            return {
+              id: e.id,
+              title: e.title,
+            }
+          }
+          return undefined;
+        })
+        list = list.filter((e:any) => { return e !== undefined })
+        if(!list.length){
+          this.toast.show(this.translate.instant('modules.no_items_with_tag'))
+          return
+        }
+        this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
+          if (result.data) {
+            console.log('selected tag',result.data)
+            for(let i=0;i<result.data.length;i++){
+              let item = this.trainerService.getModule(result.data[i].id)
+              if(item.tags && item.tags.indexOf(tag) > -1){
+                item.tags = item.tags.filter((e:any) => {
+                  return e !== tag
+                })
+                this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',item.id,{tags:item.tags}).then(() => {
+                  console.log('tag removed')
+                })
+              }
+            }
+          }
+        }, undefined, 'Tags',{object:true,field: 'title',multiple:true});
+      }
+    })
+  }
+
 }
