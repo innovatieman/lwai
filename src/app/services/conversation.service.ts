@@ -26,6 +26,7 @@ import { FormatAiTextPipe } from '../pipes/format-ai-text.pipe';
 export class ConversationService implements OnDestroy {
   @Output() update: EventEmitter<boolean> = new EventEmitter();
   @Output() updateAchievements: EventEmitter<boolean> = new EventEmitter();
+  @Output() speaking: EventEmitter<boolean> = new EventEmitter();
   @Output() activeStream: EventEmitter<boolean> = new EventEmitter();
   @Output() activateVideoScreen: EventEmitter<boolean> = new EventEmitter();
   @Output() analysisReady: EventEmitter<boolean> = new EventEmitter();
@@ -106,7 +107,7 @@ export class ConversationService implements OnDestroy {
     conversationObj.timestamp = new Date().getTime();
     conversationObj.openingMessage = openingMessage;
     conversationObj.steadfastness = steadfastness;
-    conversationObj.voiceId = caseItem.voiceId || '';
+    conversationObj.voice = caseItem.voice || '';
     conversationObj.voice_on = caseItem.voice_on || false;
     conversationObj.extra_knowledge = caseItem.extra_knowledge || '';
     conversationObj.video_on = caseItem.video_on || (caseItem.avatarName?true:false);
@@ -145,7 +146,7 @@ export class ConversationService implements OnDestroy {
     //   max_time:caseItem.max_time,
     //   minimum_goals:caseItem.minimum_goals,
     //   avatarName:caseItem.avatarName,
-    //   voiceId:caseItem.voiceId || '',
+    //   voice:caseItem.voice || '',
     //   extra_knowledge:caseItem.extra_knowledge || '',
     //   photo:caseItem.photo,
     //   video_on:caseItem.avatarName?true:false,
@@ -282,7 +283,7 @@ export class ConversationService implements OnDestroy {
             openingMessage:this.caseItem.openingMessage,
             prompt:this.caseItem.openingMessage || '',
             steadFastness:this.caseItem.steadFastness,
-            voiceId:this.caseItem.voiceId || this.activeConversation.voiceId || '',
+            voice:this.caseItem.voice || this.activeConversation.voice || '',
             extra_knowledge:this.caseItem.extra_knowledge || ''
           }
           if(this.caseItem.trainerId){
@@ -294,7 +295,8 @@ export class ConversationService implements OnDestroy {
           }
           this.messages.push({role:'system',content:'',id:"0"})
           this.messages.push({role:'user',content:this.caseItem.openingMessage || '',id:"1"})
-
+          console.log('voiceActive',this.voiceActive)
+          this.record.initiateRecording(conversationId)
           if(this.voiceActive){
             this.openai_chat_voice(obj)
           }
@@ -304,7 +306,9 @@ export class ConversationService implements OnDestroy {
         }
       },100);
     }
-
+    else{
+      this.record.initiateRecording(conversationId)
+    }
   }
 
   restartAvatar(){
@@ -573,15 +577,20 @@ export class ConversationService implements OnDestroy {
     this.update.emit(true);
     console.log(this.activeConversation.messages)
 
-    if(!obj.voiceId){
-      obj.voiceId = 'ARIOBKJtltx2F7r1TMzI'// 'AyQGttFzg1EY7EIKkpHs';
+    if(!obj.voice){
+      obj.voice = 'ARIOBKJtltx2F7r1TMzI'// 'AyQGttFzg1EY7EIKkpHs';
     }
     obj.emotion = ''
     if(this.attitude&&this.infoService.getAttitude(this.attitude)?.title){
       obj.emotion = this.translate.instant('conversation.voice_emotion_attitude') + ' ' + this.infoService.getAttitude(this.attitude)?.title;
     }
     // obj.modelId = 'eleven_v3'
-    const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGeminiVoiceElevenlabsStream2", {
+    // obj.model = "gpt-4o-mini-tts"
+    obj.voice = this.activeConversation.voice
+    // obj.instructions = "Voice Affect: Ondeugend, geamuseerd, licht ironisch.\n\nTone: Lichtvoetig, plagerig.\n\nPacing: Afwisselend, met ritmische cadans.\n\nPronunciation: Speelse klemtonen, lichte uithalen.\n\nPauses: Voor dramatisch effect of humor."
+    console.log('speaking with voice',obj)
+    // const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGeminiVoiceElevenlabsStream2", {
+    const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGeminiVoiceOpenAiTTS", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(obj),
@@ -619,9 +628,11 @@ export class ConversationService implements OnDestroy {
         this.getExtraInfo('phases')
         this.getExtraInfo('feedback')
         this.isSpeaking = true; // Zet de isSpeaking status op true
+        this.record.isSpeaking = true;
+        this.speaking.emit(true); // Eventueel update de UI
 
         // Functie om de binnengekomen chunks te bufferen
-        const appendChunk = async (chunk: Uint8Array) => {
+        const appendChunk = async (chunk: any) => {
           // Wacht tot de vorige appendBuffer-operatie voltooid is
           await bufferPromise;
 
@@ -688,6 +699,8 @@ export class ConversationService implements OnDestroy {
     this.audioVoice.addEventListener('ended', () => {
       console.log('Audio is afgelopen, stop de animatie.');
       this.isSpeaking = false; // Zet de isSpeaking status op false, dit is waar je de animatie stopt
+      this.record.isSpeaking = false;
+      this.speaking.emit(false); // Eventueel update de UI
     });
 
     // Optionele event listeners voor debugging
@@ -710,7 +723,7 @@ export class ConversationService implements OnDestroy {
   // async openai_chat_sound_old(obj: any) {
   //   this.update.emit(true);
 
-  //   obj.voiceId = 'AyQGttFzg1EY7EIKkpHs';
+  //   obj.voice = 'AyQGttFzg1EY7EIKkpHs';
   //   // obj.modelId
 
   //   // const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGeminiVoiceStream", {
@@ -826,7 +839,7 @@ export class ConversationService implements OnDestroy {
       instructionType:'reaction',
       attitude:this.attitude,
       prompt:message,
-      voiceId:this.caseItem.voiceId || this.activeConversation.voiceId || ''
+      voice:this.caseItem.voice || this.activeConversation.voice || ''
     }
     // console.log(obj)
     this.tempTextUser = message
@@ -908,7 +921,6 @@ export class ConversationService implements OnDestroy {
       trainerId: this.activeConversation.trainerId,
       trainingId: this.activeConversation.trainingId,
     }
-    console.log(obj.instructionType,obj)
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -1243,6 +1255,15 @@ export class ConversationService implements OnDestroy {
     }
   }
 
+  async closeConversationWithoutEvaluation(callback:Function) {
+    this.toast.showLoader(this.translate.instant('conversation.closing_conversation'))
+    this.firestoreService.updateSub('users', this.auth.userInfo.uid, 'conversations', this.activeConversation.conversationId, {closed: new Date().getTime()}).then(()=>{
+      this.toast.hideLoader()
+      callback()
+    })
+  }
+  
+  
   async closeConversation(callback:Function) {
     this.analysisReady.emit(false)
     this.startLoading('close')
@@ -1566,7 +1587,7 @@ export class ConversationService implements OnDestroy {
     pdf.setFontSize(12);
     pdf.text(doc.date, x, y);
 
-    if(doc.goal){
+    if(doc.goal && !this.activeConversation?.hide?.goal){
       y += 50;
       pdf.setFontSize(14);
       pdf.setFont('PlusJakartaSans','bold');
@@ -1758,35 +1779,37 @@ export class ConversationService implements OnDestroy {
         y += 30;
 
         // Attitude label
-        pdf.setFont('PlusJakartaSans','bold');
-        pdf.setFontSize(13);
-        let attLabel = this.translate.instant('conversation.pdf.attitude').toUpperCase() + ':';
-        if (y + lineHeight > pageHeight - margin) {
-          pdf.addPage();
-          pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
-          pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
-          countPages++;
-          y = 55;
-          pdf.setFontSize(20);
+        if(!this.activeConversation?.hide?.attitude){
           pdf.setFont('PlusJakartaSans','bold');
-          pdf.text(this.translate.instant('conversation.pdf.conversation').toUpperCase()+':', x, y);
-          pdf.setFontSize(12);
-          pdf.setFont('PlusJakartaSans','normal');
-          y += 35;
-          
-          pdf.line(x-margin, y, pageWidth, y); // Draw line
-          y += 40;
-        }
-        pdf.setTextColor(0);
-        pdf.setFont('PlusJakartaSans','bold');
-        pdf.text(attLabel, x, y);
+          pdf.setFontSize(13);
+          let attLabel = this.translate.instant('conversation.pdf.attitude').toUpperCase() + ':';
+          if (y + lineHeight > pageHeight - margin) {
+            pdf.addPage();
+            pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+            pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
+            countPages++;
+            y = 55;
+            pdf.setFontSize(20);
+            pdf.setFont('PlusJakartaSans','bold');
+            pdf.text(this.translate.instant('conversation.pdf.conversation').toUpperCase()+':', x, y);
+            pdf.setFontSize(12);
+            pdf.setFont('PlusJakartaSans','normal');
+            y += 35;
+            
+            pdf.line(x-margin, y, pageWidth, y); // Draw line
+            y += 40;
+          }
+          pdf.setTextColor(0);
+          pdf.setFont('PlusJakartaSans','bold');
+          pdf.text(attLabel, x, y);
 
-        pdf.setFont('PlusJakartaSans','normal');
-        pdf.setFontSize(12);
-        y = y + 15;
-        pdf.text(msg.attitude, x, y);
-        
-        y += 30;
+          pdf.setFont('PlusJakartaSans','normal');
+          pdf.setFontSize(12);
+          y = y + 15;
+          pdf.text(msg.attitude, x, y);
+          
+          y += 30;
+        }
 
         if (y + lineHeight > pageHeight - margin) {
           pdf.addPage();
@@ -1898,54 +1921,26 @@ export class ConversationService implements OnDestroy {
           pdf.line(x-margin, y, pageWidth, y); // Draw line
           y += 40;
         }
-        pdf.setFont('PlusJakartaSans','bold');
-        pdf.text(cipherLabel, x, y);
-        pdf.setFont('PlusJakartaSans','normal');
-        pdf.setFontSize(12);
-        y += 15;
-        console.log(msg)
-        if(msg.feedbackCipher){
-          pdf.text(msg.feedbackCipher+'', x, y);
+        if(!this.activeConversation?.hide?.feedbackCipher){
+          pdf.setFont('PlusJakartaSans','bold');
+          pdf.text(cipherLabel, x, y);
+          pdf.setFont('PlusJakartaSans','normal');
+          pdf.setFontSize(12);
+          y += 15;
+          console.log(msg)
+          if(msg.feedbackCipher){
+            pdf.text(msg.feedbackCipher+'', x, y);
+          }
+          y += 30;
         }
 
-        y += 30;
 
         // feedback
-        pdf.setFont('PlusJakartaSans','bold');
-        pdf.setFontSize(13);
-
-        let feedbackLabel = this.translate.instant('conversation.pdf.feedback').toUpperCase() + ':';
-        if (y + lineHeight > pageHeight - margin) {
-          pdf.addPage();
-          pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
-          pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
-          countPages++;
-          y = 55;
-          pdf.setFontSize(20);
+        if(!this.activeConversation?.hide?.feedback){
           pdf.setFont('PlusJakartaSans','bold');
-          pdf.text(this.translate.instant('conversation.pdf.conversation').toUpperCase()+':', x, y);
-          pdf.setFontSize(12);
-          pdf.setFont('PlusJakartaSans','normal');
-          y += 35;
-          
-          pdf.line(x-margin, y, pageWidth, y); // Draw line
-          y += 40;
-        }
-        pdf.setFont('PlusJakartaSans','bold');
-        pdf.text(feedbackLabel, x, y);
-        y += 15;
-        pdf.setFont('PlusJakartaSans','normal');
-        pdf.setFontSize(12);
+          pdf.setFontSize(13);
 
-        let feedbackLines = []
-        if(msg.feedback){
-          feedbackLines = pdf.splitTextToSize(msg.feedback, maxWidth);
-        } else {
-          feedbackLines = [];
-        }
-        // pdf.splitTextToSize(msg.feedback, maxWidth);
-
-        for (let j = 0; j < feedbackLines.length; j++) {
+          let feedbackLabel = this.translate.instant('conversation.pdf.feedback').toUpperCase() + ':';
           if (y + lineHeight > pageHeight - margin) {
             pdf.addPage();
             pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
@@ -1962,11 +1957,43 @@ export class ConversationService implements OnDestroy {
             pdf.line(x-margin, y, pageWidth, y); // Draw line
             y += 40;
           }
-          pdf.text(feedbackLines[j], x, y);
-          y += lineHeight;
-        }
+          pdf.setFont('PlusJakartaSans','bold');
+          pdf.text(feedbackLabel, x, y);
+          y += 15;
+          pdf.setFont('PlusJakartaSans','normal');
+          pdf.setFontSize(12);
 
-        y += 30;
+          let feedbackLines = []
+          if(msg.feedback){
+            feedbackLines = pdf.splitTextToSize(msg.feedback, maxWidth);
+          } else {
+            feedbackLines = [];
+          }
+          // pdf.splitTextToSize(msg.feedback, maxWidth);
+
+          for (let j = 0; j < feedbackLines.length; j++) {
+            if (y + lineHeight > pageHeight - margin) {
+              pdf.addPage();
+              pdf.addImage('./assets/img/alicia_background.png', 'PNG', 0, 0, pageWidth, pageHeight);
+              pdf.addImage('./assets/icon/logo_single_black.png', 'PNG', pageWidth - 80, 20, 60, 60);
+              countPages++;
+              y = 55;
+              pdf.setFontSize(20);
+              pdf.setFont('PlusJakartaSans','bold');
+              pdf.text(this.translate.instant('conversation.pdf.conversation').toUpperCase()+':', x, y);
+              pdf.setFontSize(12);
+              pdf.setFont('PlusJakartaSans','normal');
+              y += 35;
+              
+              pdf.line(x-margin, y, pageWidth, y); // Draw line
+              y += 40;
+            }
+            pdf.text(feedbackLines[j], x, y);
+            y += lineHeight;
+          }
+
+          y += 30;
+        }
 
 
       }
@@ -2324,5 +2351,6 @@ export class ConversationService implements OnDestroy {
     });
   }
 
+  fullRecording:boolean = false;
 
 }

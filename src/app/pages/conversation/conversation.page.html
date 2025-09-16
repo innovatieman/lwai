@@ -52,7 +52,7 @@
             <fa-icon [icon]="icon.get('faVideoSlash')" *ngIf="interaction=='combination'&&conversation.activeConversation.video_on"></fa-icon>
             <fa-icon [icon]="icon.get('faVideo')"  *ngIf="interaction=='chat'||!conversation.activeConversation.video_on"></fa-icon>
           </ion-button>
-          <ion-button (click)="toggleVoice()" *ngIf="conversation.caseItem.voiceId" size="large">
+          <ion-button (click)="toggleVoice()" *ngIf="conversation.caseItem.voice" size="large">
             <fa-icon [icon]="icon.get('faMicrophoneAltSlash')" *ngIf="interaction=='voice'&&conversation.activeConversation.voice_on"></fa-icon>
             <fa-icon [icon]="icon.get('faMicrophoneAlt')"  *ngIf="interaction=='chat'||!conversation.activeConversation.voice_on"></fa-icon>
           </ion-button>
@@ -155,8 +155,7 @@
           </ion-card>
         </div>
 
-        <div class="leftDetails">
-
+        <div class="leftDetails" [ngStyle]="{'max-height': interaction=='chat' ? 'calc(100% - 30%)' : '100%'}">
           <ion-card class="cipherCard" id="phasecard" basicPadding *ngIf="(conversation.activeConversation?.phases | lastestAssistantItem) && !conversation.activeConversation?.hide?.phases">
             <ion-card-title class="phaseCardTitle" flex center-ver fullwidth>
               {{'conversation.conversation_level' | translate}}
@@ -221,7 +220,7 @@
 
           </ion-card>
 
-          <ion-card class="cipherCard" basicPadding *ngIf="conversation?.activeConversation?.messages?.length && interaction=='voice' && conversation.activeConversation.voice_on">
+          <ion-card class="cipherCard" basicPadding *ngIf=" interaction=='voice' && conversation.activeConversation.voice_on">
             <div flex center-ver font-16 weight700 class="chartTitle">
               <div>{{'conversation.last_message' | translate}}</div>
               <div class="spacer"></div>
@@ -229,7 +228,25 @@
             </div>
             
             <div *ngIf="showLastMessage">
-              <p font-14 *ngIf="conversation?.activeConversation?.messages?.length">{{conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].content | cleanReaction}}</p>
+
+              <div [ngClass]="conversation.activeConversation.messages[conversation.activeConversation.messages.length-2].role === 'assistant' ? 'chatAssistantSide' : 'chatUserSide'" *ngIf="conversation.activeConversation.messages?.length>2&&conversation.activeConversation.messages[conversation.activeConversation.messages.length-2].content && conversation.activeConversation.messages[conversation.activeConversation.messages.length-2].role !== 'system'">
+                <div [innerHtml]="conversation.activeConversation.messages[conversation.activeConversation.messages.length-2].content | cleanReaction | formatAiText : true"></div>
+                <!-- <div>{{message.content | cleanReaction | formatAiText}}</div> -->
+              </div>
+
+              <div [ngClass]="conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].role === 'assistant' ? 'chatAssistantSide' : 'chatUserSide'" *ngIf="conversation.activeConversation.messages?.length>1&&conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].content && conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].role !== 'system'">
+                <div [innerHtml]="conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].content | cleanReaction | formatAiText : true"></div>
+                <!-- <div>{{message.content | cleanReaction | formatAiText}}</div> -->
+              </div>
+
+              <div class="chatAssistantSide" *ngIf="conversation.waiting && conversation.messages?.length<3">
+                <div>
+                  <span>{{'conversation.first_wait_message_voice' | translate}}</span>
+                  <ion-spinner style="color:var(--ion-color-secondary);height:12px;position:relative;top:5px;" name="dots"></ion-spinner>
+                  </div>
+              </div>  
+
+              <!-- <p font-14 *ngIf="conversation?.activeConversation?.messages?.length">{{conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].content | cleanReaction}}</p> -->
             </div>
 
           </ion-card>
@@ -265,7 +282,7 @@
           <ion-row center noPadding class="mainCardMobile" [ngStyle]="{'padding':media.smallDevice? '0px' : '24px 16px 0 0','background':media.smallDevice? 'white' : 'none'}">
             
             
-            <ion-col *ngIf="(!conversation.caseItem.voiceId||interaction!='voice'||!conversation.activeConversation.voice_on)&&interaction!='video'" [size]="12" autoScroll id="innerChatDiv" noPadding [ngStyle]="{'height':interaction=='combination' ? 'calc(100%)' : 'calc(100%)'}">
+            <ion-col *ngIf="(!conversation.caseItem.voice||interaction!='voice'||!conversation.activeConversation.voice_on)&&interaction!='video'" [size]="12" autoScroll id="innerChatDiv" noPadding [ngStyle]="{'height':interaction=='combination' ? 'calc(100%)' : 'calc(100%)'}">
               <ion-card class="chatCard" noMargin [ngStyle]="{'border-width':media.smallDevice? '0px' : '1px'}">
 
                 <ion-card-content noPadding>
@@ -296,27 +313,6 @@
                       </div>
         
 
-                      <!-- Temporary message Assistent -->
-                      <!-- <div class="chatItem assistant" *ngIf="conversation.messageTemp.content">
-                        <div class="chatAssistant">
-                          <div>{{conversation.messageTemp.content}}</div>
-                        </div>
-                        <div class="chatAssistentInfo"></div>
-                      </div> -->
-                      
-                      <!-- Temporary message User -->
-                      <!-- <div style="text-align:right" fullwidth *ngIf="(!conversation.activeConversation.messages?.length||conversation.activeConversation.messages[conversation.activeConversation.messages.length-1].content!=conversation.tempTextUser)&&conversation.tempTextUser">
-                        <div class="chatItem user">
-                          <div class="chatUserInfo"></div>
-                          <div class="spacer"></div>
-                          <div class="chatUser">
-                            <div style="text-align:left">{{conversation.tempTextUser}}</div>
-                          </div>
-                        </div>
-                      </div> -->
-
-                      <!-- Waiting message -->
-                      <!-- <div class="chatItem assistant" *ngIf="conversation.waiting&&!conversation.messageTemp.content"> -->
                       <div class="chatItem assistant" *ngIf="conversation.waiting&&conversation.messages.length&&!conversation.messages[conversation.messages.length-1].content">
                         <div class="chatAssistant" style="min-width:60px;padding-left:15px;" flex center-ver>
                           <ion-spinner style="color:var(--ion-color-secondary);" name="dots"></ion-spinner>
@@ -329,11 +325,27 @@
               </ion-card>  
             </ion-col>
 
-            <ion-col fullheight *ngIf="conversation.caseItem.voiceId&&interaction=='voice'&&conversation.activeConversation.voice_on">
-              <div fullwidth fullheight absolute center-hor flex>
-                <img class="voiceAvatar" *ngIf="conversation.activeConversation?.photo" [src]="conversation.activeConversation.photo">
-                <img class="voiceAvatar" *ngIf="!conversation.activeConversation?.photo" [src]="'assets/img/default_avatar.png'">
-                <div *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude && conversation.isSpeaking" pointer class="voiceStop" flex center-ver center-hor flex-column>
+            <ion-col fullheight *ngIf="conversation.caseItem.voice&&interaction=='voice'&&conversation.activeConversation.voice_on">
+              <div fullwidth style="height:auto" absolute center-hor flex>
+                <div fullwidth relative >
+                  <img class="voiceAvatar" *ngIf="conversation.activeConversation?.photo" [src]="conversation.activeConversation.photo">
+                  <img class="voiceAvatar" *ngIf="!conversation.activeConversation?.photo" [src]="'assets/img/default_avatar.png'">
+                  <div class="voiceSpeakingAnimation">
+                    <div class="speaking_bars">
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                      <div [ngClass]="{'silent_bar':!isSpeaking,'speaking_bar':isSpeaking}"></div>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude && isSpeaking" pointer class="voiceStop" flex center-ver center-hor flex-column>
                   <fa-icon [icon]="icon.get('faStop')" (click)="stopVoice()" pointer></fa-icon>
                   <!-- <fa-icon marginLeft [icon]="icon.get('faPause')" (click)="pauseVoice()"></fa-icon> -->
                 </div>
@@ -341,25 +353,8 @@
                   <app-graph-gauge [value]="conversation.attitude" height="100px"></app-graph-gauge>
                   <div>{{conversation.attitude}} {{info.getAttitude(conversation.attitude)?.title}}</div>
                 </div>
-                <div class="voiceSpeakingAnimation">
-                  <div class="speaking_bars">
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                    <div [ngClass]="{'silent_bar':!conversation.isSpeaking,'speaking_bar':conversation.isSpeaking}"></div>
-                  </div>
-                </div>
+
               </div>  
-              <!-- <ion-card class="imageCard" *ngIf="conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(' + conversation.activeConversation.photo + ')'}" flex center-hor>
-              </ion-card>
-              <ion-card class="imageCard" *ngIf="!conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}" flex center-hor>
-              </ion-card> -->
             </ion-col>
     
             
@@ -381,7 +376,13 @@
           <ion-row noPadding>
             <!-- chatInput -->
             <!-- <ion-col size="12" *ngIf="interaction!='combination' && !conversation.activeConversation.closed"> -->
-            <ion-col [size]="media.smallDevice ? 9 : 10" *ngIf="interaction!='video'">
+            <ion-col [size]="!conversation.fullRecording ? (media.smallDevice ? 2 : 3) : (media.smallDevice ? 9 : 10)" *ngIf="interaction=='voice'" flex center-ver center-hor>
+              <div class="microphone-wrapper" [ngClass]="{'recording':conversation.fullRecording,'notRecording':isSpeaking}" (click)="!conversation.fullRecording ? startRecording($event, true) : stopRecording($event)">
+                <fa-icon [icon]="icon.get('faMicrophoneAlt')" pointer *ngIf="!conversation.fullRecording"></fa-icon>
+                <fa-icon [icon]="icon.get('faMicrophoneAltSlash')" pointer *ngIf="conversation.fullRecording"></fa-icon>
+              </div>
+            </ion-col>
+            <ion-col *ngIf="!conversation.fullRecording" [size]="interaction=='voice' ? 7 : (media.smallDevice ? 9 : 10)">
               <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 ? noCredits($event) :  doNothing()">
                 <ion-textarea (keyup.enter)="auth.credits.total<=0 ? noCredits() :  sendQuestion()" [disabled]="conversation.activeConversation.closed||analyzing" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
                   <div class="pulse-loader" *ngIf="analyzing" slot="start" style="position:absolute;left:0px;top:0px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:10;font-size:16px">

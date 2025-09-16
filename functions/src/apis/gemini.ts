@@ -12,6 +12,8 @@ import * as responder from '../utils/responder'
 const vertexAI = new VertexAI({ project: "lwai-3bac8", location: "europe-west1" });
 const modelVertex = vertexAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+
+
 const vertexEmbedding = createVertex({ project: "lwai-3bac8", location: "europe-west1" });
 const embeddingModel = vertexEmbedding.textEmbeddingModel('text-embedding-005'); // of 'text-embedding-005'
 
@@ -47,6 +49,7 @@ const eleven = new ElevenLabsClient({
   apiKey: config.elevenlabs_api_key,
 });
 const creditsCost:any = {
+  reaction_voice: 75,
   reaction: 3,
   choices: 4,
   facts: 7,
@@ -2108,7 +2111,7 @@ exports.testSearchVectors = onCall(
 //   }
 // );
 
-exports.chatGeminiVoiceStream = onRequest(
+exports.chatGeminiVoiceStream = onRequest( 
   { cors: true, region: "europe-west1", memory: "2GiB", timeoutSeconds: 540 },
   async (req:any, res:any) => {
     res = setHeaders(res);
@@ -2789,6 +2792,139 @@ exports.editedKnowledgeItem = onDocumentWritten({
 //   }
 // }
 
+// import fetch from "node-fetch"; // Zorg dat je deze hebt
+import { PassThrough } from "stream";
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Zorg dat deze is ingesteld
+
+exports.chatGeminiVoiceOpenAiTTS = onRequest(
+  { cors: true, region: "europe-west1", memory: "2GiB", timeoutSeconds: 540 },
+  async (req: any, res: any) => {
+    res = setHeaders(res);
+
+    try {
+      const body = req.body;
+      const requiredFields = ["userId", "conversationId", "categoryId", "caseId", "instructionType", "attitude"];
+      if (requiredFields.some((field) => !body[field]) || (!body.prompt && !body.conversationId)) {
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      let messages = await getPreviousMessages(body.userId, body.conversationId);
+      if (!messages) {
+        messages = await initializeConversation(body);
+      } else {
+        await setToConversation(body.userId, body.conversationId, "user", body.prompt, "messages", messages.length + "");
+        messages.push({ role: "user", content: body.prompt });
+      }
+
+      const language = body.language || "nl";
+
+      let agent_instructions = await getAgentInstructions(body.instructionType, body.categoryId, language);
+      agent_instructions.systemContent += `\n\n<b>Belangrijke Extra aanwijzing</b>: Zorg dat je zinnen goed klinken in spraak: gebruik natuurlijke intonatie, spreektaal, korte zinnen, duidelijke pauzes en vermijd afkortingen of complex samengestelde bijzinnen.`;
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Transfer-Encoding", "chunked");
+
+      // Gebruik Gemini om tekst te genereren
+      const geminiResult = await streamingGemini(messages, agent_instructions, true);
+      let completeGeminiMessage = "";
+      let promptTokens: any = {};
+
+      for await (const chunk of geminiResult.stream) {
+        const chunkText = chunk.text();
+        completeGeminiMessage += chunkText;
+        promptTokens = chunk.usageMetadata || promptTokens;
+      }
+
+      await setToConversation(body.userId, body.conversationId, "assistant", completeGeminiMessage, "messages", (messages.length + 1) + "");
+      await stopLoading(body);
+
+      // === VERWERK DE TEKST NAAR ALLEEN DE REACTIE ===
+      let finalText = completeGeminiMessage;
+      const reactionPrefix = "reaction:";
+      const reactionIndex = completeGeminiMessage.indexOf(reactionPrefix);
+      if (reactionIndex !== -1) {
+        finalText = completeGeminiMessage.substring(reactionIndex + reactionPrefix.length).trim();
+      }
+
+      // console.log("Tekst naar OpenAI TTS:", finalText);
+
+      let voiceObj:any = await getVoiceObject(body.voice,language,completeGeminiMessage);
+
+      if(!voiceObj){
+        console.log("Geen voice object gevonden, standaard onyx zonder instructions");
+        voiceObj = {
+          voice: "onyx",
+          instructions: ""
+        }
+      }
+      voiceObj.input = finalText;
+      voiceObj.model = 'gpt-4o-mini-tts'; // of "tts-1-hd"
+      // === OPENAI TTS AANROEP ===
+      const ttsResponse = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(voiceObj),
+      });
+
+      if (!ttsResponse.ok || !ttsResponse.body) {
+        console.error("OpenAI TTS API failed:", await ttsResponse.text());
+        res.end();
+        return;
+      }
+
+      // === STREAM AUDIO NAAR DE CLIENT ===
+      const reader = ttsResponse.body.getReader();
+      const stream = new PassThrough();
+
+      (async () => {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          stream.write(value);
+        }
+        stream.end();
+      })();
+
+      stream.pipe(res);
+
+      // === CREDITS / LOGGING ===
+      await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
+      await addTokenUsageVoice(body, voiceObj, "reaction_voice");
+
+      if(!body.training?.trainingId || !body.training?.trainerId){
+        await updateCredits(body.userId, creditsCost['reaction']);
+        await updateCredits(body.userId, creditsCost['reaction_voice']);
+      }
+      else{
+        await updateCreditsTraining(body.userEmail,creditsCost['reaction'],body.training.trainingId,body.training.trainerId);
+        await updateCreditsTraining(body.userEmail,creditsCost['reaction_voice'],body.training.trainingId,body.training.trainerId);
+      }
+
+    } catch (err) {
+      console.error("Error tijdens streaming voice (OpenAI):", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error tijdens streaming voice");
+      } else {
+        res.end();
+      }
+    }
+  }
+);
+
+
+
+
 async function initializeConversation(body:any): Promise<any[]> {
     // console.log('initializeConversation language: ' + body.language)
     let language = 'nl'
@@ -2946,6 +3082,12 @@ async function getAllAttitudes(language:string = 'nl'): Promise<{ id: string; [k
 
     const attitudes = await Promise.all(snapshot.docs.map(async (doc) => {
       let attitudeData = doc.data();
+      delete attitudeData.voice_instructions;
+      delete attitudeData.beforeText;
+      delete attitudeData.afterText;
+      delete attitudeData.style;
+      delete attitudeData.stability;
+      // Haal taal specifieke velden op
       const langDoc = await doc.ref.collection('languages').doc(language).get();
       if (langDoc.exists) {
         const langData = langDoc.data();
@@ -3523,6 +3665,36 @@ async function addTokenUsages(body:any,promptTokens:number,completionTokens:any,
   });
 }
 
+async function addTokenUsageVoice(body:any,voiceObj:any,instructionType:string){
+  console.log('addTokenUsageVoice voiceObj: ' + JSON.stringify(voiceObj).substring(0,100));
+  let tokensRef = db.collection(`users/${body.userId}/conversations/${body.conversationId}/tokens`);
+  let usage:any = {}
+  
+  const averageCharsPerToken = 4;
+
+  const inputChars = (voiceObj.input ? voiceObj.input.length : 0) + (voiceObj.instructions ? voiceObj.instructions.length : 0);
+  const outputChars = voiceObj.input ? voiceObj.input.length : 0;
+
+  const inputTokens = Math.ceil(inputChars / averageCharsPerToken);
+  const outputTokens = Math.ceil(outputChars / averageCharsPerToken);
+
+  usage = {
+    prompt_tokens: inputTokens,
+    completion_tokens: outputTokens,
+    total_tokens: inputTokens + outputTokens
+  };
+
+  usage.credits = creditsCost[instructionType],
+  
+  console.log('Voice token usage:', JSON.stringify(usage));
+
+  await tokensRef.add({
+    agent: instructionType,
+    usage: usage,
+    timestamp: new Date().getTime(),
+  });
+}
+
 async function setToConversation(userId:string,conversationId:string,role:string,content:string,agent:string,docId:string){
     // console.log('docId: ' + docId);
     let messageRef = db.collection(`users/${userId}/conversations/${conversationId}/${agent}`);
@@ -4017,4 +4189,38 @@ async function getCasusUpdatePrevious(userId:string, caseData:any,daysBetweenCon
     casusUpdates[casusUpdates.length - 1].latestAttitude = latestAttitude;
 
     return casusUpdates;
+}
+
+async function getVoiceObject(voiceId:string, language:string, text:string){
+  if(!voiceId || voiceId == ''){
+    return null;
+  }
+  const voiceRef = db.collection('voices').where('name', '==', voiceId).limit(1);
+  const voiceSnap = await voiceRef.get();
+  if(!voiceSnap.empty){
+    let voiceData = voiceSnap.docs[0].data();
+    if(voiceData){
+      const voiceLanguageRef = db.collection('voices').doc(voiceSnap.docs[0].id).collection('languages').doc(language);
+      const voiceLanguageSnap = await voiceLanguageRef.get();
+      if(voiceLanguageSnap.exists){
+        let voiceLanguageData = voiceLanguageSnap.data();
+        if(voiceLanguageData){
+          voiceData.instructions = voiceLanguageData.instructions || voiceData.instructions || '';
+        }
+      }
+      let attitude:number = parseInt(text[0].replace('newAttitude:','').replace(',','').trim());
+      if(isNaN(attitude)){
+        attitude = 50;
+      }
+      const attitudeData = await db.collection('attitudes').where('level', '==', attitude).limit(1).get();
+      if(!attitudeData.empty){
+        let attitudeInfo = attitudeData.docs[0].data();
+        if(attitudeInfo){
+          voiceData.instructions = voiceData.instructions + '\n\n' + (attitudeInfo.voice_instructions || '');
+        }
+      }
+      return voiceData;
+    }
+  }
+  return null;
 }

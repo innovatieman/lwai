@@ -7,6 +7,7 @@ import { InputFieldsPage } from '../input-fields/input-fields.page';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { take } from 'rxjs';
 import { ToastService } from 'src/app/services/toast.service';
+import { HelpersService } from 'src/app/services/helpers.service';
 
 @Component({
   selector: 'app-trainer-info',
@@ -22,6 +23,7 @@ export class TrainerInfoPage implements OnInit {
     private translateService: TranslateService,
     private functions:AngularFireFunctions,
     private toast:ToastService,
+    public helper:HelpersService
   ) { }
 
   ngOnInit() {

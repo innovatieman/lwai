@@ -10,7 +10,7 @@
       <ion-button class="saveButtonSmall cardButton emailButton" [ngStyle]="{'bottom': media.smallDevice ? '-2px' : '10px'}" fill="outline" size="small" (click)="sendEmail()">{{'buttons.send_message' | translate}}</ion-button>
 
     </div>
-    <div fullwidth basicPadding overflow-y font-18 [ngStyle]="{'min-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)','max-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)'}" *ngIf="trainerInfo.trainer_details" [innerHtml]="trainerInfo.trainer_details | sanitizeHtml"></div>
+    <div fullwidth basicPadding overflow-y font-18 [ngStyle]="{'min-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)','max-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)'}" *ngIf="trainerInfo.trainer_details" [innerHtml]="helper.convertSpaces(trainerInfo.trainer_details) | sanitizeHtml"></div>
     <div fullwidth basicPadding overflow-y font-18 italic [ngStyle]="{'min-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)','max-height': media.smallDevice ? 'calc(100% - 133px)' : 'calc(100% - 182px)'}" *ngIf="!trainerInfo.trainer_details">{{'marketplace.no_trainer_details' | translate}}</div>
 
 

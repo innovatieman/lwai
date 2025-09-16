@@ -272,42 +272,102 @@ export class InfoItemsPage implements OnInit {
       // })
     }
   
-    deleteItem(infoItem?:any){
-      if(!infoItem?.id){
-        if(!this.trainerService.infoItem?.id){
-          this.toast.show('Selecteer een item')
-          return
+    // deleteItem(infoItem?:any){
+    //   if(!infoItem?.id){
+    //     if(!this.trainerService.infoItem?.id){
+    //       this.toast.show('Selecteer een item')
+    //       return
+    //     }
+    //     infoItem = this.trainerService.infoItem
+    //   }
+    //   this.modalService.showConfirmation('Are you sure you want to delete this item?').then(async (result:any) => {
+    //     if(result){
+    //       let id = infoItem.id
+    //       this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem.id).then(()=>{
+    //       this.updateVisibleItems();
+    //     })
+    //       this.trainerService.infoItem = {}
+
+
+    //       // this.trainerService.loadInfoItems()
+
+    //       for(let i=0;i<this.trainerService.modules.length;i++){
+    //         let change = false
+    //         let module = this.trainerService.modules[i]
+    //         if(module.items?.length){
+    //           for(let j=0;j<module.items.length;j++){
+    //             if(module.items[j].id == id){
+    //               module.items.splice(j,1)
+    //               change = true
+    //             }
+    //           }
+    //         }
+    //         if(change){
+    //           this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',module.id,{items:module.items},()=>{})
+    //         }
+    //       }
+    //     }
+    //   })
+    // }
+
+    deleteItem(infoItem?: any) {
+      if (!infoItem?.id) {
+        if (!this.trainerService.infoItem.id) {
+          this.toast.show(this.translate.instant('error_messages.select_item_first'));
+          return;
         }
-        infoItem = this.trainerService.infoItem
+        infoItem = this.trainerService.infoItem;
       }
-      this.modalService.showConfirmation('Are you sure you want to delete this item?').then(async (result:any) => {
-        if(result){
-          let id = infoItem.id
-          this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem.id).then(()=>{
+
+      this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then((result: any) => {
+        if (!result) return;
+
+        const infoItemId = infoItem.id;
+        // console.log('deleting case', caseId);
+
+        // Verwijder de case uit Firestore
+        this.firestore.deleteSub('trainers', this.nav.activeOrganisationId, 'infoItems', infoItemId).then(() => {
+          // console.log('deleted infoItem');
           this.updateVisibleItems();
-        })
-          this.trainerService.infoItem = {}
+        });
 
+        this.trainerService.infoItem = {};
 
-          // this.trainerService.loadInfoItems()
+        // Recursieve functie om de infoItem uit alle modulestructuren te verwijderen
+        const removeInfoItemFromModule = (module: any): boolean => {
+          let changed = false;
 
-          for(let i=0;i<this.trainerService.modules.length;i++){
-            let change = false
-            let module = this.trainerService.modules[i]
-            if(module.items?.length){
-              for(let j=0;j<module.items.length;j++){
-                if(module.items[j].id == id){
-                  module.items.splice(j,1)
-                  change = true
-                }
+          if (module.items && module.items.length > 0) {
+            // Loop achterstevoren om veilig te splicen
+            for (let i = module.items.length - 1; i >= 0; i--) {
+              const item = module.items[i];
+
+              if (item.id === infoItemId) {
+                module.items.splice(i, 1);
+                changed = true;
+              }
+
+              // Als het item zelf een module is (bijv. submodule met eigen items)
+              if (item.type === 'module' && item.items && Array.isArray(item.items)) {
+                const subChanged = removeInfoItemFromModule(item);
+                if (subChanged) changed = true;
               }
             }
-            if(change){
-              this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',module.id,{items:module.items},()=>{})
-            }
+          }
+
+          return changed;
+        };
+
+        // Loop door alle toplevel modules en update als er iets is veranderd
+        for (let i = 0; i < this.trainerService.modules.length; i++) {
+          const module = this.trainerService.modules[i];
+          const changed = removeInfoItemFromModule(module);
+
+          if (changed) {
+            this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'modules', module.id, { items: module.items }, () => {});
           }
         }
-      })
+      });
     }
   
     selectInfoItem(infoItem:any){
@@ -669,33 +729,142 @@ export class InfoItemsPage implements OnInit {
       })
     }
   
-    selectModules(modules:any){
-      if(!modules){
-        modules = []
-      }
-      let list:any[] =[]
-      for(let i=0;i<this.trainerService.modules.length;i++){
-        let item:any = {}
-        item.id = this.trainerService.modules[i].id
-        item.title = this.trainerService.modules[i].title
-        item.value = this.trainerService.modules[i].title
-        if(modules.includes(item.id)){
-          item.selected = true
-        }
-        list.push(item)
-      }
-      this.modalService.selectItem('Selecteer de modules', list, (result: any) => {
-        if (result.data) {
-          this.trainerService.infoItem.modules = result.data.map((e:any) => {
-            return e.id
-          })
-          this.firestore.setSub('trainers', this.nav.activeOrganisationId, 'infoItems', this.trainerService.infoItem.id, this.trainerService.infoItem.modules, 'modules', () => {
-            this.trainerService.loadCases()
-          }, true)
-        }
-      }, undefined, 'modules',{multiple:true,object:true,field:'title',allowEmpty:true})
+    // selectModules(modules:any){
+    //   if(!modules){
+    //     modules = []
+    //   }
+    //   let list:any[] =[]
+    //   for(let i=0;i<this.trainerService.modules.length;i++){
+    //     let item:any = {}
+    //     item.id = this.trainerService.modules[i].id
+    //     item.title = this.trainerService.modules[i].title
+    //     item.value = this.trainerService.modules[i].title
+    //     if(modules.includes(item.id)){
+    //       item.selected = true
+    //     }
+    //     list.push(item)
+    //   }
+    //   this.modalService.selectItem('Selecteer de modules', list, (result: any) => {
+    //     if (result.data) {
+    //       this.trainerService.infoItem.modules = result.data.map((e:any) => {
+    //         return e.id
+    //       })
+    //       this.firestore.setSub('trainers', this.nav.activeOrganisationId, 'infoItems', this.trainerService.infoItem.id, this.trainerService.infoItem.modules, 'modules', () => {
+    //         this.trainerService.loadCases()
+    //       }, true)
+    //     }
+    //   }, undefined, 'modules',{multiple:true,object:true,field:'title',allowEmpty:true})
   
+    // }
+
+    selectModules(modules: any) {
+      if (!modules) modules = [];
+
+      const list = this.trainerService.modules.map((mod: any) => ({
+        id: mod.id,
+        title: mod.title,
+        value: mod.title,
+        selected: modules.includes(mod.id),
+      }));
+
+      this.modalService.selectItem(
+        this.translate.instant('buttons.select'),
+        list,
+        (result: any) => {
+          if (!result.data) return;
+
+          const newModuleIds = result.data.map((e: any) => e.id);
+          const oldModuleIds = this.trainerService.infoItem.modules || [];
+          this.trainerService.infoItem.modules = newModuleIds;
+
+          const infoItem = {
+            created: this.trainerService.infoItem.created || new Date().toISOString(),
+            id: this.trainerService.infoItem.id,
+            title: this.trainerService.infoItem.title,
+            type: 'infoItem',
+            order: 999,
+          };
+
+          // Recursieve functie om modules (en submodules) te doorlopen
+          const updateModuleWithInfoItem = (module: any): boolean => {
+            let changed = false;
+
+            // Voeg toe als module nu geselecteerd is
+            if (newModuleIds.includes(module.id)) {
+              module.items = module.items || [];
+              const alreadyExists = module.items.some((item: any) => item.id === infoItem.id && item.type === 'infoItem');
+              if (!alreadyExists) {
+                module.items.push({ ...infoItem });
+                changed = true;
+              }
+            }
+
+            // Verwijder als module eerst geselecteerd was maar nu niet meer
+            if (oldModuleIds.includes(module.id) && !newModuleIds.includes(module.id)) {
+              const before = module.items?.length || 0;
+              module.items = (module.items || []).filter((item: any) => !(item.id === infoItem.id && item.type === 'infoItem'));
+              const after = module.items.length;
+              if (before !== after) {
+                changed = true;
+              }
+            }
+
+            // Ga recursief verder in submodules
+            if (module.items && module.items.length > 0) {
+              for (let item of module.items) {
+                if (item.items && Array.isArray(item.items)) {
+                  const subChanged = updateModuleWithInfoItem(item);
+                  if (subChanged) changed = true;
+                }
+              }
+            }
+
+            return changed;
+          };
+
+          // Doorloop alle toplevel modules
+          for (let mod of this.trainerService.modules) {
+            const changed = updateModuleWithInfoItem(mod);
+
+            if (changed) {
+              this.firestore.updateSub(
+                'trainers',
+                this.nav.activeOrganisationId,
+                'modules',
+                mod.id,
+                { items: mod.items },
+                () => {}
+              );
+            }
+          }
+
+          // Update infoItem.modules zelf
+          this.firestore.setSub(
+            'trainers',
+            this.nav.activeOrganisationId,
+            'infoItems',
+            this.trainerService.infoItem.id,
+            this.trainerService.infoItem.modules,
+            'modules',
+            () => {
+              this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+                  this.updateVisibleItems();
+                },{
+                infoItems:()=>{
+                  this.updateVisibleItems();
+                }}
+              );
+            },
+            true
+          );
+        },
+        undefined,
+        'modules',
+        { multiple: true, object: true, field: 'title', allowEmpty: true }
+      );
     }
+
+
 
     copyItem(infoItem?:any){
       if(!infoItem?.id){

@@ -50,7 +50,7 @@ export class ConversationPage implements OnInit {
   chartConstructor: string = 'chart';
   updateSubscription:Subscription = new Subscription()
   activeStream:boolean = false; 
-  showLastMessage:boolean = false;
+  showLastMessage:boolean = true;
   chartOptions: Highcharts.Options = {
     chart: {
       type: 'gauge',
@@ -160,6 +160,7 @@ export class ConversationPage implements OnInit {
   showDetailsPhases:boolean = false;
   transcript:string = ''
   rating_comment:string = ''
+  isSpeaking:boolean = false;
   constructor(
     private route:ActivatedRoute,
     public nav:NavService,
@@ -217,6 +218,11 @@ export class ConversationPage implements OnInit {
       }
     })
 
+    this.conversation.speaking.subscribe((speaking:boolean)=>{
+      this.isSpeaking = speaking
+      this.rf.detectChanges()
+    })
+
     this.conversation.analysisReady.subscribe((ready:boolean)=>{
       // console.log('analysis ready',ready)
       this.firstMessagesLoaded = true
@@ -265,12 +271,11 @@ export class ConversationPage implements OnInit {
             this.rf.detectChanges();
           }
         }, 300);
-        
-        if(this.conversation.activeConversation.voice_on){
+        if(this.conversation.activeConversation.voice_on && this.conversation.activeConversation.voice){
           this.interaction = 'voice'
         }
         else if(this.conversation.activeConversation.video_on){
-          this.interaction = 'combination'
+          this.interaction = 'chat'
         }
         else{
           this.interaction = 'chat'
@@ -417,9 +422,10 @@ export class ConversationPage implements OnInit {
           localStorage.removeItem('activatedCase')
           console.log(this.cases.single(caseItem))
           if(this.cases.single(caseItem).avatarName){
-            this.interaction = 'combination'
+            this.interaction = 'chat'
           }
-          if(this.cases.single(caseItem).voiceId&&this.cases.single(caseItem).voice_on!== false){
+          if(this.cases.single(caseItem).voice&&this.cases.single(caseItem).voice_on!== false){
+            console.log('voice interaction')
             this.interaction = 'voice'
           }
           setTimeout(() => {
@@ -441,13 +447,18 @@ export class ConversationPage implements OnInit {
       localStorage.removeItem('activatedCase')
       this.createDragGesture();
       // console.log('personal conversation', JSON.parse(JSON.stringify(caseItem)));
-      this.conversation.startConversation(caseItem)
-      if(caseItem.avatarName){
-        this.interaction = 'combination'
-      }
-      if(caseItem.voiceId && caseItem.voice_on!== false){
+      if(caseItem.voice && caseItem.voice_on!== false){
         this.interaction = 'voice'
+        this.conversation.voiceActive = true
       }
+      else{
+        this.interaction = 'chat'
+        this.conversation.voiceActive = false
+      }
+      this.conversation.startConversation(caseItem)
+      // if(caseItem.avatarName){
+      //   this.interaction = 'chat'
+      // }
     }
   }
     
@@ -536,9 +547,9 @@ export class ConversationPage implements OnInit {
     let conversation = JSON.parse(localStorage.getItem('conversation')||'{}')
     // console.log('continue conversation',conversation)
     if(conversation.avatarName){
-      this.interaction = 'combination'
+      this.interaction = 'chat'
     }
-    if(conversation.voiceId){
+    if(conversation.voice && conversation.voice_on){
       this.interaction = 'voice'
       if(conversation.voice_on){
         this.conversation.voiceActive = true
@@ -604,7 +615,9 @@ export class ConversationPage implements OnInit {
   stopVoice(){
     this.conversation.audioVoice.pause();
     this.conversation.audioVoice.currentTime = 0;
+    this.isSpeaking = false;
     this.conversation.isSpeaking = false;
+    this.record.isSpeaking = false;
   }
 
   pauseVoice(){
@@ -675,9 +688,23 @@ export class ConversationPage implements OnInit {
     ).then(response=>{
       
       if(response=='end'){
-        this.conversation.closing = true
-        this.conversation.closeConversation(()=>{
-        })
+        if(this.conversation.activeConversation?.hide?.evaluation){
+          this.conversation.closeConversationWithoutEvaluation(()=>{
+            this.toast.show(this.translate.instant('conversation.conversation_closed'))
+            if(this.conversation.originUrl){
+              this.nav.go(this.conversation.originUrl)
+              return
+            }
+            else{
+              this.nav.go('start')
+              return
+            }
+          })
+        }
+        else{
+          this.conversation.closing = true
+          this.conversation.closeConversation(()=>{})
+        }
       }
       else if(response=='delete'){
         this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then((confirmed:boolean)=>{
@@ -689,13 +716,13 @@ export class ConversationPage implements OnInit {
               })
               return
             }
-            else if(this.conversation.activeConversation.courseId){
-              this.nav.go('course/'+this.conversation.activeConversation.courseId)
-              this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId).then(()=>{
-                console.log('conversation deleted')
-              })
-              return
-            }
+            // else if(this.conversation.activeConversation.courseId){
+            //   this.nav.go('course/'+this.conversation.activeConversation.courseId)
+            //   this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId).then(()=>{
+            //     console.log('conversation deleted')
+            //   })
+            //   return
+            // }
             else{
               this.nav.go('start')
               this.firestore.deleteSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId).then(()=>{
@@ -907,7 +934,7 @@ export class ConversationPage implements OnInit {
 
   toggleVideo(off?:boolean){
     console.log(this.interaction)
-    if(this.interaction=='combination' || off){
+    if(this.interaction=='chat' || off){
       this.conversation.heyGen.disconnect('avatar_video')
       this.firestore.updateSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId,{video_on:false})
       let tempConversation = JSON.parse(localStorage.getItem('conversation')||'{}')
@@ -916,7 +943,7 @@ export class ConversationPage implements OnInit {
       this.interaction = 'chat'
     }
     else if(this.interaction=='chat'){
-      this.interaction = 'combination'
+      this.interaction = 'chat'
       this.createDragGesture()
       this.conversation.restartAvatar()
       this.firestore.updateSub('users',this.auth.userInfo.uid,'conversations',this.conversation.activeConversation.conversationId,{video_on:true})
@@ -928,7 +955,6 @@ export class ConversationPage implements OnInit {
   }
 
   toggleVoice(off?:boolean){
-    console.log(this.interaction)
     if(this.interaction=='voice' || off){
       this.conversation.messages = JSON.parse(JSON.stringify(this.conversation.activeConversation.messages)) 
       this.conversation.voiceActive = false
@@ -1013,40 +1039,135 @@ export class ConversationPage implements OnInit {
 
   voiceSubscription:Subscription = new Subscription()
   voiceSessionId:string = ''
-  startRecording(event:Event) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.record.recording = true;
-    this.transcript = '';
-    this.record.startRecording('audioToText',this.conversation.activeConversation.conversationId,(response:any)=>{
-      if(response){
-        if(response=='error'){
-          this.toast.show(this.translate.instant('conversation.sound_error'))
-        }
-        else{
-          this.loadingTextFromAudio = false;
-          this.question = this.question ? this.question + ' ' + response : response;
-          this.record.analyzing = false;
-          this.rf.detectChanges();
-        }
-      }
-    })
-    // this.voiceSessionId = this.auth.userInfo.uid+'_'+this.conversation.activeConversation.conversationId+'_'+Date.now()
-    // this.record.startRecording(this.voiceSessionId);
-    // this.voiceSubscription = this.firestore.getDoc('transcriptions',this.voiceSessionId).subscribe((data:any)=>{
-    //   if (data.payload.data()?.transcript?.length) {
-    //     this.question = data.payload.data().transcript[data.payload.data().transcript.length - 1];
-    //   }
-    // });
+  // startRecording(event:Event) {
+  //   event.preventDefault();
+  //   event.stopPropagation();
+  //   this.record.recording = true;
+  //   this.transcript = '';
+  //   this.record.startRecording('audioToText',this.conversation.activeConversation.conversationId,(response:any)=>{
+  //     if(response){
+  //       if(response=='error'){
+  //         this.toast.show(this.translate.instant('conversation.sound_error'))
+  //       }
+  //       else{
+  //         this.loadingTextFromAudio = false;
+  //         this.question = this.question ? this.question + ' ' + response : response;
+  //         this.record.analyzing = false;
+  //         this.rf.detectChanges();
+  //       }
+  //     }
+  //   })
+  // }
 
+  startRecording(event?: Event,noText?:boolean) {
+    if(this.isSpeaking){
+      return
+    }
+    this.record.listening = false;
+    console.log('start recording')
+    if(event){
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if(noText){
+      this.conversation.fullRecording = true;
+    }
+    this.transcript = '';
+    this.record.recording = true;
+    this.rf.detectChanges();
+    console.log('waiting for speech')
+
+    // if(this.conversation.fullRecording){
+    //   this.record.waitForSpeech((stream: MediaStream) => {
+    //     this.record.startRecordingWithStream(stream, 'audioToText', this.conversation.activeConversation.conversationId, (response: any) => {
+    //       if (response === 'error') {
+    //         this.toast.show(this.translate.instant('conversation.sound_error'));
+    //       } else if (response) {
+    //         this.loadingTextFromAudio = false;
+    //         this.question = this.question ? this.question + ' ' + response : response;
+    //         this.record.analyzing = false;
+    //         this.record.recording = false;
+    //         if(this.question){
+    //           console.log('question from audio',this.question)
+    //           if(noText&&!this.record.noUpload){
+    //             this.sendQuestion()
+    //             setTimeout(() => {
+    //               this.record.listening = false;
+    //               this.startRecording(event,noText);
+    //             }, 2000);
+
+    //           }
+    //           else if(this.record.noUpload){
+    //             this.record.noUpload = false;
+    //           }
+    //           this.rf.detectChanges();
+    //         }
+    //         // this.rf.detectChanges();
+    //       }
+    //     });
+    //   });
+    // }
+    if(this.conversation.fullRecording){
+        this.record.startSmartRecording(this.conversation.activeConversation.conversationId, (response: any) => {
+          if (response === 'error') {
+            this.toast.show(this.translate.instant('conversation.sound_error'));
+          } else if (response) {
+            this.loadingTextFromAudio = false;
+            this.question = this.question ? this.question + ' ' + response : response;
+            this.record.analyzing = false;
+            this.record.recording = false;
+            if(this.question){
+              console.log('question from audio',this.question)
+              if(noText&&!this.record.noUpload){
+                this.sendQuestion()
+                setTimeout(() => {
+                  this.record.listening = false;
+                  this.startRecording(event,noText);
+                }, 2000);
+
+              }
+              else if(this.record.noUpload){
+                this.record.noUpload = false;
+              }
+              this.rf.detectChanges();
+            }
+            // this.rf.detectChanges();
+          }
+        });
+    }
+    else{
+        this.record.startRecordingSolo('audioToText', this.conversation.activeConversation.conversationId, (response: any) => {
+          if (response === 'error') {
+            this.toast.show(this.translate.instant('conversation.sound_error'));
+          } else if (response) {
+            this.loadingTextFromAudio = false;
+            this.question = this.question ? this.question + ' ' + response : response;
+            this.record.analyzing = false;
+            this.record.recording = false;
+            if(this.question){
+              this.rf.detectChanges();
+            }
+          }
+        });
+    }
   }
 
   stopRecording(event:Event) {
+    if(this.isSpeaking){
+      return
+    }
     event.preventDefault();
     event.stopPropagation();
+    if(this.conversation.fullRecording){
+      this.conversation.fullRecording = false;
+      this.record.noUpload = true;
+    }
     this.record.recording = false;
-    this.record.analyzing = true;
+    // this.record.analyzing = true;
     this.record.stopRecording();
+
+
+
     // setTimeout(() => {
     //   this.voiceSubscription.unsubscribe();
     //   this.firestore.delete('transcriptions',this.voiceSessionId)
@@ -1110,6 +1231,9 @@ export class ConversationPage implements OnInit {
     }
     if(this.conversation.activeConversation.closed){
       menuList = JSON.parse(JSON.stringify(this.helpMenuClosed))
+      if(this.conversation.activeConversation?.hide?.evaluation){
+        menuList = menuList.filter((m:any)=>m.id!='showEvaluation')
+      }
       if(this.media.smallDevice){
         menuList.push({
           title:this.translate.instant('conversation.menu_phases'),

@@ -54,6 +54,8 @@ export class MarketplacePage implements OnInit {
   showFilterSmall:boolean = false;
   filterIsEmpty:boolean = true;
   showLogin:boolean = false;
+  specialCodeChecked: boolean = false;
+
   constructor(
     public media: MediaService,
     public icon:IconsService,
@@ -134,13 +136,26 @@ export class MarketplacePage implements OnInit {
         let elearningIds = this.checkPrivateVisibleItems().map(i => i.id);
         console.log('elearningIds for special code check:', elearningIds);
         if(elearningIds.length > 0) {
+          this.specialCodeChecked = false;
+          let countCheck = 0;
           this.toast.showLoader(this.translate.instant('marketplace.checking_code'));
+          let intervalChecking = setInterval(() => {
+            if(this.specialCodeChecked){
+              clearInterval(intervalChecking);
+            }
+            countCheck++;
+            if(countCheck > 40){
+              clearInterval(intervalChecking);
+              this.toast.hideLoader();
+            }
+          }, 300);
           this.functions.httpsCallable('elearningCheckSpecialCodes')({ specialCodes: this.searchParams.specialCode.split(','), elearnings:elearningIds }).pipe(take(1)).subscribe((response:any)=>{
             console.log(response)
             this.toast.hideLoader();
             setTimeout(() => {
               this.toast.hideLoader();
             }, 1000);
+            this.specialCodeChecked = true;
             if(response.status==200){
               this.checkedSpecialCodes = response.result.validCodes;
               this.updateVisibleItems();
@@ -152,6 +167,9 @@ export class MarketplacePage implements OnInit {
             }
           })
         }
+      }
+      else{
+        this.updateVisibleItems();
       }
     });
     this.accountService.fetchProducts();
@@ -781,11 +799,14 @@ export class MarketplacePage implements OnInit {
           return;
         }
         // console.log('Purchase successful:', response);
-        this.toast.hideLoader();
-        this.toast.show(this.translate.instant('marketplace.activation_successful'), 6000);
-        setTimeout(() => {
-          this.nav.go('start/my_trainings');
-        }, 2000);
+        this.auth.getMyElearnings(this.auth.userInfo.uid, () => {
+          this.toast.hideLoader();
+          this.auth.getCredits(this.auth.userInfo.uid);
+          this.toast.show(this.translate.instant('marketplace.activation_successful'), 6000);
+          setTimeout(() => {
+            this.nav.go('start/my_trainings');
+          }, 2000);
+        })
       },
       error: (error:any) => {
         console.error('Purchase failed:', error);

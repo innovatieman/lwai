@@ -31,11 +31,12 @@
             </ion-item>
           </div>
           <div  style="margin-bottom:15px;" *ngIf="extraData&&extraData.object&&!extraData.multiple">
-            <ion-item detail="false" *ngFor="let listItem of list | filterSearch : search" button (click)="listItem.type==='subTitle' ? doNothing() : modalController.dismiss(listItem)" [lines]="listItem.type==='subTitle' ? 'none' : undefined">
+            <ion-item detail="false" *ngFor="let listItem of list | filterSearch : search : false : ['name','title']" button (click)="listItem.type==='subTitle' ? doNothing() : modalController.dismiss(listItem)" [lines]="listItem.type==='subTitle' ? 'none' : undefined">
               <fa-icon *ngIf="listItem.icon" [icon]="iconList ? icon.get(listItem) : icon.get(listItem.icon)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
               <fa-icon *ngIf="!listItem.icon&&iconList" [icon]="icon.get(listItem)" style="font-size:15px;color:white;width:25px;height: 25px;margin-right: 10px;background-color: var(--ion-color-dark);border-radius: 3px;text-align: center;line-height: 25px;"></fa-icon>
               <ion-label *ngIf="listItem.title" color="dark" [ngClass]="{'font-title' : listItem.type==='subTitle'}" [ngStyle]="{'font-size' : listItem.type==='subTitle' ? '20px' : 'inherit','color':listItem.type==='subTitle' ? 'black' : 'inherit'}" [innerHtml]="listItem.title | sanitizeHtml"></ion-label>
-              <ion-label *ngIf="!listItem.title" color="dark" [innerHtml]="listItem | sanitizeHtml"></ion-label>
+              <ion-label *ngIf="!listItem.title&&!listItem.html" color="dark" [innerHtml]="listItem | sanitizeHtml"></ion-label>
+              <ion-text *ngIf="listItem.html" color="dark" style="width:100%;" [innerHtml]="listItem.html | sanitizeHtml"></ion-text>
               <ion-note color="primary">{{listItem.note}}</ion-note>
             </ion-item>
           </div>

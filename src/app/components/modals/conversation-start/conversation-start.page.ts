@@ -210,7 +210,7 @@ export class ConversationStartPage implements OnInit {
 
     this.toast.hideTooltip()
     
-    if(location.pathname.substring(1).includes('my_trainings') || location.pathname.substring(1).includes('my_organisation')){
+    if(location.pathname.substring(1).includes('my_trainings') || location.pathname.substring(1).includes('my_organisation') || location.pathname.substring(1).includes('trainer/') || location.pathname.substring(1).includes('bagend/cases')){
       this.conversationService.originUrl = location.pathname.substring(1)
     }
     else{

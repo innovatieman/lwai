@@ -81,7 +81,8 @@
         "invalid_file_size": "File is too large! Maximum allowed: ",
         "not_complete":"Not complete",
         "invalid_code": "The code you entered is not valid.",
-        "max_length_exceeded":"The maximum length of this field is exceeded."
+        "max_length_exceeded":"The maximum length of this field is exceeded.",
+        "select_item_first":"Please select an item first."
       },
       "buttons": {
         "cancel": "Cancel",
@@ -147,7 +148,9 @@
         "buy":"Buy",
         "undo":"Undo",
         "activate":"Activate",
-        "send_message":"Send message"
+        "send_message":"Send message",
+        "on":"On",
+        "off":"Off"
       },
       "messages": {
       "saved": "Data saved",
@@ -195,7 +198,8 @@
       "agents_feedback":"Feedback",
       "agents_feedback_cipher":"Feedback score",
       "agents_phases":"Conversation level (phases",
-      "agents_goal":"Goal of the conversation"
+      "agents_goal":"Goal of the conversation",
+      "agents_evaluation":"Evaluation of the conversation"
     },
     "languages": {
       "language": "Language",
@@ -442,6 +446,7 @@
       "register_as_trainer_expertise":"In what area do you want to provide training?",
       "register_as_trainer_success":"Your registration has been successfully received. You can start creating your own cases and training immediately.",
       "register_as_trainer_failure":"Something went wrong while registering as a trainer. Please try again later.",
+      "register_as_trainer_rdpa_agree": "I agree again with the <a href='https://www.iubenda.com/terms-and-conditions/75452715' target='_blank'>Terms and Conditions</a> and the <a href='https://www.iubenda.com/privacy-policy/75452715' target='_blank'>Privacy Policy</a> of AliciaLabs.<br><br>I agree with the <a href='/assets/documents/rdpa-alicialabs_en.pdf' target='_blank'>Data Processing Agreement</a> of AliciaLabs.<br><br>",
       "become_trainer_pro":"Become Trainer Pro",
       "is_trainer_pro":"Professional Trainer",
       "request_new_organization_text":"Can you tell us a bit about your organization and what you want to do with it? We will get back to you as soon as possible.",
@@ -593,7 +598,14 @@
       "case_expertise_knowledge":"Expertise knowledge",
       "module_type":"Module type",
       "type_free":"Free form",
-      "type_game":"Game format"
+      "type_game":"Game format",
+      "select_voice":"Select voice",
+      "no_voice_selected":"No voice selected. The user cannot use the voice function.",
+      "voice_type_teenager":"Teenager",
+      "voice_sex_female":"Female",
+      "voice_sex_male":"Male",
+      "voice_sex_other":"Other",
+      "voice_on":"Start with voice"
     },
     "modules":{
         "edit_module":"Edit",
@@ -890,6 +902,7 @@
       "disclaimer_ai":"This is an AI simulation conversation. The statements displayed cannot be attributed to real people.",
       "no_skills_points_length":"Your conversation was too short to earn points for conversation skills.",
       "first_wait_message":"Your conversation partner is getting ready to talk to you...",
+      "first_wait_message_voice":"Your conversation partner is getting ready to talk to you",
       "delete_conversation":"Delete conversation without evaluation",
       "last_feedback":"Last feedback",
       "last_message":"Last message",
@@ -897,7 +910,8 @@
       "days_between_conversations":"Number of days between this and the previous conversation?",
       "actions_between_conversations":"Has anything happened between this and the previous conversation?",
       "next_conversation_title":"Continue the conversation",
-      "next_conversation_explanation":"Simulate a continuation of this conversation. You can start a new conversation with the same AI conversation partner and build on the previous conversation. This can help deepen the relationship with the AI conversation partner and gain more insight into the situation."
+      "next_conversation_explanation":"Simulate a continuation of this conversation. You can start a new conversation with the same AI conversation partner and build on the previous conversation. This can help deepen the relationship with the AI conversation partner and gain more insight into the situation.",
+      "conversation_closed":"This conversation has been closed. You can find it in your completed cases to review or continue the discussion."
     },
     "terms":{
       "terms":"https://www.iubenda.com/terms-and-conditions/75452715",
@@ -1041,7 +1055,9 @@
     "add_knowledge_item_text":"Here you can add any extra specific knowledge that the AI can use when providing feedback in cases. Note: The AI already has a considerable knowledge base, so this is only necessary if you want to add specific knowledge that is not already in the AI.",
     "add_knowledge_expert_text":"Here you can add knowledge that the AI can use in expert conversations. This knowledge is used by the AI conversation partner to coach the user and provide information during an expert conversation.",
     "training_content":"Describe the content of the training in detail here. This will be displayed when the training is clicked on.",
-    "trainer_details":"Provide more information about yourself or your organization here. This will be displayed when a user views your information.<br>This information can be found by clicking on your logo in your trainings."
+    "trainer_details":"Provide more information about yourself or your organization here. This will be displayed when a user views your information.<br>This information can be found by clicking on your logo in your trainings.",
+    "case_voice":"Here you can choose the voice of the AI conversation partner. You can choose from different voices. The voices may vary in accent, intonation, and speed.<br><br>The attitude of the AI conversation partner in the conversation can of course influence the way of speaking.<br><br>Try out different voices to see which one best fits your case.",
+    "case_voice_on": "Turn on this option if you want the AI conversation partner to respond with a voice instead of chat."
   },
     "dashboard":{
       "organisation":"Organization",

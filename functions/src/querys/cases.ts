@@ -1,6 +1,10 @@
 import admin from '../firebase'
 const { onRequest } = require("firebase-functions/v2/https");
 import { config } from '../configs/config-basics';
+const { onCall, CallableRequest } = require("firebase-functions/v2/https");
+import type { CallableRequest } from 'firebase-functions/lib/common/providers/https';
+
+import * as responder from '../utils/responder'
 
 const db = admin.firestore()
 
@@ -41,3 +45,53 @@ exports.loadCasesPublic = onRequest(
         return res.status(500).json({ error: 'Failed to load public cases' });
     }
 });
+
+exports.getVoices = onCall(
+  {
+    region: 'europe-west1',
+    memory: '1GiB',
+  },
+  async (request: CallableRequest<any>,) => {
+    const { auth, data } = request;
+    if (!auth.uid) {
+      return new responder.Message('Unauthorized', 401);
+    }
+
+    if (!data || !data.trainerId) {
+      return new responder.Message('Missing required parameters', 400);
+    }
+
+    const trainerRef = db.collection('trainers').doc(data.trainerId);
+    const trainerDoc = await trainerRef.get();
+    if (!trainerDoc.exists) {
+      return new responder.Message('Trainer not found', 404);
+    }
+    const language = data.language || 'en';
+    const voicesRef = db.collection('voices');
+    const voicesSnapshot = await voicesRef.get();
+    if (voicesSnapshot.empty) {
+      return new responder.Message([], 200);
+    }
+
+    // get all voices and data from language subcollection
+    const voices = voicesSnapshot.docs.map(doc => {
+      const voiceData = doc.data();
+      const translationDoc = voicesRef.doc(doc.id).collection('languages').doc(language);
+      return translationDoc.get().then(translationSnap => {
+        const translation = translationSnap.exists ? translationSnap.data() : null;
+        return {
+          id: doc.id,
+          name: translation?.name || voiceData.name,
+          short: translation?.short || voiceData.short,
+          type: translation?.type || voiceData.type,
+          description: translation?.description || voiceData.description,
+          sex: voiceData.sex
+        };
+      });
+    });
+
+    const voicesData = await Promise.all(voices);
+    return new responder.Message(voicesData, 200);
+  }
+
+);

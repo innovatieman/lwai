@@ -27,7 +27,7 @@ ion-header{
 
 .voiceAvatar{
   max-height: 800px;
-  height:90%;
+  // height:90%;
   border-radius: 24px;
 }
 .voiceAttitude{
@@ -793,7 +793,7 @@ video{
     top: 0;
     left: 0px;
     width: 100%;
-    height: calc(90% - 40px);
+    height: calc(90% - 0px);
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -868,3 +868,93 @@ video{
 .silent_bar:nth-child(8)  { left: 99px; animation-duration: 1419ms; }
 .silent_bar:nth-child(9)  { left: 113px; animation-duration: 1487ms; }
 .silent_bar:nth-child(10) { left: 127px; animation-duration: 1442ms; }
+
+
+.chatAssistantSide{
+  background:rgba(255, 255, 255, 0.2);
+  border:solid 1px rgba(var(--ion-color-secondary-rgb),0.3);
+  color:var(--color-global);
+  text-align:left;
+  margin-top:20px;
+  margin-bottom:10px;
+  margin-right:20%;
+  border-radius: 24px;
+  padding:10px;
+}
+.chatUserSide{
+  background:var(--background-global);
+  border:solid 1px rgba(var(--ion-color-secondary-rgb),0.3);
+  color:var(--color-global);
+  text-align:left;
+  margin-top:20px;
+  margin-bottom:10px;
+  margin-left:20%;
+  border-radius: 24px;
+  padding:10px;
+
+}
+
+.microphone-wrapper {
+  display: inline-block;
+  cursor: pointer;
+  // animation: pulseMic 2.5s ease-in-out infinite;
+  // animation: glowPulse 2.5s ease-in-out infinite, pulseMic 2.5s ease-in-out infinite;
+  box-shadow: 0 0 7px rgba(0, 0, 0, 0.3);
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  transition: box-shadow 0.3s ease;
+  fa-icon{
+    font-size: 28px;
+    // color: red;
+  }
+}
+
+// .microphone-wrapper fa-icon {
+  // font-size: 28px;
+  // animation: pulseMic 2.5s ease-in-out infinite;
+// }
+
+.microphone-wrapper.recording {
+  animation: glowPulse 2.0s ease-in-out infinite, pulseMic 2.0s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow:
+      0 0 2px rgba(255, 0, 0, 0.3),
+      0 0 2px rgba(255, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 10px rgba(255, 0, 0, 0.6),
+      0 0 15px rgba(255, 0, 0, 0.4);
+  }
+  100% {
+    box-shadow:
+      0 0 2px rgba(255, 0, 0, 0.3),
+      0 0 2px rgba(255, 0, 0, 0.1);
+  }
+}
+
+@keyframes pulseMic {
+  0% {
+    transform: scale(1);
+    // filter: drop-shadow(0 0 0px rgba(255, 0, 0, 0.5));
+  }
+  50% {
+    transform: scale(1.1);
+    // filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.9));
+  }
+  100% {
+    transform: scale(1);
+    // filter: drop-shadow(0 0 0px rgba(255, 0, 0, 0.5));
+  }
+}
+
+.notRecording{
+  opacity: 0.1;
+}

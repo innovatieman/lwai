@@ -288,7 +288,7 @@ export class HeaderComponent  implements OnInit {
     this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
     await this.shortMenu.present();
     await this.shortMenu.onWillDismiss().then((result:any)=>{
-      console.log(this.selectMenuservice.selectedItem)
+      // console.log(this.selectMenuservice.selectedItem)
       if(this.selectMenuservice.selectedItem){
         this.nav.changeOrganisation(this.selectMenuservice.selectedItem.id)
         if(window.location.pathname.indexOf('/trainer')==-1){

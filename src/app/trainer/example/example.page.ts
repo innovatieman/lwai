@@ -120,6 +120,9 @@ export class ExamplePage implements OnInit {
     this.leave$.complete();
   }
 
+  
+
+
   exampleItem(type:string,id:string):any{
     if(type =='infoItem'){
       if(this.trainerService.breadCrumbs.length && this.trainerService.breadCrumbs[0].type=='training'){

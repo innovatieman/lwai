@@ -107,7 +107,7 @@ export class StartPage implements OnInit {
 
       if(params['tab']&&(params['tab'] == 'cases' || params['tab'] == 'my_trainings' || params['tab'] == 'my_organisation')){
         this.showAll = params['tab']
-        console.log(params['case_types'],params['case_types'] != 'create_self')
+        // console.log(params['case_types'],params['case_types'] != 'create_self')
         if(!params['case_types']||params['case_types'] != 'create_self'){
           this.showCreateSelf = false
         }
@@ -850,7 +850,7 @@ export class StartPage implements OnInit {
           if(this.auth.mySelectedOrganisation?.id){
             clearInterval(check)
             this.selectedModule = this.auth.getActiveCourse(module,true)
-            console.log('selected module',this.selectedModule)
+            // console.log('selected module',this.selectedModule)
           }
         }
       }, 100);
@@ -916,7 +916,7 @@ export class StartPage implements OnInit {
         return items.findIndex((i:any) => i.id === this.trainingItem.id);
       }
       if(this.selectedModule?.items){
-        console.log('current item index',this.selectedModule,this.trainingItem)
+        // console.log('current item index',this.selectedModule,this.trainingItem)
         return this.selectedModule.items.findIndex((i:any) => i.id === this.trainingItem.id);
       }
       return -1
@@ -949,9 +949,21 @@ export class StartPage implements OnInit {
       return location.pathname.indexOf('my_organisation') > -1
     }
 
-    readInfoItem(organisation?:boolean,saveTrainingItem?:boolean){
-      // console.log('read info item',this.selectedModule)
+    readInfoItem(organisation?:boolean,saveTrainingItem?:boolean,item_id?:string){
+      if(!item_id){
+        item_id = this.trainingItem.id
+      }
+      if(!item_id){
+        return
+      }
+      // console.log('read info item',item_id)
       let checked = false
+      if(!this.selectedModule?.basics){
+        this.selectedModule.basics = {used_items:[]}
+      }
+      if(!this.selectedModule.basics.used_items){
+        this.selectedModule.basics.used_items = []
+      }
       for(let i = 0; i < this.selectedModule.basics.used_items.length; i++){
         if(this.selectedModule.basics.used_items[i].id == this.trainingItem.id){
           checked = true
@@ -960,11 +972,21 @@ export class StartPage implements OnInit {
       if(!checked){
         this.selectedModule.basics.used_items.push({id:this.trainingItem.id,read:moment().unix()})
         if(!organisation){
-          this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',this.trainingItem.id,{read:moment().unix()})
-          .then((res)=>{
-            console.log('read item',this.trainingItem.id)
-            // this.auth.getActiveCourses(this.auth.userInfo.uid)
-          })
+          if(this.selectedModule.publishType=='elearning'){
+            this.firestore.updateSubSub('users',this.auth.userInfo.uid,'my_elearnings',this.selectedModule.id,'items',item_id,{read:moment().unix()})
+            .then((res)=>{
+              // console.log('read item',item_id)
+              // this.auth.getMyElearnings(this.auth.userInfo.uid,()=>{},true)
+            })
+          }
+          else{
+
+            this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',this.trainingItem.id,{read:moment().unix()})
+            .then((res)=>{
+              console.log('read item',this.trainingItem.id)
+              // this.auth.getActiveCourses(this.auth.userInfo.uid)
+            })
+          }
         }
         else{
           this.firestore.setSubSub('participant_organisations',this.auth.userInfo.email,'organisations',this.auth.mySelectedOrganisation.id,'items',this.trainingItem.id,{read:moment().unix()})
@@ -979,6 +1001,12 @@ export class StartPage implements OnInit {
     }
 
     itemIsFinished(item:any,organisation?:boolean){
+      if(item.type=='infoItem' && this.selectedModule?.publishType == 'elearning' && location.pathname.indexOf('my_organisation') == -1){
+        let fullItem = this.auth.getTrainingItem(this.selectedModule.id,item.id)
+        if(fullItem && fullItem.read){
+          return true
+        }
+      }
       if(item.type=='infoItem'){
         if(this.auth.getActiveCourse(this.selectedModule.id,organisation)?.basics?.used_items){
           let items = this.auth.getActiveCourse(this.selectedModule.id,organisation).basics.used_items

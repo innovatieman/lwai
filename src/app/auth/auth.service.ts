@@ -525,6 +525,7 @@ export class AuthService {
       this.toast.showLoader(this.translate.instant('page_register.busy_loading'));
       setTimeout(() => {
         this.toast.hideLoader();
+        this.getCredits(this.userInfo.uid);
         // this.nav.go('wait-verify'); 
       }, 3000);
       } catch (error:any) {

@@ -696,6 +696,8 @@ ion-modal.editHtmlModal{
     --max-width: 100%;
 }
 
+
+
 @media only screen and (max-width: 667px) {
     ion-modal.selectManyModal{
         --width: 100%;
@@ -771,6 +773,12 @@ ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectM
                 max-height: 100vh;
             }
         }
+    }
+}
+
+ion-modal.selectAvatarModal{
+    .inner-content{
+        max-height: 70vh!important;
     }
 }
 .popover-content{

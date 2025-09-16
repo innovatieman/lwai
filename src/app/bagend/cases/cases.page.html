@@ -173,6 +173,9 @@
                             <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
                             <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of visibleCases" (contextmenu)="onRightClick($event,caseItem)">
                                 <ion-card noPadding pointer fullheight>
+                                    <div class="shareButtonCase" *ngIf="caseItem.voice">
+                                        <fa-icon [icon]="icon.get('faMicrophoneAlt')" font-22 style="color:#7A90B6"></fa-icon>
+                                    </div>
                                     <ion-card-content noPadding fullHeight>
                                         <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
                                         <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>

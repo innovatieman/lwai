@@ -74,7 +74,15 @@
                 <ion-item detail="false" lines="none" button (click)="importCase()" class="itemButton" *ngIf="!trainerService.caseItem?.id" noMargin>
                     <div font-20 weight700>{{'cases.use_template' | translate}}</div>
                     <fa-icon font-24 slot="end" [icon]="icon.get('faCopy')"></fa-icon>
-                </ion-item>    
+                </ion-item>   
+                
+                <!-- <ion-item detail="false" lines="none" button (click)="massUpdate()" class="itemButton" *ngIf="!trainerService.caseItem?.id" noMargin>
+                    <div font-20 weight700>{{'cases.mass_update' | translate}} {{filteredCases.length}}</div>
+                    <fa-icon font-24 slot="end" [icon]="icon.get('faSyncAlt')"></fa-icon>
+                </ion-item>   -->
+                
+
+
                 
                 <ion-item detail="false" lines="none" button (click)="importClick()" class="itemButton" *ngIf="!trainerService.caseItem?.id" noMargin >
                     <div font-20 weight700>{{'cases.import_case' | translate}}</div>
@@ -134,6 +142,9 @@
                         <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
                         <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of visibleCases">
                             <ion-card noPadding pointer fullheight (contextmenu)="onRightClick($event,caseItem)">
+                                <div class="shareButtonCase" *ngIf="caseItem.voice">
+                                    <fa-icon [icon]="icon.get('faMicrophoneAlt')" font-22 style="color:#7A90B6"></fa-icon>
+                                </div>
                                 <ion-card-content noPadding fullHeight>
                                     <div backgroundImage class="avatarImage" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
                                     <div backgroundImage class="avatarImage" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
@@ -439,8 +450,33 @@
 
                                     </ion-item>
                                 </ion-col> 
-                                    
-                                
+
+                                <ion-col [size]="media.smallDevice ? 12 : 8" *ngIf="trainerService.isAdmin">
+                                    <ion-item pointer detail="false" lines="none" listCard (click)="trainerService.voices.length ? selectVoice() : trainerService.loadVoices()" class="ionItemTypes" fullwidth>
+                                        <ion-label position="stacked" style="margin-bottom:10px">{{'cases.select_voice' | translate}}</ion-label>
+                                        <div style="min-height:40px">
+                                            <span *ngIf="trainerService.caseItem.voice">
+                                                {{trainerService.caseItem.voice}}
+                                            </span>
+                                            <span *ngIf="!trainerService.caseItem.voice" font-14 text-secondary italic>
+                                                {{'cases.no_voice_selected' | translate}}
+                                            </span>
+                                            <fa-icon pointer titleIcon font-20 relative style="top:3px;" [icon]="icon.get('faTimes')" *ngIf="trainerService.caseItem.voice" (click)="clearVoice($event)"></fa-icon>
+                                        </div>
+                                        <fa-icon pointer slot="end" titleIcon font-24 (click)="trainerService.tooltip('case_voice','cases.select_voice',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                                    </ion-item>
+                                </ion-col>
+
+                                <ion-col [size]="media.smallDevice ? 12 : 4" *ngIf="trainerService.isAdmin">
+                                    <ion-item detail="false" lines="none" listCard fullwidth>
+                                        <ion-label position="stacked" >{{'cases.voice_on' | translate}}</ion-label>
+                                        <ion-toggle labelPlacement="end" justify="start" style="margin:4px;" fullwidth [(ngModel)]="trainerService.caseItem.voice_on" (ionChange)="update('voice_on')" color="primary" weight600>
+                                            <span *ngIf="trainerService.caseItem.voice_on">{{'buttons.on' | translate}}</span>
+                                            <span *ngIf="!trainerService.caseItem.voice_on">{{'buttons.off' | translate}}</span>
+                                        </ion-toggle>
+                                        <fa-icon pointer slot="end" titleIcon font-24 (click)="trainerService.tooltip('case_voice_on','cases.voice_on')" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                                    </ion-item>
+                                </ion-col>
 
                             </ion-row>
                         </ion-card-content>
@@ -717,6 +753,7 @@
                                     <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.feedbackCipher" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_feedback_cipher' | translate}}</ion-toggle>
                                     <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.phases" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_phases' | translate}}</ion-toggle>
                                     <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.goal" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_goal' | translate}}</ion-toggle>
+                                    <ion-toggle noMargin fullwidth [(ngModel)]="trainerService.caseItem.editable_by_user.hide.evaluation" (ionChange)="update('editable_by_user')"  color="primary">{{'case_options.agents_evaluation' | translate}}</ion-toggle>
                                 </ion-item>
 
                             </ion-card-content>

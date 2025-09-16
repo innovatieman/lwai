@@ -20,7 +20,11 @@ export class CleanReactionPipe implements PipeTransform {
   }
 
   clearStringChars(input: string) {
-    return input.split('{').join('').split('}').join('')
+    return input
+    .trim()
+    .replace(/^({+)/, '')   // begin-accolades strippen
+    .replace(/(}+):?$/, ''); // eind-accolades (en optionele dubbelepunt) strippen
+    // return input.split('{').join('').split('}').join('')
   }
 }
 

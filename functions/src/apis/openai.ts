@@ -2560,6 +2560,133 @@ exports.translateAttitudes = functions.region("europe-west1").runWith({ memory: 
 
 })
 
+exports.translateVoices = functions.region("europe-west1").runWith({ memory: "1GB" }).https.onCall(async (data: any, context: any) => {
+  const db = admin.firestore();
+  const user = await db.collection("users").doc(context.auth?.uid).get();
+  if (!user.exists) {
+    console.log("User not found");
+    return new responder.Message("Admin not found", 404);
+  }
+  const userData = user.data();
+  if (!userData?.isAdmin) {
+    console.log("Admin not found");
+    return new responder.Message("Not authorized", 403);
+  }
+  if (!data.languages) {
+    console.log("Missing required parameters");
+    return new responder.Message("Missing required parameters", 400);
+  }
+  // console.log("Vertaal attitudes:", data.languages);
+  const languagesRef = db.collection("languages");
+  const languagesSnap = await languagesRef.get();
+  let languages: any = {};
+  languagesSnap.forEach((doc: any) => {
+    languages[doc.id] = doc.data();
+  });
+  // console.log("Talen opgehaald:", languages);
+  let languagesToTranslate: any[] = [];
+  for (let i = 0; i < data.languages.length; i++) {
+    if (languages[data.languages[i]]) {
+      languagesToTranslate.push({ language: languages[data.languages[i]] });
+    }
+  }
+  // console.log("Talen om te vertalen:", languagesToTranslate);
+  // Haal instructies en formats op parallel
+  const [agentInstructions, formats] = await Promise.all([
+    getAgentInstructions("translator", "main"),
+    getFormats("translator"),
+  ]);
+  let systemContent =
+    agentInstructions.systemContent +
+    "\n\n" +
+    formats.format +
+    "\n\n" +
+    formats.instructions;
+  // Start alle vertalingen parallel
+    const translationPromises: Promise<void>[] = languagesToTranslate.map(async (lang: any): Promise<void> => {
+
+    try {
+      let content = agentInstructions.content
+        .split("[original_language]")
+        .join(languages[data.original_language]?.title || "")
+        .split("[original_language_short]")
+        .join(languages[data.original_language]?.language || "")
+        .split("[translated_language]")
+        .join(languages[lang.language.language]?.title || "")
+        .split("[translated_language_short]")
+        .join(languages[lang.language.language]?.language || "");
+
+      const voicesRef = db.collection("voices");
+      const voicesSnap = await voicesRef.get();
+
+      if (voicesSnap.empty) {
+        console.log("Geen voices gevonden");
+        return null;
+      }
+
+      voicesSnap.forEach(async (doc: any) => {
+        const voiceData = doc.data();
+        console.log("Vertaal voice:", doc.id);
+        let voiceContent = content
+        .split("[input]")
+        .join(JSON.stringify(voiceData))
+
+        let sendMessages: any = [
+          { role: "system", content: systemContent },
+          { role: "user", content: voiceContent },
+        ];
+
+        // console.log("message system :", JSON.stringify(sendMessages[0]).substring(0, 100));
+        const completion = await openai.chat.completions.create({
+          model: openAiModal,
+          messages: sendMessages,
+          temperature: agentInstructions.temperature,
+          max_tokens: agentInstructions.max_tokens,
+        });
+        const completeMessage = completion.choices[0].message.content.replace(
+          /```json|```/g,
+          ""
+        );
+        let translatedItem;
+        try {
+          translatedItem = JSON.parse(completeMessage);
+        }
+        catch (error) {
+          console.error(
+            `Fout bij JSON-parsing voor taal ${lang.language.language}:`,
+            completeMessage,
+            error
+          );
+          return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+        }
+        let newVoiceItem: any = translatedItem.output;
+        console.log("Nieuwe voice item:", JSON.stringify(newVoiceItem).substring(0,100));
+        await db
+          .collection("voices")
+          .doc(doc.id)
+          .collection("languages")
+          .doc(lang.language.language)
+          .set(newVoiceItem);
+        // console.log("Nieuwe voice item:", Object.keys(newVoiceItem));
+      });
+      return null;
+
+    }
+    catch (error) {
+      console.error(
+        `Fout bij vertalen naar ${lang.language.language}:`,
+        error
+      );
+      return null; // 🔹 BELANGRIJK: Zorg dat de functie altijd iets teruggeeft
+    }
+  })
+
+  // Wacht tot alle vertalingen zijn voltooid
+  await Promise.all(translationPromises);
+  return null;
+
+})
+
 exports.translatePhases = functions.region('europe-west1').runWith({memory:'8GB'}) .https.onCall(async (data: any, context: any) => {
   
   const db = admin.firestore();

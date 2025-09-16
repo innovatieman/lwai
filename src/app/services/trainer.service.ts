@@ -5,7 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { InfoService } from './info.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { combineLatest, map, switchMap, defaultIfEmpty, of, catchError, tap, Observable } from 'rxjs';
+import { combineLatest, map, switchMap, defaultIfEmpty, of, catchError, tap, Observable, take } from 'rxjs';
 import { BehaviorSubject, filter, firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { ModalService } from './modal.service';
 import { id } from '@swimlane/ngx-datatable';
@@ -14,6 +14,7 @@ import { color } from 'highcharts';
 import { ToastService } from './toast.service';
 import { AccountService } from './account.service';
 import { HelpersService } from './helpers.service';
+import { SortByPipe } from '../pipes/sort-by.pipe';
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +49,17 @@ export class TrainerService {
   isOrgAdmin: boolean = false;
   segments:any[] = []
   segmentsOrganized:any = []
+  voices:any[] = []
+  isAdmin: boolean = false;
+  private pendingSpecificCallbacks: {
+    [key: string]: Function[]
+    } = {
+      cases: [],
+      modules: [],
+      infoItems: [],
+      trainings: [],
+      example: [],
+    };
   // trainerInfoLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
   private currentOrgId?: string;
   private listenersStarted = false;
@@ -65,11 +77,13 @@ export class TrainerService {
     private toast:ToastService,
     private accountService:AccountService,
     private helper:HelpersService,
+    private sortByPipe:SortByPipe,
   ) { 
     this.auth.userInfo$.subscribe(userInfo => {
       if (userInfo) {
         this.isTrainer = userInfo.isTrainer;
         this.auth.hasActive('trainer').subscribe((trainer)=>{
+          this.loadVoices();
           this.loadTrainerInfo(()=>{
             this.trainerInfoLoaded$.next(true);
           });
@@ -88,6 +102,10 @@ export class TrainerService {
       }
     })
 
+    this.auth.isAdmin().subscribe((admin) => {
+      this.isAdmin = admin;
+    });
+
     this.nav.organisationChange.subscribe((res)=>{      
       this.trainingItem = {}
       this.moduleItem = {}
@@ -105,14 +123,31 @@ export class TrainerService {
     })
   }
 
-  ensureLoadedForOrg(orgId: string,callback?: any,callbackSpecific?: any) {
-    // console.log('ensureLoadedForOrg',orgId)
+  loadVoices(){
+    if(this.voices.length==0){
+      this.functions.httpsCallable('getVoices')({trainerId:this.nav.activeOrganisationId,language:this.translate.currentLang}).pipe(take(1)).subscribe((res:any) => {
+        this.voices = res.result;
+        if(!this.voices || this.voices.length==0 || typeof this.voices === 'string'){
+          this.voices = [];
+        }
+        this.voices = this.sortByPipe.transform(this.voices,-1,'name');
+        // console.log('voices',this.voices)
+      });
+    }
+  }
 
+  async ensureLoadedForOrg(orgId: string,callback?: any,callbackSpecific?: any) {
     if (!orgId) return;
     if (this.listenersStarted && this.currentOrgId === orgId) {
       if (callback) {
         // console.log('already loaded for org', orgId);
         callback();
+      }
+
+      if (callbackSpecific) {
+        for(const key in callbackSpecific) {
+          this.pendingSpecificCallbacks[key].push(callbackSpecific[key]);
+        }
       }
       return;
     }
@@ -122,21 +157,32 @@ export class TrainerService {
 
     this.currentOrgId = orgId;
     this.listenersStarted = true;
-    // console.log('specific',callbackSpecific)
     this.loadTrainingsAndParticipants(()=>{
       this.loadModules(()=>{
         if(callbackSpecific?.modules){
           callbackSpecific.modules();
+        }
+        if(this.pendingSpecificCallbacks['modules'].length>0){
+          this.pendingSpecificCallbacks['modules'].forEach(cb => cb());
+          this.pendingSpecificCallbacks['modules'] = [];
         }
       })
       this.loadCases(()=>{
         if(callbackSpecific?.cases){
           callbackSpecific.cases();
         }
+        if(this.pendingSpecificCallbacks['cases'].length>0){
+          this.pendingSpecificCallbacks['cases'].forEach(cb => cb());
+          this.pendingSpecificCallbacks['cases'] = [];
+        }
       })
       this.loadInfoItems(()=>{
         if(callbackSpecific?.infoItems){
           callbackSpecific.infoItems();
+        }
+        if(this.pendingSpecificCallbacks['infoItems'].length>0){
+          this.pendingSpecificCallbacks['infoItems'].forEach(cb => cb());
+          this.pendingSpecificCallbacks['infoItems'] = [];
         }
       })
       if (callback) {
@@ -147,6 +193,14 @@ export class TrainerService {
       }
       if(callbackSpecific?.example){
         callbackSpecific.example();
+      }
+      if(this.pendingSpecificCallbacks['trainings'].length>0){
+        this.pendingSpecificCallbacks['trainings'].forEach(cb => cb());
+        this.pendingSpecificCallbacks['trainings'] = [];
+      }
+      if(this.pendingSpecificCallbacks['example'].length>0){
+        this.pendingSpecificCallbacks['example'].forEach(cb => cb());
+        this.pendingSpecificCallbacks['example'] = [];
       }
     })
   }
@@ -605,7 +659,6 @@ export class TrainerService {
         })
       )
       .subscribe((incomingCases: any[]) => {
-        // console.log('loadCases: received', incomingCases.length, 'cases');
         // 3) In-place reconcile: behoud object-referenties die de UI al vasthoudt
         this.patchArrayInPlace(this.cases, incomingCases, 'id', (target: any, src: any) => {
           Object.assign(target, src);
@@ -1600,6 +1653,12 @@ export class TrainerService {
         type:'text',
         value:'',
         required:false,
+      },
+      {
+        title:this.translate.instant('page_account.register_as_trainer_rdpa_agree'),
+        type:'checkbox',
+        value:false,
+        required:true,
       }
     ],(result:any)=>{
       if(result.data){

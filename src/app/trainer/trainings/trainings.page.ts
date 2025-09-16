@@ -869,6 +869,11 @@ export class TrainingsPage implements OnInit {
           trainerId: this.nav.activeOrganisationId,
           updates: {
             [field]: trainingItem[field]
+          },
+          updateSpecialcode:['max_customers','allowed_domains'].includes(field) ? true : false,
+          updatesSpecialcode:{
+            allowedDomains: trainingItem.allowed_domains || '',
+            maxCustomers: trainingItem.max_customers || 0,
           }
         }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
           // console.log('adjustElearning response',res)
@@ -877,6 +882,17 @@ export class TrainingsPage implements OnInit {
     }
   }
 
+  update_elearning_specialCode(field:string){
+    this.functions.httpsCallable('adjustElearning')({
+      elearningId: this.trainerService.trainingItem.id,
+      trainerId: this.nav.activeOrganisationId,
+      updates: {
+        [field]: this.trainerService.trainingItem[field]
+      }
+    }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
+      // console.log('adjustElearning response',res)
+    });
+  }
 
   moduleNotReady(){
     let check = 
@@ -2226,7 +2242,6 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   filterWith(type:string){
-    console.log('filterWith',type)
     if(type){
       this.trainingFilter = [type]
     }

@@ -208,7 +208,7 @@
           </ion-card>
         </div>
 
-        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.userInfo.email&&auth.userCredentials?.emailVerified" >
+        <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.userInfo?.email&&auth.userCredentials?.emailVerified" >
 
           <ion-item detail="false" lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}">
             <div font-20 weight700>{{'page_account.dashboard' | translate}}</div>
@@ -390,7 +390,7 @@
                     <div *ngIf="elearningItem(item_id).photo" [ngStyle]="{'height':!media.smallDevice?'400px':'200px'}" marginBottom>
                       <img [src]="elearningItem(item_id).photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
                     </div>
-                    <div [innerHTML]="elearningItem(item_id).training_content | sanitizeHtml" font-16 marginBottom  class="textContainer"></div>
+                    <div [innerHTML]="helper.convertSpaces(elearningItem(item_id).training_content) | sanitizeHtml" font-16 marginBottom  class="textContainer"></div>
 
                   </div>
                   <div basicPadding *ngIf="showCreditsOption" font-16 style="border-top:solid 1px #ddd;margin-top:10px;">

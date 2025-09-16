@@ -137,7 +137,7 @@ exports.creditsBought = functions.region('europe-west1').runWith({ memory: '1GB'
 
         const newElearning = await admin.firestore().collection('users').doc(userId).collection('my_elearnings').add(elearningData);
         for(let i=0; i<elearningItemsData.length; i++){
-            await admin.firestore().collection('users').doc(userId).collection('elearnings').doc(newElearning.id).collection('items').doc(elearningItemsData[i].id).set(elearningItemsData[i]);
+            await admin.firestore().collection('users').doc(userId).collection('my_elearnings').doc(newElearning.id).collection('items').doc(elearningItemsData[i].id).set(elearningItemsData[i]);
         }
 
     }

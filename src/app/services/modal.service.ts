@@ -311,7 +311,7 @@ export class ModalService {
       componentProps:{
         properties:obj
       },
-      cssClass:'selectManyModal',
+      cssClass:'selectAvatarModal',
     })
     modalItem.onWillDismiss().then(result=>{
       callback(result)

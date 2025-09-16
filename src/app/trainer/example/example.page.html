@@ -217,7 +217,7 @@
                       </ion-card-title>
                   </ion-card-header>
                   <div basicPadding>
-                      <div [innerHTML]="exampleItem(type,id).intro" weight600 marginBottom  class="textContainer"></div>
+                      <div [innerHTML]="helper.convertLines(exampleItem(type,id).intro)" weight600 marginBottom  class="textContainer"></div>
                       <div *ngIf="exampleItem(type,id).extra_photo&&!exampleItem(type,id).conversation && exampleItem(type,id).type!='video'" style="height:400px;" marginBottom>
                         <img [src]="exampleItem(type,id).extra_photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
                       </div>
@@ -231,7 +231,7 @@
 
                       </div>
                       <div *ngIf="exampleItem(type,id).type!='image_only'">
-                        <div [innerHTML]="exampleItem(type,id).content | sanitizeHtml" class="textContainer"></div>
+                        <div [innerHTML]="helper.convertSpaces(exampleItem(type,id).content) | sanitizeHtml" class="textContainer"></div>
                       </div>
 
                       <div marginTop *ngIf="exampleItem(type,id).files?.length">
@@ -270,7 +270,7 @@
                       </ion-card-title>
                   </ion-card-header>
                   <div basicPadding>
-                      <div [innerHTML]="latestBreadCrumbs.item.intro" weight600 marginBottom  class="textContainer"></div>
+                      <div [innerHTML]="helper.convertLines(latestBreadCrumbs.item.intro)" weight600 marginBottom  class="textContainer"></div>
                       <div *ngIf="latestBreadCrumbs.item.extra_photo&&!latestBreadCrumbs.item.conversation" style="height:400px;" marginBottom>
                         <img [src]="latestBreadCrumbs.item.extra_photo" alt="" borderRadius24 style="width:100%;height:100%;object-fit:cover;">
                       </div>
@@ -284,7 +284,7 @@
 
                       </div>
                       <div *ngIf="latestBreadCrumbs.item.type!='image_only'">
-                        <div [innerHTML]="latestBreadCrumbs.item.content | sanitizeHtml" class="textContainer"></div>
+                        <div [innerHTML]="helper.convertSpaces(latestBreadCrumbs.item.content) | sanitizeHtml" class="textContainer"></div>
                       </div>
 
                       <div marginTop *ngIf="latestBreadCrumbs.item.files?.length">

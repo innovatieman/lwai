@@ -81,7 +81,8 @@
         "invalid_file_size":"Bestand is te groot! Maximaal toegestaan: ",
         "not_complete":"Niet compleet",
         "invalid_code":"De code die je hebt ingevoerd is ongeldig.",
-        "max_length_exceeded":"De maximale lengte van dit veld is overschreden."
+        "max_length_exceeded":"De maximale lengte van dit veld is overschreden.",
+        "select_item_first":"Selecteer eerst een item."
     },
     "buttons":{
         "cancel":"Annuleren",
@@ -147,7 +148,9 @@
         "buy":"Koop",
         "undo":"Ongedaan maken",
         "activate":"Activeren",
-        "send_message":"Stuur bericht"
+        "send_message":"Stuur bericht",
+        "on":"Aan",
+        "off":"Uit"
     },
     "messages":{
         "saved":"Gegevens opgeslagen",
@@ -195,7 +198,8 @@
         "agents_feedback":"Feedback",
         "agents_feedback_cipher":"Feedback cijfer",
         "agents_phases":"Gespreksniveau van het gesprek (fases)",
-        "agents_goal":"Doel van het gesprek"
+        "agents_goal":"Doel van het gesprek",
+        "agents_evaluation":"Evaluatie van het gesprek"
     },
     "languages":{
         "language":"Taal",
@@ -442,6 +446,7 @@
         "register_as_trainer_expertise":"Op welk gebied wil je trainingen geven?",
         "register_as_trainer_success":"Je registratie is succesvol ontvangen. je kunt direct aan de slag met het maken van je eigen cases en trainingen.",
         "register_as_trainer_failure":"Er is iets misgegaan bij het registreren als trainer. Probeer het later nog eens.",
+        "register_as_trainer_rdpa_agree":"<br>Ik ga nogmaals akkoord met de <a href='https://www.iubenda.com/gebruiksvoorwaarden/84749837' target='_blank'>Algemene voorwaarden</a> en het <a href='https://www.iubenda.com/privacy-policy/84749837' target='_blank'>Privacybeleid</a> van AliciaLabs.<br><br>Ik ga akkoord met de <a href='/assets/documents/rdpa-alicialabs_nl.pdf' target='_blank'>Verwerkersovereenkomst</a> van AliciaLabs.<br><br>",
         "become_trainer_pro":"Word Trainer Pro",
         "is_trainer_pro":"Professional Trainer",
         "request_new_organization_text":"Kun je ons wat vertellen over je organisatie en wat je ermee wilt doen? We nemen dan zo snel mogelijk contact met je op.",
@@ -593,7 +598,14 @@
         "case_expertise_knowledge":"Expertise kennis",
         "module_type":"Module type",
         "type_free":"Vrije inrichting",
-        "type_game":"Spelvorm"
+        "type_game":"Spelvorm",
+        "select_voice":"Selecteer een stem",
+        "no_voice_selected":"Geen stem geselecteerd. De gebruiker kan dan geen gebruik maken van de stem functie",
+        "voice_type_teenager":"Tiener",
+        "voice_sex_female":"Vrouw",
+        "voice_sex_male":"Man",
+        "voice_sex_other":"Overig",
+        "voice_on":"Start met voice"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -890,6 +902,7 @@
         "disclaimer_ai":"Dit is een AI-simulatiegesprek. Weergegeven uitspraken kunnen niet worden toegeschreven aan echte personen.",
         "no_skills_points_length":"Je gesprek was te kort om punten te verdienen voor gespreksvaardigheden.",
         "first_wait_message":"Je gesprekspartner maakt zich klaar om met je in gesprek te gaan...",
+        "first_wait_message_voice":"Je gesprekspartner maakt zich klaar om met je in gesprek te gaan",
         "delete_conversation":"Verwijder gesprek zonder evaluatie",
         "last_feedback":"Laatste feedback",
         "last_message":"Laatst gezegd",
@@ -897,7 +910,8 @@
         "days_between_conversations":"Aantal dagen tussen dit en het vorige gesprek?",
         "actions_between_conversations":"Is er iets gebeurd tussen dit en het vorige gesprek?",
         "next_conversation_title":"Ga verder in gesprek",
-        "next_conversation_explanation":"Simuleer een vervolg op dit gesprek. Je kunt een nieuw gesprek aangaan met dezelfde AI-gesprekspartner en voortborduren op het vorige gesprek. Dit kan helpen om de relatie met de AI-gesprekspartner te verdiepen en meer inzicht te krijgen in de situatie."
+        "next_conversation_explanation":"Simuleer een vervolg op dit gesprek. Je kunt een nieuw gesprek aangaan met dezelfde AI-gesprekspartner en voortborduren op het vorige gesprek. Dit kan helpen om de relatie met de AI-gesprekspartner te verdiepen en meer inzicht te krijgen in de situatie.",
+        "conversation_closed":"Dit gesprek is afgesloten. Je kunt deze terugvinden bij je afgeronde cases, om na te lezen of om verder te praten."
     },
     "terms":{
         "terms":"https://www.iubenda.com/gebruiksvoorwaarden/84749837",
@@ -1041,7 +1055,9 @@
         "add_knowledge_item_text":"Hier kun je eventuele extra specifieke kennis toevoegen die de AI kan gebruiken bij de feedback in cases. Let op: De AI heeft al een behoorlijke kennisbasis, dus dit is alleen nodig als je specifieke kennis wilt toevoegen die niet al in de AI zit.",
         "add_knowledge_expert_text":"Hier kun je kennis toevoegen die de AI kan gebruiken bij expert gesprekken. Deze kennis wordt gebruikt door de AI-gesprekspartner om de gebruiker te kunnen coachen en van informatie te voorzien tijdens een expert gesprek.",
         "training_content":"Beschrijf hier uitgebreid de inhoud van de training. Dit wordt getoond wanneer wordt geklikt op de training.",
-        "trainer_details":"Geef hier meer informatie over jezelf of je organisatie. Dit wordt getoond wanneer een gebruiker jouw informatie bekijkt.<br>Deze informatie kan gevonden worden door op je logo te klikken bij je trainingen."
+        "trainer_details":"Geef hier meer informatie over jezelf of je organisatie. Dit wordt getoond wanneer een gebruiker jouw informatie bekijkt.<br>Deze informatie kan gevonden worden door op je logo te klikken bij je trainingen.",
+        "case_voice":"Hier kun je de stem van de AI-gesprekspartner kiezen. Je kunt kiezen uit verschillende stemmen. De stemmen kunnen verschillen in accent, intonatie en snelheid.<br><br>De attitude van de AI-gesprekspartner in het gesprek kan uiteraard invloed hebben op de manier van spreken. <br><br>Probeer verschillende stemmen uit om te zien welke het beste past bij jouw case.",
+        "case_voice_on":"Zet deze optie aan als je wilt dat de AI-gesprekspartner met een stem reageert in plaats van met chat."
     },
     "dashboard":{
         "organisation":"Organisatie",

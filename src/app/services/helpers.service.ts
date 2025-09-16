@@ -98,6 +98,16 @@ export class HelpersService {
     };
   }
   
+  convertLines(text:string){
+    if(!text){return ''}
+    return text.replace(/\n/g, '<br />');
+  }
+
+  convertSpaces(text:string){
+    if(!text){return ''}
+    return text.replace(/&nbsp;/g, ' ');
+  }
+
   shuffleArrayDeterministic<T>(array: T[], seed: number): T[] {
     const result = [...array];
     const random = this.seededRandom(seed);
@@ -646,6 +656,10 @@ export class HelpersService {
     str = str.split(',').join('.')
     return parseFloat(str)
      
+  }
+
+  async sleep(ms:number){
+    return new Promise( resolve => setTimeout(resolve, ms) );
   }
 
   async copyToClipboard(text:string,callback?:any){

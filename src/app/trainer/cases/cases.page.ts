@@ -19,6 +19,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
 import * as moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
+import { SortByPipe } from 'src/app/pipes/sort-by.pipe';
 
 @Component({
   selector: 'app-cases',
@@ -64,6 +65,7 @@ export class CasesPage implements OnInit {
     public levelService:LevelsService,
     public selectMenuservice:SelectMenuService,
     private popoverController:PopoverController,
+    private sortByPipe:SortByPipe,
   ) { }
 
 
@@ -111,7 +113,6 @@ export class CasesPage implements OnInit {
         this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
           // console.log('trainer',trainer,this.casesLoaded)
           if(trainer){
-            // console.log('loading cases')
             this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
                 this.updateVisibleCases();
               },{
@@ -314,41 +315,101 @@ export class CasesPage implements OnInit {
     // })
   }
 
-  deleteCase(caseItem?:any){
-    if(!caseItem?.id){
-      if(!this.trainerService.caseItem.id){
-        this.toast.show('Selecteer een casus')
-        return
+  // deleteCase(caseItem?:any){
+  //   if(!caseItem?.id){
+  //     if(!this.trainerService.caseItem.id){
+  //       this.toast.show('Selecteer een casus')
+  //       return
+  //     }
+  //     caseItem = this.trainerService.caseItem
+  //   }
+  //   this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
+  //     if(result){
+  //       let id = caseItem.id
+  //       console.log('deleting case',id)
+  //       this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'cases',caseItem.id).then(()=>{
+  //         console.log('deleted case')
+  //         this.updateVisibleCases();
+  //       })
+  //       this.trainerService.caseItem = {}
+  //       // this.trainerService.loadCases()
+  //       for(let i=0;i<this.trainerService.modules.length;i++){
+  //         let change = false
+  //         let module = this.trainerService.modules[i]
+  //         if(module.items?.length){
+  //           for(let j=0;j<module.items.length;j++){
+  //             if(module.items[j].id == id){
+  //               module.items.splice(j,1)
+  //               change = true
+  //             }
+  //           }
+  //         }
+  //         if(change){
+  //           this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',module.id,{items:module.items},()=>{})
+  //         }
+  //       }
+  //     }
+  //   })
+  // }
+
+  deleteCase(caseItem?: any) {
+    if (!caseItem?.id) {
+      if (!this.trainerService.caseItem.id) {
+        this.toast.show(this.translate.instant('error_messages.select_item_first'));
+        return;
       }
-      caseItem = this.trainerService.caseItem
+      caseItem = this.trainerService.caseItem;
     }
-    this.modalService.showConfirmation('Are you sure you want to delete this case?').then((result:any) => {
-      if(result){
-        let id = caseItem.id
-        console.log('deleting case',id)
-        this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'cases',caseItem.id).then(()=>{
-          console.log('deleted case')
-          this.updateVisibleCases();
-        })
-        this.trainerService.caseItem = {}
-        // this.trainerService.loadCases()
-        for(let i=0;i<this.trainerService.modules.length;i++){
-          let change = false
-          let module = this.trainerService.modules[i]
-          if(module.items?.length){
-            for(let j=0;j<module.items.length;j++){
-              if(module.items[j].id == id){
-                module.items.splice(j,1)
-                change = true
-              }
+
+    this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then((result: any) => {
+      if (!result) return;
+
+      const caseId = caseItem.id;
+      // console.log('deleting case', caseId);
+
+      // Verwijder de case uit Firestore
+      this.firestore.deleteSub('trainers', this.nav.activeOrganisationId, 'cases', caseId).then(() => {
+        console.log('deleted case');
+        this.updateVisibleCases();
+      });
+
+      this.trainerService.caseItem = {};
+
+      // Recursieve functie om de case uit alle modulestructuren te verwijderen
+      const removeCaseFromModule = (module: any): boolean => {
+        let changed = false;
+
+        if (module.items && module.items.length > 0) {
+          // Loop achterstevoren om veilig te splicen
+          for (let i = module.items.length - 1; i >= 0; i--) {
+            const item = module.items[i];
+
+            if (item.id === caseId) {
+              module.items.splice(i, 1);
+              changed = true;
+            }
+
+            // Als het item zelf een module is (bijv. submodule met eigen items)
+            if (item.type === 'module' && item.items && Array.isArray(item.items)) {
+              const subChanged = removeCaseFromModule(item);
+              if (subChanged) changed = true;
             }
           }
-          if(change){
-            this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',module.id,{items:module.items},()=>{})
-          }
+        }
+
+        return changed;
+      };
+
+      // Loop door alle toplevel modules en update als er iets is veranderd
+      for (let i = 0; i < this.trainerService.modules.length; i++) {
+        const module = this.trainerService.modules[i];
+        const changed = removeCaseFromModule(module);
+
+        if (changed) {
+          this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'modules', module.id, { items: module.items }, () => {});
         }
       }
-    })
+    });
   }
 
   selectCasus(casus:any){
@@ -788,7 +849,7 @@ export class CasesPage implements OnInit {
     this.updateVisibleCases();
   }
 
-  updateVisibleCases() {
+  async updateVisibleCases() {
     // <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
 
     // const filtered = this.caseFilterPipe.transform(
@@ -797,7 +858,7 @@ export class CasesPage implements OnInit {
     //   this.currentFilterTypes.subjectTypes,
     //   this.extraFilters.open_to_user
     // );
-    // console.log('updating visible cases', this.trainerService.cases);
+
     const searched = this.filterSearchPipe.transform(
       this.trainerService.cases,
       this.searchTerm,
@@ -850,71 +911,178 @@ export class CasesPage implements OnInit {
     })
   }
 
-  selectModules(modules:any){
-    if(!modules){
-      modules = []
-    }
-    let list:any[] =[]
-    for(let i=0;i<this.trainerService.modules.length;i++){
-      let item:any = {}
-      item.id = this.trainerService.modules[i].id
-      item.title = this.trainerService.modules[i].title
-      item.value = this.trainerService.modules[i].title
-      if(modules.includes(item.id)){
-        item.selected = true
-      }
-      list.push(item)
-    }
+  // selectModules(modules:any){
+  //   if(!modules){
+  //     modules = []
+  //   }
+  //   let list:any[] =[]
+  //   for(let i=0;i<this.trainerService.modules.length;i++){
+  //     let item:any = {}
+  //     item.id = this.trainerService.modules[i].id
+  //     item.title = this.trainerService.modules[i].title
+  //     item.value = this.trainerService.modules[i].title
+  //     if(modules.includes(item.id)){
+  //       item.selected = true
+  //     }
+  //     list.push(item)
+  //   }
     
-    this.modalService.selectItem('Selecteer de modules', list, (result: any) => {
-      if (result.data) {
-        let oldList = []
-        if(this.trainerService.caseItem.modules){
-          oldList = JSON.parse(JSON.stringify(this.trainerService.caseItem.modules))
-        }
-        this.trainerService.caseItem.modules = result.data.map((e:any) => {
-          return e.id
-        })
-        let newList = this.trainerService.caseItem.modules
-        console.log(oldList,newList)
-        this.firestore.setSub('trainers', this.nav.activeOrganisationId, 'cases', this.trainerService.caseItem.id, this.trainerService.caseItem.modules, 'modules', () => {
-          this.trainerService.loadCases()
-        }, true)
+  //   this.modalService.selectItem('Selecteer de modules', list, (result: any) => {
+  //     if (result.data) {
+  //       let oldList = []
+  //       if(this.trainerService.caseItem.modules){
+  //         oldList = JSON.parse(JSON.stringify(this.trainerService.caseItem.modules))
+  //       }
+  //       this.trainerService.caseItem.modules = result.data.map((e:any) => {
+  //         return e.id
+  //       })
+  //       let newList = this.trainerService.caseItem.modules
+  //       console.log(oldList,newList)
+  //       this.firestore.setSub('trainers', this.nav.activeOrganisationId, 'cases', this.trainerService.caseItem.id, this.trainerService.caseItem.modules, 'modules', () => {
+  //         this.trainerService.loadCases()
+  //       }, true)
 
-        for(let i=0;i<oldList.length;i++){
-          if(!newList.includes(oldList[i])){
-            let course = this.trainerService.getModule(oldList[i])
-            for(let j=0;j<course.items.length;j++){
-              if(course.items[j].id == this.trainerService.caseItem.id){
-                course.items.splice(j,1)
-                break
+  //       for(let i=0;i<oldList.length;i++){
+  //         if(!newList.includes(oldList[i])){
+  //           let course = this.trainerService.getModule(oldList[i])
+  //           for(let j=0;j<course.items.length;j++){
+  //             if(course.items[j].id == this.trainerService.caseItem.id){
+  //               course.items.splice(j,1)
+  //               break
+  //             }
+  //           }
+  //           this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'modules', oldList[i], {items:course.items}, () => {})
+  //         }
+  //       }
+  //       for(let i=0;i<newList.length;i++){
+  //         if(!oldList.includes(newList[i])){
+  //           let course = this.trainerService.getModule(newList[i])
+  //           if(!course.items){
+  //             course.items = []
+  //           }
+  //           course.items.push({
+  //             id:this.trainerService.caseItem.id,
+  //             title:this.trainerService.caseItem.title,
+  //             created:Date.now(),
+  //             order:999,
+  //             type:'case'
+  //           })
+  //           this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'modules', newList[i], {items:course.items}, () => {})
+  //         }
+  //       }
+
+
+
+  //     }
+  //   }, undefined, 'modules',{multiple:true,object:true,field:'title',allowEmpty:true})
+
+  // }
+
+  selectModules(modules: any) {
+    if (!modules) modules = [];
+
+    const list = this.trainerService.modules.map((mod: any) => ({
+      id: mod.id,
+      title: mod.title,
+      value: mod.title,
+      selected: modules.includes(mod.id),
+    }));
+
+    this.modalService.selectItem(
+      this.translate.instant('buttons.select'),
+      list,
+      (result: any) => {
+        if (!result.data) return;
+
+        const newModuleIds = result.data.map((e: any) => e.id);
+        const oldModuleIds = this.trainerService.caseItem.modules || [];
+        this.trainerService.caseItem.modules = newModuleIds;
+
+        const caseItem = {
+          created: this.trainerService.caseItem.created || new Date().toISOString(),
+          id: this.trainerService.caseItem.id,
+          title: this.trainerService.caseItem.title,
+          type: 'case',
+          order: 999,
+        };
+
+        // Recursieve functie om modules (en submodules) te doorlopen
+        const updateModuleWithInfoItem = (module: any): boolean => {
+          let changed = false;
+
+          // Voeg toe als module nu geselecteerd is
+          if (newModuleIds.includes(module.id)) {
+            module.items = module.items || [];
+            const alreadyExists = module.items.some((item: any) => item.id === caseItem.id && item.type === 'case');
+            if (!alreadyExists) {
+              module.items.push({ ...caseItem });
+              changed = true;
+            }
+          }
+
+          // Verwijder als module eerst geselecteerd was maar nu niet meer
+          if (oldModuleIds.includes(module.id) && !newModuleIds.includes(module.id)) {
+            const before = module.items?.length || 0;
+            module.items = (module.items || []).filter((item: any) => !(item.id === caseItem.id && item.type === 'case'));
+            const after = module.items.length;
+            if (before !== after) {
+              changed = true;
+            }
+          }
+
+          // Ga recursief verder in submodules
+          if (module.items && module.items.length > 0) {
+            for (let item of module.items) {
+              if (item.items && Array.isArray(item.items)) {
+                const subChanged = updateModuleWithInfoItem(item);
+                if (subChanged) changed = true;
               }
             }
-            this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'modules', oldList[i], {items:course.items}, () => {})
+          }
+
+          return changed;
+        };
+
+        // Doorloop alle toplevel modules
+        for (let mod of this.trainerService.modules) {
+          const changed = updateModuleWithInfoItem(mod);
+
+          if (changed) {
+            this.firestore.updateSub(
+              'trainers',
+              this.nav.activeOrganisationId,
+              'modules',
+              mod.id,
+              { items: mod.items },
+              () => {}
+            );
           }
         }
-        for(let i=0;i<newList.length;i++){
-          if(!oldList.includes(newList[i])){
-            let course = this.trainerService.getModule(newList[i])
-            if(!course.items){
-              course.items = []
-            }
-            course.items.push({
-              id:this.trainerService.caseItem.id,
-              title:this.trainerService.caseItem.title,
-              created:Date.now(),
-              order:999,
-              type:'case'
-            })
-            this.firestore.updateSub('trainers', this.nav.activeOrganisationId, 'modules', newList[i], {items:course.items}, () => {})
-          }
-        }
 
-
-
-      }
-    }, undefined, 'modules',{multiple:true,object:true,field:'title',allowEmpty:true})
-
+        // Update infoItem.modules zelf
+        this.firestore.setSub(
+          'trainers',
+          this.nav.activeOrganisationId,
+          'cases',
+          this.trainerService.infoItem.id,
+          this.trainerService.infoItem.modules,
+          'modules',
+          () => {
+            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+                this.updateVisibleCases();
+              },{
+              cases:()=>{
+                this.updateVisibleCases();
+              }}
+            );
+          },
+          true
+        );
+      },
+      undefined,
+      'modules',
+      { multiple: true, object: true, field: 'title', allowEmpty: true }
+    );
   }
 
   copyCase(caseItem?:any){
@@ -1346,5 +1514,61 @@ export class CasesPage implements OnInit {
     this.update('expertise_summary')
     this.update('extra_knowledge')
   }
+
+  selectVoice(){
+    let list:any[] = []
+    let sexHtml:any = {
+      female: '<span style="background-color:yellow;color:black;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_female')+'</span>',
+      male: '<span style="background-color:lightblue;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_male')+'</span>',
+      other: '<span style="background-color:lightgreen;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_other')+'</span>'
+    }
+
+
+    for(let i=0;i<this.trainerService.voices.length;i++){
+      let voice:any = this.trainerService.voices[i]
+      let sample = "https://storage.cloud.google.com/lwai-3bac8.firebasestorage.app/voices/"+voice.name+"_"+this.translate.currentLang+".wav"
+      let html = '<div style="display:flex;margin:10px 0px;align-items:center"><div><span style="font-weight:bold;font-size:18px;">'+voice.name+'</span>[type]<br>[sex]<span style="font-size:12px;font-style:italic;">'+voice.short +'</span></div><span style="flex:auto 1 1"></span><audio style="height:36px;" controls><source src="'+sample+'" type="audio/mpeg">Your browser does not support the audio element.</audio>'
+      if(voice.type.toLowerCase()=='teenager'){
+        html = html.replace('[type]','<span style="background-color:orange;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-left:15px;top:-2px;">'+this.translate.instant('cases.voice_type_teenager')+'</span>')
+      }
+      else{
+        html = html.replace('[type]','')
+      }
+      html = html.replace('[sex]',sexHtml[voice.sex] || '')
+      list.push({
+        value:voice.name,
+        html:html,
+        name:voice.name + (voice.short ? ' ('+voice.short+')' : ''),
+      })
+    }
+    this.modalService.selectItem('',list,(result:any)=>{
+      console.log(result)
+      if(result.data){
+        this.trainerService.caseItem.voice = result.data.value;
+        this.update('voice')
+      }
+    },null,this.translate.instant('cases.select_voice'),{object:true})
+  }
+
+  clearVoice(Event:Event){
+    Event.stopPropagation()
+    this.trainerService.caseItem.voice = ''
+    this.update('voice')
+  }
+
+  // async massUpdate(){
+  //   for(let i=0;i<this.filteredCases.length;i++){
+  //   // for(let i=0;i<1;i++){
+  //     if(!this.filteredCases[i].editable_by_user.hide.evaluation){
+  //       console.log('not hiding evaluation for ',this.filteredCases[i].title)
+  //     }
+  //     // this.filteredCases[i].editable_by_user.hide.evaluation = true
+  //     // this.update('editable_by_user',false,this.filteredCases[i])
+  //     // console.log('updated')
+  //     // await this.helpers.sleep(200)
+  //   }
+  // }
+
+
 
 }

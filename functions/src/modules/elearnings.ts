@@ -226,8 +226,20 @@ exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'
     }
     else{
       // Update the elearning document
-      const elearningDocRef = admin.firestore().collection('elearnings').doc(elearningDoc.id);
-      await elearningDocRef.update(updates);
+      if(data.updateSpecialcode && data.updateSpecialcode===true){
+        // If specialcode is true, but no specialCode provided, delete all special codes
+        const specialCodeRef = admin.firestore().collection('elearnings').doc(elearningDoc.id).collection('specialcode');
+        const specialCodeSnapshot = await specialCodeRef.get();
+        const batch = admin.firestore().batch();
+        specialCodeSnapshot.forEach(doc => {
+          batch.update(doc.ref, data.updatesSpecialcode)
+        });
+        await batch.commit();
+      }
+      else{
+        const elearningDocRef = admin.firestore().collection('elearnings').doc(elearningDoc.id);
+        await elearningDocRef.update(updates);
+      }
     }
 
     return new responder.Message('Elearning updated successfully', 200);
