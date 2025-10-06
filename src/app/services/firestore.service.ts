@@ -155,7 +155,7 @@ export class FirestoreService {
     return this.fire.doc(collection+'/'+id).update(obj)
     .then(_=> {
     })
-    .catch(err => console.log(err, 'You do not have access1! - '+collection + ' => '+id))
+    .catch(err => console.log(err, 'You do not have access1! - '+collection + ' => '+id,JSON.stringify(obj)))
   }
 
   updateSub(collection:string,doc:string,subcollection:string,subDoc:string,obj:any,errorCallback?:any){

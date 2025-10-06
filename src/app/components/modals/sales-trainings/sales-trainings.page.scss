@@ -1,0 +1,49 @@
+ion-content {
+  ion-item {
+    margin-bottom: 8px;
+  }
+}
+.formatPriceInput {
+  pointer-events: none;
+  position: absolute;
+  right: 33px;
+  text-align: right;
+  background: white;
+  z-index: 3;
+  width: 100px;
+  height: 30px;
+  top: 14px;
+}
+[customerDetails]{
+  margin:20px;
+  td{
+    padding: 8px 16px;
+    border:solid 1px var(--ion-color-medium);
+  }
+}
+
+.userInput{
+  border:solid 1px var(--ion-color-medium);
+  border-radius:8px;
+  margin: 4px 4px;
+  padding: 0 8px !important;
+  width:100%;
+  height:44px;
+}
+
+.languageSelection{
+  font-size: 15px;
+  position: initial;
+  height:44px;
+  cursor:pointer;
+  border:solid 1px var(--ion-color-medium);
+  border-radius:8px;
+  padding: 0 8px !important;
+  fa-icon{
+    font-size: 16px;
+    margin-right:5px
+  }
+  opacity: 1;
+  display:flex;
+  margin-left: 5px;
+}

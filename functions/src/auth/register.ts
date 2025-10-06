@@ -162,7 +162,7 @@ exports.userRemove = functions.region('europe-west1').auth.user().onDelete(
 // });
 
 
-exports.sendVerificationEmailLanguage = functions.region('europe-west1').firestore.document('user_languages/{userId}')
+exports.sendVerificationEmailLanguage = functions.region('europe-west1').runWith({memory:'1GB'}).firestore.document('user_languages/{userId}')
 .onCreate(async (change, context) => {
   const data = change.data();
   const email = data.email;
@@ -184,6 +184,17 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').firesto
   });
 
   displayName = user.displayName || '';
+  if(!displayName && data.displayName){
+    userRef.update({
+      displayName: data.displayName
+    });
+  }
+
+  if(data.buy && data.buy==true){
+    await admin.auth().updateUser(user.uid,{emailVerified:true})
+    console.log(`Skipping verification email for user who bought: ${email}`);
+    return
+  }
 
   const participantsRef = admin.firestore().collectionGroup('participants')
   const employeesRef = admin.firestore().collectionGroup('employees')

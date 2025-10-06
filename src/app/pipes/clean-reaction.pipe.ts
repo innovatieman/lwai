@@ -19,12 +19,20 @@ export class CleanReactionPipe implements PipeTransform {
 
   }
 
-  clearStringChars(input: string) {
-    return input
+clearStringChars(input: string) {
+  return input
     .trim()
-    .replace(/^({+)/, '')   // begin-accolades strippen
-    .replace(/(}+):?$/, ''); // eind-accolades (en optionele dubbelepunt) strippen
-    // return input.split('{').join('').split('}').join('')
-  }
+    // Verwijder '}' als het direct vóór de § staat
+    .replace(/}\s*\n?\s*§/g, '')
+
+    // Daarna: vervang overgebleven §
+    .replace(/§+/g, '') 
+
+    // Begin-accolades strippen
+    .replace(/^({+)/, '')
+
+    // Eind-accolades en optionele dubbelepunt strippen
+    .replace(/(}+):?$/, '')
+}
 }
 

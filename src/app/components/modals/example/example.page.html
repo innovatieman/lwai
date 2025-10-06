@@ -1,0 +1,110 @@
+
+<div header padding20 flex center-ver style="padding-bottom:0">
+  <div class="title" flex center-ver>
+    <fa-icon marginRight font-24 [icon]="icon.get('faArrowLeft')" (click)="backBreadCrumbs()" class="pointer" *ngIf="modulesBreadCrumbs.length"></fa-icon>
+    <h3 class="subtitle-top" *ngIf="training" noMargin>{{training.title}}</h3>
+  </div>
+  <span class="spacer"></span>
+  <ion-button (click)="close()" fill="clear" color="secondary">
+    <fa-icon  font-24 [icon]="icon.get('faTimes')" slot="icon-only"></fa-icon>
+  </ion-button>
+</div>
+<div style="padding:15px;overflow: auto;line-height:1.6;padding-top:0" [ngStyle]="{'max-height':'calc('+(vh * 100)+'px - 75px)'}">
+
+  <ng-container> 
+    <ion-col size="12">
+          <ion-card basicPadding backgroundWhite>
+              <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="!modulesBreadCrumbs.length">{{training.title}}</ion-card-title>
+              <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].title}}</ion-card-title>
+              <ion-card-content>
+                <div font-16 weight500 *ngIf="!modulesBreadCrumbs.length">{{training.user_info}}</div>
+                <div font-16 weight500 *ngIf="modulesBreadCrumbs.length"> {{modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info}}</div>
+              </ion-card-content>
+          </ion-card>
+      </ion-col>
+
+      <ion-row basicPadding>
+          <ion-col marginBottom [size]="helper.cardSizeSmall" *ngFor="let item of (modulesBreadCrumbs.length ? modulesBreadCrumbs[modulesBreadCrumbs.length-1].items : training.items); let i = index">
+              
+            <ion-card noMargin noPadding backgroundWhite pointer fullheight caseCard top10 *ngIf="item.type=='case'">  
+                  <ion-card-content noPadding fullHeight>
+                    <div backgroundImage class="avatarImage" *ngIf=" item.photo" [ngStyle]="{'background-image': 'url(' +  item.photo + ')'}"></div>
+                    <div backgroundImage class="avatarImage" *ngIf="! item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                    <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                      <ion-card-header>
+                        <ion-card-title font-18 weight600>{{ item.title}}</ion-card-title>
+                        <ion-card-subtitle font-14 weight400>{{ item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                      </ion-card-header>
+                    </div>
+                    <div center flex center-ver center-hor>
+                      <ion-button class="saveButton creditButton" style="border-radius:100%" [ngStyle]="{'background':levelService.levelColor(item.level)}" fill="outline" size="small">
+                        <div *ngIf="item.level">
+                          <div [ngStyle]="{'color':levelService.levelColorText( item.level)}">{{ item.level}}</div>
+                          <div font-12 [ngStyle]="{'color':levelService.levelColorTextLevel( item.level)}">{{'standards.level' | translate}}</div>
+                        </div>
+                      </ion-button>
+                      <div class="spacer"></div>
+                      <ion-button class="saveButton cardButton" fill="outline" size="small">{{'cases.conversation_ai' | translate}}</ion-button>
+
+                    </div>
+                  </ion-card-content>
+              </ion-card>
+
+              <ion-card noMargin noPadding backgroundWhite pointer fullheight caseCard top10 *ngIf="item.type=='infoItem'">
+                  <ion-card-content noPadding fullHeight>
+                      <div backgroundImage class="avatarImage" *ngIf=" item.photo" [ngStyle]="{'background-image': 'url(' +  item.photo + ')'}"></div>
+                      <div backgroundImage class="avatarImage" *ngIf="! item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                      <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                      <ion-card-header>
+                          <ion-card-title font-18 weight600>{{ item.title}}</ion-card-title>
+                          <ion-card-subtitle font-14 weight400>{{ item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                      </ion-card-header>
+                      </div>
+                      <div center flex center-ver center-hor>
+                          <div class="spacer"></div>
+                          <ion-button class="saveButton cardButton" fill="outline" size="small">{{'cases.knowledge_item' | translate}}</ion-button>
+
+                      </div>
+                  </ion-card-content>
+              </ion-card>
+
+              <ion-card noPadding pointer backgroundWhite fullheight caseCard *ngIf="item.type=='module'">
+                  <ion-card-content noPadding fullHeight>
+                      <div backgroundImage class="avatarImage" *ngIf=" item.photo" [ngStyle]="{'background-image': 'url(' +  item.photo + ')'}"></div>
+                      <div backgroundImage class="avatarImage" *ngIf="! item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+                      <div *ngIf="item.trainer?.logo" class="videoAvatarBadge" borderRadius0>
+                          <img [src]="item.trainer.logo | sanitizeHtml : 'urlResource'" class="trainerLogo"/>
+                      </div>
+                      <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+                          <ion-card-header>
+                              <ion-card-title font-18 weight600>{{item.title}}</ion-card-title>
+                              <ion-card-subtitle font-14 weight400>{{item.user_info | maxLength : 60 : true}}</ion-card-subtitle>
+                          </ion-card-header>
+                      </div>
+                      <div center flex center-ver center-hor>
+                          <ion-button class="saveButton creditButton" style="border-radius:100%" fill="outline" size="small">
+                              <div>
+                                  <div>{{item.items?.length ? item.items?.length : 0}}</div>
+                                  <div font-12>{{'standards.items' | translate}}</div>
+                              </div>
+                          </ion-button>
+                          <div class="spacer"></div>
+                          <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="selectSubModule(item)">{{'cases.open_more' | translate}}</ion-button>
+                      </div>
+                  </ion-card-content>
+              </ion-card>
+              <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule *ngIf="item.type=='module'"></ion-card>
+              <ion-card noMargin noPadding pointer fullheight caseCard multipleCardModule2 *ngIf="item.type=='module'"></ion-card>
+                
+              <!-- <ion-card *ngIf="itemIsFinished(item)" class="finishedItem">
+                  <fa-icon [icon]="icon.get('faCheck')"></fa-icon>
+              </ion-card> -->
+          </ion-col>
+      </ion-row>
+
+  </ng-container>
+
+
+
+
+</div>

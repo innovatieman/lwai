@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <div *ngIf="showFilterSmall" class="filterSmallTitle">
+  <!-- <div *ngIf="showFilterSmall" class="filterSmallTitle">
       <div basicPadding>
           <ion-card-title uppercase weight700 font-20 text-secondary flex center-ver>
               <span>{{'marketplace.filter_trainers' | translate}}</span>
@@ -47,13 +47,12 @@
           </div>
 
     </div>
-  </div>
+  </div> -->
 
-  <div *ngIf="showLogin && media.smallDevice && firstLoaded && !auth.userInfo?.email" class="filterSmall" style="background:0">
+  <!-- <div *ngIf="showLogin && media.smallDevice && firstLoaded && !auth.userInfo?.email" class="filterSmall" style="background:0">
     <div style="margin:20px;">
       <ion-card basicPadding noMargin  borderPrimary>
         <div font-16 center text-primary uppercase weight600>{{'page_register.register_login' | translate}}</div>
-          <!-- <div font-14 italic>{{'page_register.subtitle' | translate}}</div> -->
           <div marginTop>
             <ion-item detail="false" >
               <ion-input type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{15,}$" placeholder="{{'page_register.email' | translate}}" [(ngModel)]="authentication.email" required></ion-input>
@@ -105,7 +104,7 @@
         <div basicPadding italic align-center *ngIf="emailResend &&!showVerifyOption">{{emailResend}}</div>
       </ion-card>
     </div>
-  </div>
+  </div> -->
   
   <ion-grid>
     <ion-row *ngIf="media.smallDevice && activeTab!='filter'" [ngStyle]="{'height':item_id ? '56px' :'118px'}">
@@ -153,10 +152,9 @@
       <ion-col *ngIf="!media.smallDevice && activeTab!='filter'" [size]="3" class="selectColumn" style="padding-top:15px;">
 
 
-        <div *ngIf="!auth.userInfo?.email" marginBottom marginTop>
+        <!-- <div *ngIf="!auth.userInfo?.email" marginBottom marginTop>
           <ion-card basicPadding noMargin  borderPrimary>
             <div font-16 center text-primary uppercase weight600>{{'page_register.register_login' | translate}}</div>
-              <!-- <div font-14 italic>{{'page_register.subtitle' | translate}}</div> -->
               <div marginTop>
                 <ion-item detail="false" >
                   <ion-input type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{15,}$" placeholder="{{'page_register.email' | translate}}" [(ngModel)]="authentication.email" required></ion-input>
@@ -185,9 +183,9 @@
               </button>
             </div>
           </ion-card>
-        </div>
+        </div> -->
 
-        <div *ngIf="auth.userInfo?.email && !auth.userCredentials?.emailVerified && !isVerified" marginBottom marginTop>
+        <!-- <div *ngIf="auth.userInfo?.email && !auth.userCredentials?.emailVerified && !isVerified" marginBottom marginTop>
           <ion-card basicPadding noMargin  borderPrimary>
             <div font-18 marginBottom align-center>{{'page_wait_verify.step_0_text' | translate}}</div>
           
@@ -206,7 +204,7 @@
             </div>
             <div basicPadding italic align-center *ngIf="emailResend &&!showVerifyOption">{{emailResend}}</div>
           </ion-card>
-        </div>
+        </div> -->
 
         <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.userInfo?.email&&auth.userCredentials?.emailVerified" >
 
@@ -261,7 +259,6 @@
                   <fa-icon [icon]="icon.get('faTimes')" trash titleIcon (click)="selectTrainer(trainerId)"></fa-icon>
               </div>
             </span>
-            
           </div>
           <div *ngIf="showFilterTrainers">
             <ion-item detail="false" button class="itemButton" style="--background-hover:none;--padding-start:0;--padding-end:0" >
@@ -269,9 +266,9 @@
             </ion-item>
           </div>
           <div *ngIf="showFilterTrainers">
-            <div *ngFor="let trainerGroup of listAllTrainers() | filterKey : 'nameLower' : searchTrainers.toLowerCase() | sortBy : -1 : 'name' | splitArray : countChunks(11) ; index as groupIndex">
+            <div *ngFor="let trainerGroup of listofAllTrainers | filterSearch : searchTrainers.toLowerCase() : false : ['nameLower'] | sortBy : -1 : 'name' | splitArray : countChunks(11) ; index as groupIndex">
               <div *ngIf="groupIndex === pageTrainers">
-                <ion-item *ngFor="let trainer of trainerGroup" button lines="none" detail="false" [ngClass]="{'activeItem':trainerSelected(trainer.id),'notActiveItem':!trainerSelected(trainer.id)}" (click)="selectTrainer(trainer.id)" class="itemButton">
+                <ion-item *ngFor="let trainer of trainerGroup" button lines="none" detail="false" style="margin:10px 0px" [ngClass]="{'activeItem':trainerSelected(trainer.id),'notActiveItem':!trainerSelected(trainer.id)}" (click)="selectTrainer(trainer.id)" class="itemButton">
                   <div font-20 weight700>{{trainer.name}}</div>
                   <ion-thumbnail slot="end" *ngIf="trainer.logo" noMargin flex center-ver center-hor borderRadius16 style="background:white;max-width:46px;max-height:46px;overflow:hidden;">
                     <img [src]="trainer.logo | sanitizeHtml : 'urlResource'" style="width:40px;height:40px;border-radius:0;object-fit:contain;">
@@ -279,7 +276,6 @@
                 </ion-item>
               </div>
             </div>
-
           </div>
 
           <div *ngIf="showFilterTrainers && countChunks(11) > 1" style="border-top:solid 1px #ddd;margin-top:10px;">
@@ -326,7 +322,7 @@
           </ion-card>
 
           <ion-row *ngIf="(activeTab=='elearnings' || activeTab=='filter')  && !item_id && !showLogin" style="padding-bottom: 20px;">
-              <ion-col [size]="activeTab!='filter' ? helper.cardSizeSmall : helper.cardSizeLarge" *ngFor="let item of visibleItems; let i = index"  class="caseItem_with_ribbon" marginBottom>
+              <ion-col [size]="activeTab!='filter' ? helper.cardSizeSmall : helper.cardSize" *ngFor="let item of visibleItems; let i = index"  class="caseItem_with_ribbon" marginBottom>
     
                   <ion-card noPadding fullheight caseCard>
                       <ion-card-content noPadding fullHeight>
@@ -349,7 +345,8 @@
                                   </div>
                               </ion-button> -->
                               <div class="spacer"></div>
-                              <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('marketplace/'+activeTab+'/'+item.id)">{{'buttons.watch' | translate}}</ion-button>
+                              <!-- <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="nav.go('marketplace/'+activeTab+'/'+item.id)">{{'buttons.watch' | translate}}</ion-button> -->
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" (click)="showCheckout(item)">{{'buttons.watch' | translate}}</ion-button>
                           </div>
                       </ion-card-content>
 

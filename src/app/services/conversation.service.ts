@@ -533,7 +533,7 @@ export class ConversationService implements OnDestroy {
 
           // Zoek naar het laatste leesteken (einde van een zin)
           let lastSentenceEndIndex = -1;
-          ['.', '!', '?'].forEach(punctuation => {
+          ['.', '!', '?','§'].forEach(punctuation => {
             const index = buffer.lastIndexOf(punctuation);
             if (index > lastSentenceEndIndex) {
               lastSentenceEndIndex = index;

@@ -21,6 +21,7 @@ export class NavService {
   redirectUrl:any = null
   specialCode:string = ''
   registrationCode:string = ''
+  email:string = ''
   constructor(
     private navController: NavController,
     private translate: TranslateService,
@@ -32,6 +33,7 @@ export class NavService {
     this.redirectUrl = urlParams.get('redirect');
     this.specialCode = urlParams.get('specialcode')||''
     this.registrationCode = urlParams.get('registrationCode')||''
+    this.email = urlParams.get('email')||''
   }
 
   public go(page: string,backwards?: boolean){

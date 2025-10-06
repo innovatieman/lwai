@@ -235,12 +235,23 @@ export class TrainingsPage implements OnInit {
       }
       setTimeout(() => {
 
-        let htmlBtn:any = document.querySelector('.ql-HTML');
-        htmlBtn.innerHTML = 'HTML'
-        htmlBtn.style.width = '50px'
-        htmlBtn.addEventListener('click', (event:any)=> {
-          this.showHtml = true 
-        });
+        let htmlButtons = document.getElementsByClassName("ql-HTML")
+        for(let i=0;i<htmlButtons.length;i++){
+          htmlButtons[i].innerHTML = 'HTML'
+          htmlButtons[i].setAttribute('innerHTML', 'HTML')
+          htmlButtons[i].setAttribute('style','width:50px;')
+          htmlButtons[i].addEventListener('click', (event:any)=> {
+            this.showHtml = true
+          });
+        }
+        
+        // let htmlBtn:any = document.querySelector('.ql-HTML');
+        // console.log(htmlBtn);
+        // htmlBtn.innerHTML = 'HTML'
+        // htmlBtn.style.width = '50px'
+        // htmlBtn.addEventListener('click', (event:any)=> {
+        //   this.showHtml = true 
+        // });
       },300)
     },100)
   }
@@ -367,7 +378,8 @@ export class TrainingsPage implements OnInit {
 
   get privateUrl(){
     // if(location.host.substring(0,9)=='localhost'){
-      return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/marketplace/elearnings?trainingId=' + this.trainerService.trainingItem.id + '&specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '&open=1&private=1';
+      // return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/marketplace/elearnings?trainingId=' + this.trainerService.trainingItem.id + '&specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '&open=1&private=1';
+      return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/checkout/' + this.trainerService.trainingItem.id + '?specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId);
     // }
     // return 'https://marketplace.alicialabs.com/etraining/direct/' + this.trainerService.trainingItem.id + '/' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '/1';
   }
@@ -381,8 +393,16 @@ export class TrainingsPage implements OnInit {
     });
   }
 
-  selectTraining(training:any,clearBreadCrumbs?:boolean){
+  async selectTraining(training:any,clearBreadCrumbs?:boolean,module?:boolean){
     // console.log('selectTraining',JSON.parse(JSON.stringify(training)))
+    if(!module){
+      this.toast.showLoader()
+      await this.trainerService.loadItemsForTraining(training.id);
+      this.toast.hideLoader()
+      setTimeout(() => {
+        this.toast.hideLoader()
+      }, 2000);
+    }
     this.showPart = 'items'
     if(training.results && training.results.length){
       training.organizedResults = this.trainerService.organizeResults(training.results,training)
@@ -593,7 +613,9 @@ export class TrainingsPage implements OnInit {
           this.trainerService.trainingItem = {}
           this.trainerService.breadCrumbs = []
           this.showPart = 'items'
-          this.updateVisibleItems();
+          setTimeout(() => {
+            this.updateVisibleItems();
+          }, 500);
 
           // this.trainerService.loadTrainings(()=>{
           // })
@@ -798,6 +820,9 @@ export class TrainingsPage implements OnInit {
         value:'export'
       },
     ]
+    if(item.status =='published'){
+      list.splice(2,1) // delete option
+    }
     this.showshortMenu(event,list,(result:any)=>{
       if(result?.value){
         switch(result.value){
@@ -851,9 +876,22 @@ export class TrainingsPage implements OnInit {
     if(this.trainerService.breadCrumbs[0].item){
       trainingItem = this.trainerService.breadCrumbs[0].item
     }
-    // console.log('update',field,trainingItem)
     const scrollPosition = window.scrollY;
     if(field){
+
+      if (typeof trainingItem[field] === 'string') {
+        trainingItem[field] = trainingItem[field].trim();
+        trainingItem[field] = trainingItem[field]
+          .split('</ol><p><br></p><p>').join('</ol>')
+          .split('</p><p><br></p><ol>').join('<ol>')
+          .split('</ul><p><br></p><p>').join('</ul>')
+          .split('</p><p><br></p><ul>').join('<ul>')
+          .split('<p><br></p>').join('<br>')
+          .split('</p><br><p>').join('<br><br>')
+          .split('</p><p>').join('<br>')
+          .split('&nbsp;').join(' ')
+      }
+
       // console.log('update field',this.nav.activeOrganisationId,field,trainingItem)
       this.firestore.setSub('trainers',this.nav.activeOrganisationId,'trainings',trainingItem.id,trainingItem[field],field,()=>{
           // console.log('breadCrumbs length',this.trainerService.breadCrumbs.length)
@@ -1097,6 +1135,7 @@ export class TrainingsPage implements OnInit {
                 return
               }
               let newItem:any = await this.copyItemsToTraining(result.data[i], true)
+              await this.trainerService.loadItemsForTraining(this.trainerService.breadCrumbs[0].item.id);
               // console.log('newItem',newItem.id)
               newItem.type = 'module'
               newItem.order = 999
@@ -1130,6 +1169,7 @@ export class TrainingsPage implements OnInit {
               this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',result.data[i],(response:any)=>{
                 this.firestore.updateSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',response.id,{id:response.id})
                 // console.log('response',this.trainerService.breadCrumbs[0])
+                this.trainerService.loadItemsForTraining(this.trainerService.breadCrumbs[0].item.id);
                 if(this.trainerService.breadCrumbs[0].item.status == 'published' && this.trainerService.breadCrumbs[0].item.publishType == 'elearning'){
                   let newItem:any = JSON.parse(JSON.stringify(result.data[i]))
                   newItem.id = response.id
@@ -1379,7 +1419,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
   editItem(item:any){
     if(item.type=='module'){
-      this.selectTraining(item)
+      this.selectTraining(item,false,true)
     }
     else if(item.type=='case'){
       this.trainerService.caseItem = this.trainerService.getItemTraining(item.id,this.trainingId)
@@ -1554,7 +1594,6 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
 
   back(){
-    console.log(this.trainerService.breadCrumbs)
     if(this.trainerService.breadCrumbs.length>1){
       this.trainerService.breadCrumbs.pop()
       let item = this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1]
@@ -2324,17 +2363,17 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
           item.available_till = moment().format('YYYY-MM-DD')
         }
         this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',item.id,{status:'closed',available_till:item.available_till}).then(()=>{
-          console.log('Training closed',{
-            elearningId: item.id,
-            trainerId: this.nav.activeOrganisationId,
-            close: true
-          })
+          // console.log('Training closed',{
+          //   elearningId: item.id,
+          //   trainerId: this.nav.activeOrganisationId,
+          //   close: true
+          // })
           this.functions.httpsCallable('adjustElearning')({
             elearningId: item.id,
             trainerId: this.nav.activeOrganisationId,
             close: true
           }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{
-            console.log('adjustElearning response',res)
+            // console.log('adjustElearning response',res)
           });
           this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
               this.updateVisibleItems();
@@ -2418,7 +2457,6 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   changeItem(items: any, id: string, field: string, value: any,update?:boolean): boolean {
-    console.log('changeItem',update, items, id, field, value)
     let itemChanged = false
     if(!items?.length&& this.trainerService.trainingItem.id != id){
       // console.log('No items to change')
@@ -2431,7 +2469,6 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
             if(update){
               this.update('items',true)
             }
-            console.log('itemChanged in module', items[i].id, field, value)
             return itemChanged
           }
       }

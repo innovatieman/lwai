@@ -8,6 +8,8 @@ import { IconsService } from 'src/app/services/icons.service';
 import { LevelsService } from 'src/app/services/levels.service';
 import { MediaService } from 'src/app/services/media.service';
 import { NavService } from 'src/app/services/nav.service';
+import { fromEvent, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-cases',
@@ -16,11 +18,13 @@ import { NavService } from 'src/app/services/nav.service';
 })
 export class CasesPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
-    @HostListener('window:resize', ['$event'])
-    onResize(){
-      this.media.setScreenSize()
-      this.rf.detectChanges()
-    }
+    // @HostListener('window:resize', ['$event'])
+    // onResize(){
+    //   // this.media.setScreenSize()
+    //   this.rf.detectChanges()
+    // }
+  private resizeSubscription: Subscription | undefined;
+    
   cases: any[] = [];
   maxCases: number = 15;
   visibleCases: any[] = [];
@@ -65,6 +69,19 @@ export class CasesPage implements OnInit {
         
     }
 
+  }
+
+  ngAfterViewInit(){
+    this.resizeSubscription = fromEvent(window, 'resize')
+    .pipe(debounceTime(200))
+    .subscribe(() => {
+      this.rf.detectChanges();
+    });
+
+  }
+
+  ngOnDestroy() {
+    this.resizeSubscription?.unsubscribe();
   }
 
   async getCases() {

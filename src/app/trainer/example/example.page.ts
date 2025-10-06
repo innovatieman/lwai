@@ -151,7 +151,6 @@ export class ExamplePage implements OnInit {
   selectSubModule(module:any){
       // console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)
-      console.log(this.modulesBreadCrumbs)
   }
 
   switchingItem:boolean = false

@@ -479,13 +479,22 @@ export class EnginePage implements OnInit {
         elements[i].setAttribute('style','border:0;')
       }
       setTimeout(() => {
+        let htmlButtons = document.getElementsByClassName("ql-HTML")
+        for(let i=0;i<htmlButtons.length;i++){
+          htmlButtons[i].innerHTML = 'HTML'
+          htmlButtons[i].setAttribute('innerHTML', 'HTML')
+          htmlButtons[i].setAttribute('style','width:50px;')
+          htmlButtons[i].addEventListener('click', (event:any)=> {
+            this.showHtml = true
+          });
+        }
 
-        let htmlBtn:any = document.querySelector('.ql-HTML');
-        htmlBtn.innerHTML = 'HTML'
-        htmlBtn.style.width = '50px'
-        htmlBtn.addEventListener('click', (event:any)=> {
-          this.showHtml = true 
-        });
+        // let htmlBtn:any = document.querySelector('.ql-HTML');
+        // htmlBtn.innerHTML = 'HTML'
+        // htmlBtn.style.width = '50px'
+        // htmlBtn.addEventListener('click', (event:any)=> {
+        //   this.showHtml = true 
+        // });
       },300)
     },100)
   }

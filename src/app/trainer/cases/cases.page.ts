@@ -996,6 +996,8 @@ export class CasesPage implements OnInit {
 
         const newModuleIds = result.data.map((e: any) => e.id);
         const oldModuleIds = this.trainerService.caseItem.modules || [];
+        console.log('Old Modules:', oldModuleIds);
+        console.log('New Modules:', newModuleIds);
         this.trainerService.caseItem.modules = newModuleIds;
 
         const caseItem = {
@@ -1007,7 +1009,7 @@ export class CasesPage implements OnInit {
         };
 
         // Recursieve functie om modules (en submodules) te doorlopen
-        const updateModuleWithInfoItem = (module: any): boolean => {
+        const updateModuleWithCase = (module: any): boolean => {
           let changed = false;
 
           // Voeg toe als module nu geselecteerd is
@@ -1034,7 +1036,7 @@ export class CasesPage implements OnInit {
           if (module.items && module.items.length > 0) {
             for (let item of module.items) {
               if (item.items && Array.isArray(item.items)) {
-                const subChanged = updateModuleWithInfoItem(item);
+                const subChanged = updateModuleWithCase(item);
                 if (subChanged) changed = true;
               }
             }
@@ -1045,7 +1047,7 @@ export class CasesPage implements OnInit {
 
         // Doorloop alle toplevel modules
         for (let mod of this.trainerService.modules) {
-          const changed = updateModuleWithInfoItem(mod);
+          const changed = updateModuleWithCase(mod);
 
           if (changed) {
             this.firestore.updateSub(
@@ -1059,13 +1061,13 @@ export class CasesPage implements OnInit {
           }
         }
 
-        // Update infoItem.modules zelf
+        // Update caseItem.modules zelf
         this.firestore.setSub(
           'trainers',
           this.nav.activeOrganisationId,
           'cases',
-          this.trainerService.infoItem.id,
-          this.trainerService.infoItem.modules,
+          this.trainerService.caseItem.id,
+          this.trainerService.caseItem.modules,
           'modules',
           () => {
             this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
@@ -1541,6 +1543,7 @@ export class CasesPage implements OnInit {
         name:voice.name + (voice.short ? ' ('+voice.short+')' : ''),
       })
     }
+    console.log(list)
     this.modalService.selectItem('',list,(result:any)=>{
       console.log(result)
       if(result.data){

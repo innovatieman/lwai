@@ -146,6 +146,7 @@ exports.chatGemini = onRequest(
         completeMessage = completeMessage + chunkText;
         promptTokens = chunk.usageMetadata;
       }
+      res.write('§');
       
     //   let complete = await streamingChunks(stream,res);
 
@@ -364,6 +365,7 @@ exports.chatExpertGemini = onRequest(
         completeMessage = completeMessage + chunkText;
         promptTokens = chunk.usageMetadata;
       }
+      res.write('§');
     //   let complete = await streamingChunks(stream,res);
 
       ////////////////////////////////////////////////////////////////////

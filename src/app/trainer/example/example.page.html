@@ -30,6 +30,11 @@
                       <ion-card-title>{{'standards.trainings' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
+                <ion-col size="2" noPadding>
+                  <ion-card id="menu_trainings" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/customers')">
+                      <ion-card-title>{{'standards.customers' | translate}}</ion-card-title>
+                  </ion-card>
+                </ion-col>
               </ion-row>
           </div>
       </div>

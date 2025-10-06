@@ -5,6 +5,10 @@ import { environment } from 'src/environments/environment';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { ToastController } from '@ionic/angular';
 import { NavService } from './services/nav.service';
+import { fromEvent, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+
+const originalSetTimeout = window.setTimeout;
 
 @Component({
   selector: 'app-root',
@@ -12,6 +16,7 @@ import { NavService } from './services/nav.service';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
+  private resizeSubscription: Subscription | undefined;
   constructor(
     private translate: TranslateService,
     private toggleConsole:ToggleConsoleService,
@@ -20,7 +25,16 @@ export class AppComponent {
     private nav:NavService
   ) {
     this.setRealViewportHeight();
-    window.addEventListener('resize', this.setRealViewportHeight);
+
+    // window.addEventListener('resize', this.setRealViewportHeight);
+
+    this.resizeSubscription = fromEvent(window, 'resize')
+    .pipe(debounceTime(200))
+    .subscribe(() => {
+      this.setRealViewportHeight();
+    });
+
+
 
     if(!environment.log_on){
       this.toggleConsole.disableConsole();
@@ -41,6 +55,8 @@ export class AppComponent {
 
 
   setRealViewportHeight() {
+
+    
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
   }
@@ -72,5 +88,6 @@ export class AppComponent {
       }
     });
   }
+
 }
   

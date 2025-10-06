@@ -27,6 +27,7 @@
               "highcharts/modules/solid-gauge",
               "moment"
             ],
+            "sourceMap": true,
             "serviceWorker": true,
             "ngswConfigPath": "ngsw-config.json",
             "outputPath": "www",

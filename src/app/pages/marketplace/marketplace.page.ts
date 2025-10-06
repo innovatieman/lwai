@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, Subject, take, takeUntil } from 'rxjs';
+import { debounceTime, filter, fromEvent, Subject, Subscription, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MenuPage } from 'src/app/components/menu/menu.page';
 import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
@@ -15,6 +15,7 @@ import { IconsService } from 'src/app/services/icons.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
+import { SalesService } from 'src/app/services/sales.service';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
@@ -55,7 +56,7 @@ export class MarketplacePage implements OnInit {
   filterIsEmpty:boolean = true;
   showLogin:boolean = false;
   specialCodeChecked: boolean = false;
-
+  resizeSubscription:Subscription | null = null;
   constructor(
     public media: MediaService,
     public icon:IconsService,
@@ -74,6 +75,8 @@ export class MarketplacePage implements OnInit {
     private popoverController:PopoverController,
     private selectMenuservice:SelectMenuService,
     private trainerService:TrainerService,
+    public sales:SalesService,
+    private rf:ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -117,63 +120,10 @@ export class MarketplacePage implements OnInit {
     
     this.getElearnings(() => {
       this.firstLoaded = true;
-      // console.log('MarketplacePage loaded searchParams:', this.searchParams);
-      // if(this.searchParams.open) {
-      //   this.updateVisibleItems();
-      //   console.log('Visible items for open:', this.visibleItems);
-      //   if(this.visibleItems[0]){
-      //     if(this.searchParams.specialCode){
-      //       this.nav.go('marketplace/elearnings/' + this.visibleItems[0].id + '?specialCode=' + this.searchParams.specialCode );
-      //       return;
-      //     }
-      //     else{
-      //       this.nav.go('marketplace/elearnings/' + this.visibleItems[0].id);
-      //       return;
-      //     }
-      //   }
-      // }
-      if(this.searchParams.specialCode){
-        let elearningIds = this.checkPrivateVisibleItems().map(i => i.id);
-        console.log('elearningIds for special code check:', elearningIds);
-        if(elearningIds.length > 0) {
-          this.specialCodeChecked = false;
-          let countCheck = 0;
-          this.toast.showLoader(this.translate.instant('marketplace.checking_code'));
-          let intervalChecking = setInterval(() => {
-            if(this.specialCodeChecked){
-              clearInterval(intervalChecking);
-            }
-            countCheck++;
-            if(countCheck > 40){
-              clearInterval(intervalChecking);
-              this.toast.hideLoader();
-            }
-          }, 300);
-          this.functions.httpsCallable('elearningCheckSpecialCodes')({ specialCodes: this.searchParams.specialCode.split(','), elearnings:elearningIds }).pipe(take(1)).subscribe((response:any)=>{
-            console.log(response)
-            this.toast.hideLoader();
-            setTimeout(() => {
-              this.toast.hideLoader();
-            }, 1000);
-            this.specialCodeChecked = true;
-            if(response.status==200){
-              this.checkedSpecialCodes = response.result.validCodes;
-              this.updateVisibleItems();
-            }
-            else{
-              this.toast.show(this.translate.instant('marketplace.code_not_found'), 6000);
-              this.checkedSpecialCodes = [];
-              this.updateVisibleItems();
-            }
-          })
-        }
-      }
-      else{
-        this.updateVisibleItems();
-      }
+      this.updateVisibleItems();
     });
-    this.accountService.fetchProducts();
-    this.accountService.fetchProductsElearnings();
+    // this.accountService.fetchProducts();
+    // this.accountService.fetchProductsElearnings();
 
     this.trainerService.trainerInfoLoaded$.pipe(filter(loaded => loaded === true))
         .subscribe(() => {
@@ -189,6 +139,19 @@ export class MarketplacePage implements OnInit {
     setTimeout(() => {
       this.updateVisibleItems();
     }, 100);
+  }
+
+    ngOnDestroy() {
+      this.resizeSubscription?.unsubscribe();
+    }
+
+  ngAfterViewInit() {
+    this.resizeSubscription = fromEvent(window, 'resize')
+    .pipe(debounceTime(200))
+    .subscribe(() => {
+      this.media.setScreenSize();
+      this.rf.detectChanges();
+    });
   }
 
   ionViewWillEnter() {
@@ -224,6 +187,12 @@ export class MarketplacePage implements OnInit {
       }
       if(params['item_id']){
         this.item_id = params['item_id'];
+        this.sales.item_id = params['item_id'];
+        let specialCodeParam = ''
+        if(this.searchParams.specialCode){
+          specialCodeParam = '?specialCode=' + this.searchParams.specialCode
+        }
+        this.nav.go('checkout/' + this.item_id + specialCodeParam);
       }
       if(this.item_id == 'error'){
         this.toast.show(this.translate.instant('error_messages.failure'), 6000);
@@ -233,7 +202,7 @@ export class MarketplacePage implements OnInit {
         this.toast.show(this.translate.instant('marketplace.success_purchase'), 6000);
         setTimeout(() => {
           this.nav.go('start/my_trainings');
-        }, 1000);
+        }, 5000);
       }
     });
   }
@@ -296,6 +265,7 @@ export class MarketplacePage implements OnInit {
       });
       // console.log('elearnings', this.elearnings);
       this.updateVisibleItems();
+      this.listAllTrainers();
       if (callback) {
         callback();
       }
@@ -336,6 +306,21 @@ export class MarketplacePage implements OnInit {
     });
     return itemsCount;
   }
+
+  showCheckout(item:any) {
+    let specialCodeParam = ''
+    if(this.searchParams.specialCode){
+      specialCodeParam = '?specialCode=' + this.searchParams.specialCode
+    }
+    if(this.activeTab=='filter'){
+      this.nav.goto(location.origin+'/checkout/'+item.id+'/standalone'+specialCodeParam, true);
+      return;
+    }
+    else{
+      this.nav.go('checkout/' + item.id + specialCodeParam);
+    }
+  }
+
 
   showCreditsOption:boolean = false;
   unlimitedCreditsOption:boolean = true;
@@ -596,6 +581,7 @@ export class MarketplacePage implements OnInit {
   onSearchChanged() {
     this.maxItems = 15;
     this.updateVisibleItems();
+    this.listAllTrainers();
   }
 
   updateVisibleItems() {  
@@ -944,13 +930,14 @@ export class MarketplacePage implements OnInit {
     }
   
 
+  listofAllTrainers: any[] = [];    
   listAllTrainers(){
     let trainers:any[] = [];
     this.elearnings.forEach(e => {
-      if(e.trainer && e.trainer.id && e.trainer.name && e.marketplace){
-        if(!trainers.find(t => t.id == e.trainer.id)){
+      if(e.trainer && (e.trainer.id || e.trainer.trainerId) && e.trainer.name && e.marketplace){
+        if(!trainers.find(t => (t.id == e.trainer.id || t.id == e.trainer.trainerId))){
           trainers.push({
-            id: e.trainer.id,
+            id: e.trainer.id || e.trainer.trainerId,
             name: e.trainer.name,
             logo: e.trainer.logo || '',
             nameLower: e.trainer.name.toLowerCase()
@@ -958,7 +945,7 @@ export class MarketplacePage implements OnInit {
         }
       }
     });
-    return trainers;
+    this.listofAllTrainers = trainers;
   }
 
   selectTrainer(trainerId:string){
@@ -1000,20 +987,21 @@ export class MarketplacePage implements OnInit {
   }
 
   countChunks(chunkSize:number){
-    if(!this.listAllTrainers() || !Array.isArray(this.listAllTrainers()) || this.listAllTrainers().length === 0 || chunkSize <= 0){
+    if(!this.listofAllTrainers || !Array.isArray(this.listofAllTrainers) || this.listofAllTrainers.length === 0 || chunkSize <= 0){
       return 0;
     }
-    return Math.ceil(this.listAllTrainers().length / chunkSize);
+    return Math.ceil(this.listofAllTrainers.length / chunkSize);
   }
 
   getTrainer(trainerId:string){
     if(!trainerId){
       return {};
     }
-    return this.listAllTrainers().find(t => t.id === trainerId) || {};
+    return this.listofAllTrainers.find(t => (t.id === trainerId || t.trainerId === trainerId)) || {};
   }
 
   showTrainerInfo(elearning:any, event:any){
+    console.log('showTrainerInfo', elearning, event);
     if(event){
       event.stopPropagation();
       event.preventDefault();

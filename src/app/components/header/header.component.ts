@@ -11,6 +11,8 @@ import { InputFieldsPage } from '../modals/input-fields/input-fields.page';
 import { ToastService } from 'src/app/services/toast.service';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { SwUpdate } from '@angular/service-worker';
+import { fromEvent, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
@@ -28,14 +30,21 @@ export class HeaderComponent  implements OnInit {
   @Input() button:string = ''
   @Input() inactiveCredits:boolean = false
   @Input() showNoCredits:boolean = false
+  @Input() showName:boolean = false
+  @Input() back_url:string = ''
   @Output() buttonResponse = new EventEmitter()
   isVerified: boolean = false;
   showCredits: boolean = false;
-  @HostListener('window:resize', ['$event'])
-  onResize(){
-    this.media.setScreenSize()
-    this.ref.detectChanges()
-  }
+  // private resizeTimeout: any;
+  private resizeSubscription: Subscription | undefined;
+  // @HostListener('window:resize', ['$event'])
+  // onResize(){
+  //   clearTimeout(this.resizeTimeout);
+  //   this.resizeTimeout = setTimeout(() => {
+  //       this.media.setScreenSize()
+  //       this.ref.detectChanges()
+  //     }, 200);
+  // }
   credits:any = {total:0}
   isAuthenticated: boolean = false;
   isAdmin: boolean = false;
@@ -176,6 +185,19 @@ export class HeaderComponent  implements OnInit {
     private swUpdate: SwUpdate,
   ) { }
 
+  ngAfterViewInit() {
+    this.resizeSubscription = fromEvent(window, 'resize')
+    .pipe(debounceTime(200))
+    .subscribe(() => {
+      this.media.setScreenSize();
+      this.ref.detectChanges();
+    });
+  }
+
+  ngOnDestroy() {
+    this.resizeSubscription?.unsubscribe();
+  }
+
   ngOnInit() {
     this.credits = this.auth.credits
     this.auth.creditsChanged.subscribe((credits:any)=>{
@@ -215,7 +237,18 @@ export class HeaderComponent  implements OnInit {
   action(item:any){
     this[item.action]()
   }
-  doNothing(){}
+  doNothing(event?:Event){
+    if(event){
+      event.stopPropagation()
+    }
+  }
+
+  goto(page:string,event?:Event){
+    if(event){
+      event.stopPropagation()
+    }
+    this.nav.go(page)
+  }
 
   shortMenu:any
   async showshortMenu(event:any){

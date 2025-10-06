@@ -1,0 +1,53 @@
+.btnImgChange{
+    position: absolute;
+    text-align: center;
+    bottom: 20px;
+}
+.selectColumn {
+    max-height: calc(var(--vh, 1vh) * 100 - 121px);
+    padding-bottom: 20px;
+}
+.inputAmount{
+  text-align: center;
+  border: solid 2px var(--ion-color-primary);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 100%;
+}
+.activeItem{
+    background-color: var(--ion-color-primary);
+    ion-item{
+      --background:none;
+      --color: white;
+      div{
+        --color: white;
+      }
+      fa-icon{
+        color:white;
+      }
+    }
+    ion-card-title{
+      color: white;
+    }
+}
+.notActiveItem{
+  background-color: white;
+  ion-item{
+    --background-hover: none;
+  }
+  ion-card-title{
+    color: var(--ion-color-primary);
+  }
+}
+.notActiveItem:hover{
+  background: var(--background-global);
+  ion-item{
+    --background: var(--background-global);
+  }
+}
+
+
+
+[avatarIcon]{
+  font-size: 180px;
+}

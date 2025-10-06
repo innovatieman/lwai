@@ -23,6 +23,8 @@ import { ConversationService } from 'src/app/services/conversation.service';
 import { MenuPage } from 'src/app/components/menu/menu.page';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { fromEvent, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-start',
@@ -31,12 +33,12 @@ import { ToastService } from 'src/app/services/toast.service';
 })
 export class StartPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
-  @HostListener('window:resize', ['$event'])
-  onResize(){
-    this.media.setScreenSize()
-    this.rf.detectChanges()
-    this.setupProgressCircles()
-  }
+  // @HostListener('window:resize', ['$event'])
+  // onResize(){
+  //   // this.media.setScreenSize()
+  //   this.rf.detectChanges()
+  //   this.setupProgressCircles()
+  // }
 
   @ViewChild('progressCircle1',{static:false}) progressCircle1: any;
   @ViewChild('progressCircle2',{static:false}) progressCircle2: any;
@@ -47,6 +49,7 @@ export class StartPage implements OnInit {
   @ViewChild('progressCircle3Mobile',{static:false}) progressCircle3Mobile: any;
 
   [x:string]:any
+  private resizeSubscription: Subscription | undefined;
   selectedModule:any = null
   selectedConversation:any = null
   conversations$:any
@@ -187,6 +190,18 @@ export class StartPage implements OnInit {
     this.subTab = ''
     this.updateVisibleCases();
     this.reloadMenu();
+
+    this.resizeSubscription = fromEvent(window, 'resize')
+    .pipe(debounceTime(200))
+    .subscribe(() => {
+      this.setupProgressCircles();
+      this.rf.detectChanges();
+    });
+
+  }
+
+  ngOnDestroy() {
+    this.resizeSubscription?.unsubscribe();
   }
 
   reloadMenu(){
@@ -245,6 +260,7 @@ export class StartPage implements OnInit {
   }
 
   setupProgressCircles(min:number=0,max:number=3,only?:number){
+    // return
     let count:number = 0
     let check:any = {}
     for(let i = min; i<=max;i++){

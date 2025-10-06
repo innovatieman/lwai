@@ -45,6 +45,10 @@ exports.emailsToSend = functions.region('europe-west1').runWith({ memory: '1GB' 
       body = emailData.content.body
       from = emailData.content.from
     }
+
+    if(emailData.from){
+      from = emailData.from;
+    }
     // 3. Vervang placeholders uit de specifieke template
     const compiledTemplate = Handlebars.compile(body);
     const filledTemplateContent = compiledTemplate(emailData.data);
@@ -516,3 +520,103 @@ exports.sendEmailToTrainer = functions.region('europe-west1').runWith({ memory: 
 
   return { success: true };
 });
+
+exports.messagesToUser = functions.region('europe-west1').runWith({ memory: '1GB' }).firestore
+  .document('message_to_user/{emailId}')
+  .onCreate(async (snap: any, context: any) => {
+    const email = snap.data();
+
+    let messageToProcess:any = {}
+
+    console.log('New message to user', JSON.stringify(email));
+
+    const userRef = await admin.firestore().collection('users').doc(email.userId);
+    const userRefDoc = await userRef.get();
+    if (!userRefDoc.exists) {
+      console.error(`User ${email.userId} not found`);
+      return;
+    }
+    const userData = userRefDoc.data();
+    if(!userData?.email){
+      console.error(`User ${email.userId} does not have an email`);
+      return;
+    }
+    messageToProcess.to = userData.email;
+    messageToProcess.from = 'AliciaLabs E-Trainings <alicia@alicialabs.com>';
+    messageToProcess.bcc = 'logging@alicialabs.com';
+    messageToProcess.template = 'free';
+    messageToProcess.language = email.language || 'en';
+
+    console.log('Processing message to user', email.userId, email.type);
+    
+    if(email.type === 'elearning_activated'){
+      const elearningRef = await userRef.collection('my_elearnings').where('elearningId', '==', email.data.elearningId);
+      const elearningRefDoc = await elearningRef.get();
+
+      if (elearningRefDoc.empty) {
+        console.error(`Elearning ${email.data.elearningId} not found for user ${email.userId}`);
+        return;
+      }
+      let elearnings:any = [];
+      elearningRefDoc.forEach((doc:any) => {
+        elearnings.push(doc.data());
+      });
+      elearnings = elearnings.sort((a:any,b:any) => b.created - a.created);
+
+
+      const elearningData = elearnings[0];
+      if(!elearningData?.elearningId){
+        console.error(`Elearning ${email.data.elearningId} does not have a elearningId`);
+        return;
+      }
+
+      let contentStart = ''
+      if(email.language === 'nl'){
+        if(email.displayName){
+          contentStart = 'Beste ' + email.displayName + ',<br><br>';
+        }
+        contentStart += 'Je hebt toegang gekregen tot de e-training <strong>' + (elearningData.title || '') + '</strong> van ' + (elearningData.trainer.name || '') + '.<br><br>';
+        messageToProcess.subject = `Welkom bij '${(elearningData.title || '')}' van ${elearningData.trainer.name || ''}`;
+      }
+      else if(email.language === 'en'){
+        if(email.displayName){
+          contentStart = 'Dear ' + email.displayName + ',<br><br>';
+        }
+        contentStart += 'You have been given access to the e-training <strong>' + (elearningData.title || '') + '</strong> by ' + (elearningData.trainer.name || '') + '.<br><br>';
+        messageToProcess.subject = `Welcome to '${(elearningData.title || '')}' by ${elearningData.trainer.name || ''}`;
+      }
+
+      messageToProcess.data = {
+        content: contentStart + elearningData.welcome_message || '',
+        subject: messageToProcess.subject,
+      }
+
+      if(email.buttons){
+        let btnHtml = '<br><br>';
+
+        if(email.buttons.length==1){
+          btnHtml += '<div style="text-align:center;padding:0px 20px;">'; 
+        }
+        else{
+          btnHtml += '<div style="display:flex;justify-content:center;flex-wrap:wrap">';
+        }
+
+        email.buttons.forEach((btn:any) => {
+          btnHtml += `<a href="${btn.url}" style="display:inline-block;width:calc(100% - 40px);padding:10px 20px;margin:5px 10px;background-color:${btn.backgroundColor};color:${btn.textColor};text-decoration:none;border-radius:16px;font-weight:bold;font-size:16px">${btn.text}</a>`;
+        });
+
+        btnHtml += '</div><br><br>';
+
+        messageToProcess.data.content += btnHtml;
+      }
+
+    }
+
+    console.log('Final message to user', JSON.stringify(messageToProcess));
+
+    if(messageToProcess.subject && messageToProcess.data?.content){
+      await admin.firestore().collection('emailsToProcess').add(messageToProcess);
+    }
+
+    return;
+  });

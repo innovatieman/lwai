@@ -29,22 +29,22 @@
     ion-card-title{
       color: white;
     }
+}
+.notActiveItem{
+  background-color: white;
+  ion-item{
+    --background-hover: none;
   }
-  .notActiveItem{
-    background-color: white;
-    ion-item{
-      --background-hover: none;
-    }
-    ion-card-title{
-      color: var(--ion-color-primary);
-    }
+  ion-card-title{
+    color: var(--ion-color-primary);
   }
-  .notActiveItem:hover{
-    background: var(--background-global);
-    ion-item{
-      --background: var(--background-global);
-    }
+}
+.notActiveItem:hover{
+  background: var(--background-global);
+  ion-item{
+    --background: var(--background-global);
   }
+}
 
 
 

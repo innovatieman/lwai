@@ -5,7 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { InfoService } from './info.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { combineLatest, map, switchMap, defaultIfEmpty, of, catchError, tap, Observable, take } from 'rxjs';
+import { combineLatest, map, switchMap, defaultIfEmpty, of, catchError, tap, Observable, take, forkJoin, concatMap, from, toArray } from 'rxjs';
 import { BehaviorSubject, filter, firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { ModalService } from './modal.service';
 import { id } from '@swimlane/ngx-datatable';
@@ -51,6 +51,16 @@ export class TrainerService {
   segmentsOrganized:any = []
   voices:any[] = []
   isAdmin: boolean = false;
+  trainingSubItems:any = {};
+
+  creditsPackagesPricing:any = {
+    0:0,
+    600: Math.round((2/1.21) * 100) / 100, // 600 credits for 2 euro excl. 21% btw
+    1800: Math.round((5/1.21) * 100) / 100, // 1800 credits for 5 euro excl. 21% btw
+    4000: Math.round((10/1.21) * 100) / 100, // 4000 credits for 10 euro excl. 21% btw
+    1000000: Math.round((25/1.21) * 100) / 100, // 1000000 credits for 25 euro excl. 21% btw
+  }
+
   private pendingSpecificCallbacks: {
     [key: string]: Function[]
     } = {
@@ -136,6 +146,19 @@ export class TrainerService {
     }
   }
 
+  private runCallbacksIdle(callbacks: Function[]) {
+    callbacks.forEach(cb => {
+      // Laat de browser ademhalen voor elke callback
+      if ('requestIdleCallback' in window) {
+        // Browser ondersteunt requestIdleCallback
+        (window as any).requestIdleCallback(() => cb());
+      } else {
+        // Fallback: volgende eventloop
+        setTimeout(() => cb(), 0);
+      }
+    });
+  }
+
   async ensureLoadedForOrg(orgId: string,callback?: any,callbackSpecific?: any) {
     if (!orgId) return;
     if (this.listenersStarted && this.currentOrgId === orgId) {
@@ -158,32 +181,46 @@ export class TrainerService {
     this.currentOrgId = orgId;
     this.listenersStarted = true;
     this.loadTrainingsAndParticipants(()=>{
+      
+      // console.log(this.trainings)
       this.loadModules(()=>{
         if(callbackSpecific?.modules){
           callbackSpecific.modules();
         }
         if(this.pendingSpecificCallbacks['modules'].length>0){
-          this.pendingSpecificCallbacks['modules'].forEach(cb => cb());
+          this.runCallbacksIdle(this.pendingSpecificCallbacks['modules']);
           this.pendingSpecificCallbacks['modules'] = [];
         }
+        // if(this.pendingSpecificCallbacks['modules'].length>0){
+        //   this.pendingSpecificCallbacks['modules'].forEach(cb => cb());
+        //   this.pendingSpecificCallbacks['modules'] = [];
+        // }
       })
       this.loadCases(()=>{
         if(callbackSpecific?.cases){
           callbackSpecific.cases();
         }
         if(this.pendingSpecificCallbacks['cases'].length>0){
-          this.pendingSpecificCallbacks['cases'].forEach(cb => cb());
+          this.runCallbacksIdle(this.pendingSpecificCallbacks['cases']);
           this.pendingSpecificCallbacks['cases'] = [];
         }
+        // if(this.pendingSpecificCallbacks['cases'].length>0){
+        //   this.pendingSpecificCallbacks['cases'].forEach(cb => cb());
+        //   this.pendingSpecificCallbacks['cases'] = [];
+        // }
       })
       this.loadInfoItems(()=>{
         if(callbackSpecific?.infoItems){
           callbackSpecific.infoItems();
         }
         if(this.pendingSpecificCallbacks['infoItems'].length>0){
-          this.pendingSpecificCallbacks['infoItems'].forEach(cb => cb());
+          this.runCallbacksIdle(this.pendingSpecificCallbacks['infoItems']);
           this.pendingSpecificCallbacks['infoItems'] = [];
         }
+        // if(this.pendingSpecificCallbacks['infoItems'].length>0){
+        //   this.pendingSpecificCallbacks['infoItems'].forEach(cb => cb());
+        //   this.pendingSpecificCallbacks['infoItems'] = [];
+        // }
       })
       if (callback) {
         callback();
@@ -406,11 +443,10 @@ export class TrainerService {
     const stepsToWaitFor: number[] = [];
     let completedSteps = 0;
 
-    const TOTAL_STEPS = 4; // employees, settings, knowledge, purchases
-    let subSubSteps = 0;   // for knowledge.documents and purchases.documents
-
+    const TOTAL_STEPS = 5; // employees, settings, knowledge, purchases
+    let subSubSteps = 0;   
     const tryFinish = () => {
-      if (completedSteps === TOTAL_STEPS && subSubSteps === 2 && callback) {
+      if (completedSteps === TOTAL_STEPS && subSubSteps === 0 && callback) {
         callback();
       }
     };
@@ -422,7 +458,6 @@ export class TrainerService {
 
     let trainerSubscription = docRef.get().subscribe(doc => {
       if (!doc.exists) return;
-
       this.trainerInfo = doc.data();
       this.trainerInfo.id = doc.id;
       this.trainerInfo.employees = [];
@@ -462,6 +497,63 @@ export class TrainerService {
         }
       });
 
+      // CUSTOMERS
+      docRef.collection('customers').snapshotChanges().pipe(
+        map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      ).subscribe({
+        next: customers => {
+          this.trainerInfo.customers = customers;
+          // maybeCallback();
+           if (customers.length === 0) {
+            subSubSteps--;
+            subSubSteps--;
+            maybeCallback();
+          } else {
+            subSubSteps += customers.length;
+            subSubSteps += customers.length;
+            customers.forEach((item:any) => {
+              item.trainings = [];
+              docRef.collection('customers').doc(item.id).collection('trainings').snapshotChanges().pipe(
+                map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+              ).subscribe({
+                next: docs => {
+                  item.trainings = docs;
+                  subSubSteps--;
+                  tryFinish();
+                },
+                error: () => {
+                  item.trainings = [];
+                  subSubSteps--;
+                  tryFinish();
+                }
+              });
+            });
+            customers.forEach((item:any) => {
+              item.users = [];
+              docRef.collection('customers').doc(item.id).collection('users').snapshotChanges().pipe(
+                map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+              ).subscribe({
+                next: docs => {
+                  item.users = docs;
+                  subSubSteps--;
+                  tryFinish();
+                },
+                error: () => {
+                  item.users = [];
+                  subSubSteps--;
+                  tryFinish();
+                }
+              });
+            });
+            maybeCallback(); // For the parent collection
+          }
+        },
+        error: () => {
+          this.trainerInfo.customers = [];
+          maybeCallback();
+        }
+      });
+
       // KNOWLEDGE
       docRef.collection('knowledge').snapshotChanges().pipe(
         map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
@@ -470,6 +562,7 @@ export class TrainerService {
           this.trainerInfo.knowledgeItems = knowledgeItems;
 
           if (knowledgeItems.length === 0) {
+            subSubSteps--;
             maybeCallback();
           } else {
             subSubSteps += knowledgeItems.length;
@@ -507,6 +600,7 @@ export class TrainerService {
           this.trainerInfo.purchaseItems = purchaseItems;
 
           if (purchaseItems.length === 0) {
+            subSubSteps--;
             maybeCallback();
           } else {
             subSubSteps += purchaseItems.length;
@@ -518,6 +612,7 @@ export class TrainerService {
                 next: docs => {
                   item.documents = docs;
                   subSubSteps--;
+                  this.revenue();
                   tryFinish();
                 },
                 error: () => {
@@ -542,9 +637,9 @@ export class TrainerService {
     });
 
     if (unsubscribe) {
-      setTimeout(() => {
+      // setTimeout(() => {
         trainerSubscription.unsubscribe();
-      }, 300);
+      // }, 300);
     }
   }
 
@@ -1092,7 +1187,7 @@ export class TrainerService {
 
   organizeSegments(segments:any[]){
     let organized:any = {}
-    console.log('organizeSegments',segments)
+    // console.log('organizeSegments',segments)
     segments.forEach(segment => {
       if (!organized[segment.metadata?.book]) {
         organized[segment.metadata.book] = [];
@@ -1158,31 +1253,35 @@ export class TrainerService {
             )
           )
         ),
+        // switchMap(modules =>
+        //   modules.length === 0
+        //   ? of([])
+        //   : combineLatest(
+        //     modules.map(doc =>
+        //       this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
+        //         .collection('trainings')
+        //         .doc(doc.id)
+        //         .collection('items')
+        //         .snapshotChanges()
+        //         .pipe(
+        //           map(itemsDocs =>
+        //             itemsDocs.map((e: any) => ({
+        //               id: e.payload.doc.id,
+        //               ...e.payload.doc.data(),
+        //             }))
+        //           ),
+        //           map(trainingItems => ({
+        //             ...doc,
+        //             trainingItems: trainingItems,
+        //           }))
+        //         )
+        //     )
+        //   )
+        // ),
         switchMap(modules =>
-          combineLatest(
-            modules.map(doc =>
-              this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-                .collection('trainings')
-                .doc(doc.id)
-                .collection('items')
-                .snapshotChanges()
-                .pipe(
-                  map(itemsDocs =>
-                    itemsDocs.map((e: any) => ({
-                      id: e.payload.doc.id,
-                      ...e.payload.doc.data(),
-                    }))
-                  ),
-                  map(trainingItems => ({
-                    ...doc,
-                    trainingItems: trainingItems,
-                  }))
-                )
-            )
-          )
-        ),
-        switchMap(modules =>
-          combineLatest(
+          modules.length === 0
+          ? of([])
+          : combineLatest(
             modules.map(doc =>
               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
                 .collection('trainings')
@@ -1205,7 +1304,9 @@ export class TrainerService {
           )
         ),
         switchMap(modules =>
-          combineLatest(
+          modules.length === 0
+          ? of([])
+          : combineLatest(
             modules.map(doc =>
               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
                 .collection('trainings')
@@ -1231,9 +1332,19 @@ export class TrainerService {
         
       )
       .subscribe(trainings => {
+
         this.trainings = trainings.map(doc => ({
           ...doc,
         }));
+        
+
+        // Reset breadcrumbs en trainingItem als er geen trainingen meer zijn
+        if (this.trainings.length === 0) {
+          this.trainingItem = null;
+          this.breadCrumbs = [];
+        }
+
+
         if (callback) {
           if(this.breadCrumbs.length>0){
             let tr = this.getTraining(this.breadCrumbs[0].item.id)
@@ -1245,6 +1356,84 @@ export class TrainerService {
             }
           }
           callback();
+        }
+      });
+  }
+
+  // loadTrainingsAndParticipants(callback?: Function) {
+  //   const orgId = this.nav.activeOrganisationId;
+
+  //   this.fire.collection('trainers').doc(orgId)
+  //   .collection('trainings')
+  //   .snapshotChanges()
+  //   .pipe(
+  //     defaultIfEmpty([]),
+  //     map(docs =>
+  //       docs.map((e: any) => ({
+  //         id: e.payload.doc.id,
+  //         ...e.payload.doc.data(),
+  //       }))
+  //     ),
+  //     concatMap(trainings => {
+  //       if (trainings.length === 0) {
+  //         return of([]); // geen trainingen → callback straks alsnog
+  //       }
+        
+  //       return from(trainings).pipe(
+  //         concatMap(training =>
+  //           this.loadSubcollectionsForTraining(training, orgId)
+  //         ),
+  //         toArray() // alle resultaten verzamelen in array
+  //       );
+  //     })
+  //   )
+  //   .subscribe((enrichedTrainings) => {
+      
+  //     setTimeout(() => {
+  //       this.trainings = enrichedTrainings;
+
+  //       if (this.trainings.length === 0) {
+  //         this.trainingItem = null;
+  //         this.breadCrumbs = [];
+  //       }
+
+  //       // vul participants in breadcrumb indien nodig
+  //       if (this.breadCrumbs.length > 0) {
+  //         const tr = this.getTraining(this.breadCrumbs[0].item.id);
+  //         if (tr && tr.participants && this.trainingItem) {
+  //           this.breadCrumbs[0].item.participants = tr.participants;
+  //           if (this.trainingItem.id === this.breadCrumbs[0].item.id) {
+  //             this.trainingItem.participants = tr.participants;
+  //           }
+  //         }
+  //       }
+  //       if (callback) callback();
+  //     }, 0); // vertraagd uitvoeren om main thread lucht te geven
+  //   });
+  // }
+
+  async loadItemsForTraining(trainingId: string): Promise<void> {
+    const path = this.fire.collection('trainers')
+      .doc(this.nav.activeOrganisationId)
+      .collection('trainings')
+      .doc(trainingId)
+      .collection('items');
+
+    path.snapshotChanges()
+      .pipe(
+        take(1), // eenmalig laden
+        map(docs => docs.map(e => ({
+          id: e.payload.doc.id,
+          ...e.payload.doc.data(),
+        })))
+      )
+      .subscribe(items => {
+        // Update de training in de bestaande trainingslijst
+        const training = this.trainings.find(t => t.id === trainingId);
+        if (training) {
+          training.trainingItems = items;
+          this.trainingSubItems[trainingId] = items;
+          // this.trainings = [...this.trainings];
         }
       });
   }
@@ -1307,7 +1496,7 @@ export class TrainerService {
         }
       }
     }
-    return null
+    return {}
   }
 
   getCase(id:string){
@@ -1320,18 +1509,28 @@ export class TrainerService {
   }
 
   getItemTraining(id:string,trainingId:string){
-    // console.log('getItemTraining',id,trainingId,this.trainings)
-    for (let t = 0; t < this.trainings.length; t++) {
-      if (this.trainings[t].id == trainingId) {
-        if(this.trainings[t].trainingItems){
-          for (let i = 0; i < this.trainings[t].trainingItems.length; i++) {
-            if (this.trainings[t].trainingItems[i].id == id) {
-              return this.trainings[t].trainingItems[i]
-            }
-          }
+
+    let items = this.trainingSubItems[trainingId] || [];
+    if(items.length){
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].id == id) {
+          return items[i]
         }
       }
     }
+
+
+    // for (let t = 0; t < this.trainings.length; t++) {
+    //   if (this.trainings[t].id == trainingId) {
+    //     if(this.trainings[t].trainingItems){
+    //       for (let i = 0; i < this.trainings[t].trainingItems.length; i++) {
+    //         if (this.trainings[t].trainingItems[i].id == id) {
+    //           return this.trainings[t].trainingItems[i]
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
     return {}
   }
 
@@ -1662,7 +1861,6 @@ export class TrainerService {
       }
     ],(result:any)=>{
       if(result.data){
-        console.log(result.data)
         this.toast.showLoader()
         this.functions.httpsCallable('createTrainer')({
           name: result.data[0].value,
@@ -1913,8 +2111,17 @@ export class TrainerService {
     return this.trainerInfo.purchaseItems.filter((item:any) => item.trainingId == trainingId);
   }
 
+
+  revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+  revenue_direct:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+  revenue_markets:any = {}
+  revenue_directs:any = {}
+  costs_credits:any = {all:{length:0,total:0},paid:{length:0,total:0},unpaid:{length:0,total:0}};
+  costs_credits_trainingItems:any = {}
   revenue(trainingId?:string){
     let revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    let revenue_direct:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    let costs_credits:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
     let purchaseItems:any[] = []
     if(trainingId){
       purchaseItems = this.purchaseItems(trainingId);
@@ -1924,27 +2131,141 @@ export class TrainerService {
     }
     for(let item of purchaseItems){
       if(item.marketplace){
+        let revenue_item:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+        if(!item.price){
+          item.price = 0
+        }
+        let price = parseFloat(item.price)
+        if(isNaN(price)){
+          price = 0
+        }
+        price = price / 1.21; // Exclude 21% VAT
+
         if(item.status === 'paid'){
           revenue_market.paid.length++;
-          revenue_market.paid.total += item.price;
-          revenue_market.paid.without_tax = revenue_market.paid.total / 1.21; // 21% VAT
-          revenue_market.paid.tax = revenue_market.paid.total - revenue_market.paid.without
-          revenue_market.paid.profit = revenue_market.paid.without_tax * 0.8; // 80% profit margin
-        }else{
+          revenue_market.paid.total += price;
+          // revenue_market.paid.with_tax = revenue_market.paid.total * 1.21; // 21% VAT
+          // revenue_market.paid.tax = revenue_market.paid.with_tax - revenue_market.paid.total
+          revenue_market.paid.profit = revenue_market.paid.total * (this.getTrainerSettings().margin_marketplace ? 1 - this.getTrainerSettings().margin_marketplace : 0.8); // 80% profit margin
+          
+          revenue_item.paid.length++;
+          revenue_item.paid.total += price;
+          revenue_item.paid.profit = revenue_item.paid.total * (this.getTrainerSettings().margin_marketplace ? 1 - this.getTrainerSettings().margin_marketplace : 0.8); // 80% profit margin
+        }
+        else{
           revenue_market.unpaid.length++;
-          revenue_market.unpaid.total += item.price;
-          revenue_market.unpaid.without_tax = revenue_market.unpaid.total / 1.21; // 21% VAT
-          revenue_market.unpaid.tax = revenue_market.unpaid.total - revenue_market.unpaid.without_tax;
-          revenue_market.unpaid.profit = revenue_market.unpaid.without_tax * 0.8; // 80% profit margin
+          revenue_market.unpaid.total += price;
+          // revenue_market.unpaid.with_tax = revenue_market.unpaid.total * 1.21; // 21% VAT
+          // revenue_market.unpaid.tax = revenue_market.unpaid.with_tax - revenue_market.unpaid.total;
+          revenue_market.unpaid.profit = revenue_market.unpaid.total * (this.getTrainerSettings().margin_marketplace ? 1 - this.getTrainerSettings().margin_marketplace : 0.8); // 80% profit margin
+          revenue_item.unpaid.length++;
+          revenue_item.unpaid.total += price;
+          revenue_item.unpaid.profit = revenue_item.unpaid.total * (this.getTrainerSettings().margin_marketplace ? 1 - this.getTrainerSettings().margin_marketplace : 0.8); // 80% profit margin
         }
         revenue_market.all.length++;
-        revenue_market.all.total += item.price;
-        revenue_market.all.without_tax = revenue_market.all.total / 1.21; // 21% VAT
-        revenue_market.all.tax = revenue_market.all.total - revenue_market.all.without_tax;
-        revenue_market.all.profit = revenue_market.all.without_tax * 0.8; // 80% profit margin
+        revenue_market.all.total += price;
+        // revenue_market.all.with_tax = revenue_market.all.total * 1.21; // 21% VAT
+        // revenue_market.all.tax = revenue_market.all.with_tax - revenue_market.all.total;
+        revenue_market.all.profit = revenue_market.all.total * (this.getTrainerSettings().margin_marketplace ? 1 - this.getTrainerSettings().margin_marketplace : 0.8); // 80% profit margin
+        revenue_item.all.length++;
+        revenue_item.all.total += price;
+        revenue_item.all.profit = revenue_item.all.total * (this.getTrainerSettings().margin_marketplace ? 1 - this.getTrainerSettings().margin_marketplace : 0.8); // 80% profit margin
+        
+        if(!this.revenue_markets[item.trainingId]){
+          this.revenue_markets[item.trainingId] = revenue_item;
+        }
       }
+      else if(item.direct){
+        let revenue_direct_item:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+        if(!item.price){
+          item.price = 0
+        }
+        let price = parseFloat(item.price?.trainingPrice || 0)
+        if(isNaN(price)){
+          price = 0
+        }
+        // price = price / 1.21; // dit is al excl VAT
+
+        if(item.status === 'paid'){
+          revenue_direct.paid.length++;
+          revenue_direct.paid.total += price;
+          // revenue_direct.paid.with_tax = revenue_direct.paid.total * 1.21; // 21% VAT
+          // revenue_direct.paid.tax = revenue_direct.paid.with_tax - revenue_direct.paid.total
+          revenue_direct.paid.profit = revenue_direct.paid.total * 0.95; // 95% profit margin
+
+          revenue_direct_item.paid.length++;
+          revenue_direct_item.paid.total += price;
+          revenue_direct_item.paid.profit = revenue_direct_item.paid.total * 0.95; // 95% profit margin
+        }
+        else{
+          revenue_direct.unpaid.length++;
+          revenue_direct.unpaid.total += price;
+          // revenue_direct.unpaid.with_tax = revenue_direct.unpaid.total * 1.21; // 21% VAT
+          // revenue_market.unpaid.tax = revenue_market.unpaid.with_tax - revenue_market.unpaid.total;
+          revenue_direct.unpaid.profit = revenue_direct.unpaid.total * 0.95; // 95% profit margin
+          revenue_direct_item.unpaid.length++;
+          revenue_direct_item.unpaid.total += price;
+          revenue_direct_item.unpaid.profit = revenue_direct_item.unpaid.total * 0.95; // 95% profit margin
+        }
+        revenue_direct.all.length++;
+        revenue_direct.all.total += price;
+        // revenue_market.all.with_tax = revenue_market.all.total * 1.21; // 21% VAT
+        // revenue_market.all.tax = revenue_market.all.with_tax - revenue_market.all.total;
+        revenue_direct.all.profit = revenue_direct.all.total * 0.95; // 95% profit margin
+        revenue_direct_item.all.length++;
+        revenue_direct_item.all.total += price;
+        revenue_direct_item.all.profit = revenue_direct_item.all.total * 0.95; // 95% profit margin
+
+        if(!this.revenue_directs[item.trainingId]){
+          this.revenue_directs[item.trainingId] = revenue_direct_item;
+        }
+      }
+      else if(item.marketplace===false){
+        let costs_credits_item:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+        if(!item.credits){
+          item.credits = 0
+        }
+        let credits = parseInt(item.credits)
+        if(isNaN(credits)){
+          credits = 0
+        }
+        let price = this.creditsPackagesPricing[credits] || 0;
+        if(isNaN(price)){
+          price = 0
+        }
+        if(item.status === 'paid'){
+          costs_credits.paid.length++;
+          costs_credits.paid.total += price;
+
+          costs_credits_item.paid.length++;
+          costs_credits_item.paid.total += price;
+        }
+        else{
+          costs_credits.unpaid.length++;
+          costs_credits.unpaid.total += price;
+
+          costs_credits_item.unpaid.length++;
+          costs_credits_item.unpaid.total += price;
+        }
+        costs_credits.all.length++;
+        costs_credits.all.total += price;
+
+        costs_credits_item.all.length++;
+        costs_credits_item.all.total += price;
+
+        if(!this.costs_credits_trainingItems[item.trainingId]){
+          this.costs_credits_trainingItems[item.trainingId] = costs_credits_item;
+        }
+
+      }
+
+
     }
-    return revenue_market;
+    revenue_market.margin_alicialabs = (this.getTrainerSettings().margin_marketplace ? this.getTrainerSettings().margin_marketplace : 0.2) * 100
+
+    this.revenue_market = revenue_market;
+    this.revenue_direct = revenue_direct;
+    this.costs_credits = costs_credits;
   }
 
   validInvoiceAddress(invoice?:any): boolean {

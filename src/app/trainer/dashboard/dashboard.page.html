@@ -29,6 +29,11 @@
                       <ion-card-title>{{'standards.trainings' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
+                <ion-col size="2" noPadding>
+                  <ion-card id="menu_trainings" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/customers')">
+                      <ion-card-title>{{'standards.customers' | translate}}</ion-card-title>
+                  </ion-card>
+                </ion-col>
                 <!-- <ion-col size="2" noPadding *ngIf="!trainerService.trainingItem.id">
                   <div flex fullwidth center-ver style="padding:10px">
                       <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" placeholder="Zoeken"  fullwidth noMargin noPadding></ion-searchbar>
@@ -104,21 +109,21 @@
             </ion-item>
           </div>
 
-          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro && trainerService.trainerInfo?.purchaseItems?.length" [ngClass]="{'activeItem': showPart=='customers','notActiveItem': showPart!='customers'}">
+          <!-- <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro && trainerService.trainerInfo?.purchaseItems?.length" [ngClass]="{'activeItem': showPart=='customers','notActiveItem': showPart!='customers'}">
             <ion-item detail="false" lines="none" button (click)="showPart = 'customers'" class="itemButton"  noMargin>
                 <div font-20 weight700>{{'marketplace.customers_and_revenue' | translate}}</div>
                 <fa-icon font-24 slot="end" [icon]="icon.get('faUsers')"></fa-icon>
             </ion-item>
-          </div>
+          </div> -->
 
 
-          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" class="notActiveItem" *ngIf="auth.customer?.stripeCustomerId" (click)="auth.openStripeDashboard()">
+          <!-- <div style="padding:10px 0px;border-radius:16px;margin-top:15px" class="notActiveItem" *ngIf="auth.customer?.stripeCustomerId" (click)="auth.openStripeDashboard()">
             <ion-item detail="false" lines="none" button (click)="showPart = 'settings'" class="itemButton"  noMargin>
               <div font-20 weight700>{{'page_account.billing' | translate}}</div>
               <fa-icon font-18 slot="end" style="color:rgba(0,0,0,0.3)" [icon]="icon.get('faExternalLinkAlt')"></fa-icon>
               <fa-icon font-24 slot="end" [icon]="icon.get('faCreditCard')"></fa-icon>
             </ion-item>
-          </div>
+          </div> -->
 
           <div marginTop style="padding:10px 0px;border-radius:16px;margin-bottom:15px" [ngStyle]="{'outline': isTrainer && isTrainerPro ? 'none' : 'solid 2px var(--ion-color-primary)'}" class="notActiveItem" [ngClass]="{'activeItem':showPart=='become_trainer','notActiveItem':showPart!='become_trainer'}">
 
@@ -149,7 +154,7 @@
                 <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="update('name',true)" [(ngModel)]="trainerService.trainerInfo.name"></ion-input>
               </ion-item>
 
-              <ion-card pointer marginBottom marginTop class="caseAvatar" (click)="selectLogo($event)" [ngStyle]="{'height':trainerService.trainingItem.photo ? '300px' : '150px','background':'var(--background-global)'}">
+              <ion-card pointer marginBottom marginTop class="caseAvatar" (click)="selectLogo($event)" [ngStyle]="{'height':trainerService.trainerInfo.photo ? '300px' : '150px','background':'var(--background-global)'}">
                 <ion-card-content style="background-size: contain" backgroundImage noPadding *ngIf="trainerService.trainerInfo" [ngStyle]="{'background-image': trainerService.trainerInfo.logo ? 'url(' + trainerService.trainerInfo.logo + ')' : 'none'}">
                   <!-- <fa-icon class="infoIconPhoto" pointer titleIcon font-24 (click)="trainerService.tooltip('dashboard_logo','dashboard.organisation_logo',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
                 </ion-card-content>
@@ -433,7 +438,7 @@
               </ion-card>
             </ion-card-content>
           </ion-card>
-
+          
           <ion-card basicPadding *ngIf="showPart=='bank'&&trainerDataLoaded">
             <ion-card-header>
               <ion-card-title flex center-ver>
@@ -446,7 +451,7 @@
               <div flex center-ver marginBottom *ngIf="changesInBankAccount()">
                 <div class="spacer"></div>
                 <ion-button class="saveButton" color="medium" fill="clear" (click)="undoBankAccount()">{{'buttons.undo' | translate}}</ion-button>
-                <ion-button marginLeft class="saveButton" (click)="updateBankAccount()">{{'buttons.change' | translate}}</ion-button>
+                <ion-button marginLeft class="saveButton" (click)="updateBankAccount()">{{'buttons.changes_save' | translate}}</ion-button>
               </div>
 
               <ion-row>
@@ -462,7 +467,7 @@
                 </ion-col>
                 <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.bankaccount_bic' | translate}}</div></ion-col>
                 <ion-col size="5">
-                  <ion-input class="inputAmount" type="text" [(ngModel)]="originalBankAccount.bic" font-20 weight700>
+                  <ion-input class="inputAmount" type="text" uppercase [(ngModel)]="originalBankAccount.bic" font-20 weight700>
                   </ion-input>
                 </ion-col>
               </ion-row>
@@ -481,7 +486,7 @@
                 <div flex center-ver marginBottom *ngIf="changesInInvoice()">
                   <div class="spacer"></div>
                   <ion-button class="saveButton" color="medium" fill="clear" (click)="undoInvoice()">{{'buttons.undo' | translate}}</ion-button>
-                  <ion-button marginLeft class="saveButton" (click)="updateInvoice()">{{'buttons.change' | translate}}</ion-button>
+                  <ion-button marginLeft class="saveButton" (click)="updateInvoice()">{{'buttons.changes_save' | translate}}</ion-button>
                 </div>
 
                 <ion-row>
@@ -527,102 +532,98 @@
                     </ion-input>
                   </ion-col>
 
-                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.invoice_reference' | translate}}</div></ion-col>
+                  <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'form.reference' | translate}}</div></ion-col>
                   <ion-col size="5">
                     <ion-input class="inputAmount" type="text" [(ngModel)]="originalInvoice.reference" font-20 weight700>
                     </ion-input>
                   </ion-col>
                 </ion-row>
 
-                
-
             </ion-card-content>
           </ion-card>
 
-            <ion-card basicPadding *ngIf="showPart=='customers' && trainerService.trainerInfo?.purchaseItems?.length">
-              <ion-card-header>
-                <ion-card-title flex center-ver>
-                  <span weight600 titleIcon>{{'marketplace.customers_and_revenue' | translate}}</span>
-                  <span class="spacer"></span>
-                </ion-card-title>
-              </ion-card-header>
-              <ion-card-content>
-                <div singleLine></div> 
-                <div font-16 marginLeft text-primary uppercase weight600 flex center-ver>
-                  <span> {{'marketplace.revenue' | translate}} ({{trainerService.trainerInfo.purchaseItems.length}})</span>
-                  <div class="spacer"></div>
-                </div>
-                <div>
-                  <ion-card marginBottom basicPadding borderPrimary fullwidth>
-                    <div flex center-ver weight500>
-                      <span >{{'marketplace.revenue_total' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue().all.total | number : '1.2-2'}}</span>
-                    </div> 
-                    <div flex center-ver weight500>
-                      <span >{{'marketplace.revenue_tax' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue().all.tax | number : '1.2-2'}}</span>
-                    </div> 
-                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
-                      <span >{{'marketplace.revenue_ex_tax' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue().all.without_tax | number : '1.2-2'}}</span>
-                    </div> 
-                    <div flex center-ver weight500>
-                      <span >{{'marketplace.revenue_margin' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{(trainerService.revenue().all.total - trainerService.revenue().all.profit) | number : '1.2-2'}}</span>
-                    </div> 
-                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
-                      <span >{{'marketplace.revenue_profit' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue().all.profit | number : '1.2-2'}}</span>
-                    </div> 
+          <!-- <ion-card basicPadding *ngIf="showPart=='customers' && trainerService.trainerInfo?.purchaseItems?.length">
+            <ion-card-header>
+              <ion-card-title flex center-ver>
+                <span weight600 titleIcon>{{'marketplace.customers_and_revenue' | translate}}</span>
+                <span class="spacer"></span>
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div singleLine></div> 
+              <div font-16 marginLeft text-primary uppercase weight600 flex center-ver>
+                <span> {{'marketplace.revenue' | translate}} ({{trainerService.trainerInfo.purchaseItems.length}})</span>
+                <div class="spacer"></div>
+              </div>
+              <div>
+                <ion-card marginBottom basicPadding borderPrimary fullwidth>
+                  <div flex center-ver weight500>
+                    <span >{{'marketplace.revenue_total' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{trainerService.revenue().all.total | number : '1.2-2'}}</span>
+                  </div> 
+                  <div flex center-ver weight500>
+                    <span >{{'marketplace.revenue_tax' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{trainerService.revenue().all.tax | number : '1.2-2'}}</span>
+                  </div> 
+                  <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                    <span >{{'marketplace.revenue_ex_tax' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{trainerService.revenue().all.without_tax | number : '1.2-2'}}</span>
+                  </div> 
+                  <div flex center-ver weight500>
+                    <span >{{'marketplace.revenue_margin' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{(trainerService.revenue().all.total - trainerService.revenue().all.profit) | number : '1.2-2'}}</span>
+                  </div> 
+                  <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                    <span >{{'marketplace.revenue_profit' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{trainerService.revenue().all.profit | number : '1.2-2'}}</span>
+                  </div> 
 
 
 
-                    <div marginTop marginBottom></div>
-                    <div flex center-ver weight600>
-                      <span >{{'marketplace.revenue_unpaid' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue().unpaid.profit | number : '1.2-2'}}</span>
-                    </div> 
-                    <div flex center-ver weight500>
-                      <span >{{'marketplace.revenue_paid' | translate}}:</span>
-                      <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue().paid.profit | number : '1.2-2'}}</span>
-                    </div> 
+                  <div marginTop marginBottom></div>
+                  <div flex center-ver weight600>
+                    <span >{{'marketplace.revenue_unpaid' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{trainerService.revenue().unpaid.profit | number : '1.2-2'}}</span>
+                  </div> 
+                  <div flex center-ver weight500>
+                    <span >{{'marketplace.revenue_paid' | translate}}:</span>
+                    <div class="spacer"></div>
+                    <span>€ {{trainerService.revenue().paid.profit | number : '1.2-2'}}</span>
+                  </div> 
 
-                  </ion-card>
-                </div> 
-                <div *ngIf="trainerService.revenue(trainerService.trainingItem.id).unpaid.profit" flex center-ver>
-                  <div class="spacer"></div>
-                  <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
-                    {{'marketplace.request_payout' | translate}}
-                  </ion-button>
-                </div>
+                </ion-card>
+              </div> 
+              <div *ngIf="trainerService.revenue(trainerService.trainingItem.id).unpaid.profit" flex center-ver>
+                <div class="spacer"></div>
+                <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
+                  {{'marketplace.request_payout' | translate}}
+                </ion-button>
+              </div>
 
-                <div singleLine></div> 
+              <div singleLine></div> 
 
-                <div font-16 marginLeft pointer text-primary uppercase weight600 *ngIf="trainerService.trainerInfo?.purchaseItems?.length" (click)="showCustomerList=!showCustomerList" flex center-ver>
-                  <span> {{'marketplace.sold_etrainings' | translate}} ({{trainerService.trainerInfo.purchaseItems.length}})</span>
-                  <div class="spacer"></div>
-                  <fa-icon chevron pointer titleIcon font-24 text-secondary [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform':showCustomerList ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
-                </div>
-                <div *ngIf="showCustomerList">
-                  <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.trainerInfo.purchaseItems | sortBy : -1 : 'purchased'">
-                    <ion-card-title flex center-ver>
-                      <span weight600>{{trainerService.getTraining(customer.trainingId).title}} - € {{customer.price | number : '1.2-2'}}</span>
-                      <!-- <span marginLeft weight400 font-14 lowercase>({{customer.user.email}})</span> -->
-                      <span class="spacer"></span>
-                      <span textMedium italic weight500>{{helper.showLocalDate(customer.purchased,translate.instant('date_formats.fullDateTime'),0,true)}}</span>
-                    <!-- <fa-icon pointer titleIcon font-24 *ngIf="trainerService.trainingItem?.status=='published'" (click)="sendEmail(customer.user.email)" [icon]="icon.get('faEnvelope')"></fa-icon> -->
-                    </ion-card-title>
-                  </ion-card>
-                </div>
-              </ion-card-content>
-            </ion-card>
+              <div font-16 marginLeft pointer text-primary uppercase weight600 *ngIf="trainerService.trainerInfo?.purchaseItems?.length" (click)="showCustomerList=!showCustomerList" flex center-ver>
+                <span> {{'marketplace.sold_etrainings' | translate}} ({{trainerService.trainerInfo.purchaseItems.length}})</span>
+                <div class="spacer"></div>
+                <fa-icon chevron pointer titleIcon font-24 text-secondary [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform':showCustomerList ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
+              </div>
+              <div *ngIf="showCustomerList">
+                <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.trainerInfo.purchaseItems | sortBy : -1 : 'purchased'">
+                  <ion-card-title flex center-ver>
+                    <span weight600>{{trainerService.getTraining(customer.trainingId).title}} - € {{customer.price | number : '1.2-2'}}</span>
+                    <span class="spacer"></span>
+                    <span textMedium italic weight500>{{helper.showLocalDate(customer.purchased,translate.instant('date_formats.fullDateTime'),0,true)}}</span>
+                  </ion-card-title>
+                </ion-card>
+              </div>
+            </ion-card-content>
+          </ion-card> -->
 
           <ion-card basicPadding *ngIf="showPart=='knowledge'">
             <ion-card-header>

@@ -16,6 +16,8 @@ import { SelectImageLibraryPage } from '../components/modals/select-image-librar
 import { CaseinfoPage } from '../components/modals/caseinfo/caseinfo.page';
 import { GenerateCasePage } from '../components/modals/generate-case/generate-case.page';
 import { TrainerInfoPage } from '../components/modals/trainer-info/trainer-info.page';
+import { SalesTrainingsPage } from '../components/modals/sales-trainings/sales-trainings.page';
+import { ExamplePage } from '../components/modals/example/example.page';
 
 @Injectable({
   providedIn: 'root',
@@ -315,6 +317,36 @@ export class ModalService {
     })
     modalItem.onWillDismiss().then(result=>{
       callback(result)
+    })
+    return await modalItem.present()
+  }
+
+  async startSalesTraining(obj:any,callback:Function){
+    const modalItem = await this.modalController.create({
+      component:SalesTrainingsPage,
+      componentProps:{
+        input:obj
+      },
+      cssClass:'editHtmlModal',
+    })
+    modalItem.onWillDismiss().then(result=>{
+      callback(result)
+    })
+    return await modalItem.present()
+  }
+
+  async exampleTraining(training:any,callback?:Function){
+    const modalItem = await this.modalController.create({
+      component:ExamplePage,
+      componentProps:{
+        training:training
+      },
+      cssClass:'exampleModal',
+    })
+    modalItem.onWillDismiss().then(result=>{
+      if(callback){
+        callback(result)
+      }
     })
     return await modalItem.present()
   }

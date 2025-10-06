@@ -36,7 +36,11 @@
         "employees":"Medewerkers",
         "update_available":"Update beschikbaar",
         "login":"Log in",
-        "register":"Registreer"
+        "register":"Registreer",
+        "customers":"Klanten",
+        "customer":"Klant",
+        "users":"Gebruikers",
+        "user":"Gebruiker"
     },
     "menu":{
         "login": "Inloggen",
@@ -104,6 +108,7 @@
         "skip":"Overslaan",
         "no_thanks":"Nee, bedankt",
         "change":"Wijzigen",
+        "changes_save":"Wijzigingen opslaan",
         "close":"Afsluiten",
         "export_pdf":"Exporteer naar PDF",
         "confirm":"Bevestigen",
@@ -150,7 +155,8 @@
         "activate":"Activeren",
         "send_message":"Stuur bericht",
         "on":"Aan",
-        "off":"Uit"
+        "off":"Uit",
+        "added":"Toegevoegd"
     },
     "messages":{
         "saved":"Gegevens opgeslagen",
@@ -265,6 +271,7 @@
         "forgot_password_message":"Vul je e-mailadres in en ontvang instructies om je wachtwoord opnieuw in te stellen.",
         "remember_password":"Ik weet 'm weer",
         "reset_password":"Wachtwoord opnieuw instellen",
+        "set_password":"Wachtwoord instellen",
         "no_account":"Nog geen account?",
         "register":"Registreer nu",
         "login":"Inloggen",
@@ -282,7 +289,11 @@
         "title_new_password":"Nieuw wachtwoord",
         "subtitle_new_password":"Vul je nieuwe wachtwoord in.",
         "busy_logging":"Inloggen...",
-        "login_failed":"Inloggen mislukt. Controleer je e-mailadres en wachtwoord en probeer het opnieuw."
+        "login_failed":"Inloggen mislukt. Controleer je e-mailadres en wachtwoord en probeer het opnieuw.",
+        "create_password_title":"Maak een wachtwoord aan",
+        "create_password_subtitle":"Vul je e-mailadres in en ontvang instructies om je wachtwoord in te stellen.",
+        "sending_set_password":"Bezig met versturen van instructies...",
+        "redirect_first_login":"Log eerst in om verder te gaan. Als je nog geen account hebt, kun je deze gratis aanmaken."
     },
     "page_register":{
         "register_login":"Registreren / inloggen",
@@ -446,7 +457,7 @@
         "register_as_trainer_expertise":"Op welk gebied wil je trainingen geven?",
         "register_as_trainer_success":"Je registratie is succesvol ontvangen. je kunt direct aan de slag met het maken van je eigen cases en trainingen.",
         "register_as_trainer_failure":"Er is iets misgegaan bij het registreren als trainer. Probeer het later nog eens.",
-        "register_as_trainer_rdpa_agree":"<br>Ik ga nogmaals akkoord met de <a href='https://www.iubenda.com/gebruiksvoorwaarden/84749837' target='_blank'>Algemene voorwaarden</a> en het <a href='https://www.iubenda.com/privacy-policy/84749837' target='_blank'>Privacybeleid</a> van AliciaLabs.<br><br>Ik ga akkoord met de <a href='/assets/documents/rdpa-alicialabs_nl.pdf' target='_blank'>Verwerkersovereenkomst</a> van AliciaLabs.<br><br>",
+        "register_as_trainer_rdpa_agree":"<br>Ik ga nogmaals akkoord met de <a href='https://www.iubenda.com/gebruiksvoorwaarden/84749837' target='_blank'>Algemene voorwaarden</a> en het <a href='https://www.iubenda.com/privacy-policy/84749837' target='_blank'>Privacybeleid</a> van AliciaLabs.<br><br>Ik ga akkoord met de <a href='/assets/documents/rdpa-alicialabs_nl.pdf' target='_blank'>Verwerkersovereenkomst</a> van AliciaLabs.<br><br>Ik ga akkoord met de <a href='/assets/documents/rdpa-selfbilling_alicialabs_nl.pdf' target='_blank'>Zelf facturatie</a> van AliciaLabs bij eventuele uitbetalingen.<br><br>",
         "become_trainer_pro":"Word Trainer Pro",
         "is_trainer_pro":"Professional Trainer",
         "request_new_organization_text":"Kun je ons wat vertellen over je organisatie en wat je ermee wilt doen? We nemen dan zo snel mogelijk contact met je op.",
@@ -605,7 +616,10 @@
         "voice_sex_female":"Vrouw",
         "voice_sex_male":"Man",
         "voice_sex_other":"Overig",
-        "voice_on":"Start met voice"
+        "voice_on":"Start met voice",
+        "conversation_ai":"Gesprek met AI",
+        "knowledge_item":"Kennis",
+        "open_more":"Open meer"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -622,7 +636,8 @@
         "new_training_name":"Hoe heet de nieuwe training?",
         "cannot_add_module_to_itself":"Er ontstaat een oneindige lus als je deze module toevoegt aan zichzelf. Kies een andere module.",
         "training_content_title":"Uitgebreide beschrijving van de training. Wordt alleen weergegeven bij een hoofdmodule.",
-        "module_finished":"Module voltooid"
+        "module_finished":"Module voltooid",
+        "new_tag":"Nieuw tag"
     },
     "trainings":{
         "edit_training":"Bewerken",
@@ -710,6 +725,7 @@
         "elearning_organisation_price_info":"Organisaties die deze training willen afnemen, betalen de prijs per persoon excl. BTW x het aantal medewerkers met een minimum en maximum bedrag zoals je hier zelf kunt aangeven.",
         "private_autorenew":"Wil je dat deze training automatisch verlengd wordt na 1 jaar?<br><span style='font-size:0.8em;color:gray'>Voor een organisatie worden er geen kosten in rekening gebracht. Voor een individuele gebruiker een bedrag van € 25,- t.b.v. de credits.</span>",
         "training_content_title":"Uitgebreide beschrijving van de training",
+        "training_welcome_message_title":"Welkomstbericht voor de deelnemers",
         "amount_credits_unlimited":"Dit bedrag wordt bij jou als trainer in rekening gebracht. Met dit bedrag heeft elke deelnemer onbeperkt credits voor een jaar om gesprekken te voeren in de training.",
         "amount_credits_4k":"Dit bedrag wordt bij jou als trainer in rekening gebracht, wanneer de training wordt geactiveerd via de onderstaande link. Met dit bedrag heeft elke deelnemer 4000 credits voor een jaar om gesprekken te voeren in de training. Dat zijn ongeveer 15-20 uitgebreide gesprekken.",
         "amount_credits":"Hoeveel aan credits wil je per deelnemer beschikbaar stellen?"
@@ -1057,7 +1073,8 @@
         "training_content":"Beschrijf hier uitgebreid de inhoud van de training. Dit wordt getoond wanneer wordt geklikt op de training.",
         "trainer_details":"Geef hier meer informatie over jezelf of je organisatie. Dit wordt getoond wanneer een gebruiker jouw informatie bekijkt.<br>Deze informatie kan gevonden worden door op je logo te klikken bij je trainingen.",
         "case_voice":"Hier kun je de stem van de AI-gesprekspartner kiezen. Je kunt kiezen uit verschillende stemmen. De stemmen kunnen verschillen in accent, intonatie en snelheid.<br><br>De attitude van de AI-gesprekspartner in het gesprek kan uiteraard invloed hebben op de manier van spreken. <br><br>Probeer verschillende stemmen uit om te zien welke het beste past bij jouw case.",
-        "case_voice_on":"Zet deze optie aan als je wilt dat de AI-gesprekspartner met een stem reageert in plaats van met chat."
+        "case_voice_on":"Zet deze optie aan als je wilt dat de AI-gesprekspartner met een stem reageert in plaats van met chat.",
+        "welcome_message":"Hier kun je een welkomstbericht invoeren dat gebruikers als e-mail ontvangen wanneer ze zijn aangemeld voor de training."
     },
     "dashboard":{
         "organisation":"Organisatie",
@@ -1094,6 +1111,7 @@
         "knowledge_description":"Beschrijving",
         "knowledge_original_language":"Originele taal",
         "knowledge_summary":"Samenvatting voor AI",
+        "edit_knowledge_item":"Bewerk kennis",
         "add_knowledge_item":"Kennis toevoegen",
         "add_knowledge_creating_summary":"Onze gespecialiseerde AI maakt nu een samenvatting t.b.v. onze andere AI's",
         "add_knowledge_item_text":"Hier kun je eventuele extra specifieke kennis toevoegen die de AI kan gebruiken bij de feedback in cases. Let op: De AI heeft al een behoorlijke kennisbasis, dus dit is alleen nodig als je specifieke kennis wilt toevoegen die niet al in de AI zit.",
@@ -1144,7 +1162,7 @@
         "free":"Gratis",
         "add_unlimited_credits":"Om deze training goed te kunnen volgen, heb je credits nodig. Je kunt onbeperkt oefenen met deze training door een abonnement te nemen met onbeperkte credits. Wil je voor € 25 per jaar onbeperkt oefenen met deze (en alle andere) training?",
         "unlimited_credits":"Ja, ik wil graag onbeperkte credits voor een jaar voor € 25.",
-        "success_purchase":"Je hebt de training succesvol gekocht. Deze is nu beschikbaar bij de trainingen in je dashboard.",
+        "success_purchase":"Je hebt de training succesvol gekocht. Deze is nu beschikbaar bij de trainingen in je dashboard. Je wordt zo doorverwezen.",
         "customers":"Klanten",
         "customers_and_revenue":"Klanten en omzet",
         "revenue":"Omzet",
@@ -1152,7 +1170,9 @@
         "revenue_margin":"Marge AliciaLabs",
         "revenue_profit":"Winst",
         "revenue_unpaid":"Nog niet uitbetaald",
+        "costs_unpaid":"Nog niet betaald",
         "revenue_paid":"Uitbetaald",
+        "paid":"Betaald",
         "revenue_and_profit":"Omzet en Winst",
         "revenue_tax":"BTW (21%)",
         "revenue_ex_tax":"Omzet excl. BTW",
@@ -1161,6 +1181,9 @@
         "payout_request_sent":"Je verzoek om uitbetaling is verstuurd. We zullen je verzoek zo snel mogelijk verwerken.",
         "bank_account_required":"Je hebt nog geen bankrekening opgegeven. Om een uitbetaling te kunnen doen, moet je eerst een bankrekening toevoegen bij je organisatiegegevens.",
         "sold_etrainings":"Verkochte e-trainingen",
+        "sold_etrainings_marketplace":"Verkochte e-trainingen via de Marketplace",
+        "sold_etrainings_private":"Verkochte e-trainingen via privé code",
+        "sold_etrainings_direct":"Verkochte e-trainingen via directe verkoop",
         "not_logged_in":"Log eerst in of maak een account aan om trainingen te kunnen kopen.",
         "activation_failed_code":"De code is ongeldig of kan niet worden geactiveerd op jouw account.",
         "activation_failed_used":"De code is al gebruikt door het maximaal aantal gebruikers.",
@@ -1174,7 +1197,7 @@
         "confirm_purchase_title": "Bevestig aankoop",
         "confirm_purchase_organisation_text": "Met de aanschaf van deze training voor jouw organisatie, krijgen alle medewerkers van jouw organisatie toegang tot deze training. De prijs is afgestemd op het aantal medewerkers in jouw organisatie.<br><br>Weet je zeker dat je deze training voor jouw organisatie wilt aanschaffen?",
         "no_trainer_details":"De trainer heeft nog geen details over zichzelf of de organisatie opgegeven.",
-        "checking_code":"We controleren je url...",
+        "checking_code":"We controleren je speciale code...",
         "code_not_found":"De code is ongeldig of niet gevonden.",
         "no_private_item_found":"Deze e-training is niet gevonden of niet beschikbaar zonder toegangscode."
     },
@@ -1187,6 +1210,100 @@
         "photo_library":"Selecteer uit bibliotheek",
         "photo_ratio_avatar":"(verhouding 1,5x1 of 1x1)",
         "photo_ratio_knowledge":"(verhouding 2,4x1)"
+    },
+    "checkout":{
+        "placeholder_password":"Wachtwoord",
+        "placeholder_email":"E-mailadres",
+        "placeholder_name":"Naam",
+        "placeholder_first_name":"Voornaam",
+        "placeholder_last_name":"Achternaam",
+        "placeholder_company":"Bedrijfsnaam",
+        "placeholder_taxnr":"BTW-nummer (optioneel)",
+        "placeholder_country":"Land",
+        "placeholder_address":"Straat en huisnummer",
+        "placeholder_postal_code":"Postcode",
+        "placeholder_city":"Plaats",
+        "placeholder_phone":"Telefoonnummer (optioneel)",
+        "placeholder_reference":"Factuur onder vermelding van (optioneel)",
+        "terms1":"Ik ga akkoord met de",
+        "terms2":"Algemene voorwaarden",
+        "terms3":"en het",
+        "terms4":"Privacybeleid",
+        "unlimited_credits":"Onbeperkte credits",
+        "unlimited_credits_year":"Onbeperkte credits voor een jaar",
+        "unlimited_credits_description":"Oefen onbeperkt met alle cases in AliciaLabs.",
+        "unlimited_credits_already":"Je hebt al een abonnement met onbeperkte credits.",
+        "total":"Totaal bedrag",
+        "to_checkout":"Afrekenen",
+        "to_checkout_direct":"Direct afrekenen",
+        "to_checkout_invoice":"Afrekenen via factuur",
+        "order_summary": "Besteloverzicht",
+        "your_data":"Jouw gegevens",
+        "add_to_your_order":"Voeg toe aan je bestelling",
+        "login_failed":"Inloggen mislukt. Het wachtwoord is onjuist voor deze bestaande gebruiker",
+        "processing":"Bezig met verwerken...",
+        "price_excl_tax":"Bedrag excl. BTW (21%)",
+        "failure":"De betaling is niet gelukt.",
+        "disclaimer_alicialabs_platform":"Deze training wordt aangeboden via het AliciaLabs platform.",
+        "watch_example":"Bekijk de inhoud"
+    },
+    "form":{
+        "name":"Naam",
+        "email":"E-mail",
+        "first_name":"Voornaam",
+        "last_name":"Achternaam",
+        "company":"Bedrijfsnaam",
+        "company_optional":"Bedrijfsnaam (optioneel)",
+        "country":"Land",
+        "address":"Adres",
+        "postal_code":"Postcode",
+        "city":"Plaats",
+        "phone":"Telefoonnummer",
+        "password":"Wachtwoord",
+        "tax_nr":"BTW-nummer",
+        "email_invoice":"E-mailadres voor factuur",
+        "reference":"Factuur onder vermelding van",
+        "is_company":"Ik koop namens een organisatie"
+    },
+    "customers":{
+        "sales":"Omzet",
+        "your_customers":"Jouw klanten",
+        "marketplace_customers":"Klanten marketplace",
+        "add_customer":"Klant toevoegen",
+        "add_customer_text":"Maak hier een nieuwe klant aan. Je kunt bij deze klant later trainingen aan gebruikers koppelen.",
+        "created_successfully":"De klant is succesvol aangemaakt.",
+        "updated_successfully":"De klant is succesvol bijgewerkt.",
+        "no_customers":"Er zijn nog geen klanten aangemaakt.",
+        "sold_trainings":"Verkochte trainingen",
+        "no_trainings":"Er zijn nog geen trainingen aan deze klant verkocht.",
+        "step":"Stap",
+        "step_select_training":"Selecteer training",
+        "step_add_users":"Voeg gebruikers toe",
+        "step_price":"Prijs bepalen",
+        "step_confirm_and_send_invoice":"Bevestig en verstuur factuur",
+        "send_invoice_and_access":"Verstuur factuur en geef toegang",
+        "training_and_invoice_sent":"De factuur is verstuurd naar de klant. De geselecteerde gebruikers hebben nu toegang tot de training en hebben een bericht ontvangen.",
+        "users":"Gebruikers",
+        "user":"Gebruiker",
+        "price_excl_tax":"Prijs training excl. BTW",
+        "price_incl_tax":"Prijs training incl. BTW",
+        "unlimited_credits_for":"Onbeperkte credits voor",
+        "total_price_excl_tax":"Totaal excl. BTW",
+        "total_price_incl_tax":"Totaal incl. BTW",
+        "tax":"BTW (21%)",
+        "activate_send_invoice":"Activeer en verstuur factuur",
+        "select_training":"Selecteer eerst een training.",
+        "add_extra_user":"Voeg extra gebruiker toe",
+        "add_user_message":"Voeg eerst één of meer gebruikers toe.",
+        "invalid_user_list":"De lijst met gebruikers klopt niet. Controleer de e-mailadressen.",
+        "direct_sales_training":"Directe training verkoop",
+        "revenue_total_marketplace":"Totale omzet marketplace",
+        "revenue_total_direct":"Totale omzet directe verkoop",
+        "costs_credits_private":"Kosten credits verkoop eigen kanaal",
+        "costs":"Kosten"
+        
+    
+    
     }
 }
 

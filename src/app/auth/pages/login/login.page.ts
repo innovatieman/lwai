@@ -8,6 +8,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MediaService } from 'src/app/services/media.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -15,13 +16,15 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
-  form: FormGroup;
+  form: FormGroup = {} as FormGroup;
   showPassWordReset = false;
   showPassword = false;
   oobCode:string = '';
   loading = false;
+  type:string = 'login'; // login, reset
   constructor(
     private fb: FormBuilder,
+    private route: ActivatedRoute,
     public auth: AuthService,
     public nav:NavService,
     public icon:IconsService,
@@ -30,13 +33,14 @@ export class LoginPage implements OnInit {
     private toast:ToastService,
     private functions:AngularFireFunctions
   ) {
+  }
+  
+  ngOnInit() {
     this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: [this.nav.email || '', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
-  }
 
-  ngOnInit() {
     this.auth.userInfo$.subscribe(userInfo => {
       if(this.auth.userInfo.uid){
         setTimeout(() => {
@@ -45,7 +49,6 @@ export class LoginPage implements OnInit {
               this.nav.go(this.nav.redirectUrl)
               this.nav.redirectUrl = null
             }else{
-              console.log('go start')
               this.nav.go('start')
             }
           }
@@ -53,12 +56,23 @@ export class LoginPage implements OnInit {
       }
       else{
         setTimeout(() => {
-          if(!this.auth.userInfo.uid && this.nav.redirectUrl){
-            this.toast.show('Log eerst in om verder te gaan. Als je nog geen account hebt, kun je deze gratis aanmaken.',)
+          if(!this.auth.userInfo.uid && this.nav.redirectUrl && this.type!=='create_password'){
+            this.toast.show(this.translateService.instant('page_login.redirect_first_login'),10000,'middle')
           }
         }, 2000);
       }
     });
+
+
+    this.route.params.subscribe(params => {
+      const type = params['type'];
+      if (type=='create_password') {
+        this.type = 'create_password'
+        this.forgotPassword()
+        // this.showPassWordReset = true;
+      }
+    })
+
   }
 
   async login() {
@@ -75,7 +89,12 @@ export class LoginPage implements OnInit {
       return
     }
     try {
-      this.toast.showLoader(this.translateService.instant('page_wait_verify.issend'))
+      if(this.type==='create_password'){
+        this.toast.showLoader(this.translateService.instant('page_login.sending_set_password'))
+      }
+      else{
+        this.toast.showLoader(this.translateService.instant('page_wait_verify.issend'))
+      }
       // await this.auth.sendPasswordReset(this.form.value.email);
       this.functions.httpsCallable('reSendVerificationEmail')({email:this.form.controls['email'].value,displayName:'',template:'reset_password'}).subscribe((response:any)=>{
         this.toast.hideLoader()

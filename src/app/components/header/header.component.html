@@ -7,7 +7,10 @@
           <!-- <img src="assets/icon/favicon_white.png" style="width: 30px; height: 30px; margin-right: 10px;"> -->
                    <!-- <ion-buttons slot="start" flex center-ver> -->
         <ion-buttons slot="start" flex center-ver *ngIf="back">
-          <ion-button (click)="nav.go('start')" size="large">
+          <ion-button (click)="nav.go('start')" size="large" *ngIf="!back_url">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+          <ion-button (click)="goto(back_url,$event)" size="large" *ngIf="back_url">
             <ion-icon name="arrow-back"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -15,7 +18,7 @@
           <img src="assets/icon/logo_single_black.png" style="margin-right: 10px;height:30px;min-width:30px;" *ngIf="media.screenSize=='sm'">
           <!-- <div style="font-size: 24px;" *ngIf="title">{{title | uppercase}}</div> -->
         </div>
-        <div class="menuList" *ngIf="(!media.smallDevice&&!noMenuList && countShowPages) || (!media.smallDevice && isOrgAdmin)">
+        <div class="menuList" *ngIf="(!media.smallDevice&&!noMenuList && countShowPages) || (!media.smallDevice && isOrgAdmin && !noMenuList)">
           <div *ngFor="let item of menuItems">
             <div class="menuItem" (click)="item.url ? nav.go(item.url) : action(item)" [ngClass]="{'activeMenuItem':page==item.page}" *ngIf="shouldShowPage(item)">
               <span>{{item.title}}</span>
@@ -47,6 +50,10 @@
           </ion-button> -->
           <ion-button color="secondary" id="header_menu" (click)="showshortMenu($event)" size="large" *ngIf="!noMenuList">
             <ion-icon name="person-circle" noMargin slot="end" style="font-size: 32px;"></ion-icon>
+          </ion-button>
+
+          <ion-button color="secondary" *ngIf="showName && noMenuList && auth.userInfo?.displayName" (click)="doNothing($event)" size="large">
+            <div style="text-transform: none;font-size:14px;">{{auth.userInfo?.displayName}}</div>
           </ion-button>
 
           <ion-button color="primary" (click)="buttonClick($event)" size="large" *ngIf="button">

@@ -5,7 +5,7 @@ import { NavService } from 'src/app/services/nav.service';
 import * as Highcharts from 'highcharts';
 import highchartsMore from 'highcharts/highcharts-more';
 import solidGauge from 'highcharts/modules/solid-gauge';
-import { Subscription } from 'rxjs';
+import { Subscription,fromEvent } from 'rxjs';
 import { ConversationService } from 'src/app/services/conversation.service';
 import { IconsService } from 'src/app/services/icons.service';
 import { ModalService } from 'src/app/services/modal.service';
@@ -25,6 +25,7 @@ import { tutorialService } from 'src/app/services/tutorial.service';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import * as moment from 'moment';
 // import { HeyGenApiService } from 'src/app/services/heygen.service';
+import { debounceTime } from 'rxjs/operators';
 
 highchartsMore(Highcharts);
 solidGauge(Highcharts);
@@ -35,11 +36,11 @@ solidGauge(Highcharts);
   styleUrls: ['./conversation.page.scss'],
 })
 export class ConversationPage implements OnInit {
-  @HostListener('window:resize', ['$event'])
-  onResize(){
-    this.media.setScreenSize()
-    this.rf.detectChanges()
-  }
+  // @HostListener('window:resize', ['$event'])
+  // onResize(){
+  //   this.media.setScreenSize()
+  //   this.rf.detectChanges()
+  // }
   @ViewChild('draggableElement', { static: false }) draggableElement!: ElementRef;
   [x: string]: any;
   position:any = { x: this.media.screenWidth - 210, y: 10 }; // Startpositie van de div
@@ -144,6 +145,8 @@ export class ConversationPage implements OnInit {
   question:string = ''
   started:boolean = false;
   interaction:string='chat'
+  private resizeSubscription: Subscription | undefined;
+
   cipherTerm:any = {
     "0": "Onbekend",
     "1": "Slecht",
@@ -315,10 +318,17 @@ export class ConversationPage implements OnInit {
 
   ngOnDestroy(){
     this.conversation.heyGen.disconnect('avatar_video')
+    this.resizeSubscription?.unsubscribe();
   }
+
 
   ngAfterViewInit() {
     this.rating_comment = ''
+    this.resizeSubscription = fromEvent(window, 'resize')
+    .pipe(debounceTime(200))
+    .subscribe(() => {
+      this.rf.detectChanges();
+    });
 
   }
 
@@ -650,7 +660,6 @@ export class ConversationPage implements OnInit {
         return
       }
     }
-
 
     this.modalService.showVerification(
       this.translate.instant('buttons.close'),

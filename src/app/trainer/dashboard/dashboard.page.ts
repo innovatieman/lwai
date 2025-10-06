@@ -101,18 +101,34 @@ export class DashboardPage implements OnInit {
       }
       setTimeout(() => {
 
-        let htmlBtn:any = document.querySelector('.ql-HTML');
-        htmlBtn.innerHTML = 'HTML'
-        htmlBtn.style.width = '50px'
-        htmlBtn.addEventListener('click', (event:any)=> {
-          if(event.target?.parentElement?.parentElement?.parentElement?.id){
-            let field = event.target.parentElement.parentElement.parentElement.id.replace('quill_','')
-            if(this.trainerService.trainerInfo[field]!=undefined){
-              this.trainerService.trainerInfo[field] = this.cleanHtml(this.trainerService.trainerInfo[field])
+        let htmlButtons = document.getElementsByClassName("ql-HTML")
+        for(let i=0;i<htmlButtons.length;i++){
+          htmlButtons[i].innerHTML = 'HTML'
+          htmlButtons[i].setAttribute('innerHTML', 'HTML')
+          htmlButtons[i].setAttribute('style','width:50px;')
+          htmlButtons[i].addEventListener('click', (event:any)=> {
+            if(event.target?.parentElement?.parentElement?.parentElement?.id){
+              let field = event.target.parentElement.parentElement.parentElement.id.replace('quill_','')
+              if(this.trainerService.trainerInfo[field]!=undefined){
+                this.trainerService.trainerInfo[field] = this.cleanHtml(this.trainerService.trainerInfo[field])
+              }
             }
-          }
-          this.showHtml = true 
-        });
+            this.showHtml = true
+          });
+        }
+
+        // let htmlBtn:any = document.querySelector('.ql-HTML');
+        // htmlBtn.innerHTML = 'HTML'
+        // htmlBtn.style.width = '50px'
+        // htmlBtn.addEventListener('click', (event:any)=> {
+        //   if(event.target?.parentElement?.parentElement?.parentElement?.id){
+        //     let field = event.target.parentElement.parentElement.parentElement.id.replace('quill_','')
+        //     if(this.trainerService.trainerInfo[field]!=undefined){
+        //       this.trainerService.trainerInfo[field] = this.cleanHtml(this.trainerService.trainerInfo[field])
+        //     }
+        //   }
+        //   this.showHtml = true 
+        // });
       },300)
     },100)
   }
@@ -149,6 +165,7 @@ export class DashboardPage implements OnInit {
           }
           this.nav.go('trainer/dashboard/')
         }
+        // console.log('showPart',this.showPart)
         this.trainerService.trainerInfoLoaded$.pipe(filter(loaded => loaded === true))
         .subscribe(() => {
             if(!this.trainerService.trainerInfo.bank_account){
@@ -1239,7 +1256,7 @@ export class DashboardPage implements OnInit {
     }
     if(this.originalBankAccount && this.trainerService.trainerInfo.bank_account){
       return this.originalBankAccount.iban.toUpperCase() != this.trainerService.trainerInfo.bank_account.iban.toUpperCase() ||
-             this.originalBankAccount.bic != this.trainerService.trainerInfo.bank_account.bic ||
+             this.originalBankAccount.bic.toUpperCase() != this.trainerService.trainerInfo.bank_account.bic.toUpperCase() ||
              this.originalBankAccount.name != this.trainerService.trainerInfo.bank_account.name;
     }
     return false;

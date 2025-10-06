@@ -1,0 +1,335 @@
+<app-header page="account" [noMenuList]="true" [showName]="true" [back]="!standAloneMode" [back_url]="'marketplace/elearnings'"></app-header>
+<main [full]="false">
+  <div fullwidth fullheight flex center-ver center-hor *ngIf="!firstLoaded">
+    <div flex center-ver center-hor >
+      <ion-spinner name="lines-sharp" style="height:100px;width:100px"></ion-spinner>
+    </div>
+  </div>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" style="padding:30px;">
+        <ion-card [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
+          <ion-row>
+            
+
+            <ion-col [size]="media.smallDevice ? 12 : 5"  style="padding:30px;">
+              
+                <div basicPadding>
+                  
+                  <ion-card-header *ngIf="media.smallDevice" noPadding marginBottom>
+                    <ion-card-title center font-28 weight700>
+                      <span>{{sales.elearningItem(item_id).title}}</span>
+                    </ion-card-title>
+                  </ion-card-header>
+
+                  <p center weight600 *ngIf="media.smallDevice"font-16 style="margin:-10px 0 20px 0">{{sales.elearningItem(item_id).user_info}}</p>
+
+                  <div *ngIf="sales.elearningItem(item_id).trainer?.logo && !media.smallDevice" [ngStyle]="{'height':!media.smallDevice?'200px':'200px'}" marginBottom>
+                    <img [src]="sales.elearningItem(item_id).trainer?.logo" alt="" style="width:100%;height:100%;object-fit:contain;">
+                  </div>
+                  
+                  <div *ngIf="!media.smallDevice" center marginBottom>
+                    <ion-button class="saveButton" fill="outline" (click)="showExample()">{{'checkout.watch_example' | translate}}</ion-button>
+                  </div>
+
+                  <div *ngIf="sales.elearningItem(item_id).photo && media.smallDevice" [ngStyle]="{'height':!media.smallDevice?'200px':'200px'}" marginBottom>
+                    <img [src]="sales.elearningItem(item_id).photo" borderRadius24 alt="" style="width:100%;height:100%;object-fit:cover;">
+                  </div>
+                  
+
+                  <div [innerHTML]="helper.convertSpaces(sales.elearningItem(item_id).training_content) | sanitizeHtml" font-16 marginBottom  class="textContainer"></div>
+                  
+                  <div *ngIf="media.smallDevice" center marginBottom>
+                    <ion-button class="saveButton" fill="outline" (click)="showExample()">{{'checkout.watch_example' | translate}}</ion-button>
+                  </div>
+
+                  <div>
+                    <img style="margin-top:40px;max-height:30px;" src="assets/icon/logo_full_black_sm.png" alt="AliciaLabs" title="AliciaLabs">
+                  </div>
+                  <div font-16>{{'checkout.disclaimer_alicialabs_platform' | translate}}</div>
+                </div>
+                <!-- <div basicPadding *ngIf="showCreditsOption" font-16 style="border-top:solid 1px #ddd;margin-top:10px;">
+          
+                  <p>{{'marketplace.add_unlimited_credits' | translate}}</p>
+                  <ion-checkbox label-placement="end" mode="md" font-16 [(ngModel)]="unlimitedCreditsOption">
+                    {{'marketplace.unlimited_credits' | translate}}
+                  </ion-checkbox>
+                </div> -->
+                <div basicPadding flex center-ver>
+                  <!-- <ion-button *ngIf="!media.smallDevice" color=secondary fill="clear" (click)="item_id = '';nav.go('marketplace/elearnings')">
+                      <fa-icon [icon]="icon.get('faArrowLeft')"></fa-icon>
+                      <span marginLeft>{{'buttons.back' | translate}}</span>
+                  </ion-button> -->
+                  <div class="spacer"></div>
+          
+                  <!-- <div *ngIf="auth?.organisations?.length">
+          
+                    <ion-button class="saveButton" fill="outline" *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id))" (click)="sales.buyItemOrganisation(sales.elearningItem(item_id))">
+                      {{'marketplace.buy_for_org' | translate}}
+                    </ion-button>
+                    <ion-button class="saveButton" color="warning" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))" (click)="sales.activateWithCodeOrganisation(sales.elearningItem(item_id))">{{'marketplace.activate_for_org' | translate}}</ion-button>
+        
+                  </div> -->
+        
+        
+                  <!-- {{'buttons.buy_for' | translate}} € {{(sales.elearningItem(item_id).price_elearning + ((showCreditsOption && unlimitedCreditsOption) ? 25 : 0) + (!showCreditsOption && !auth.credits_unlimited_type ? 25 : 0)) | number : '1.0-0'}} -->
+                  <!-- <ion-button class="saveButton" *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id))" (click)="sales.buyItem(sales.elearningItem(item_id))">
+                    {{'buttons.buy_for' | translate}} € {{sales.elearningItem(item_id).price_elearning | number : '1.0-0'}}
+                    <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type">({{'marketplace.with_credits' | translate}})</span>
+                  </ion-button>
+                  <ion-button class="saveButton" color="success" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))" (click)="sales.activateWithCode(sales.elearningItem(item_id))">{{'buttons.activate' | translate}}</ion-button> -->
+                  <!-- <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type && (!showCreditsOption || unlimitedCreditsOption)">({{'marketplace.with_credits' | translate}})</span> -->
+                </div>
+                
+            </ion-col>
+
+            <ion-col [size]="media.smallDevice ? 12 : 7" style="padding:30px;" [ngStyle]="{'padding-top': media.smallDevice ? '0' : '30px','margin-top': !media.smallDevice ? '0' : '-30px','border-left': !media.smallDevice ? 'solid 1px #ddd' : 'none'}">
+              <ion-card-header *ngIf="!media.smallDevice" noPadding marginBottom>
+                <ion-card-title center font-28 weight700>
+                  <span>{{sales.elearningItem(item_id).title}}</span>
+                </ion-card-title>
+              </ion-card-header>
+              
+              <p center weight600 *ngIf="!media.smallDevice"font-16 style="margin:-10px 0 20px 0">{{sales.elearningItem(item_id).user_info}}</p>
+              
+              <div *ngIf="sales.elearningItem(item_id).photo && !media.smallDevice" [ngStyle]="{'height':!media.smallDevice?'200px':'200px'}" marginBottom>
+                <img [src]="sales.elearningItem(item_id).photo" borderRadius24 alt="" style="width:100%;height:100%;object-fit:cover;">
+              </div>
+
+              <div *ngIf="sales.elearningItem(item_id).trainer?.logo && media.smallDevice" [ngStyle]="{'height':!media.smallDevice?'200px':'200px'}" marginBottom>
+                <img [src]="sales.elearningItem(item_id).trainer?.logo" alt="" style="width:100%;height:100%;object-fit:contain;">
+              </div>
+
+              <form [formGroup]="userForm">
+                <h3 weight700 font-22>{{'checkout.your_data' | translate}}</h3>
+                <div>
+                    <ion-row>
+                      <ion-col size="12">
+                        <ion-item detail="false" lines="none" class="fieldItem" [disabled]="auth.userInfo?.displayName">
+                          <ion-input type="text" formControlName="name" [ngStyle]="{'opacity': 1}" [placeholder]="translate.instant('checkout.placeholder_name')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12">
+                        <ion-item detail="false" lines="none" class="fieldItem" [disabled]="auth.userInfo?.displayName">
+                          <ion-input type="email" inputmode="email" [ngStyle]="{'opacity': 1}" formControlName="email" [placeholder]="translate.instant('checkout.placeholder_email')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" *ngIf="!auth.userInfo?.email">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="password" *ngIf="!showPassword" formControlName="password" [placeholder]="translate.instant('checkout.placeholder_password')">
+                            <ion-icon slot="end" name="eye" *ngIf="!showPassword" (click)="showPassword = true"></ion-icon>
+                          </ion-input>
+                          <ion-input type="text" *ngIf="showPassword" formControlName="password">
+                            <ion-icon slot="end" name="eye-off" *ngIf="showPassword" (click)="showPassword = false"></ion-icon>
+                          </ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12">
+                          <ion-checkbox style="color:var(--color-global)" label-placement="end" mode="md" font-16 formControlName="isCompany" (ionChange)="resetFormValidators()">
+                            {{'form.is_company' | translate}}
+                          </ion-checkbox>
+                      </ion-col>
+                      <ion-col size="12" *ngIf="userForm.controls['isCompany'].value">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="text" formControlName="company" [placeholder]="translate.instant('checkout.placeholder_company')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" *ngIf="userForm.controls['isCompany'].value">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="text" formControlName="postal_code" [placeholder]="translate.instant('checkout.placeholder_postal_code')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6" *ngIf="userForm.controls['isCompany'].value">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="text" formControlName="city" [placeholder]="translate.instant('checkout.placeholder_city')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" *ngIf="userForm.controls['isCompany'].value">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="text" formControlName="address" [placeholder]="translate.instant('checkout.placeholder_address')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="12" *ngIf="userForm.controls['isCompany'].value">
+                        <!-- <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="text" formControlName="country" [placeholder]="translate.instant('checkout.placeholder_country')"></ion-input>
+                        </ion-item> -->
+
+                        <ion-item detail="false" lines="none" class="fieldItem" style="--padding-start:0;" (click)="showCountryPicker()">
+                          <!-- <ion-label position="stacked" style="margin-left:15px">{{'checkout.placeholder_country' | translate}}</ion-label> -->
+                          <div class="select">
+                            <ion-thumbnail slot="start" *ngIf="userForm.controls['country'].value" style="--size:30px;width:35px;height:25px;">
+                              <img [src]="countries.country(userForm.controls['country'].value).flag">
+                            </ion-thumbnail>
+                            <div class="text" *ngIf="userForm.controls['country'].value">{{countries.country(userForm.controls['country'].value).country}}</div>
+                            <div style="opacity:var(--ion-placeholder-opacity, 0.6);" *ngIf="!userForm.controls['country'].value">{{translate.instant('checkout.placeholder_country')}}</div>
+                            <div class="spacer"></div>
+                            <ion-icon name="chevron-down" slot="end"></ion-icon>
+                          </div>
+                        </ion-item>
+
+
+                      </ion-col>
+                      <ion-col size="12" *ngIf="userForm.controls['isCompany'].value">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-input type="text" formControlName="reference" [placeholder]="translate.instant('checkout.placeholder_reference')"></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <!-- <ion-col size="12">
+                        <ion-item detail="false" lines="none" class="fieldItem">
+                          <ion-checkbox label-placement="end" mode="md" font-16 formControlName="terms_accepted">
+                            <div class="checkbox-label">
+                              {{'checkout.terms1' | translate}} 
+                              <a (click)="nav.goto(translate.instant('terms.terms'),true)"> {{'checkout.terms2' | translate}} </a> 
+                              {{'checkout.terms3' | translate}} 
+                              <a (click)="nav.goto(translate.instant('terms.privacy'),true)"> {{'checkout.terms4' | translate}} </a>.
+                            </div>
+                          </ion-checkbox>
+                        </ion-item>
+                      </ion-col> -->
+                      <!-- <div class="showOfferCodeText" *ngIf="!showOfferCode" (click)="showOfferCode=!showOfferCode">{{'page_register.show_offerCode' | translate}}</div>
+      
+                      <ion-item detail="false" lines="none" class="fieldItem" *ngIf="showOfferCode">
+                        <ion-label position="stacked">{{'page_register.offerCode' | translate}}</ion-label>
+                        <ion-input type="text" [(ngModel)]="offerCode" (ionChange)="offerToLocal()" [ngModelOptions]="{standalone: true}">
+                          <ion-icon slot="end" name="close" (click)="showOfferCode = false"></ion-icon>
+                        </ion-input>
+                      </ion-item> -->
+      
+                      <!-- <ion-button type="submit" class="saveButton" >{{'page_register.register' | translate}}</ion-button> -->
+                    </ion-row>
+                </div>
+
+
+                <div>
+                  <h3 weight700 font-22 *ngIf="(sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id)?.length">{{'checkout.add_to_your_order' | translate}}</h3>
+                  <ion-card basicPadding style="margin:10px 0px;" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | maxLength : 3">
+                  <!-- <ion-card basicPadding style="margin:10px 0px;" noShadow borderMedium  *ngFor="let item of sales.elearnings | maxLength : 3" pointer (click)="addToExtraOrderList(item)"> -->
+                    <ion-row>
+                      <ion-col [size]="media.smallDevice ? 12 : 4">
+                        <div *ngIf="item.photo" fullwidth [ngStyle]="{'height':!media.smallDevice?'100px':'100px'}" marginBottom>
+                          <img [src]="item.photo" borderRadius24 alt="" style="width:100%;height:100%;object-fit:cover;">
+                        </div>
+                      </ion-col>
+                      <ion-col [size]="media.smallDevice ? 12 : 7" relative>
+                        <div font-16 weight600>{{item.title}}</div>
+                        <div font-14 weight400 marginBottom [innerHTML]="helper.convertSpaces(item.user_info) | sanitizeHtml" class="textContainer"></div>
+                        <div flex center-ver>
+                          <div font-16 weight600>€ {{item.price_elearning | number : '1.2-2'}}</div>
+                          <!-- <div class="spacer"></div> -->
+                          <ion-button marginLeft fill="solid" color="primary" *ngIf="!inExtraOrderList(item.id)">{{'buttons.add' | translate}}</ion-button>
+                          <ion-button marginLeft fill="solid" color="success" *ngIf="inExtraOrderList(item.id)">{{'buttons.added' | translate}}</ion-button>
+                        </div>
+                      </ion-col>
+                      <ion-col *ngIf="!media.smallDevice" [size]="1" relative>
+                        <div class="addOrderCheckBox">
+                          <ion-checkbox [checked]="inExtraOrderList(item.id)" ></ion-checkbox>
+                        </div>
+                      </ion-col>
+                    </ion-row>
+                  </ion-card>
+                </div>
+
+
+                <h3 weight700 font-22>{{'checkout.order_summary' | translate}}</h3>
+                <ion-card basicPadding noMargin noShadow borderLight>
+                  <ion-item *ngIf="sales.elearningItem(item_id)">
+                    <ion-label>
+                      <div font-16 weight600>{{sales.elearningItem(item_id).title}}</div>
+                      <div font-14 weight500 *ngIf="sales.elearningItem(item_id)?.trainer?.name">{{sales.elearningItem(item_id).trainer.name}}</div>
+                    </ion-label>
+                    <div text-end>
+                      <div font-16 weight600 *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{0 | number : '1.2-2'}}</div>
+                      <div font-16 weight400 style="text-decoration: line-through;" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning | number : '1.2-2'}}</div>
+                    </div>
+                  </ion-item>
+                  <ion-item *ngIf="sales.elearningItem(item_id)">
+                    <ion-label>
+                      <div font-16 weight600>{{'checkout.unlimited_credits_year' | translate}}</div>
+                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type">{{'checkout.unlimited_credits_description' | translate}}</div>
+                      <div font-14 weight500 *ngIf="auth.credits_unlimited_type">{{'checkout.unlimited_credits_already' | translate}}</div>
+                    </ion-label>
+                    <div text-end>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type">€ {{25 | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="auth.credits_unlimited_type">€ {{0 | number : '1.2-2'}}</div>
+                    </div>
+                  </ion-item>
+
+                  <ion-item *ngFor="let extraItemId of extraOrderList" style="padding:10px 0">
+                    <ion-label>
+                      <div font-16 weight600>{{(sales.elearningItem(extraItemId.id))?.title}}</div>
+                      <div font-14 weight500 *ngIf="(sales.elearningItem(extraItemId.id))?.trainer?.name">{{(sales.elearningItem(extraItemId.id))?.trainer?.name}}</div>
+                    </ion-label>
+                    <div text-end>
+                      <div font-16 weight600>€ {{(sales.elearningItem(extraItemId.id))?.price_elearning | number : '1.2-2'}}</div>
+                    </div>
+                  </ion-item>
+
+
+                  <ion-item *ngIf="sales.elearningItem(item_id)" style="padding:20px 0" lines="none">
+                    <ion-label>
+                      <div font-16 weight600>{{'checkout.total' | translate}}</div>
+                    </ion-label>
+                    <div text-end style="text-align:right;">
+                      <div font-24 weight600 text-primary>€ {{calculatePrice().total| number : '1.2-2'}}</div>
+                      <div font-12 weight400 text-medium>{{'checkout.price_excl_tax' | translate}} € {{calculatePrice().excl_tax | number : '1.2-2'}}</div>
+                    </div>
+                  </ion-item>
+
+                  
+
+
+
+
+                </ion-card>
+                <ion-item detail="false" lines="none" class="fieldItem">
+                  <ion-checkbox label-placement="end" mode="md" font-16 formControlName="terms_accepted">
+                    <div class="checkbox-label">
+                      {{'checkout.terms1' | translate}} 
+                      <a (click)="nav.goto(translate.instant('terms.terms'),true)"> {{'checkout.terms2' | translate}} </a> 
+                      {{'checkout.terms3' | translate}} 
+                      <a (click)="nav.goto(translate.instant('terms.privacy'),true)"> {{'checkout.terms4' | translate}} </a>.
+                    </div>
+                  </ion-checkbox>
+                </ion-item>
+              </form>
+              <div>
+                <ion-button expand="block" size="large" *ngIf="(!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total) && !userForm.controls['isCompany'].value" (click)="buyItems()" [disabled]="!userForm.valid || processing">
+                  {{'checkout.to_checkout' | translate}} 
+                </ion-button>
+                <ion-row noPadding>
+                  <ion-col [size]="media.smallDevice ? 12 : 6" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value">
+                    <ion-button expand="block" size="large" color="primary" (click)="buyItems()" [disabled]="!userForm.valid || processing">
+                      {{'checkout.to_checkout_direct' | translate}} 
+                    </ion-button>
+                  </ion-col>
+
+                  <ion-col [size]="media.smallDevice ? 12 : 6" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value">
+                    <ion-button expand="block" size="large" color="warning" (click)="buyItems(true)" [disabled]="!userForm.valid || processing">
+                      {{'checkout.to_checkout_invoice' | translate}} 
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+                <ion-button expand="block" color="success" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id)) && !calculatePrice().total" (click)="sales.activateWithCode(sales.elearningItem(item_id))" [disabled]="!userForm.valid || processing">{{'buttons.activate' | translate}}</ion-button>
+                <div center class="paymentMethodsIcons" *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total" style="margin-top:10px;">
+                  <img src="assets/img/ideal.svg" alt="iDEAL" title="iDEAL">
+                  <img src="assets/img/paypal.svg" alt="PayPal" title="PayPal">
+                  <img src="assets/img/visa.svg" alt="Visa" title="Visa">
+                  <img src="assets/img/mastercard.svg" alt="Mastercard" title="Mastercard">
+                  <img src="assets/img/amex.svg" alt="American Express" title="American Express">
+                  <img src="assets/img/diners.svg" alt="Diners Club" title="Diners Club">
+                  <img src="assets/img/bancontact.svg" alt="Bancontact" title="Bancontact">
+                  <img src="assets/img/klarna.svg" alt="Klarna" title="Klarna">
+                  <img src="assets/img/eps.svg" alt="EPS" title="EPS">
+                </div>
+              </div>
+            </ion-col>
+
+          </ion-row>
+        </ion-card>
+    
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+</main>

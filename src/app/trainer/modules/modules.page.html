@@ -29,11 +29,16 @@
                       <ion-card-title>{{'standards.trainings' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
-                <ion-col size="2" noPadding *ngIf="!trainerService.moduleItem.id">
+                <ion-col size="2" noPadding>
+                  <ion-card id="menu_trainings" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/customers')">
+                      <ion-card-title>{{'standards.customers' | translate}}</ion-card-title>
+                  </ion-card>
+                </ion-col>
+                <!-- <ion-col size="2" noPadding *ngIf="!trainerService.moduleItem.id">
                   <div flex fullwidth center-ver style="padding:10px">
                       <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" placeholder="Zoeken"  fullwidth noMargin noPadding></ion-searchbar>
                   </div>
-                </ion-col>
+                </ion-col> -->
               </ion-row>
           </div>
       </div>
@@ -55,6 +60,10 @@
               <div fullwidth style="height:100px">
                   <img [src]="trainerService.trainerInfo.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
               </div> 
+          </div>
+
+          <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.moduleItem?.id">
+            <ion-searchbar [(ngModel)]="searchTerm" (ionClear)="onSearchChanged()" placeholder="Zoeken" (ionInput)="onSearchChanged()"></ion-searchbar>
           </div>
 
           <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
@@ -80,6 +89,7 @@
             <div *ngFor="let tag of allTags()">
                 <ion-item detail="false" pointer [ngClass]="{'selectedModule':tagSelected(tag)}" lines="none" font-18 weight500 noMargin (click)="toggleTag(tag)">
                     <ion-label>{{ tag | capitalize }}</ion-label>
+                    <fa-icon slot="end" marginRight [ngStyle]="{'color': tagSelected(tag) ? 'var(--ion-color-light)' : 'inherit'}" [icon]="icon.get('faPlus')" (click)="createTagMultiple($event, tag)"></fa-icon>
                     <fa-icon slot="end" text-light [icon]="icon.get('faTimes')" *ngIf="tagSelected(tag)"></fa-icon>
                 </ion-item>
             </div>

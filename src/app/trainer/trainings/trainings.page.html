@@ -29,10 +29,10 @@
                       <ion-card-title>{{'standards.trainings' | translate}}</ion-card-title>
                   </ion-card>
                 </ion-col>
-                <ion-col size="2" noPadding *ngIf="!trainerService.trainingItem?.id">
-                  <div flex fullwidth center-ver style="padding:10px">
-                      <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchTerm" placeholder="Zoeken"  fullwidth noMargin noPadding></ion-searchbar>
-                  </div>
+                <ion-col size="2" noPadding>
+                  <ion-card id="menu_trainings" pointer center class="topButton notActive" (click)="trainerService.emptyBreadCrumbs();nav.go('trainer/customers')">
+                      <ion-card-title>{{'standards.customers' | translate}}</ion-card-title>
+                  </ion-card>
                 </ion-col>
               </ion-row>
           </div>
@@ -66,6 +66,10 @@
             <div fullwidth style="height:100px" (click)="fixIt()">
                 <img [src]="trainerService.trainerInfo.logo" style="width:100%;height:100%;border-radius:16px;object-fit:contain;">
             </div> 
+        </div>
+
+        <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="!trainerService.trainingItem?.id">
+            <ion-searchbar [(ngModel)]="searchTerm" (ionClear)="onSearchChanged()" placeholder="Zoeken" (ionInput)="onSearchChanged()"></ion-searchbar>
         </div>
 
         <div style="background:white;padding:10px 0px;border-radius:16px;margin-top:15px;text-align:center;" marginBottom *ngIf="!trainerService.trainerInfo.logo">
@@ -430,6 +434,26 @@
                           </div>
                       </ion-item>
 
+                      <ion-item detail="false" marginBottom listCard lines="none" [disabled]="trainerService.trainingItem.status=='closed'">
+                        <fa-icon style="position: absolute; right: 16px; top: 16px;" pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('welcome_message','trainings.training_welcome_message_title',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+
+                        <ion-label marginLeft font-20 position="stacked">{{'trainings.training_welcome_message_title' | translate}}</ion-label>
+                        <quill-editor *ngIf="!showHtml" [(ngModel)]="trainerService.trainingItem.welcome_message" [modules]="configModules" (onEditorCreated)="showEditor()" (onBlur)="changeItem(trainerService.breadCrumbs[0].item.items,trainerService.trainingItem.id,'welcome_message',trainerService.trainingItem.welcome_message,true)"></quill-editor>
+
+                        <ion-toolbar *ngIf="showHtml" style="padding-left:0px;--background: none">
+                          <ion-buttons slot="start">
+                            <ion-button (click)="showEditor()">
+                              <fa-icon [icon]="icon.get('faArrowLeft')" style="margin-right:15px;" slot="start">keyboard_arrow_left</fa-icon>
+                              {{'buttons.back' | translate}}
+                            </ion-button>
+                          </ion-buttons>
+                        </ion-toolbar>
+
+                        <ion-textarea *ngIf="showHtml" rows="4" labelPlacement="stacked" [autoGrow]="true" [(ngModel)]="trainerService.trainingItem.welcome_message" (ionChange)="changeItem(trainerService.breadCrumbs[0].item.items,trainerService.trainingItem.id,'welcome_message',trainerService.trainingItem.welcome_message,true)">
+                          <!-- <div slot="label">Content</div> -->
+                        </ion-textarea>
+                      </ion-item>
+
                       <ion-row noPadding *ngIf="!(trainerService.trainingItem.status=='published' && trainerService.trainingItem?.publishType=='elearning') || trainerService.breadCrumbs.length>1">
                         <ion-col noPadding [size]="media.smallDevice ? 12 : 6" [ngStyle]="{'padding-right' : !media.smallDevice ? '10px' : '0'}">
                           <ion-item pointer detail="false" style="height:60px" lines="none" listCard [disabled]="trainerService.trainingItem.status=='closed'" (click)="selectDate($event,'available_date')">
@@ -672,27 +696,27 @@
                     <div flex center-ver weight500>
                       <span >{{'marketplace.revenue_total' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.total | number : '1.2-2'}}</span>
+                      <span>€ {{trainerService.revenue_market[trainerService.trainingItem.id].all.total | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight500>
                       <span >{{'marketplace.revenue_tax' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.tax | number : '1.2-2'}}</span>
+                      <span>€ {{trainerService.revenue_market[trainerService.trainingItem.id].all.tax | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
                       <span >{{'marketplace.revenue_ex_tax' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.without_tax | number : '1.2-2'}}</span>
+                      <span>€ {{trainerService.revenue_market[trainerService.trainingItem.id].all.without_tax | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight500>
                       <span >{{'marketplace.revenue_margin' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{(trainerService.revenue(trainerService.trainingItem.id).all.without_tax - trainerService.revenue(trainerService.trainingItem.id).all.profit) | number : '1.2-2'}}</span>
+                      <span>€ {{(trainerService.revenue_market[trainerService.trainingItem.id].all.without_tax - trainerService.revenue_market[trainerService.trainingItem.id].all.profit) | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
                       <span >{{'marketplace.revenue_profit' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).all.profit | number : '1.2-2'}}</span>
+                      <span>€ {{trainerService.revenue_market[trainerService.trainingItem.id].all.profit | number : '1.2-2'}}</span>
                     </div> 
 
 
@@ -701,17 +725,17 @@
                     <div flex center-ver weight600>
                       <span >{{'marketplace.revenue_unpaid' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).unpaid.profit | number : '1.2-2'}}</span>
+                      <span>€ {{trainerService.revenue_market[trainerService.trainingItem.id].unpaid.profit | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight500>
                       <span >{{'marketplace.revenue_paid' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span>€ {{trainerService.revenue(trainerService.trainingItem.id).paid.profit | number : '1.2-2'}}</span>
+                      <span>€ {{trainerService.revenue_market[trainerService.trainingItem.id].paid.profit | number : '1.2-2'}}</span>
                     </div> 
 
                   </ion-card>
                 </div> 
-                <div *ngIf="trainerService.revenue(trainerService.trainingItem.id).unpaid.profit" flex center-ver>
+                <div *ngIf="trainerService.revenue_market[trainerService.trainingItem.id].unpaid.profit" flex center-ver>
                   <div class="spacer"></div>
                   <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
                     {{'marketplace.request_payout' | translate}}

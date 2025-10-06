@@ -227,13 +227,22 @@ export class InfoItemsPage implements OnInit {
           elements[i].setAttribute('style','border:0;')
         }
         setTimeout(() => {
-  
-          let htmlBtn:any = document.querySelector('.ql-HTML');
-          htmlBtn.innerHTML = 'HTML'
-          htmlBtn.style.width = '50px'
-          htmlBtn.addEventListener('click', (event:any)=> {
-            this.showHtml = true 
-          });
+          let htmlButtons = document.getElementsByClassName("ql-HTML")
+          for(let i=0;i<htmlButtons.length;i++){
+            htmlButtons[i].innerHTML = 'HTML'
+            htmlButtons[i].setAttribute('innerHTML', 'HTML')
+            htmlButtons[i].setAttribute('style','width:50px;')
+            htmlButtons[i].addEventListener('click', (event:any)=> {
+              this.showHtml = true
+            });
+          }
+
+          // let htmlBtn:any = document.querySelector('.ql-HTML');
+          // htmlBtn.innerHTML = 'HTML'
+          // htmlBtn.style.width = '50px'
+          // htmlBtn.addEventListener('click', (event:any)=> {
+          //   this.showHtml = true 
+          // });
         },300)
       },100)
     }
@@ -566,17 +575,19 @@ export class InfoItemsPage implements OnInit {
       }
       else{
         if(field){
-
+          console.log(typeof infoItem[field])
           infoItem[field] = infoItem[field] || ''
-          infoItem[field] = infoItem[field]
-          .split('</ol><p><br></p><p>').join('</ol>')
-          .split('</p><p><br></p><ol>').join('<ol>')
-          .split('</ul><p><br></p><p>').join('</ul>')
-          .split('</p><p><br></p><ul>').join('<ul>')
-          .split('<p><br></p>').join('<br>')
-          .split('</p><br><p>').join('<br><br>')
-          .split('</p><p>').join('<br>')
-          .split('&nbsp;').join(' ')
+          if(typeof infoItem[field] == 'string'){
+            infoItem[field] = infoItem[field]
+            .split('</ol><p><br></p><p>').join('</ol>')
+            .split('</p><p><br></p><ol>').join('<ol>')
+            .split('</ul><p><br></p><p>').join('</ul>')
+            .split('</p><p><br></p><ul>').join('<ul>')
+            .split('<p><br></p>').join('<br>')
+            .split('</p><br><p>').join('<br><br>')
+            .split('</p><p>').join('<br>')
+            .split('&nbsp;').join(' ')
+          }
           // console.log('update',field,infoItem)
           this.firestore.setSub('trainers',this.nav.activeOrganisationId,'infoItems',infoItem.id,infoItem[field],field,()=>{
             setTimeout(() => {

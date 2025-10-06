@@ -36,7 +36,11 @@
         "employees":"Employees",
         "update_available":"Update available",
         "login":"Log in",
-        "register":"Register"
+        "register":"Register",
+        "customers":"Customers",
+        "customer":"Customer",
+        "users":"Users",
+        "user":"User"
       },
       "menu": {
         "login": "Log in",
@@ -104,6 +108,7 @@
         "skip": "Skip",
         "no_thanks": "No, thanks",
         "change": "Change",
+        "changes_save":"Save changes",
         "close": "Close",
         "export_pdf": "Export to PDF",
         "confirm": "Confirm",
@@ -150,7 +155,8 @@
         "activate":"Activate",
         "send_message":"Send message",
         "on":"On",
-        "off":"Off"
+        "off":"Off",
+        "added":"Added"
       },
       "messages": {
       "saved": "Data saved",
@@ -265,6 +271,7 @@
       "forgot_password_message": "Enter your email address to receive instructions to reset your password.",
       "remember_password": "I remember now",
       "reset_password": "Reset password",
+      "set_password":"Set password",
       "no_account": "Don't have an account yet?",
       "register": "Register now",
       "login": "Log in",
@@ -280,7 +287,13 @@
       "title_verify":"Verify your<br>email address",
       "subtitle_verify":"You will receive an email within 1 minute. Enter the code you received in your email.",
       "title_new_password":"New password",
-      "subtitle_new_password":"Enter your new password."
+      "subtitle_new_password":"Enter your new password.",
+      "busy_logging":"Busy logging in...",
+      "login_failed":"Login failed. Please check your email and password and try again.",
+      "create_password_title":"Create a password",
+      "create_password_subtitle":"Enter your email address and receive instructions to set your password.",
+      "sending_set_password":"Sending instructions...",
+      "redirect_first_login":"Log in first to continue. If you don't have an account yet, you can create one for free."
     },
     "page_register": {
       "register_login":"Register / Log in",
@@ -305,9 +318,8 @@
       "offerCode":"Enter your code here",
       "busy_registering":"Busy registering...",
       "busy_loading":"Loading data for the first time...",
-      "registration_failed":"Registration failed.",
-      "busy_logging":"Busy logging in...",
-      "login_failed":"Login failed. Please check your email and password and try again."
+      "registration_failed":"Registration failed."
+      
     },
     "page_verify": {
       "verifying": "Verifying account",
@@ -446,7 +458,7 @@
       "register_as_trainer_expertise":"In what area do you want to provide training?",
       "register_as_trainer_success":"Your registration has been successfully received. You can start creating your own cases and training immediately.",
       "register_as_trainer_failure":"Something went wrong while registering as a trainer. Please try again later.",
-      "register_as_trainer_rdpa_agree": "I agree again with the <a href='https://www.iubenda.com/terms-and-conditions/75452715' target='_blank'>Terms and Conditions</a> and the <a href='https://www.iubenda.com/privacy-policy/75452715' target='_blank'>Privacy Policy</a> of AliciaLabs.<br><br>I agree with the <a href='/assets/documents/rdpa-alicialabs_en.pdf' target='_blank'>Data Processing Agreement</a> of AliciaLabs.<br><br>",
+      "register_as_trainer_rdpa_agree": "I agree again with the <a href='https://www.iubenda.com/terms-and-conditions/75452715' target='_blank'>Terms and Conditions</a> and the <a href='https://www.iubenda.com/privacy-policy/75452715' target='_blank'>Privacy Policy</a> of AliciaLabs.<br><br>I agree with the <a href='/assets/documents/rdpa-alicialabs_en.pdf' target='_blank'>Data Processing Agreement</a> of AliciaLabs.<br><br>I agree with the <a href='/assets/documents/rdpa-selfbilling_alicialabs_en.pdf' target='_blank'>Self-billing</a> of AliciaLabs for any payments.<br><br>",
       "become_trainer_pro":"Become Trainer Pro",
       "is_trainer_pro":"Professional Trainer",
       "request_new_organization_text":"Can you tell us a bit about your organization and what you want to do with it? We will get back to you as soon as possible.",
@@ -605,7 +617,10 @@
       "voice_sex_female":"Female",
       "voice_sex_male":"Male",
       "voice_sex_other":"Other",
-      "voice_on":"Start with voice"
+      "voice_on":"Start with voice",
+      "conversation_ai":"Conversation with AI",
+      "knowledge_item":"Knowledge",
+      "open_more":"Open more"
     },
     "modules":{
         "edit_module":"Edit",
@@ -622,7 +637,8 @@
         "new_training_name":"What is the name of the new training?",
         "cannot_add_module_to_itself":"An infinite loop would occur if you add this module to itself. Please choose another module.",
         "training_content_title":"Detailed description of the training. Only displayed for a main module.",
-        "module_finished":"Module finished"
+        "module_finished":"Module finished",
+        "new_tag":"New tag"
       },
     "trainings":{
         "edit_training":"Edit training",
@@ -710,6 +726,7 @@
         "elearning_organisation_price_info":"Organizations that want to purchase this training pay the price per person excl. VAT x the number of employees with a minimum and maximum amount as indicated by you.",
         "private_autorenew":"Do you want this training to be automatically renewed after 1 year?<br><span style='font-size:0.8em;color:gray'>No costs will be charged for an organization. For an individual user, an amount of € 25,- will be charged for the credits.</span>",
         "training_content_title":"Detailed description of the training",
+        "training_welcome_message_title":"Welcome message for participants",
         "amount_credits_unlimited":"This amount will be charged to you as a trainer. With this amount, each participant has unlimited credits for one year to conduct conversations in the training.",
         "amount_credits_4k":"This amount will be charged to you as a trainer when the training is activated with the link below. With this amount, each participant has 4000 credits for one year to conduct conversations in the training. That is approximately 15-20 extensive conversations.",
         "amount_credits":"How much in credits do you want to make available per participant?"
@@ -1057,7 +1074,8 @@
     "training_content":"Describe the content of the training in detail here. This will be displayed when the training is clicked on.",
     "trainer_details":"Provide more information about yourself or your organization here. This will be displayed when a user views your information.<br>This information can be found by clicking on your logo in your trainings.",
     "case_voice":"Here you can choose the voice of the AI conversation partner. You can choose from different voices. The voices may vary in accent, intonation, and speed.<br><br>The attitude of the AI conversation partner in the conversation can of course influence the way of speaking.<br><br>Try out different voices to see which one best fits your case.",
-    "case_voice_on": "Turn on this option if you want the AI conversation partner to respond with a voice instead of chat."
+    "case_voice_on": "Turn on this option if you want the AI conversation partner to respond with a voice instead of chat.",
+    "welcome_message":"Here you can enter a welcome message that users will receive via email when they sign up for the training."
   },
     "dashboard":{
       "organisation":"Organization",
@@ -1095,6 +1113,7 @@
       "knowledge_original_language":"Original language",
       "knowledge_summary":"Summary for AI",
       "add_knowledge_item":"Add knowledge item",
+      "edit_knowledge_item":"Edit knowledge item",
       "add_knowledge_creating_summary":"Our specialized AI is now creating a summary for our other AIs",
       "add_knowledge_item_text":"Here you can add any extra specific knowledge that the AI can use when providing feedback in cases. Note: The AI already has a considerable knowledge base, so this is only necessary if you want to add specific knowledge that is not already in the AI.",
       "add_knowledge_item_instructions":"Add your knowledge here. You can indicate at each case whether the AI may use this knowledge when providing feedback.",
@@ -1144,7 +1163,7 @@
     "free":"Free",
     "add_unlimited_credits":"To follow this training properly, you need credits. You can practice this training unlimitedly by taking a subscription with unlimited credits. Do you want unlimited practice with this (and all other) training for € 25 per year?",
     "unlimited_credits":"Yes, I would like unlimited credits for one year for € 25.",
-    "success_purchase":"You have successfully purchased the training. It is now available in your dashboard.",
+    "success_purchase":"You have successfully purchased the training. It is now available in your dashboard. You will be redirected shortly.",
     "customers":"Customers",
     "customers_and_revenue":"Customers and revenue",
     "revenue":"Revenue",
@@ -1152,7 +1171,9 @@
     "revenue_margin":"AliciaLabs margin",
     "revenue_profit":"Profit",
     "revenue_unpaid":"Unpaid",
+    "costs_unpaid":"Unpaid costs",
     "revenue_paid":"Paid",
+    "paid":"Paid",
     "revenue_and_profit":"Revenue and Profit",
     "revenue_tax":"VAT (21%)",
     "revenue_ex_tax":"Revenue excl. VAT",
@@ -1161,6 +1182,9 @@
     "payout_request_sent":"Your payout request has been sent. We will process your request as soon as possible.",
     "bank_account_required":"You have not provided a bank account yet. In order to make a payout, you must first add a bank account in your organization details.",
     "sold_etrainings":"Sold e-trainings",
+    "sold_etrainings_marketplace":"Sold e-trainings via the Marketplace",
+    "sold_etrainings_private":"Sold e-trainings via private code",
+    "sold_etrainings_direct":"Sold e-trainings via direct sales",
     "not_logged_in":"Log in first or create an account to purchase trainings.",
     "activation_failed_code":"The code is invalid or cannot be activated on your account.",
     "activation_failed_used":"The code has already been used by the maximum number of users.",
@@ -1174,7 +1198,7 @@
     "confirm_purchase_title": "Confirm purchase",
     "confirm_purchase_organisation_text": "With the purchase of this training for your organization, all employees of your organization will have access to this training. The price is based on the number of employees in your organization.<br><br>Are you sure you want to purchase this training for your organization?",
     "no_trainer_details":"The trainer has not yet provided any details about themselves or the organization.",
-    "checking_code":"We are checking your URL...",
+    "checking_code":"We are checking your special code...",
     "code_not_found":"The code is invalid or not found.",
     "no_private_item_found":"This e-training is not found or not available without access code."
 
@@ -1188,5 +1212,94 @@
     "photo_library":"Select from library",
     "photo_ratio_avatar":"(ratio 1.5:1 or 1:1)",
     "photo_ratio_knowledge":"(ratio 2.4:1)"
-    }
+  },
+  "checkout":{
+    "placeholder_password":"Password",
+    "placeholder_email":"E-mail address",
+    "placeholder_first_name":"First name",
+    "placeholder_last_name":"Last name",
+    "placeholder_company":"Company",
+    "placeholder_taxnr":"VAT number (optional)",
+    "placeholder_country":"Country",
+    "placeholder_address":"Address",
+    "placeholder_postal_code":"Postal code",
+    "placeholder_city":"City",
+    "placeholder_phone":"Phone number (optional)",
+    "placeholder_reference":"Invoice reference (optional)",
+    "terms1":"I agree with the",
+    "terms2": "Terms and Conditions",
+    "terms3": "and the",
+    "terms4": "Privacy Policy",
+    "unlimited_credits":"Unlimited credits",
+    "unlimited_credits_year":"Unlimited credits for one year",
+    "unlimited_credits_description":"Practice unlimited with all cases in AliciaLabs.",
+    "unlimited_credits_already":"You already have a subscription with unlimited credits.",
+    "total":"Total amount",
+    "to_checkout":"To checkout",
+    "to_checkout_direct":"Direct checkout",
+    "to_checkout_invoice":"Checkout via invoice",
+    "order_summary": "Order summary",
+    "your_data":"Your data",
+    "add_to_your_order":"Add to your order",
+    "login_failed":"Login failed. The password is incorrect for this existing user.",
+    "processing":"Processing...",
+    "price_excl_tax":"Amount excl. VAT (21%)",
+    "failure":"The payment has failed.",
+    "disclaimer_alicialabs_platform":"This training is offered through the AliciaLabs platform.",
+    "watch_example":"Watch the content"
+  },
+  "form":{
+    "name":"Name",
+    "email":"E-mail address",
+    "first_name":"First name",
+    "last_name":"Last name",
+    "company":"Company",
+    "company_optional":"Company (optional)",
+    "country":"Country",
+    "address":"Address",
+    "postal_code":"Postal code",
+    "city":"City",
+    "phone":"Phone number",
+    "password":"Password",
+    "tax_nr":"VAT number",
+    "email_invoice":"Invoice email",
+    "reference":"Invoice reference",
+    "is_company":"I am purchasing on behalf of an organization"
+  },
+   "customers":{
+    "sales":"Revenue",
+    "your_customers":"Your customers",
+    "marketplace_customers":"Marketplace customers",
+    "add_customer":"Add customer",
+    "add_customer_text":"Create a new customer here. You can later link trainings to users for this customer.",
+    "created_successfully":"The customer has been successfully created.",
+    "updated_successfully":"The customer has been successfully updated.",
+    "no_customers":"There are no customers created yet.",
+    "sold_trainings":"Sold trainings",
+    "no_trainings":"There are no trainings sold to this customer yet.",
+    "training_and_invoice_sent":"The invoice has been sent to the customer. The selected users now have access to the training and have received a notification.",
+    "users":"Users",
+    "user":"User",
+    "price_excl_tax":"Price training excl. VAT",
+    "price_incl_tax":"Price training incl. VAT",
+    "unlimited_credits_for":"Unlimited credits for",
+    "total_price_excl_tax":"Total excl. VAT",
+    "total_price_incl_tax":"Total incl. VAT",
+    "tax":"VAT (21%)",
+    "activate_send_invoice":"Activate and send invoice",
+    "select_training":"Select a training first.",
+    "add_extra_user":"Add extra user",
+    "add_user_message":"Add one or more users first.",
+    "invalid_user_list":"The user list is invalid. Please check the email addresses.",
+    "direct_sales_training":"Direct sales training",
+    "revenue_total_marketplace":"Total revenue marketplace",
+    "revenue_total_direct":"Total revenue directe verkoop",
+    "costs_credits_private":"Costs credits sales own channel",
+    "costs":"Costs"
+
+
+
+
+
+  }
 }

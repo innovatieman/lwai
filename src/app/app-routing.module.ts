@@ -45,6 +45,10 @@ const routes: Routes = [
     loadChildren: () => import('./auth/pages/login/login.module').then( m => m.LoginPageModule)
   },
   {
+    path: 'login/:type',
+    loadChildren: () => import('./auth/pages/login/login.module').then( m => m.LoginPageModule)
+  },
+  {
     path: 'unsubscribe',
     loadChildren: () => import('./pages/unsubscribe/unsubscribe.module').then( m => m.UnsubscribePageModule)
   },
@@ -234,6 +238,11 @@ const routes: Routes = [
      canActivate: [AuthGuard,TrainerGuard],
   },
   {
+    path: 'trainer/customers',
+    loadChildren: () => import('./trainer/customers/customers.module').then( m => m.CustomersPageModule),
+    canActivate: [AuthGuard,TrainerGuard],
+  },
+  {
     path: 'marketplace',
     loadChildren: () => import('./pages/marketplace/marketplace.module').then( m => m.MarketplacePageModule),
     // canActivate: [AuthGuard],
@@ -247,6 +256,14 @@ const routes: Routes = [
     path: 'marketplace/:tab/:item_id',
     loadChildren: () => import('./pages/marketplace/marketplace.module').then( m => m.MarketplacePageModule),
     // canActivate: [AuthGuard],
+  },
+  {
+    path: 'checkout/:item_id',
+    loadChildren: () => import('./pages/checkout/checkout.module').then( m => m.CheckoutPageModule)
+  },
+  {
+    path: 'checkout/:item_id/:status',
+    loadChildren: () => import('./pages/checkout/checkout.module').then( m => m.CheckoutPageModule)
   },
   {
     path: 'public/cases',
@@ -357,6 +374,15 @@ const routes: Routes = [
     path: 'trainer-info',
     loadChildren: () => import('./components/modals/trainer-info/trainer-info.module').then( m => m.TrainerInfoPageModule)
   },
+  {
+    path: 'sales-trainings',
+    loadChildren: () => import('./components/modals/sales-trainings/sales-trainings.module').then( m => m.SalesTrainingsPageModule)
+  },
+  {
+    path: 'example',
+    loadChildren: () => import('./components/modals/example/example.module').then( m => m.ExamplePageModule)
+  },
+  
 
 
   

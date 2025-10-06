@@ -17,7 +17,7 @@ exports.createStripeProductElearning = functions.region("europe-west1")
       // Stap 1: Maak het product aan in Stripe
       const product = await stripe.products.create({
         name: elearningData.title,  // Gebruik de titel van de training
-        description: elearningData.description || "Geen beschrijving beschikbaar",
+        description: elearningData.trainer?.name || "",
         metadata:{
             type: 'elearning',
             trainerId: elearningData.trainerId,
@@ -25,7 +25,7 @@ exports.createStripeProductElearning = functions.region("europe-west1")
         }
       });
 
-      console.log(`elearningData`, JSON.stringify(elearningData, null, 2));
+      // console.log(`elearningData`, JSON.stringify(elearningData, null, 2));
       // Stap 2: Maak een prijs aan in Stripe (optioneel)
       const price = await stripe.prices.create({
         unit_amount: elearningData.price_elearning * 100, // Prijs omzetten naar centen

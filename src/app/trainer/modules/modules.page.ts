@@ -229,13 +229,22 @@ export class ModulesPage implements OnInit {
         elements[i].setAttribute('style','border:0;')
       }
       setTimeout(() => {
+        let htmlButtons = document.getElementsByClassName("ql-HTML")
+        for(let i=0;i<htmlButtons.length;i++){
+          htmlButtons[i].innerHTML = 'HTML'
+          htmlButtons[i].setAttribute('innerHTML', 'HTML')
+          htmlButtons[i].setAttribute('style','width:50px;')
+          htmlButtons[i].addEventListener('click', (event:any)=> {
+            this.showHtml = true
+          });
+        }
 
-        let htmlBtn:any = document.querySelector('.ql-HTML');
-        htmlBtn.innerHTML = 'HTML'
-        htmlBtn.style.width = '50px'
-        htmlBtn.addEventListener('click', (event:any)=> {
-          this.showHtml = true 
-        });
+        // let htmlBtn:any = document.querySelector('.ql-HTML');
+        // htmlBtn.innerHTML = 'HTML'
+        // htmlBtn.style.width = '50px'
+        // htmlBtn.addEventListener('click', (event:any)=> {
+        //   this.showHtml = true 
+        // });
       },300)
     },100)
   }
@@ -398,8 +407,8 @@ export class ModulesPage implements OnInit {
         required: true,
       }
     ], (result: any) => {
-      this.toast.showLoader();
       if (result.data) {
+        this.toast.showLoader();
         let module = {
           title: result.data[0].value,
           created: Date.now(),
@@ -1395,41 +1404,71 @@ shortMenu:any
   }
 
 
-  createTagMultiple(){
-    this.modalService.inputFields(this.translate.instant('cases.new_tag'), '',[{
-      title: 'Naam',
-      type: 'text',
-      value: '',
-      required: true,
-    }], (result: any) => {
-      if (result.data) {
-        // console.log(result)
-        let list = this.trainerService.modules.map((e:any) => {
-          return {
-            id: e.id,
-            title: e.title,
-          }
-        })
-        let tag = result.data[0].value.toLowerCase().trim()
-        this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
-          if (result.data) {
-            // console.log('selected tag',result.data)
-            for(let i=0;i<result.data.length;i++){
-              let item = this.trainerService.getModule(result.data[i].id)
-              if(!item.tags){
-                item.tags = []
-              }
-              if(item.tags.indexOf(tag) == -1){
-                item.tags.push(tag)
-                this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',item.id,{tags:item.tags}).then(() => {
-                  // console.log('tag added')
-                })
-              }
+  createTagMultiple(event?:any, tag?:string){
+    if(event){
+      event.stopPropagation()
+    }
+    if(tag){
+      let list = this.trainerService.modules.map((e:any) => {
+        return {
+          id: e.id,
+          title: e.title,
+        }
+      })
+      this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
+        if (result.data) {
+          // console.log('selected tag',result.data)
+          for(let i=0;i<result.data.length;i++){
+            let item = this.trainerService.getModule(result.data[i].id)
+            if(!item.tags){
+              item.tags = []
+            }
+            if(item.tags.indexOf(tag) == -1){
+              item.tags.push(tag)
+              this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',item.id,{tags:item.tags}).then(() => {
+                // console.log('tag added')
+              })
             }
           }
-        }, undefined, 'Tags',{object:true,multiple:true,field: 'title'});
-      }
-    })
+        }
+      }, undefined, 'Tags',{object:true,multiple:true,field: 'title'});
+    }
+    else{
+      this.modalService.inputFields(this.translate.instant('modules.new_tag'), '',[{
+        title: 'Naam',
+        type: 'text',
+        value: '',
+        required: true,
+      }], (result: any) => {
+        if (result.data) {
+          // console.log(result)
+          let list = this.trainerService.modules.map((e:any) => {
+            return {
+              id: e.id,
+              title: e.title,
+            }
+          })
+          let tag = result.data[0].value.toLowerCase().trim()
+          this.modalService.selectItem(this.translate.instant('buttons.select'), list, (result: any) => {
+            if (result.data) {
+              // console.log('selected tag',result.data)
+              for(let i=0;i<result.data.length;i++){
+                let item = this.trainerService.getModule(result.data[i].id)
+                if(!item.tags){
+                  item.tags = []
+                }
+                if(item.tags.indexOf(tag) == -1){
+                  item.tags.push(tag)
+                  this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'modules',item.id,{tags:item.tags}).then(() => {
+                    // console.log('tag added')
+                  })
+                }
+              }
+            }
+          }, undefined, 'Tags',{object:true,multiple:true,field: 'title'});
+        }
+      })
+    }
   }
 
   removeTagMultiple(){

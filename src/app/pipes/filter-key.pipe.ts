@@ -118,7 +118,7 @@ export class FilterKeyPipe implements PipeTransform {
           else if(array[i][key]==value){
             nwArr.push(array[i])
           }
-          else if(array[i][key]?.indexOf(value)>-1){
+          else if(Array.isArray(array[i][key]) && array[i][key]?.indexOf(value)>-1){
             nwArr.push(array[i])
           }
         }

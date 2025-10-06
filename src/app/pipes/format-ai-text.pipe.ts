@@ -108,8 +108,15 @@ export class FormatAiTextPipe implements PipeTransform {
     // Subscript (idem)
     .replace(/_([0-9a-zA-Z])/g, (_, p1) => this.subscriptMap[p1] || '_' + p1)
 
+
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+
+    .replace(/(?<!href=")(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>')
+    
     // Trim uiteindes
     .trim();
+
+    
 
   }
 

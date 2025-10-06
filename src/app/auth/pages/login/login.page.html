@@ -16,8 +16,11 @@
       <h2 *ngIf="!showPassWordReset">{{'page_login.welcome' | translate}}</h2>
       <p *ngIf="!showPassWordReset">{{'page_login.title' | translate}}</p>
 
-      <h2 *ngIf="showPassWordReset&&!showResetPassword">{{'page_login.forgot_password' | translate}}</h2>
-      <p *ngIf="showPassWordReset&&!showResetPassword">{{'page_login.forgot_password_message' | translate}}</p>
+      <h2 *ngIf="showPassWordReset&&!showResetPassword && type!=='create_password'">{{'page_login.forgot_password' | translate}}</h2>
+      <p *ngIf="showPassWordReset&&!showResetPassword && type!=='create_password'">{{'page_login.forgot_password_message' | translate}}</p>
+
+      <h2 *ngIf="showPassWordReset&&!showResetPassword && type==='create_password'">{{'page_login.create_password_title' | translate}}</h2>
+      <p *ngIf="showPassWordReset&&!showResetPassword && type==='create_password'">{{'page_login.create_password_subtitle' | translate}}</p>
 
       <h2 *ngIf="showPassWordReset&&showResetPassword&&!oobCode" [innerHTML]="translateService.instant('page_login.title_verify')"></h2>
       <p *ngIf="showPassWordReset&&showResetPassword&&!oobCode">{{'page_login.subtitle_verify' | translate}}</p>
@@ -47,8 +50,9 @@
           <span *ngIf="!showPassWordReset" class="showPassWordReset" (click)="forgotPassword()" pointer>{{'page_login.forgot_password' | translate}}</span>
           <span *ngIf="showPassWordReset" class="showPassWordReset" (click)="rememberPassword()" pointer>{{'page_login.remember_password' | translate}}</span>
         </div>
-        <ion-button button type="submit" *ngIf="!showPassWordReset" class="saveButton" [disabled]="!form.valid">{{'page_login.login' | translate}}</ion-button>
-        <ion-button button type="submit" *ngIf="(showPassWordReset&&!showResetPassword) || oobCode" class="saveButton" [disabled]="!form.valid">{{'page_login.reset_password' | translate}}</ion-button>
+        <ion-button button type="submit" *ngIf="!showPassWordReset&&type!=='create_password'" class="saveButton" [disabled]="!form.valid">{{'page_login.login' | translate}}</ion-button>
+        <ion-button button type="submit" *ngIf="((showPassWordReset&&!showResetPassword) || oobCode) && type!=='create_password'" class="saveButton" [disabled]="!form.valid">{{'page_login.reset_password' | translate}}</ion-button>
+        <ion-button button type="submit" *ngIf="((showPassWordReset&&!showResetPassword) || oobCode) && type==='create_password'" class="saveButton" [disabled]="!form.valid">{{'page_login.set_password' | translate}}</ion-button>
       </form>
       <div *ngIf="showResetPassword&&!oobCode">
         <code-input marginBottom class="codeInput"
