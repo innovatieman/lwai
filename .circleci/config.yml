@@ -5,7 +5,7 @@ jobs:
   test:
     working_directory: ~/alicialabs
     docker:
-        - image: cimg/node:18.20.5-browsers
+        - image: cimg/node:20.19.5-browsers
     steps:
         # Checkout the code from the branch into the working_directory
         - checkout
@@ -39,7 +39,7 @@ jobs:
   build:
     circleci_ip_ranges: true # opts the job into the IP ranges feature
     docker:
-      - image: cimg/node:16.14
+      - image: cimg/node:20.19.5
     steps:
       - add_ssh_keys:
           fingerprints:
