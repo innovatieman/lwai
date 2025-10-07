@@ -48,7 +48,8 @@ export class DashboardPage implements OnInit {
   private leave$ = new Subject<void>();
   [x:string]: any;
   showHtml:boolean = false
-
+  embedHeight:string = '800';
+  embedWidth:string = '100%';
   configModules={
     toolbar: {
       container:[
@@ -342,6 +343,9 @@ export class DashboardPage implements OnInit {
     },false,true)
   }
 
+  get embedCode(){
+    return `<iframe id="alicialabs_marketplace" width="${this.embedWidth}" height="${this.embedHeight}" style="border: none;" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><script>const iframe = document.getElementById("alicialabs_marketplace");iframe.src = "https://conversation.alicialabs.com/marketplace/filter?trainerIds=${this.nav.activeOrganisationId}&ts=" + Date.now();</script>`
+  }
 
   addEmployee(){
     if(this.trainerService.trainerInfo.employees.length >= this.maximumEmployees){

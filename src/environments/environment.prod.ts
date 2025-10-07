@@ -3,7 +3,7 @@ export const environment = {
   useEmulators: false,
   log_on:false,
   verificationUrl:'http://conversation.alicialabs.com/verify',
-  version: '1.4.16',
+  version: '1.4.19',
   firebase :{
     apiKey: "AIzaSyDc7k8O277P-27n7igbMnYtu8iiJUEk0TE",
     authDomain: "lwai-3bac8.firebaseapp.com",

@@ -40,7 +40,10 @@
         "customers":"Customers",
         "customer":"Customer",
         "users":"Users",
-        "user":"User"
+        "user":"User",
+        "copied_to_clipboard":"Copied to clipboard",
+        "height":"Height",
+        "width":"Width"
       },
       "menu": {
         "login": "Log in",
@@ -1150,7 +1153,10 @@
       "invalid_email":"Invalid email address",
       "trainer_details":"Provide more information about yourself or your organization here.",
       "email":"Email. Where users can contact you.",
-      "trainer_info_example":"View as user"
+      "trainer_info_example":"View as user",
+      "embed_code":"Your website",
+      "embed_title":"Place your e-trainings on your own website",
+      "embed_text":"<ul><li>Copy the embed code below. This code places the tool as an iframe on your own page.</li><li>Paste the code into the HTML of your website where you want the tool to be visible.</li><li>Save your page and reload. The tool will be automatically loaded and will always show the most up-to-date version. This embed code is privacy-friendly and automatically refreshes without caching.</li><li>You can adjust the width and height in the embed code if needed.</li></ul>"
   },
   "marketplace":{
     "add_training":"Add training",
@@ -1170,10 +1176,10 @@
     "revenue_total":"Total revenue incl. VAT",
     "revenue_margin":"AliciaLabs margin",
     "revenue_profit":"Profit",
-    "revenue_unpaid":"Unpaid",
-    "costs_unpaid":"Unpaid costs",
-    "revenue_paid":"Paid",
-    "paid":"Paid",
+    "revenue_unpaid":"Unpaid (excl. VAT)",
+    "costs_unpaid":"Unpaid costs (excl. VAT)",
+    "revenue_paid":"Paid (excl. VAT)",
+    "paid":"Paid (excl. VAT)",
     "revenue_and_profit":"Revenue and Profit",
     "revenue_tax":"VAT (21%)",
     "revenue_ex_tax":"Revenue excl. VAT",
@@ -1182,9 +1188,9 @@
     "payout_request_sent":"Your payout request has been sent. We will process your request as soon as possible.",
     "bank_account_required":"You have not provided a bank account yet. In order to make a payout, you must first add a bank account in your organization details.",
     "sold_etrainings":"Sold e-trainings",
-    "sold_etrainings_marketplace":"Sold e-trainings via the Marketplace",
-    "sold_etrainings_private":"Sold e-trainings via private code",
-    "sold_etrainings_direct":"Sold e-trainings via direct sales",
+    "sold_etrainings_marketplace":"E-trainings via the Marketplace",
+    "sold_etrainings_private":"E-trainings via private code",
+    "sold_etrainings_direct":"E-trainings via direct sales",
     "not_logged_in":"Log in first or create an account to purchase trainings.",
     "activation_failed_code":"The code is invalid or cannot be activated on your account.",
     "activation_failed_used":"The code has already been used by the maximum number of users.",

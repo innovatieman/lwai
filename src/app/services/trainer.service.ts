@@ -2122,6 +2122,13 @@ export class TrainerService {
     let revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
     let revenue_direct:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
     let costs_credits:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    this.revenue_market = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    this.revenue_direct = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    this.costs_credits = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+    this.revenue_markets = {}
+    this.revenue_directs = {}
+    this.costs_credits_trainingItems = {}
+
     let purchaseItems:any[] = []
     if(trainingId){
       purchaseItems = this.purchaseItems(trainingId);
@@ -2174,6 +2181,20 @@ export class TrainerService {
         if(!this.revenue_markets[item.trainingId]){
           this.revenue_markets[item.trainingId] = revenue_item;
         }
+        else{
+          this.revenue_markets[item.trainingId].all.length = revenue_item.all.length + this.revenue_markets[item.trainingId].all.length;
+          this.revenue_markets[item.trainingId].all.total = revenue_item.all.total + this.revenue_markets[item.trainingId].all.total;
+          this.revenue_markets[item.trainingId].all.profit = revenue_item.all.profit + this.revenue_markets[item.trainingId].all.profit;
+          this.revenue_markets[item.trainingId].paid.length = revenue_item.paid.length + this.revenue_markets[item.trainingId].paid.length;
+          this.revenue_markets[item.trainingId].paid.total = revenue_item.paid.total + this.revenue_markets[item.trainingId].paid.total;
+          this.revenue_markets[item.trainingId].paid.profit = revenue_item.paid.profit + this.revenue_markets[item.trainingId].paid.profit;
+          this.revenue_markets[item.trainingId].unpaid.length = revenue_item.unpaid.length + this.revenue_markets[item.trainingId].unpaid.length;
+          this.revenue_markets[item.trainingId].unpaid.total = revenue_item.unpaid.total + this.revenue_markets[item.trainingId].unpaid.total;
+          this.revenue_markets[item.trainingId].unpaid.profit = revenue_item.unpaid.profit + this.revenue_markets[item.trainingId].unpaid.profit;
+        }
+
+        this.revenue_directs[item.trainingId] = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+        this.costs_credits_trainingItems[item.trainingId] = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
       }
       else if(item.direct){
         let revenue_direct_item:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
@@ -2219,6 +2240,19 @@ export class TrainerService {
         if(!this.revenue_directs[item.trainingId]){
           this.revenue_directs[item.trainingId] = revenue_direct_item;
         }
+        else{
+          this.revenue_directs[item.trainingId].all.length = revenue_direct_item.all.length + this.revenue_directs[item.trainingId].all.length
+          this.revenue_directs[item.trainingId].all.total = revenue_direct_item.all.total + this.revenue_directs[item.trainingId].all.total
+          this.revenue_directs[item.trainingId].all.profit = revenue_direct_item.all.profit + this.revenue_directs[item.trainingId].all.profit
+          this.revenue_directs[item.trainingId].paid.length = revenue_direct_item.paid.length + this.revenue_directs[item.trainingId].paid.length
+          this.revenue_directs[item.trainingId].paid.total = revenue_direct_item.paid.total + this.revenue_directs[item.trainingId].paid.total
+          this.revenue_directs[item.trainingId].paid.profit = revenue_direct_item.paid.profit + this.revenue_directs[item.trainingId].paid.profit
+          this.revenue_directs[item.trainingId].unpaid.length = revenue_direct_item.unpaid.length + this.revenue_directs[item.trainingId].unpaid.length
+          this.revenue_directs[item.trainingId].unpaid.total = revenue_direct_item.unpaid.total + this.revenue_directs[item.trainingId].unpaid.total
+          this.revenue_directs[item.trainingId].unpaid.profit = revenue_direct_item.unpaid.profit + this.revenue_directs[item.trainingId].unpaid.profit
+        }
+        this.revenue_markets[item.trainingId] = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+        this.costs_credits_trainingItems[item.trainingId] = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
       }
       else if(item.marketplace===false){
         let costs_credits_item:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
@@ -2256,6 +2290,17 @@ export class TrainerService {
         if(!this.costs_credits_trainingItems[item.trainingId]){
           this.costs_credits_trainingItems[item.trainingId] = costs_credits_item;
         }
+        else{
+          this.costs_credits_trainingItems[item.trainingId].all.length = costs_credits_item.all.length + this.costs_credits_trainingItems[item.trainingId].all.length
+          this.costs_credits_trainingItems[item.trainingId].all.total = costs_credits_item.all.total + this.costs_credits_trainingItems[item.trainingId].all.total
+          this.costs_credits_trainingItems[item.trainingId].paid.length = costs_credits_item.paid.length + this.costs_credits_trainingItems[item.trainingId].paid.length
+          this.costs_credits_trainingItems[item.trainingId].paid.total = costs_credits_item.paid.total + this.costs_credits_trainingItems[item.trainingId].paid.total
+          this.costs_credits_trainingItems[item.trainingId].unpaid.length = costs_credits_item.unpaid.length + this.costs_credits_trainingItems[item.trainingId].unpaid.length
+          this.costs_credits_trainingItems[item.trainingId].unpaid.total = costs_credits_item.unpaid.total + this.costs_credits_trainingItems[item.trainingId].unpaid.total
+        }
+
+        this.revenue_markets[item.trainingId] = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+        this.revenue_directs[item.trainingId] = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
 
       }
 

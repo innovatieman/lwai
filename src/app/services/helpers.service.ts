@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as moment from 'moment'
 import { TranslateService } from '@ngx-translate/core';
 import { MediaService } from './media.service';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,8 @@ export class HelpersService {
 
   constructor(
     public translate:TranslateService,
-    private media:MediaService
+    private media:MediaService,
+    private toast:ToastService
   ) { }
 
   doNothing(event?:Event){
@@ -662,9 +664,12 @@ export class HelpersService {
     return new Promise( resolve => setTimeout(resolve, ms) );
   }
 
-  async copyToClipboard(text:string,callback?:any){
+  async copyToClipboard(text:string,callback?:any,toast?:boolean){
     if(!text){return}
     await navigator.clipboard.writeText(text);
+    if(toast){
+      this.toast.show(this.translate.instant('standards.copied_to_clipboard'))
+    }
     if(callback){
       callback()
       return

@@ -40,7 +40,10 @@
         "customers":"Klanten",
         "customer":"Klant",
         "users":"Gebruikers",
-        "user":"Gebruiker"
+        "user":"Gebruiker",
+        "copied_to_clipboard":"Gekopieerd naar klembord",
+        "height":"Hoogte",
+        "width":"Breedte"
     },
     "menu":{
         "login": "Inloggen",
@@ -1149,7 +1152,10 @@
         "invalid_email":"Ongeldig e-mailadres",
         "trainer_details":"Vertel meer over jezelf of je organisatie",
         "email":"E-mail. Waar gebruikers je op kunnen benaderen.",
-        "trainer_info_example":"Bekijk als gebruiker"
+        "trainer_info_example":"Bekijk als gebruiker",
+        "embed_code":"Eigen website",
+        "embed_title":"Plaats je e-trainingen op je eigen website",
+        "embed_text":"<ul><li>Kopieer de onderstaande insluitcode (embed-code). Deze code plaatst de tool als een iframe op je eigen pagina.</li><li>Plak de code in de HTML van je website op de plek waar je de tool zichtbaar wilt maken.</li><li>Sla je pagina op en herlaad. De tool wordt automatisch geladen en toont altijd de meest actuele versie. Deze embed-code is privacyvriendelijk en ververst automatisch zonder caching.</li><li>Pas eventueel de breedte en hoogte aan in de insluitcode.</li></ul>"
     },
     "marketplace":{
         "add_training":"Training toevoegen",
@@ -1169,10 +1175,10 @@
         "revenue_total":"Totale omzet incl. BTW",
         "revenue_margin":"Marge AliciaLabs",
         "revenue_profit":"Winst",
-        "revenue_unpaid":"Nog niet uitbetaald",
-        "costs_unpaid":"Nog niet betaald",
-        "revenue_paid":"Uitbetaald",
-        "paid":"Betaald",
+        "revenue_unpaid":"Nog niet uitbetaald (excl. BTW)",
+        "costs_unpaid":"Nog niet betaald (excl. BTW)",
+        "revenue_paid":"Uitbetaald (excl. BTW)",
+        "paid":"Betaald (excl. BTW)",
         "revenue_and_profit":"Omzet en Winst",
         "revenue_tax":"BTW (21%)",
         "revenue_ex_tax":"Omzet excl. BTW",
@@ -1181,9 +1187,9 @@
         "payout_request_sent":"Je verzoek om uitbetaling is verstuurd. We zullen je verzoek zo snel mogelijk verwerken.",
         "bank_account_required":"Je hebt nog geen bankrekening opgegeven. Om een uitbetaling te kunnen doen, moet je eerst een bankrekening toevoegen bij je organisatiegegevens.",
         "sold_etrainings":"Verkochte e-trainingen",
-        "sold_etrainings_marketplace":"Verkochte e-trainingen via de Marketplace",
-        "sold_etrainings_private":"Verkochte e-trainingen via privé code",
-        "sold_etrainings_direct":"Verkochte e-trainingen via directe verkoop",
+        "sold_etrainings_marketplace":"E-trainingen via de Marketplace",
+        "sold_etrainings_private":"E-trainingen via privé code",
+        "sold_etrainings_direct":"E-trainingen via directe verkoop",
         "not_logged_in":"Log eerst in of maak een account aan om trainingen te kunnen kopen.",
         "activation_failed_code":"De code is ongeldig of kan niet worden geactiveerd op jouw account.",
         "activation_failed_used":"De code is al gebruikt door het maximaal aantal gebruikers.",

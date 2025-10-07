@@ -109,6 +109,13 @@
             </ion-item>
           </div>
 
+          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro" [ngClass]="{'activeItem': showPart=='embed','notActiveItem': showPart!='embed'}">
+            <ion-item detail="false" lines="none" button (click)="showPart = 'embed'" class="itemButton"  noMargin>
+                <div font-20 weight700>{{'dashboard.embed_code' | translate}}</div>
+                <fa-icon font-24 slot="end" [icon]="icon.get('faCode')"></fa-icon>
+            </ion-item>
+          </div>
+
           <!-- <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro && trainerService.trainerInfo?.purchaseItems?.length" [ngClass]="{'activeItem': showPart=='customers','notActiveItem': showPart!='customers'}">
             <ion-item detail="false" lines="none" button (click)="showPart = 'customers'" class="itemButton"  noMargin>
                 <div font-20 weight700>{{'marketplace.customers_and_revenue' | translate}}</div>
@@ -692,6 +699,29 @@
             </ion-card-content>
 
           </ion-card>
+
+          <ion-card basicPadding *ngIf="showPart=='embed'">
+            <ion-card-header>
+              <ion-card-title>{{'dashboard.embed_title' | translate}}</ion-card-title>
+              <div font-16 weight400 [innerHtml]="translate.instant('dashboard.embed_text') | sanitizeHtml"></div>
+              <div flex center-ver marginTop>
+                <ion-label>{{'standards.height' | translate}}</ion-label>
+                <ion-input style="width:150px;" marginLeft class="inputAmount" type="text" [(ngModel)]="embedHeight" font-20 weight700></ion-input>
+              </div>
+              <div flex center-ver marginTop>
+                <ion-label>{{'standards.width' | translate}}</ion-label>
+                <ion-input style="width:150px;" marginLeft class="inputAmount" type="text" [(ngModel)]="embedWidth" font-20 weight700></ion-input>
+              </div>
+            </ion-card-header>
+            <ion-card-content relative>
+              <ion-textarea readonly class="codePart" rows="6" fullwidth>{{embedCode}}</ion-textarea>
+              <fa-icon pointer class="shareButtonCase" text-secondary [icon]="icon.get('faCopy')" (click)="helper.copyToClipboard(embedCode,null,true)"></fa-icon>
+            </ion-card-content>
+
+          </ion-card>
+
+
+
 
            <ion-card basicPadding *ngIf="showPart=='become_trainer'">
             <ion-card-header>

@@ -118,7 +118,23 @@ margin-bottom: 20px;
   }
 }
 
-
+.codePart {
+  font-family: 'Courier New', Courier, monospace; /* Monospace lettertype zoals bij code */
+  background-color: #f5f5f5;                      /* Lichtgrijze achtergrond */
+  color: #333;                                    /* Donkere tekst */
+  border: 1px solid #ccc;                         /* Zachte rand */
+  padding: 10px;                                  /* Ruimte rondom tekst */
+  border-radius: 4px;                             /* Licht afgeronde hoeken */
+  white-space: pre-wrap;                          /* Behoud spaties en nieuwe regels */
+  font-size: 14px;                                /* Leesbare codegrootte */
+  line-height: 1.4;
+}
+.shareButtonCase{
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  font-size: 28px;
+}
 
 .fieldItem{
   border-radius:5px;

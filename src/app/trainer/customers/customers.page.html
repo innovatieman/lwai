@@ -119,7 +119,7 @@
                       <span>€ {{trainerService.revenue_direct.all.total | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight500>
-                      <span >{{'marketplace.revenue_margin' | translate}} (20%):</span>
+                      <span >{{'marketplace.revenue_margin' | translate}} (5%):</span>
                       <div class="spacer"></div>
                       <span>€ {{(trainerService.revenue_direct.all.total - trainerService.revenue_direct.all.profit) | number : '1.2-2'}}</span>
                     </div> 
@@ -144,33 +144,32 @@
                   </ion-card>
 
 
-                  <ion-card marginBottom basicPadding fullwidth>
-                    <div marginBottom></div>
+                  <ion-card marginBottom basicPadding fullwidth borderPrimary font-16>
                     <div flex center-ver weight600>
-                      <span *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) >= -0.01">{{'marketplace.revenue_unpaid' | translate}}:</span>
-                      <span *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) < -0.01">{{'marketplace.costs_unpaid' | translate}}:</span>
+                      <span *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) >= 0">{{'marketplace.revenue_unpaid' | translate}}:</span>
+                      <span *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) < 0">{{'marketplace.costs_unpaid' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) >= -0.01">€ {{trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total | number : '1.2-2'}}</span>
-                      <span trash *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) < -0.01">€ {{trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total | number : '1.2-2'}}</span>
+                      <span *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) >= 0">€ {{trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total | number : '1.2-2'}}</span>
+                      <span trash *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) < 0">€ {{trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total | number : '1.2-2'}}</span>
                     </div> 
                     <div flex center-ver weight500>
-                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.unpaid.total) >= -0.01">{{'marketplace.revenue_paid' | translate}}:</span>
-                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.unpaid.total) < -0.01">{{'marketplace.paid' | translate}}:</span>
+                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total) >= 0">{{'marketplace.revenue_paid' | translate}}:</span>
+                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total) < 0">{{'marketplace.paid' | translate}}:</span>
                       <div class="spacer"></div>
-                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.unpaid.total) >= -0.01">€ {{trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.unpaid.total | number : '1.2-2'}}</span>
-                      <span trash *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.unpaid.total) < -0.01">€ {{trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total | number : '1.2-2'}}</span>
+                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total) >= 0">€ {{trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total | number : '1.2-2'}}</span>
+                      <span *ngIf="(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total) < 0">€ {{-(trainerService.revenue_market.paid.profit + trainerService.revenue_direct.paid.profit - trainerService.costs_credits.paid.total) | number : '1.2-2'}}</span>
                     </div>
 
                   </ion-card>
                 </div> 
-                <div *ngIf="trainerService.revenue_market.unpaid.profit" flex center-ver>
+                <div *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) >= 0" flex center-ver>
                   <div class="spacer"></div>
                   <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
                     {{'marketplace.request_payout' | translate}}
                   </ion-button>
                 </div>
 
-                <div singleLine></div> 
+                <div singleLine marginTop marginBottom style="margin-bottom:40px;margin-top:30px"></div> 
 
                 <div font-16 marginLeft pointer text-primary uppercase weight600 borderBottom *ngIf="trainerService.trainerInfo?.purchaseItems?.length" (click)="showCustomerList=!showCustomerList" flex center-ver>
                   <span> {{'marketplace.sold_etrainings_marketplace' | translate}} ({{(trainerService.trainerInfo.purchaseItems | filterKey : 'marketplace' : true).length}})</span>
@@ -180,7 +179,7 @@
                 <div *ngIf="showCustomerList">
                   <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.trainerInfo.purchaseItems | filterKey : 'marketplace' : true | sortBy : -1 : 'purchased'">
                     <ion-card-title flex center-ver>
-                      <span weight600>{{trainerService.getTraining(customer.trainingId).title}} - € {{customer.price / 1.21 | number : '1.2-2'}}</span>
+                      <span weight600>{{trainerService.getTraining(customer.trainingId).title}}<br>+ € {{customer.price / 1.21 | number : '1.2-2'}}</span>
                       <!-- <span marginLeft weight400 font-14 lowercase>({{customer.user.email}})</span> -->
                       <span class="spacer"></span>
                       <span textMedium italic weight500>{{helper.showLocalDate(customer.purchased,translate.instant('date_formats.fullDateTime'),0,true)}}</span>
@@ -197,7 +196,7 @@
                 <div *ngIf="showCustomerListPrivate">
                   <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.trainerInfo.purchaseItems | filterKey : 'marketplace' : false | sortBy : -1 : 'purchased'">
                     <ion-card-title flex center-ver>
-                      <span weight600>{{trainerService.getTraining(customer.trainingId).title}} - € {{customer.price / 1.21 | number : '1.2-2'}}</span>
+                      <span weight600>{{trainerService.getTraining(customer.trainingId).title}} <span trash *ngIf="customer.credits"><br> - € {{(trainerService.creditsPackagesPricing[customer.credits] | number : '1.2-2')}}</span></span>
                       <!-- <span marginLeft weight400 font-14 lowercase>({{customer.user.email}})</span> -->
                       <span class="spacer"></span>
                       <span textMedium italic weight500>{{helper.showLocalDate(customer.purchased,translate.instant('date_formats.fullDateTime'),0,true)}}</span>
@@ -214,7 +213,7 @@
                 <div *ngIf="showCustomerListDirect">
                   <ion-card marginBottom basicPadding borderPrimary fullwidth *ngFor="let customer of trainerService.trainerInfo.purchaseItems | filterKey : 'direct' : true | sortBy : -1 : 'purchased'">
                     <ion-card-title flex center-ver>
-                      <span weight600>{{customer?.items[0]?.description?.split('|')[0]}} (Excl. credits) - € {{customer.price.trainingPrice | number : '1.2-2'}}</span>
+                      <span weight600>{{customer?.items[0]?.description?.split('|')[0]}} (Excl. credits) <br>+ € {{customer.price.trainingPrice | number : '1.2-2'}}</span>
                       <!-- <span marginLeft weight400 font-14 lowercase>({{customer.user.email}})</span> -->
                       <span class="spacer"></span>
                       <span textMedium italic weight500>{{helper.showLocalDate(customer.purchased,translate.instant('date_formats.fullDateTime'),0,true)}}</span>

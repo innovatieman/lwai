@@ -691,7 +691,7 @@
                   <span> {{'marketplace.revenue' | translate}} ({{trainerService.purchaseItems(trainerService.trainingItem.id).length}})</span>
                   <div class="spacer"></div>
                 </div>
-                <div>
+                <!-- <div>
                   <ion-card marginBottom basicPadding borderPrimary fullwidth>
                     <div flex center-ver weight500>
                       <span >{{'marketplace.revenue_total' | translate}}:</span>
@@ -734,8 +734,82 @@
                     </div> 
 
                   </ion-card>
+                </div>  -->
+
+
+                <div>
+                  <ion-card marginBottom basicPadding fullwidth>
+                    <div flex center-ver weight700>
+                      <span >{{'customers.revenue_total_marketplace' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue_markets[trainerService.trainingItem.id].all.total | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_margin' | translate}} ({{trainerService.revenue_markets[trainerService.trainingItem.id].margin_alicialabs}}%):</span>
+                      <div class="spacer"></div>
+                      <span>€ {{(trainerService.revenue_markets[trainerService.trainingItem.id].all.total - trainerService.revenue_markets[trainerService.trainingItem.id].all.profit) | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'marketplace.revenue_profit' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue_markets[trainerService.trainingItem.id].all.profit | number : '1.2-2'}}</span>
+                    </div> 
+                  </ion-card>
+
+                  <ion-card marginBottom basicPadding fullwidth>
+                    <div flex center-ver weight700>
+                      <span >{{'customers.revenue_total_direct' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue_directs[trainerService.trainingItem.id].all.total | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span >{{'marketplace.revenue_margin' | translate}} (5%):</span>
+                      <div class="spacer"></div>
+                      <span>€ {{(trainerService.revenue_directs[trainerService.trainingItem.id].all.total - trainerService.revenue_directs[trainerService.trainingItem.id].all.profit) | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'marketplace.revenue_profit' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span>€ {{trainerService.revenue_directs[trainerService.trainingItem.id].all.profit | number : '1.2-2'}}</span>
+                    </div> 
+                  </ion-card>
+
+                  <ion-card marginBottom basicPadding fullwidth>
+                    <div flex center-ver>
+                      <span >{{'customers.costs_credits_private' | translate}} ({{trainerService.costs_credits_trainingItems[trainerService.trainingItem.id].all.length}} {{'standards.users' | translate}}):</span>
+                      <div class="spacer"></div>
+                      <span trash>€ {{trainerService.costs_credits_trainingItems[trainerService.trainingItem.id].all.total | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight700 style="border-top: solid 1px var(--ion-color-primary);">
+                      <span >{{'customers.costs' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span trash>€ {{trainerService.costs_credits_trainingItems[trainerService.trainingItem.id].all.total | number : '1.2-2'}}</span>
+                    </div> 
+                  </ion-card>
+
+
+                  <ion-card marginBottom basicPadding fullwidth borderPrimary font-16>
+                    <div flex center-ver weight600>
+                      <span *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].unpaid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].unpaid.profit - trainerService.costs_credits.unpaid.total) >= 0">{{'marketplace.revenue_unpaid' | translate}}:</span>
+                      <span *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].unpaid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].unpaid.profit - trainerService.costs_credits.unpaid.total) < 0">{{'marketplace.costs_unpaid' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].unpaid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].unpaid.profit - trainerService.costs_credits.unpaid.total) >= 0">€ {{trainerService.revenue_markets[trainerService.trainingItem.id].unpaid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].unpaid.profit - trainerService.costs_credits_trainingItems[trainerService.trainingItem.id].unpaid.total | number : '1.2-2'}}</span>
+                      <span trash *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].unpaid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].unpaid.profit - trainerService.costs_credits.unpaid.total) < 0">€ {{trainerService.revenue_markets[trainerService.trainingItem.id].unpaid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].unpaid.profit - trainerService.costs_credits_trainingItems[trainerService.trainingItem.id].unpaid.total | number : '1.2-2'}}</span>
+                    </div> 
+                    <div flex center-ver weight500>
+                      <span *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].paid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].paid.profit - trainerService.costs_credits.paid.total) >= 0">{{'marketplace.revenue_paid' | translate}}:</span>
+                      <span *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].paid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].paid.profit - trainerService.costs_credits.paid.total) < 0">{{'marketplace.paid' | translate}}:</span>
+                      <div class="spacer"></div>
+                      <span *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].paid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].paid.profit - trainerService.costs_credits.paid.total) >= 0">€ {{trainerService.revenue_markets[trainerService.trainingItem.id].paid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].paid.profit - trainerService.costs_credits.paid.total | number : '1.2-2'}}</span>
+                      <span trash *ngIf="(trainerService.revenue_markets[trainerService.trainingItem.id].paid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].paid.profit - trainerService.costs_credits.paid.total) < 0">€ {{trainerService.revenue_markets[trainerService.trainingItem.id].paid.profit + trainerService.revenue_directs[trainerService.trainingItem.id].paid.profit - trainerService.costs_credits.paid.total | number : '1.2-2'}}</span>
+                    </div>
+
+                  </ion-card>
                 </div> 
-                <div *ngIf="trainerService.revenue_market[trainerService.trainingItem.id].unpaid.profit" flex center-ver>
+
+
+
+                <div *ngIf="(trainerService.revenue_market.unpaid.profit + trainerService.revenue_direct.unpaid.profit - trainerService.costs_credits.unpaid.total) >= 0" flex center-ver>
                   <div class="spacer"></div>
                   <ion-button fill="outline" color="primary" class="saveButton" (click)="trainerService.requestPayout()">
                     {{'marketplace.request_payout' | translate}}
