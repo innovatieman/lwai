@@ -50,11 +50,11 @@ jobs:
           command: |
             npm install
             npm run build -- --configuration production 
-            ssh -o StrictHostKeyChecking=no deb141788n8@alicialabs.com "mkdir ./domains/alicialabs.com/_tmp"
-            scp -P22 -rp ./www/* deb141788n8@alicialabs.com:./domains/alicialabs.com/_tmp
-            ssh -p22 deb141788n8@alicialabs.com "cp -a ./domains/alicialabs.com/constant_files/. ./domains/alicialabs.com/_tmp/"
-            ssh -p22 deb141788n8@alicialabs.com "mv ./domains/alicialabs.com/public_html/conversation ./domains/alicialabs.com/_old && mv ./domains/alicialabs.com/_tmp ./domains/alicialabs.com/public_html/conversation"
-            ssh -p22 deb141788n8@alicialabs.com "rm -rf ./domains/alicialabs.com/_old"
+            ssh -o StrictHostKeyChecking=no deb141788n8@alicialabs.com "mkdir ./domains/conversation.alicialabs.com/_tmp"
+            scp -P22 -rp ./www/* deb141788n8@alicialabs.com:./domains/conversation.alicialabs.com/_tmp
+            ssh -p22 deb141788n8@alicialabs.com "cp -a ./domains/conversation.alicialabs.com/constant_files/. ./domains/conversation.alicialabs.com/_tmp/"
+            ssh -p22 deb141788n8@alicialabs.com "mv ./domains/conversation.alicialabs.com/public_html ./domains/conversation.alicialabs.com/_old && mv ./domains/conversation.alicialabs.com/_tmp ./domains/conversation.alicialabs.com/public_html"
+            ssh -p22 deb141788n8@alicialabs.com "rm -rf ./domains/conversation.alicialabs.com/_old"
 
 
 

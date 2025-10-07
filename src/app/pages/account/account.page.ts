@@ -88,7 +88,7 @@ export class AccountPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.accountService.ngOnInit()
+    this.accountService.init()
     // this.auth.isAdmin().subscribe((admin) => {
     //   this.isAdmin = admin;
     // });

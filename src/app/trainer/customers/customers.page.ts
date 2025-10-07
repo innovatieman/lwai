@@ -51,7 +51,7 @@ export class CustomersPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.accountService.ngOnInit()
+    this.accountService.init()
   }
 
   useAction(action:string){

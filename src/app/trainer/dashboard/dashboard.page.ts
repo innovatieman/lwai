@@ -86,7 +86,7 @@ export class DashboardPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.accountService.ngOnInit()
+    this.accountService.init()
   }
 
   showEditor(){

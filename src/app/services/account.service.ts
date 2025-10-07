@@ -73,7 +73,7 @@ export class AccountService {
     public levelService:LevelsService
   ) { }
 
-  ngOnInit() {
+  init() {
     if(this.initStarted){
       return
     }
