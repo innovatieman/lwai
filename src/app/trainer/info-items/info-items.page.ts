@@ -33,7 +33,7 @@ export class InfoItemsPage implements OnInit {
     [x:string]: any;
     searchTerm: string = '';
     // categories: any[] = [];
-    selectedModule:string = '';
+    selectedModulie:string = '';
     showBasics: boolean = false;
     showUserInput: boolean = false;
     showUserInputMore: boolean = true;
@@ -89,6 +89,7 @@ export class InfoItemsPage implements OnInit {
     }
   
   ionViewWillEnter(){
+    console.log('trainerService.selectedModuleInfoItems',this.trainerService.selectedModuleInfoItems)
     this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
         if (userInfo) {
           this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
@@ -138,6 +139,7 @@ export class InfoItemsPage implements OnInit {
   ionViewWillLeave() {
     this.leave$.next();
     this.leave$.complete();
+    console.log('trainerService.selectedModuleInfoItems',this.trainerService.selectedModuleInfoItems)
   }
 
     shortMenu:any
@@ -694,12 +696,22 @@ export class InfoItemsPage implements OnInit {
         false,
         ['title','role','user_info','tags']
       );
-    
-      const extraFiltered2 = this.filterKeyPipe.transform(
-        searched,
-        'modules',
-        this.selectedModule
-      );
+      
+      let extraFiltered2:any =[]
+      if(this.trainerService.selectedModuleInfoItems !='none'){
+        extraFiltered2 = this.filterKeyPipe.transform(
+          searched,
+          'modules',
+          this.trainerService.selectedModuleInfoItems
+        );
+      }
+      else{
+        extraFiltered2 = this.filterKeyPipe.transform(
+          searched,
+          'modules',
+          'empty'
+        );
+      }
   
       // const extraFiltered3 = this.filterKeyPipe.transform(
       //   extraFiltered2,

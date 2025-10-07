@@ -64,8 +64,8 @@ export class SalesTrainingsPage implements OnInit {
         this.selectedTraining.customerTrainingId = this.input.training.id;
       }
       this.onlyUser = this.input.onlyUser || false;
-      // this.users = [{ email: '', displayName: '', lang:this.translate.currentLang }];
-      this.users = [ { email:'test89@innovatieman.nl',displayName:'Test 89', lang:this.translate.currentLang } ];
+      this.users = [{ email: '', displayName: '', lang:this.translate.currentLang }];
+      // this.users = [ { email:'test89@innovatieman.nl',displayName:'Test 89', lang:this.translate.currentLang } ];
     }
   }
 

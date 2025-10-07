@@ -52,6 +52,8 @@ export class TrainerService {
   voices:any[] = []
   isAdmin: boolean = false;
   trainingSubItems:any = {};
+  selectedModuleCases:string = ''
+  selectedModuleInfoItems:string = ''
 
   creditsPackagesPricing:any = {
     0:0,
@@ -2201,7 +2203,7 @@ export class TrainerService {
         if(!item.price){
           item.price = 0
         }
-        let price = parseFloat(item.price?.trainingPrice || 0)
+        let price = parseFloat(item.prices?.trainingPrice || 0)
         if(isNaN(price)){
           price = 0
         }

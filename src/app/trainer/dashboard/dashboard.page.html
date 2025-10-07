@@ -649,10 +649,11 @@
                 <ion-card-title flex center-ver>
                   <span marginLeft weight600>{{item.title}} - {{'dashboard.knowledge_summary' | translate}}</span>
                   <span class="spacer"></span>
-                  <fa-icon pointer titleIcon font-24 (click)="editKnowledgeItem(item)" [icon]="icon.get('faPen')"></fa-icon>
-                  <fa-icon pointer titleIcon trash font-24 (click)="deleteKnowledgeItem(item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
+                  <fa-icon pointer *ngIf="item.show" titleIcon font-24 (click)="editKnowledgeItem(item)" [icon]="icon.get('faPen')"></fa-icon>
+                  <fa-icon pointer *ngIf="item.show" titleIcon trash font-24 (click)="deleteKnowledgeItem(item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
+                  <fa-icon pointer titleIcon font-24 (click)="item.show=!item.show" [icon]="icon.get('faChevronDown')" chevron [ngStyle]="{'transform':item.show ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
                 </ion-card-title>
-                <ion-card-content>
+                <ion-card-content *ngIf="item.show">
                   <div font-14 *ngIf="item.summary" [innerHTML]="item.summary"></div>
                   <div font-14 *ngIf="!item.summary">{{'dashboard.add_knowledge_creating_summary' | translate}}</div>
                 </ion-card-content>
@@ -678,11 +679,12 @@
                 <ion-card-title flex center-ver>
                   <span marginLeft weight600>{{item.title}}</span>
                   <span class="spacer"></span>
-                  <fa-icon pointer titleIcon font-24 (click)="addBook(item)" [icon]="icon.get('faPlus')"></fa-icon>
-                  <fa-icon pointer titleIcon font-24 (click)="editBook(item)" [icon]="icon.get('faPen')"></fa-icon>
-                  <fa-icon pointer titleIcon trash font-24 (click)="deleteBook(item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
+                  <fa-icon pointer *ngIf="item.show" titleIcon font-24 (click)="addBook(item)" [icon]="icon.get('faPaperclip')"></fa-icon>
+                  <fa-icon pointer *ngIf="item.show" titleIcon font-24 (click)="editBook(item)" [icon]="icon.get('faPen')"></fa-icon>
+                  <fa-icon pointer *ngIf="item.show" titleIcon trash font-24 (click)="deleteBook(item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
+                  <fa-icon pointer titleIcon font-24 (click)="item.show=!item.show" [icon]="icon.get('faChevronDown')" chevron [ngStyle]="{'transform':item.show ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
                 </ion-card-title>
-                <ion-card-content>
+                <ion-card-content *ngIf="item.show">
                   <div font-14 [innerHTML]="item.summary"></div>
                   <div *ngIf="item.documents && item.documents.length > 0">
                     <ion-card marginTop basicPadding borderPrimary *ngFor="let doc of item.documents">

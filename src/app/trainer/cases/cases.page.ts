@@ -33,7 +33,7 @@ export class CasesPage implements OnInit {
   [x:string]: any;
   searchTerm: string = '';
   categories: any[] = [];
-  selectedModule:string = '';
+  selectedModuule:string = '';
   showBasics: boolean = false;
   showUserInput: boolean = false;
   showUserInputMore: boolean = true;
@@ -108,6 +108,7 @@ export class CasesPage implements OnInit {
 
 
   ionViewWillEnter(){
+    console.log('trainerService.selectedModuleCases',this.trainerService.selectedModuleCases)
     this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
       if (userInfo) {
         this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
@@ -154,6 +155,7 @@ export class CasesPage implements OnInit {
   ionViewWillLeave() {
     this.leave$.next();
     this.leave$.complete();
+    console.log('trainerService.selectedModuleCases',this.trainerService.selectedModuleCases)
   }
 
   private loadCategories() {
@@ -866,11 +868,21 @@ export class CasesPage implements OnInit {
       ['title','role','user_info','tags']
     );
   
-    const extraFiltered2 = this.filterKeyPipe.transform(
-      searched,
-      'modules',
-      this.selectedModule
-    );
+    let extraFiltered2:any =[]
+      if(this.trainerService.selectedModuleCases !='none'){
+        extraFiltered2 = this.filterKeyPipe.transform(
+          searched,
+          'modules',
+          this.trainerService.selectedModuleCases
+        );
+      }
+      else{
+        extraFiltered2 = this.filterKeyPipe.transform(
+          searched,
+          'modules',
+          'empty'
+        );
+      }
 
     // const extraFiltered3 = this.filterKeyPipe.transform(
     //   extraFiltered2,

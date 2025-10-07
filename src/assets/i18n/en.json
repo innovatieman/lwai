@@ -623,7 +623,8 @@
       "voice_on":"Start with voice",
       "conversation_ai":"Conversation with AI",
       "knowledge_item":"Knowledge",
-      "open_more":"Open more"
+      "open_more":"Open more",
+      "no_module":"No module"
     },
     "modules":{
         "edit_module":"Edit",
@@ -1264,6 +1265,7 @@
     "country":"Country",
     "address":"Address",
     "postal_code":"Postal code",
+    "zip":"Postcode",
     "city":"City",
     "phone":"Phone number",
     "password":"Password",

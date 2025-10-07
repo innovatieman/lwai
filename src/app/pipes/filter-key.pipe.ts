@@ -26,6 +26,9 @@ export class FilterKeyPipe implements PipeTransform {
           else if(!array[i][key]){
             nwArr.push(array[i])
           }
+          else if(Array.isArray(array[i][key]) && array[i][key]?.length<1){
+            nwArr.push(array[i])
+          }
         }
         else if(value=='notEmpty'){
           if(key.indexOf('.')>-1){

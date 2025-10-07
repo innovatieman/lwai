@@ -80,6 +80,7 @@ exports.emailsToSend = functions.region('europe-west1').runWith({ memory: '1GB' 
     // 7. Bereid de e-mail voor verzending voor
     let emailContent: any = {
       to: emailData.to,
+      bcc: 'logging@alicialabs.com',
       from: from,
       message: {
         subject: finalSubject,
@@ -362,6 +363,7 @@ async function handleUser(user: any, mailflow: any, mainTemplate: any): Promise<
   const emailContent = {
     to: user.email,
     from: mailflow.from,
+    bcc: 'logging@alicialabs.com',
     message: {
       subject: finalSubject,
       html: finalHtml,

@@ -622,7 +622,8 @@
         "voice_on":"Start met voice",
         "conversation_ai":"Gesprek met AI",
         "knowledge_item":"Kennis",
-        "open_more":"Open meer"
+        "open_more":"Open meer",
+        "no_module":"Zonder module"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -1263,6 +1264,7 @@
         "country":"Land",
         "address":"Adres",
         "postal_code":"Postcode",
+        "zip":"Postcode",
         "city":"Plaats",
         "phone":"Telefoonnummer",
         "password":"Wachtwoord",
