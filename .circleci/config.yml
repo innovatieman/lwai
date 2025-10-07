@@ -43,7 +43,7 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:g0VJ9q0itRNCJ9Q6EkPlIltbYGSXQffVIXp4dq5/Wmo marknierop@MacBook-Pro-van-Mark-2.local"
+            - "SHA256:sKpZp/3/T4M1n1qrqs8j+/U4PFhY3vtF0SVOX9qBJCA circleci@alicialabs"
       - checkout
       - run: 
           name: install_node
