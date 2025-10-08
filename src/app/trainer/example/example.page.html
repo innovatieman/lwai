@@ -76,6 +76,22 @@
                 <fa-icon font-24 slot="end" [icon]="icon.get('faLevelUp')"></fa-icon>
             </ion-item>
           </div>
+
+          <!-- <div *ngIf="!media.smallDevice&& exampleItem(type,id)" class="agenda" >
+            <div></div>
+              <app-training-list-item 
+                  *ngFor="let item of exampleItem(type,id).items"
+                  [item]="item"
+                  [openPathIds]="openPathIds"
+                  [path]="[item.id]"
+                  (pathSelected)="setOpenPath($event)"
+                  (itemSelected)="selectMenuTrainingItem($event)"
+                  [active]="item.id==latestBreadCrumbs.id"
+              ></app-training-list-item>
+
+          </div> -->
+
+
         </ion-col>
 
         <ion-col id="mainContent" [size]="media.smallDevice ? 12 : 9" class="selectColumn" *ngIf="itemsLoaded&&exampleItem(type,id)?.id">

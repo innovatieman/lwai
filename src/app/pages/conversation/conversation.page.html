@@ -35,6 +35,13 @@
             </div>
           </div>
         </div> -->
+
+        <div flex center-right fullwidth class="voiceMuteSmall" style="position: relative;bottom:initial;margin-right:10px" *ngIf="conversation.caseItem.voice&&!conversation.activeConversation.voice_on">
+          <div (click)="toggleVoice()" flex center-ver >
+            <fa-icon [icon]="icon.get('faMicrophoneAlt')"></fa-icon>
+            <span marginLeft>{{'conversation.voice_on' | translate}}</span>
+          </div>
+        </div>
         
         <ion-buttons slot="end" flex center-ver style="margin-right: 15px;">
           <ion-button *ngIf="!conversation.activeConversation.trainingId" [color]="auth.credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline" (click)="nav.go('account/credits')">
@@ -45,17 +52,15 @@
             </span>
             <span *ngIf="!auth.credits.total&&!auth.isEmployee">0 <span *ngIf="!media.smallDevice">{{'standards.credits' | translate}}</span></span>
           </ion-button>
-          <!-- <ion-button color="secondary" id="header_menu" (click)="openFeedback()" size="large">
-            <ion-icon name="chatbubble-ellipses" noMargin slot="end" style="font-size: 24px;"></ion-icon>
-          </ion-button> -->
+
           <ion-button (click)="toggleVideo()" *ngIf="conversation.caseItem.avatarName" size="large">
             <fa-icon [icon]="icon.get('faVideoSlash')" *ngIf="interaction=='combination'&&conversation.activeConversation.video_on"></fa-icon>
             <fa-icon [icon]="icon.get('faVideo')"  *ngIf="interaction=='chat'||!conversation.activeConversation.video_on"></fa-icon>
           </ion-button>
-          <ion-button (click)="toggleVoice()" *ngIf="conversation.caseItem.voice" size="large">
+          <!-- <ion-button (click)="toggleVoice()" *ngIf="conversation.caseItem.voice" size="large">
             <fa-icon [icon]="icon.get('faMicrophoneAltSlash')" *ngIf="interaction=='voice'&&conversation.activeConversation.voice_on"></fa-icon>
             <fa-icon [icon]="icon.get('faMicrophoneAlt')"  *ngIf="interaction=='chat'||!conversation.activeConversation.voice_on"></fa-icon>
-          </ion-button>
+          </ion-button> -->
 
         </ion-buttons>
       </div>
@@ -147,11 +152,23 @@
           <span *ngIf="conversation.heyGen.streamIsActive">{{'conversation.connected' | translate}}</span>
           <!-- <span *ngIf="!conversation.heyGen.streamIsActive&&!conversation.heyGen.connecting">Connection Failed</span> -->
         </ion-card>
-        <div flex center-ver fullwidth style="padding:5px;height:300px;max-height:30%;" *ngIf="interaction=='chat'||(!conversation.activeConversation?.video_on &&interaction!='voice')">
+        <div flex center-ver relative fullwidth style="padding:5px;height:300px;max-height:30%;" *ngIf="interaction=='chat'||(!conversation.activeConversation?.video_on &&interaction!='voice')">
           <div [ngStyle]="{'width':media.screenSize=='md' ? '20%' : '50%'}" *ngIf="!conversation.caseItem.avatarName"></div>
           <ion-card class="imageCard" *ngIf="interaction=='chat'&&conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(' + conversation.activeConversation.photo + ')'}" flex center-hor>
+            <div flex center-hor fullwidth class="voiceMuteSmall" *ngIf="conversation.caseItem.voice&&!conversation.activeConversation.voice_on">
+              <div (click)="toggleVoice()"  flex center-ver >
+                <fa-icon [icon]="icon.get('faMicrophoneAlt')"></fa-icon>
+                <span marginLeft>{{'conversation.voice_on' | translate}}</span>
+              </div>
+            </div>
           </ion-card>
           <ion-card class="imageCard" *ngIf="interaction=='chat'&&!conversation.activeConversation?.photo" backgroundImage [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}" flex center-hor>
+            <div flex center-hor fullwidth class="voiceMuteSmall" *ngIf="conversation.caseItem.voice&&!conversation.activeConversation.voice_on">
+              <div (click)="toggleVoice()" flex center-ver >
+                <fa-icon [icon]="icon.get('faMicrophoneAlt')"></fa-icon>
+                <span marginLeft>{{'conversation.voice_on' | translate}}</span>
+              </div>
+            </div>
           </ion-card>
         </div>
 
@@ -345,13 +362,16 @@
                     </div>
                   </div>
                 </div>
-                <div *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude && isSpeaking" pointer class="voiceStop" flex center-ver center-hor flex-column>
-                  <fa-icon [icon]="icon.get('faStop')" (click)="stopVoice()" pointer></fa-icon>
-                  <!-- <fa-icon marginLeft [icon]="icon.get('faPause')" (click)="pauseVoice()"></fa-icon> -->
+                <div (click)="stopVoice()" *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude && isSpeaking" pointer class="voiceStop" flex center-ver center-hor flex-column>
+                  <fa-icon [icon]="icon.get('faStop')"  pointer></fa-icon>
                 </div>
                 <div *ngIf="conversation.messages.length>0 && !conversation.activeConversation?.hide?.attitude" class="voiceAttitude" flex center-ver center-hor flex-column>
                   <app-graph-gauge [value]="conversation.attitude" height="100px"></app-graph-gauge>
                   <div>{{conversation.attitude}} {{info.getAttitude(conversation.attitude)?.title}}</div>
+                </div>
+                <div (click)="toggleVoice()" *ngIf="conversation.caseItem.voice" class="voiceMute" flex center-ver >
+                  <fa-icon [icon]="icon.get('faMicrophoneAltSlash')" *ngIf="interaction=='voice'&&conversation.activeConversation.voice_on"></fa-icon>
+                  <span marginLeft>{{'conversation.voice_off' | translate}}</span>
                 </div>
 
               </div>  
@@ -377,9 +397,12 @@
             <!-- chatInput -->
             <!-- <ion-col size="12" *ngIf="interaction!='combination' && !conversation.activeConversation.closed"> -->
             <ion-col [size]="!conversation.fullRecording ? (media.smallDevice ? 2 : 3) : (media.smallDevice ? 9 : 10)" *ngIf="interaction=='voice'" flex center-ver center-hor>
-              <div class="microphone-wrapper" [ngClass]="{'recording':conversation.fullRecording,'notRecording':isSpeaking}" (click)="!conversation.fullRecording ? startRecording($event, true) : stopRecording($event)">
-                <fa-icon [icon]="icon.get('faMicrophoneAlt')" pointer *ngIf="!conversation.fullRecording"></fa-icon>
-                <fa-icon [icon]="icon.get('faMicrophoneAltSlash')" pointer *ngIf="conversation.fullRecording"></fa-icon>
+              <div flex flex-column center-ver>
+                <div class="microphone-wrapper" [ngClass]="{'recording':conversation.fullRecording,'notRecording':isSpeaking}" (click)="!conversation.fullRecording ? startRecording($event, true) : stopRecording($event)">
+                  <fa-icon [icon]="icon.get('faMicrophoneAlt')" pointer *ngIf="!conversation.fullRecording"></fa-icon>
+                  <fa-icon [icon]="icon.get('faMicrophoneAltSlash')" pointer *ngIf="conversation.fullRecording"></fa-icon>
+                </div>
+                <div *ngIf="!conversation.fullRecording" weight700 font-12>{{'conversation.only_voice' | translate}}</div>
               </div>
             </ion-col>
             <ion-col *ngIf="!conversation.fullRecording" [size]="interaction=='voice' ? 7 : (media.smallDevice ? 9 : 10)">

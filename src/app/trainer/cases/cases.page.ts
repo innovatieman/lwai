@@ -108,7 +108,6 @@ export class CasesPage implements OnInit {
 
 
   ionViewWillEnter(){
-    console.log('trainerService.selectedModuleCases',this.trainerService.selectedModuleCases)
     this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
       if (userInfo) {
         this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
@@ -371,7 +370,6 @@ export class CasesPage implements OnInit {
 
       // Verwijder de case uit Firestore
       this.firestore.deleteSub('trainers', this.nav.activeOrganisationId, 'cases', caseId).then(() => {
-        console.log('deleted case');
         this.updateVisibleCases();
       });
 
@@ -1364,6 +1362,29 @@ export class CasesPage implements OnInit {
 
   }
 
+  exportVisibleItems(){
+    if(!this.trainerService.isAdmin){
+      return
+    }
+    let items = []
+    for(let item of this.visibleCases){
+      let itemCopy = JSON.parse(JSON.stringify(item))
+      itemCopy.exportedType = 'case'
+      items.push(itemCopy)
+    }
+  
+    const base64 = this.encodeObjectToBase64(items); // encode naar base64
+
+    const blob = new Blob([base64], { type: 'text/plain;charset=utf-8' });
+    // const blob = new Blob([JSON.stringify(obj)], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    let title = 'selected_cases'
+    link.download = 'export_'+title+'.alicialabs';
+    link.click();
+
+  }
+
   importClick(){
     if(!this.trainerService.checkIsTrainerPro()){
         return
@@ -1387,17 +1408,38 @@ export class CasesPage implements OnInit {
     reader.readAsText(file);
   }
 
-  importData(fileData:any){
-    if(!fileData || fileData.exportedType !== 'case') {
+  importData(fileData:any,multiple:boolean = false){
+    if(!fileData) {
       this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
       return;
     }
+
+    if (fileData.exportedType !== 'case') {
+
+      if(!Array.isArray(fileData)){
+        this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+        return;
+      }
+      else{
+        for(let i=0;i<fileData.length;i++){
+          if(fileData[i].exportedType !== 'case'){
+            this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+            return;
+          }
+        }
+        for(let i=0;i<fileData.length;i++){
+          this.importData(fileData[i], true)
+        }
+        return;
+      }
+    }
+
     let newItem:any = {}
 
     try {
         newItem.created = Date.now();
         newItem.conversation = fileData.conversation || '';
-        newItem.title = fileData.title + ' - import' || 'import case';
+        newItem.title = fileData.title + (multiple ? '' : ' - import');
         newItem.role = fileData.role || '';
         newItem.free_question = fileData.free_question || '';
         newItem.free_question2 = fileData.free_question2 || '';
@@ -1437,6 +1479,9 @@ export class CasesPage implements OnInit {
           attitude: false,
           steadfastness: false,
           casus: false,
+          voice: false,
+          free_question: false,
+          free_answers: fileData.free_question ? true : false,
           goals: {
             phases: false,
             free: true,
@@ -1457,6 +1502,7 @@ export class CasesPage implements OnInit {
             feedback:false,
             feedbackCipher: false,
             goal: false,
+            evaluation: false,
           }
         };
       
@@ -1467,27 +1513,14 @@ export class CasesPage implements OnInit {
     }
     this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'cases', newItem,async (res:any) => {
       if(res && res.id){
-        try {
-          const found = await this.trainerService.waitForItem('case',newItem.created, 5000, 'created');
-          this.trainerService.caseItem = found;
-          // …openen/navigeer of modal sluiten
-        } catch (err) {
-          // Graceful fallback: direct openen met lokale data
-          this.trainerService.caseItem = { id: newItem.id, ...newItem };
+        if(!multiple){
+          try {
+            const found = await this.trainerService.waitForItem('case',newItem.created, 5000, 'created');
+            this.trainerService.caseItem = found;
+          } catch (err) {
+            this.trainerService.caseItem = { id: newItem.id, ...newItem };
+          }
         }
-
-        // this.trainerService.loadCases(() => {
-        //   let item = this.trainerService.cases.filter((e:any) => {
-        //     return e.created === newItem.created
-        //   })
-        //   if(item.length){
-        //     this.trainerService.caseItem = item[0]
-        //   }
-        //   else{
-        //     this.trainerService.caseItem = {}
-        //   }
-        //   // this.toast.show(this.translate.instant('cases.case_imported_successfully'))
-        // });
       } else {
         this.toast.show(this.translate.instant('error_messages.import_failed'), 4000, 'middle');
       }
@@ -1565,8 +1598,8 @@ export class CasesPage implements OnInit {
     },null,this.translate.instant('cases.select_voice'),{object:true})
   }
 
-  clearVoice(Event:Event){
-    Event.stopPropagation()
+  clearVoice(event:Event){
+    event.stopPropagation()
     this.trainerService.caseItem.voice = ''
     this.update('voice')
   }

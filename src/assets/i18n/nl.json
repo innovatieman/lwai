@@ -516,7 +516,9 @@
         "upgrade_to_pro":"Upgrade naar Trainer Pro",
         "not_auto_renewal_confirm":"Weet je zeker dat je het abonnement wilt annuleren? Je abonnement loopt dan af op de vervaldatum en wordt niet meer verlengd.",
         "auto_renewal_disabled":"Je abonnement is geannuleerd. Het loopt af op de vervaldatum en wordt niet meer verlengd.",
-        "auto_renewal_enabled":"Je abonnement zal automatisch worden verlengd op de vervaldatum."
+        "auto_renewal_enabled":"Je abonnement zal automatisch worden verlengd op de vervaldatum.",
+        "incl_vat":"incl. BTW",
+        "excl_vat":"excl. BTW"
     },
     "cases":{
         "badge_video":"Video",
@@ -622,8 +624,7 @@
         "voice_on":"Start met voice",
         "conversation_ai":"Gesprek met AI",
         "knowledge_item":"Kennis",
-        "open_more":"Open meer",
-        "no_module":"Zonder module"
+        "open_more":"Open meer"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -710,7 +711,7 @@
         "max_participants_reached":"Het maximum aantal deelnemers is bereikt. Als je meer deelnemers wilt toevoegen, moet je het aantal deelnemers verhogen in de bij het Creditbeheer van de training.",
         "progress":"Voortgang",
         "no_progress":"Er is nog geen voortgang in deze training.",
-        "price_elearning":"Bepaal de prijs van je e-learning per persoon incl. BTW",
+        "price_elearning":"Bepaal de prijs van je e-learning per persoon excl. BTW",
         "elearning_margin_alicialabs":"AliciaLabs marge is 20% van de prijs.",
         "elearning_publish_marketplace_title":"Publiceer je training op onze Marktplaats",
         "elearning_publish_marketplace_description":"Je training wordt zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar. Je kunt zelf de prijs bepalen en krijgt 80% van de opbrengst van deze prijs. Wij regelen de marketing voor AliciaLabs en het betalingsproces voor je.<br>Aan gebruikers wordt apart gevraagd of ze onbepaalde credits willen aanschaffen om de training te volgen, als ze deze nog niet hebben.",
@@ -1206,7 +1207,9 @@
         "no_trainer_details":"De trainer heeft nog geen details over zichzelf of de organisatie opgegeven.",
         "checking_code":"We controleren je speciale code...",
         "code_not_found":"De code is ongeldig of niet gevonden.",
-        "no_private_item_found":"Deze e-training is niet gevonden of niet beschikbaar zonder toegangscode."
+        "no_private_item_found":"Deze e-training is niet gevonden of niet beschikbaar zonder toegangscode.",
+        "prices_incl_vat":"Prijzen zijn inclusief BTW",
+        "prices_excl_vat":"Prijzen zijn exclusief BTW"
     },
     "media":{
         "photo_upload":"Upload foto",
@@ -1250,6 +1253,7 @@
         "login_failed":"Inloggen mislukt. Het wachtwoord is onjuist voor deze bestaande gebruiker",
         "processing":"Bezig met verwerken...",
         "price_excl_tax":"Bedrag excl. BTW (21%)",
+        "price_incl_tax":"Bedrag incl. BTW (21%)",
         "failure":"De betaling is niet gelukt.",
         "disclaimer_alicialabs_platform":"Deze training wordt aangeboden via het AliciaLabs platform.",
         "watch_example":"Bekijk de inhoud"

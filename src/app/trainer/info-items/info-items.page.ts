@@ -1204,6 +1204,29 @@ export class InfoItemsPage implements OnInit {
 
   }
 
+  exportVisibleItems(){
+    if(!this.trainerService.isAdmin){
+      return
+    }
+    let items = []
+    for(let item of this.visibleItems){
+      let itemCopy = JSON.parse(JSON.stringify(item))
+      itemCopy.exportedType = 'infoItem'
+      items.push(itemCopy)
+    }
+  
+    const base64 = this.encodeObjectToBase64(items); // encode naar base64
+
+    const blob = new Blob([base64], { type: 'text/plain;charset=utf-8' });
+    // const blob = new Blob([JSON.stringify(obj)], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    let title = 'selected_Items'
+    link.download = 'export_'+title+'.alicialabs';
+    link.click();
+
+  }
+
   importClick(){
     if(!this.trainerService.checkIsTrainerPro()){
         return
@@ -1227,11 +1250,32 @@ export class InfoItemsPage implements OnInit {
     reader.readAsText(file);
   }
 
-  importData(fileData:any){
-    if(!fileData || fileData.exportedType !== 'infoItem') {
+  importData(fileData:any,multiple:boolean = false){
+    if(!fileData) {
       this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
       return;
     }
+
+    if (fileData.exportedType !== 'infoItem') {
+
+      if(!Array.isArray(fileData)){
+        this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+        return;
+      }
+      else{
+        for(let i=0;i<fileData.length;i++){
+          if(fileData[i].exportedType !== 'infoItem'){
+            this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+            return;
+          }
+        }
+        for(let i=0;i<fileData.length;i++){
+          this.importData(fileData[i], true)
+        }
+        return;
+      }
+    }
+
     let newItem:any = {}
 
     try {
@@ -1242,6 +1286,7 @@ export class InfoItemsPage implements OnInit {
         newItem.type = fileData.type || 'text';
         newItem.content = fileData.content || '';
         newItem.photo = fileData.photo || '';
+        newItem.extra_photo = fileData.extra_photo || '';
         newItem.video_url = fileData.video_url || '';
         newItem.modules = [];
         newItem.tags = [];
@@ -1254,27 +1299,16 @@ export class InfoItemsPage implements OnInit {
     }
     this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'infoItems', newItem,async (res:any) => {
       if(res && res.id){
-        try {
-          const found = await this.trainerService.waitForItem('infoItem', newItem.created, 5000, 'created');
-          this.trainerService.infoItem = found;
-          // …openen/navigeer of modal sluiten
-        } catch (err) {
-          // Graceful fallback: direct openen met lokale data
-          this.trainerService.infoItem = { id: newItem.id, ...newItem };
+        if(!multiple){
+          try {
+            const found = await this.trainerService.waitForItem('infoItem', newItem.created, 5000, 'created');
+            this.trainerService.infoItem = found;
+            // …openen/navigeer of modal sluiten
+          } catch (err) {
+            // Graceful fallback: direct openen met lokale data
+            this.trainerService.infoItem = { id: newItem.id, ...newItem };
+          }
         }
-
-        // this.trainerService.loadInfoItems(() => {
-        //   let item = this.trainerService.infoItems.filter((e:any) => {
-        //     return e.created === newItem.created
-        //   })
-        //   if(item.length){
-        //     this.trainerService.infoItem = item[0]
-        //   }
-        //   else{
-        //     this.trainerService.infoItem = {}
-        //   }
-        //   // this.toast.show(this.translate.instant('cases.case_imported_successfully'))
-        // });
       } else {
         this.toast.show(this.translate.instant('error_messages.import_failed'), 4000, 'middle');
       }

@@ -57,15 +57,15 @@ exports.getVoices = onCall(
       return new responder.Message('Unauthorized', 401);
     }
 
-    if (!data || !data.trainerId) {
+    if (!data) {
       return new responder.Message('Missing required parameters', 400);
     }
 
-    const trainerRef = db.collection('trainers').doc(data.trainerId);
-    const trainerDoc = await trainerRef.get();
-    if (!trainerDoc.exists) {
-      return new responder.Message('Trainer not found', 404);
-    }
+    // const trainerRef = db.collection('trainers').doc(data.trainerId);
+    // const trainerDoc = await trainerRef.get();
+    // if (!trainerDoc.exists) {
+    //   return new responder.Message('Trainer not found', 404);
+    // }
     const language = data.language || 'en';
     const voicesRef = db.collection('voices');
     const voicesSnapshot = await voicesRef.get();

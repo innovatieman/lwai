@@ -31,6 +31,7 @@ exports.createStripeProductElearning = functions.region("europe-west1")
         unit_amount: elearningData.price_elearning * 100, // Prijs omzetten naar centen
         currency: "eur", // Pas aan naar de juiste valuta
         product: product.id,
+        tax_behavior: 'exclusive'
       });
 
       // Stap 3: Sla de Stripe-product-ID en prijs-ID op in Firestore

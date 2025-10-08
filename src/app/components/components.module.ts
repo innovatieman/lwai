@@ -13,6 +13,7 @@ import { StarRatingComponent } from './star-rating/star-rating.component';
 import { TooltipDirective } from './directives/tooltip.directive';
 import { MenuMobileComponent } from './menu-mobile/menu-mobile.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { TrainingListItemComponent } from './training-list-item/training-list-item.component';
 // import { MenuPage } from './menu.page';
 
 @NgModule({
@@ -23,7 +24,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     HighchartsChartModule,
     FontAwesomeModule
   ],
-  declarations: [HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent],
-  exports:[HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent]
+  declarations: [HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent,TrainingListItemComponent],
+  exports:[HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent,TrainingListItemComponent]
 })
 export class ComponentsModule {}

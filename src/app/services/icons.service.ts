@@ -22,11 +22,11 @@ import {
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
   faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink, faDatabase,
   faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift,faBookOpen,
-  faPiggyBank, faPhone
+  faPiggyBank, faPhone, faDotCircle
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
-  faCircle,faStar as faStarOutline,
+  faCircle,faStar as faStarOutline, faComments as faCommentsOutline, faFileAlt as faFileText
 
 } from '@fortawesome/free-regular-svg-icons';
 
@@ -90,6 +90,7 @@ export class IconsService {
     faCoins,
     faComment,
     faComments,
+    faCommentsOutline,
     faCommentSlash,
     faCommentDots,
     faCompressAlt,
@@ -112,6 +113,7 @@ export class IconsService {
     faExpandAlt,
     faEye,
     faFastBackward,
+    faFileText,
     faFileAlt,
     faFileExcel,
     faFileExport,

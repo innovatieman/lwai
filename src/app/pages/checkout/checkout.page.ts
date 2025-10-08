@@ -38,6 +38,7 @@ export class CheckoutPage implements OnInit {
   extraOrderList:any[] = [];
   processing: boolean = false;
   standAloneMode: boolean = false;
+  pricesInclVat: boolean = true;
   private leave$ = new Subject<void>();
   constructor(
     private fb: FormBuilder,
@@ -146,6 +147,9 @@ export class CheckoutPage implements OnInit {
         else{
           this.searchParams.specialCode = '';
           // this.inputSpecialCode = '';
+        }
+        if(params.has('pricesInclVat')){
+          this.pricesInclVat = params.get('pricesInclVat') !== 'false';
         }
       }
     });
@@ -275,12 +279,13 @@ export class CheckoutPage implements OnInit {
       }
     }
     if(!this.auth?.credits_unlimited_type) {
-      total += 25;
+      total += 20.66;
     } 
     return {
       total: total,
       tax: (total * 0.21).toFixed(2),
-      excl_tax: (total - (total * 0.21)).toFixed(2)
+      // excl_tax: (total - (total * 0.21)).toFixed(2),
+      incl_tax: (total + (total * 0.21)).toFixed(2)
     }
   }
 

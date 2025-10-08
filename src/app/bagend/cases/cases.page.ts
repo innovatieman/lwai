@@ -54,6 +54,8 @@ export class CasesPage implements OnInit {
   listOrder = -1
 
   showBasics: boolean = false;
+  showUserHide: boolean = false;
+  showUserhelp: boolean = false;
   showUserInput: boolean = false;
   showUserInputMore: boolean = true;
   showCasus: boolean = false;
@@ -77,7 +79,7 @@ export class CasesPage implements OnInit {
     private toast:ToastService,
     public levelService:LevelsService,
     private http: HttpClient,
-    private auth:AuthService,
+    public auth:AuthService,
     private caseFilterPipe: CaseFilterPipe,
     private filterSearchPipe: FilterSearchPipe,
     private filterKeyPipe: FilterKeyPipe,
@@ -249,6 +251,19 @@ export class CasesPage implements OnInit {
     this.activeTab = tab
   }
   selectCasus(casus:any){
+    if(casus.editable_by_user && !casus.editable_by_user.hide){
+      casus.editable_by_user.hide = {
+        attitude:false,
+        phases:false,
+        feedback:false,
+        feedbackCipher: false,
+        goal: false,
+      }
+      setTimeout(() => {
+        this.update('editable_by_user',true,casus)
+      }, 500);
+    }
+    
     this.caseItem = casus
     console.log(this.caseItem)
   }
@@ -1568,4 +1583,45 @@ No text, lines, or other elements should be present in the image besides the por
     }
     return check
   }
+
+
+  selectVoice(){
+    let list:any[] = []
+    let sexHtml:any = {
+      female: '<span style="background-color:yellow;color:black;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_female')+'</span>',
+      male: '<span style="background-color:lightblue;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_male')+'</span>',
+      other: '<span style="background-color:lightgreen;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_other')+'</span>'
+    }
+
+
+    for(let i=0;i<this.auth.voices.length;i++){
+      let voice:any = this.auth.voices[i]
+      let sample = "https://storage.cloud.google.com/lwai-3bac8.firebasestorage.app/voices/"+voice.name+"_"+this.translate.currentLang+".wav"
+      let html = '<div style="display:flex;margin:10px 0px;align-items:center"><div><span style="font-weight:bold;font-size:18px;">'+voice.name+'</span>[type]<br>[sex]<span style="font-size:12px;font-style:italic;">'+voice.short +'</span></div><span style="flex:auto 1 1"></span><audio style="height:36px;" controls><source src="'+sample+'" type="audio/mpeg">Your browser does not support the audio element.</audio>'
+      if(voice.type.toLowerCase()=='teenager'){
+        html = html.replace('[type]','<span style="background-color:orange;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-left:15px;top:-2px;">'+this.translate.instant('cases.voice_type_teenager')+'</span>')
+      }
+      else{
+        html = html.replace('[type]','')
+      }
+      html = html.replace('[sex]',sexHtml[voice.sex] || '')
+      list.push({
+        value:voice.name,
+        html:html,
+        name:voice.name + (voice.short ? ' ('+voice.short+')' : ''),
+      })
+    }
+    this.modalService.selectItem('',list,(result:any)=>{
+      if(result.data){
+        this.caseItem.voice = result.data.value;
+        this.update('voice')
+      }
+    },null,this.translate.instant('cases.select_voice'),{object:true})
+  }
+
+    clearVoice(event:Event){
+      event.stopPropagation()
+      this.caseItem.voice = ''
+      this.update('voice')
+    }
 }

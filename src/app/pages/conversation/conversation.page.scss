@@ -35,7 +35,7 @@ ion-header{
     width: 150px;
     background: white;
     border-radius: 24px;
-    right: 60px;
+    right: 40px;
     top: 25px;
     app-graph-gauge{
       margin-top:20px;
@@ -48,6 +48,29 @@ ion-header{
     }
 }
 
+.voiceMuteSmall{
+  position: absolute;
+  bottom: 25px;
+  div{
+    cursor: pointer;
+    font-weight: 600;
+    padding:10px 20px;
+    background: white;
+    border-radius: 24px;
+  }
+}
+
+.voiceMute{
+  position: absolute;
+  cursor: pointer;
+  font-weight: 600;
+  padding:10px 20px;
+  background: white;
+  border-radius: 24px;
+  left: 25px;
+  top: 25px;
+}
+
 .voiceStop{
   position: absolute;
   width: 80px;
@@ -55,7 +78,7 @@ ion-header{
   background: white;
   border-radius: 24px;
   left: 60px;
-  top: 25px;
+  top: 80px;
   font-size:24px;
 }
 

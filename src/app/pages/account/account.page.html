@@ -261,39 +261,6 @@
             </ion-card-header>
             <ion-card-content *ngIf="showInfoCredits">
               <div font-16 weight400 [innerHtml]="translate.instant('page_account.credits_how_text')"></div>
-              <!-- <div style="max-width:300px" fullwidth marginTop>
-                <div font-16 weight700 uppercase text-primary>Credits per optie</div>
-                <ion-list>
-                  <ion-item>
-                    <ion-label>Optie</ion-label>
-                    <ion-label slot="end">Credits</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Interactie</ion-label>
-                    <ion-label slot="end">12</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Suggesties</ion-label>
-                    <ion-label slot="end">4</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Fact-checker</ion-label>
-                    <ion-label slot="end">7</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Achtergrond informatie</ion-label>
-                    <ion-label slot="end">4</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Gespreks analyse</ion-label>
-                    <ion-label slot="end">12</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Voice to text</ion-label>
-                    <ion-label slot="end">2</ion-label>   
-                  </ion-item>
-                </ion-list>
-              </div> -->
             </ion-card-content>
           </ion-card>
           
@@ -349,8 +316,13 @@
                             <ion-card-subtitle font-14 weight600 text-secondary *ngIf="product.credits == 1000000">{{'page_account.credits_unlimited_chat' | translate}}<br>{{'page_account.credits_conversations' | translate}}</ion-card-subtitle>
                         </ion-card-header>
                     </div>
-                    <div center flex center-ver center-hor marginBottom *ngIf="product.prices?.length">
-                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</ion-button>
+                    <div center flex flex-column center-ver center-hor marginBottom *ngIf="product.prices?.length">
+                        <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>
+                          <div>
+                            <div>{{(accountService.activePrice(product).unit_amount / 100 * 1.21) | currency : (accountService.activePrice(product).currency | uppercase) }}</div>
+                            <div text-medium italic style="margin-top:10px;font-size:12px;">{{'page_account.incl_vat' | translate}}</div>
+                          </div>
+                        </ion-button>
                     </div>
                 </ion-card-content>
               </ion-card>

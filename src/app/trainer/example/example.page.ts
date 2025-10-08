@@ -50,10 +50,13 @@ export class ExamplePage implements OnInit {
     console.log(data)
   }
 
+  openPathIds: string[] = [];
+  setOpenPath(path: string[]) {
+    this.openPathIds = path;
+  }
   
 
-
-  ionViewWillEnter(){
+  async ionViewWillEnter(){
      this.route.params.pipe(takeUntil(this.leave$)).subscribe(params => {
       this.id = params['id'];
       this.type = params['type'];
@@ -62,15 +65,53 @@ export class ExamplePage implements OnInit {
       if (userInfo) {
         this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
           if(trainer){
-            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
-            this.itemsLoaded = true;
-              if(!this.trainerService.breadCrumbs.length){
-                  this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
-              }
-            },{example:()=>{
+            this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,async ()=>{
               this.itemsLoaded = true;
-              if(!this.trainerService.breadCrumbs.length){
-                  this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+              if(!this.trainerService.breadCrumbs.length || !this.trainerService.breadCrumbs[0].item.id){
+                if(this.type =='training'){
+                  let counter = 0;
+                  let trainingInterval = setInterval(async ()=>{
+                    counter++;
+                    if(this.trainerService.getTraining(this.id) || counter > 10){
+                      clearInterval(trainingInterval)
+                      if(!this.trainerService.getTraining(this.id)){
+                        this.nav.go('trainer/trainings')
+                        return;
+                      }
+                      let training = this.trainerService.getTraining(this.id)
+                      await this.trainerService.loadItemsForTraining(this.id);
+                      this.trainerService.breadCrumbs[0] = {type:this.type,item:training}
+                    }
+                  },500)
+                }
+                else{
+                  this.trainerService.breadCrumbs[0] = {type:this.type,item:this.exampleItem(this.type,this.id)}
+                }
+              }
+            },{example:async ()=>{
+              await this.trainerService.loadItemsForTraining(this.id);
+              this.itemsLoaded = true;
+              if(!this.trainerService.breadCrumbs.length || !this.trainerService.breadCrumbs[0].item.id){
+                console.log('ensured loaded',this.type)
+                if(this.type =='training'){
+                  let counter = 0;
+                  let trainingInterval = setInterval(async ()=>{
+                    counter++;
+                    if(this.trainerService.getTraining(this.id) || counter > 10){
+                      clearInterval(trainingInterval)
+                      if(!this.trainerService.getTraining(this.id)){
+                        this.nav.go('trainer/trainings')
+                        return;
+                      }
+                      let training = this.trainerService.getTraining(this.id)
+                      await this.trainerService.loadItemsForTraining(this.id);
+                      this.trainerService.breadCrumbs[0] = {type:this.type,item:training}
+                    }
+                  },500)
+                }
+                else{
+                  this.trainerService.breadCrumbs[0] = {type:this.type,item:this.exampleItem(this.type,this.id)}
+                }
               }
             }})
               // this.trainerService.loadTrainingsAndParticipants(()=>{
@@ -94,9 +135,29 @@ export class ExamplePage implements OnInit {
       // console.log('isAdmin',isAdmin)
      if(isAdmin){
       this.trainerService.ensureLoadedForOrg(this.nav.activeOrganisationId,()=>{
+        this.trainerService.loadItemsForTraining(this.id);
         this.itemsLoaded = true;
-        if(!this.trainerService.breadCrumbs.length){
-          this.trainerService.breadCrumbs.push({type:this.type,item:this.exampleItem(this.type,this.id)})
+        if(!this.trainerService.breadCrumbs.length || !this.trainerService.breadCrumbs[0].item.id){
+          console.log('ensured loaded',this.type)
+          if(this.type =='training'){
+            let counter = 0;
+            let trainingInterval = setInterval(async ()=>{
+              counter++;
+              if(this.trainerService.getTraining(this.id) || counter > 10){
+                clearInterval(trainingInterval)
+                if(!this.trainerService.getTraining(this.id)){
+                  this.nav.go('trainer/trainings')
+                  return;
+                }
+                let training = this.trainerService.getTraining(this.id)
+                await this.trainerService.loadItemsForTraining(this.id);
+                this.trainerService.breadCrumbs[0] = {type:this.type,item:training}
+              }
+            },500)
+          }
+          else{
+            this.trainerService.breadCrumbs[0] = {type:this.type,item:this.exampleItem(this.type,this.id)}
+          }
         }
       })
         // this.trainerService.loadTrainingsAndParticipants(()=>{
@@ -121,8 +182,6 @@ export class ExamplePage implements OnInit {
   }
 
   
-
-
   exampleItem(type:string,id:string):any{
     if(type =='infoItem'){
       if(this.trainerService.breadCrumbs.length && this.trainerService.breadCrumbs[0].type=='training'){
@@ -153,22 +212,71 @@ export class ExamplePage implements OnInit {
       this.modulesBreadCrumbs.push(module)
   }
 
+  resolveDeepItem(item: any): any {
+    while (item?.item) {
+      item = item.item;
+    }
+    return item;
+  }
+
+  selectMenuTrainingItem(item:any){
+    if(item?.item){
+      item.item = this.resolveDeepItem(item.item)
+    }
+    console.log('selectMenuTrainingItem',item)
+    if(item?.path&&item?.item?.type!='module'){
+      this.modulesBreadCrumbs = []
+      for(let i=0;i<item.path.length;i++){
+        let pathItem = this.exampleItem('module',item.path[i])
+        this.modulesBreadCrumbs.push({...pathItem,type:'module'})
+      }
+      let selectedItem = this.exampleItem(item.item.type,item.item.id)
+      selectedItem.type=selectedItem.item_type
+      if(selectedItem.type == 'case'){
+        this.showCaseInfo(selectedItem)
+        return;
+      }
+
+      else{
+        this.selectTrainingItem(selectedItem,false,true)
+      }
+      console.log(this.modulesBreadCrumbs)
+    }
+    if(item?.item.type=='module'){
+      this.modulesBreadCrumbs = []
+      for(let i=0;i<item.path.length;i++){
+        let pathItem = this.exampleItem('module',item.path[i])
+        this.modulesBreadCrumbs.push({...pathItem,type:'module'})
+      }
+      let selectedItem = this.exampleItem(item.item.type,item.item.id)
+      selectedItem.type=selectedItem.item_type
+      this.modulesBreadCrumbs.push({...selectedItem,type:item.item.type})
+    }
+    else if(item?.type == 'module'){
+      this.modulesBreadCrumbs = []
+      let selectedItem = this.exampleItem(item.type,item.id)
+      console.log('selectedItem',selectedItem)
+      selectedItem.type=selectedItem.item_type
+      this.modulesBreadCrumbs.push({...selectedItem,type:item.type})
+        // return;
+      }
+  }
+
+
   switchingItem:boolean = false
-  selectTrainingItem(item:any,moveInModule?:boolean){
+  selectTrainingItem(item:any,moveInModule?:boolean,scrollUp?:boolean){
     // console.log('select training item',item)
     // console.log(this.trainerService.breadCrumbs)
     // console.log(this.exampleItem(this.trainerService.breadCrumbs[0].type,item.id))
-
-    if(item.type == 'infoItem'){
+    
+    if(item.type == 'infoItem' || item.item_type == 'infoItem'){
       if(this.trainerService.breadCrumbs.length && (this.trainerService.breadCrumbs[0].type=='training' || this.trainerService.breadCrumbs[0].type=='module')){
-        console.log('getting item from training')
         if(moveInModule){
           this.modulesBreadCrumbs.pop()
         }
         this.modulesBreadCrumbs.push({type:'infoItem',item:this.exampleItem(item.type,item.id)})
       }
       else{
-        console.log('getting item from training')
         if(moveInModule){
           this.modulesBreadCrumbs.pop()
           this.switchingItem = true
@@ -179,7 +287,7 @@ export class ExamplePage implements OnInit {
         }, 50);
       }
     }
-    else if(item.type == 'module'){
+    else if(item.type == 'module' || item.item_type == 'module'){
       if(this.trainerService.breadCrumbs.length && this.trainerService.breadCrumbs[0].type=='module'){
         if(moveInModule){
           this.modulesBreadCrumbs.pop()
@@ -198,22 +306,24 @@ export class ExamplePage implements OnInit {
         this.modulesBreadCrumbs.push({type:'module',item:item})
       }
     }
-    else if(item.type == 'training'){
+    else if(item.type == 'training' || item.item_type == 'training'){
       this.modulesBreadCrumbs.push({type:'training',item:item})
     }
-    else if(item.type == 'case'){
+    else if(item.type == 'case' || item.item_type == 'case'){
       this.modulesBreadCrumbs.pop()
       this.showCaseInfo(this.exampleItem(item.type,item.id))
     }
     // console.log(this.modulesBreadCrumbs)
     // this.trainingItem = item
-    if(moveInModule){
+    if(moveInModule || scrollUp){
        let chatDiv:any
         setTimeout(() => {
           chatDiv = document.getElementById('mainContent');
           chatDiv.scrollTop = 0;//chatDiv.scrollHeight;
         }, 50);
       }
+
+    console.log(this.modulesBreadCrumbs)
   }
 
   get latestBreadCrumbs(){
@@ -226,10 +336,10 @@ export class ExamplePage implements OnInit {
   }
 
   backBreadCrumbs(){
-    // console.log('backBreadCrumbs',this.modulesBreadCrumbs)
     if(this.modulesBreadCrumbs.length > 0){
       this.modulesBreadCrumbs.pop()
     }
+    console.log('backBreadCrumbs',this.modulesBreadCrumbs)
   }
 
   currentItemIndex(item:any){

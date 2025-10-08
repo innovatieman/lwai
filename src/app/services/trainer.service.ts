@@ -118,7 +118,9 @@ export class TrainerService {
       this.isAdmin = admin;
     });
 
-    this.nav.organisationChange.subscribe((res)=>{      
+    this.nav.organisationChange.subscribe((res)=>{     
+      this.selectedModuleCases = ''
+      this.selectedModuleInfoItems = '' 
       this.trainingItem = {}
       this.moduleItem = {}
       this.caseItem = {}
@@ -1413,7 +1415,7 @@ export class TrainerService {
   //     }, 0); // vertraagd uitvoeren om main thread lucht te geven
   //   });
   // }
-
+  // trainingItemsLoaded:string[] = []
   async loadItemsForTraining(trainingId: string): Promise<void> {
     const path = this.fire.collection('trainers')
       .doc(this.nav.activeOrganisationId)
@@ -1476,14 +1478,14 @@ export class TrainerService {
   }
 
   getTraining(id:string,created?:number){
-    // console.log('getTraining',id,this.trainings)
     if(id){
-
+      
       for (let i = 0; i < this.trainings.length; i++) {
         if (this.trainings[i].id == id) {
           if(this.trainings[i].results && this.trainings[i].results.length>0){
             this.trainings[i].organizedResults = this.organizeResults(this.trainings[i].results,this.trainings[i])
           }
+          // console.log('getTraining',this.trainings[i])
           return this.trainings[i]
         }
       }
@@ -1511,7 +1513,7 @@ export class TrainerService {
   }
 
   getItemTraining(id:string,trainingId:string){
-
+    // console.log(this.trainingSubItems,trainingId,id)
     let items = this.trainingSubItems[trainingId] || [];
     if(items.length){
       for (let i = 0; i < items.length; i++) {

@@ -238,9 +238,9 @@
                       <div font-14 weight500 *ngIf="sales.elearningItem(item_id)?.trainer?.name">{{sales.elearningItem(item_id).trainer.name}}</div>
                     </ion-label>
                     <div text-end>
-                      <div font-16 weight600 *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
                       <div font-16 weight600 *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{0 | number : '1.2-2'}}</div>
-                      <div font-16 weight400 style="text-decoration: line-through;" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning | number : '1.2-2'}}</div>
+                      <div font-16 weight400 style="text-decoration: line-through;" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
                   <ion-item *ngIf="sales.elearningItem(item_id)">
@@ -250,7 +250,7 @@
                       <div font-14 weight500 *ngIf="auth.credits_unlimited_type">{{'checkout.unlimited_credits_already' | translate}}</div>
                     </ion-label>
                     <div text-end>
-                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type">€ {{25 | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type">€ {{(pricesInclVat ? 25 : 20.66) | number : '1.2-2'}}</div>
                       <div font-16 weight600 *ngIf="auth.credits_unlimited_type">€ {{0 | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
@@ -261,7 +261,7 @@
                       <div font-14 weight500 *ngIf="(sales.elearningItem(extraItemId.id))?.trainer?.name">{{(sales.elearningItem(extraItemId.id))?.trainer?.name}}</div>
                     </ion-label>
                     <div text-end>
-                      <div font-16 weight600>€ {{(sales.elearningItem(extraItemId.id))?.price_elearning | number : '1.2-2'}}</div>
+                      <div font-16 weight600>€ {{(sales.elearningItem(extraItemId.id))?.price_elearning * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
 
@@ -271,8 +271,10 @@
                       <div font-16 weight600>{{'checkout.total' | translate}}</div>
                     </ion-label>
                     <div text-end style="text-align:right;">
-                      <div font-24 weight600 text-primary>€ {{calculatePrice().total| number : '1.2-2'}}</div>
-                      <div font-12 weight400 text-medium>{{'checkout.price_excl_tax' | translate}} € {{calculatePrice().excl_tax | number : '1.2-2'}}</div>
+                      <div *ngIf="!pricesInclVat" font-24 weight600 text-primary>€ {{calculatePrice().total| number : '1.2-2'}}</div>
+                      <div *ngIf="pricesInclVat" font-24 weight600 text-primary>€ {{calculatePrice().incl_tax| number : '1.2-2'}}</div>
+                      <div *ngIf="pricesInclVat" font-12 weight400 text-medium>{{'checkout.price_excl_tax' | translate}} € {{calculatePrice().total | number : '1.2-2'}}</div>
+                      <div *ngIf="!pricesInclVat" font-14 weight600 text-secondary>{{'checkout.price_incl_tax' | translate}} € {{calculatePrice().incl_tax | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
 

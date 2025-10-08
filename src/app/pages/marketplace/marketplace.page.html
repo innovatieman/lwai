@@ -148,6 +148,8 @@
       
     </ion-row>
 
+    
+
     <ion-row>
       <ion-col *ngIf="!media.smallDevice && activeTab!='filter'" [size]="3" class="selectColumn" style="padding-top:15px;">
 
@@ -299,6 +301,16 @@
       <ion-content id="mainContent" #mainContent style="--background:none;" [ngStyle]="{'flex':media.smallDevice ? 'none' : 1,'height':activeTab=='filter' ? (media.smallDevice ? 'calc((var(--vh) * 100) - 11px)' : 'calc((var(--vh) * 100) - 10px)') :  (media.smallDevice ? (item_id ? 'calc((var(--vh) * 100) - 118px)' : 'calc((var(--vh) * 100) - 180px)') : 'calc((var(--vh) * 100) - 61px)')}" fullwidth>
 
         <ion-col [size]="(media.smallDevice && activeTab!='filter') || (activeTab=='filter' && firstLoaded) ? 12 : 9" class="detailColumn" center-left>
+          
+
+        <div flex center-ver *ngIf="activeTab=='elearnings' || activeTab=='filter'"  style="padding:0 20px;">
+          <div class="spacer"></div>
+          <ion-toggle [(ngModel)]="pricesInclVat">
+            <span weight600 font-12 *ngIf="pricesInclVat">{{'marketplace.prices_incl_vat' | translate}}</span>
+            <span weight600 font-12 *ngIf="!pricesInclVat">{{'marketplace.prices_excl_vat' | translate}}</span>
+          </ion-toggle>
+        </div>
+          
           <ion-card basicPadding *ngIf="activeTab=='manual'">
               <ion-card-header>
                   <ion-card-title flex center-ver>
@@ -351,7 +363,11 @@
                       </ion-card-content>
 
                     <div class="price" *ngIf="item.price_elearning">
-                      <span>€ {{(item.price_elearning + (auth.credits_unlimited_type ? 0 : 25)) | number : '1.0-0'}}</span>
+                      <!-- <span>€ {{(item.price_elearning + (auth.credits_unlimited_type ? 0 : 25)) | number : '1.0-0'}}</span> -->
+                      <span>
+                        € {{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 25 : 20.66))).whole }}
+                        <span style="font-size: 0.8em;margin-left:-5px">,{{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 25 : 20.66))).decimals }}</span>
+                      </span>
                       <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type">({{'marketplace.with_credits' | translate}})</span>
                     </div>
                     <div class="price" *ngIf="!item.price_elearning || item.price_elearning == 0">{{'marketplace.free' | translate}}</div>

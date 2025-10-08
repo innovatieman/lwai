@@ -34,7 +34,7 @@
       <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type=='product'">
         
         <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.cancel' | translate}}</ion-button>
-        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss(caseItem)">{{'buttons.buy_for' | translate}} {{(caseItem.price / 100) | currency : (caseItem.currency | uppercase) }}</ion-button>
+        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss(caseItem)">{{'buttons.buy_for' | translate}} {{(caseItem.price / 100) | currency : (caseItem.currency | uppercase) }} <span text-medium italic style="margin-left:5px;font-size:12px;">{{'page_account.incl_vat' | translate}}</span></ion-button>
       </div>
       
       <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type=='text'||caseItem.type=='video'||caseItem.type=='infoItem'">

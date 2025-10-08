@@ -341,6 +341,21 @@
         <div *ngIf="!caseItem.admin" weight600 font-18 [innerHtml]="translate.instant('conversation_start.opening_user') | sanitizeHtml"></div>
         <ion-textarea rows="4" listCard labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.openingMessage"></ion-textarea>
       </div>
+
+      <div *ngIf="caseItem.admin||caseItem.voice" fullwidth marginBottom flex center-ver>
+        <ion-toggle [(ngModel)]="caseItem.voice_on"></ion-toggle>
+        <div weight600 marginLeft font-18 [innerHtml]="translate.instant('conversation_start.start_with_voice')" *ngIf="caseItem.voice_on"></div>
+        <div weight600 marginLeft font-18 [innerHtml]="translate.instant('conversation_start.start_without_voice')" *ngIf="!caseItem.voice_on"></div>
+          <!-- <div class="spacer"></div> -->
+      </div>
+
+      <div *ngIf="caseItem.admin||(caseItem.voice && caseItem.editable_by_user.voice)" fullwidth marginBottom flex center-ver>
+        <div weight600 marginLeft font-18 [innerHtml]="translate.instant('conversation_start.selected_voice')"></div>:
+        <div class="spacer"></div>
+        <ion-button color="secondary" (click)="selectVoice()" class="saveButton" fill="outline">{{caseItem.voice}}</ion-button>
+          <!-- <div class="spacer"></div> -->
+      </div>
+
     </ion-card-content>
 
   </ion-card>

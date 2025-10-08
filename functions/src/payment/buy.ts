@@ -318,7 +318,7 @@ exports.createCheckoutSession = functions.region('europe-west1').runWith({ memor
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
     for (const productId of stripeProductIds) {
-      const pricesSnap = await admin.firestore().collection(`products/${productId}/prices`).limit(1).get();
+      const pricesSnap = await admin.firestore().collection(`products/${productId}/prices`).where('active', '==', true).limit(1).get();
 
       if (pricesSnap.empty) {
         throw new functions.https.HttpsError('not-found', `No price found for product ${productId}`);
@@ -345,18 +345,18 @@ exports.createCheckoutSession = functions.region('europe-west1').runWith({ memor
       invoice_creation: { enabled: true }
     }
 
-    if(userInfo.invoice){
-      sessionItem['payment_method_types'] = ['billie'];
-      sessionItem['payment_method_options'] = {
-        billie: {
-          capture_method: 'manual',
-        }
-      };
+    // if(userInfo.invoice){
+    //   sessionItem['payment_method_types'] = ['billie'];
+    //   sessionItem['payment_method_options'] = {
+    //     billie: {
+    //       capture_method: 'manual',
+    //     }
+    //   };
 
 
-    }
-    console.log('invoice-hier:', userInfo.invoice); 
-    console.log('sessionItem-hier:', JSON.stringify(sessionItem));
+    // }
+    // console.log('invoice-hier:', userInfo.invoice); 
+    // console.log('sessionItem-hier:', JSON.stringify(sessionItem));
 
     const session = await stripe.checkout.sessions.create(sessionItem);
     

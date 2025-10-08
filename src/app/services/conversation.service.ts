@@ -51,6 +51,8 @@ export class ConversationService implements OnDestroy {
   originUrl:string = '';
   voiceActive:boolean = false;
   isSpeaking:boolean = false;
+  fullRecording:boolean = false;
+
 
   private conversationSub!: Subscription;
   private subCollectionSubs: Subscription[] = [];
@@ -622,7 +624,6 @@ export class ConversationService implements OnDestroy {
         sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
         sourceBuffer.mode = 'sequence'; // Belangrijk voor aaneengesloten media
 
-        console.log('MediaSource open, SourceBuffer added.');
         this.waiting = false;
         this.attitudeSet = false
         this.getExtraInfo('phases')
@@ -683,11 +684,11 @@ export class ConversationService implements OnDestroy {
         await bufferPromise; // Wacht op de laatste append
         if (mediaSource.readyState === 'open') {
           mediaSource.endOfStream();
-          console.log("Stream reader is klaar, MediaSource.endOfStream() aangeroepen.");
+          // console.log("Stream reader is klaar, MediaSource.endOfStream() aangeroepen.");
         }
 
       } catch (error) {
-        console.error("Error setting up MediaSource or processing stream:", error);
+        // console.error("Error setting up MediaSource or processing stream:", error);
         if (mediaSource.readyState === 'open') {
           mediaSource.endOfStream('network'); // Sluit de stream af met een foutstatus
         }
@@ -697,7 +698,7 @@ export class ConversationService implements OnDestroy {
     }, { once: true }); // Zorg dat sourceopen maar één keer wordt getriggerd
 
     this.audioVoice.addEventListener('ended', () => {
-      console.log('Audio is afgelopen, stop de animatie.');
+      // console.log('Audio is afgelopen, stop de animatie.');
       this.isSpeaking = false; // Zet de isSpeaking status op false, dit is waar je de animatie stopt
       this.record.isSpeaking = false;
       this.speaking.emit(false); // Eventueel update de UI
@@ -705,17 +706,17 @@ export class ConversationService implements OnDestroy {
 
     // Optionele event listeners voor debugging
     mediaSource.addEventListener('sourceended', () => {
-      console.log('MediaSource finished buffering.');
+      // console.log('MediaSource finished buffering.');
       // Ruim de object-URL op wanneer de MediaSource is afgesloten
       URL.revokeObjectURL(this.audioVoice.src);
     });
 
     mediaSource.addEventListener('sourceclose', () => {
-      console.log('MediaSource closed.');
+      // console.log('MediaSource closed.');
     });
 
     this.audioVoice.addEventListener('error', (e:any) => {
-      console.error('Audio element error:', e);
+      // console.error('Audio element error:', e);
       this.update.emit(false); // Stop loading indicator bij een audiofout
     });
   }
@@ -2351,6 +2352,5 @@ export class ConversationService implements OnDestroy {
     });
   }
 
-  fullRecording:boolean = false;
 
 }

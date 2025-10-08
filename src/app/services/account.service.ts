@@ -694,6 +694,16 @@ export class AccountService {
     })
   }
   
+  activePrice(product:any){
+    if(product.prices && Array.isArray(product.prices)){
+      let price = product.prices.find((price:any)=>{
+        return price.active
+      })
+      return price || {}
+    }
+    return {}
+  }
+  
 
   showProductInfo(product:any){
     console.log(product)
@@ -706,7 +716,7 @@ export class AccountService {
       type: 'product',
       id: product.id,
       photo:'assets/img/credits.webp',
-      price: product.prices[0].unit_amount,
+      price: this.activePrice(product).unit_amount * 1.21,
       currency: product.prices[0].currency,
     }
     this.modalService.showCaseInfo(item,(response:any)=>{

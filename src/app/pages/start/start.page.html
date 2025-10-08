@@ -275,6 +275,18 @@
 
                         </div>
                     </div>
+
+
+                    <!-- <div *ngIf="showAll=='my_trainings'&&selectedModule?.id &&!media.smallDevice" class="agenda" >
+                        <app-training-list-item
+                            *ngFor="let item of selectedModule.items"
+                            [item]="item"
+                            [openPathIds]="openPathIds"
+                            [path]="[item.id]"
+                            (pathSelected)="setOpenPath($event)"
+                        ></app-training-list-item>
+
+                    </div> -->
                     
                 </ion-col>
                 
@@ -802,7 +814,7 @@
 
                         </ion-row>
 
-                        <ion-row id="nanana">
+                        <ion-row>
                             <ion-col [size]="helper.cardSizeSmall" *ngIf="showAll=='cases'&&!visibleCases.length">
                                 <ion-card noPadding pointer fullheight>
                                     <ion-card-content noPadding fullHeight flex center-hor>

@@ -57,6 +57,7 @@ export class MarketplacePage implements OnInit {
   showLogin:boolean = false;
   specialCodeChecked: boolean = false;
   resizeSubscription:Subscription | null = null;
+  pricesInclVat: boolean = true;
   constructor(
     public media: MediaService,
     public icon:IconsService,
@@ -171,6 +172,9 @@ export class MarketplacePage implements OnInit {
         this.searchParams.specialCode = params.get('specialCode') || '';
         // this.inputSpecialCode = this.searchParams.specialCode;
       }
+      if(params.has('pricesInclVat')){
+        this.pricesInclVat = params.get('pricesInclVat') !== 'false';
+      }
       else{
         this.searchParams.specialCode = '';
         // this.inputSpecialCode = '';
@@ -180,10 +184,13 @@ export class MarketplacePage implements OnInit {
       }
       console.log('searchParams', this.searchParams);
     }
-
+    
     this.route.params.pipe(takeUntil(this.leave$)).subscribe(params => {
       if(params['tab']){
         this.activeTab = params['tab'];
+        if(this.activeTab == 'filter'){
+          this.pricesInclVat = false;
+        }
       }
       if(params['item_id']){
         this.item_id = params['item_id'];
@@ -312,6 +319,13 @@ export class MarketplacePage implements OnInit {
     if(this.searchParams.specialCode){
       specialCodeParam = '?specialCode=' + this.searchParams.specialCode
     }
+    if(!specialCodeParam && this.pricesInclVat === false){
+      specialCodeParam = '?pricesInclVat=false';
+    }
+    else if(specialCodeParam && this.pricesInclVat === false){
+      specialCodeParam += '&pricesInclVat=false';
+    }
+
     if(this.activeTab=='filter'){
       this.nav.goto(location.origin+'/checkout/'+item.id+'/standalone'+specialCodeParam, true);
       return;
@@ -1012,4 +1026,16 @@ export class MarketplacePage implements OnInit {
 
     this.modalService.showTrainerInfo(elearning.trainer, (response:any)=>{})
   }
+
+
+  getFormattedPrice(value: number): { whole: string; decimals: string } {
+    if (isNaN(value)) return { whole: '0', decimals: '00' };
+    let newValue = value;
+    if(this.pricesInclVat){
+      newValue = value * 1.21;
+    }
+    const [whole, decimals] = newValue.toFixed(2).split('.');
+    return { whole, decimals };
+  }
+
 }

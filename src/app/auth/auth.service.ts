@@ -3,7 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Auth, AuthProvider, getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, OAuthProvider, FacebookAuthProvider, sendEmailVerification, user, User } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { BehaviorSubject, combineLatest, Observable, of, Subscription } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, take } from 'rxjs/operators';
 import firebase from 'firebase/compat/app';
 import { NavService } from '../services/nav.service';
 import { ToastService } from '../services/toast.service';
@@ -15,6 +15,7 @@ import { environment } from 'src/environments/environment';
 import { InfoService } from '../services/info.service';
 import { TranslateService } from '@ngx-translate/core';
 import { CountriesService } from '../services/countries.service';
+import { SortByPipe } from '../pipes/sort-by.pipe';
 
 @Injectable({
   providedIn: 'root',
@@ -49,6 +50,7 @@ export class AuthService {
   isEmployee:boolean = false
   gameProgress$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]); // Game progress als Observable
   gameProgressItems: any[] = []
+  voices: any[] = []
   gameProgressLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
   creditsChanged:EventEmitter<boolean> = new EventEmitter<boolean>();
   coursesLoaded:EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -67,8 +69,8 @@ export class AuthService {
     private auth:Auth,
     private infoService:InfoService,
     private translate:TranslateService,
-    private countries:CountriesService
-
+    private countries:CountriesService,
+    private sortByPipe:SortByPipe,
   ) {
     this.user$ = this.afAuth.authState;
     this.userRoles$ = this.user$.pipe(
@@ -103,7 +105,9 @@ export class AuthService {
         this.getVersion()
         this.getMyOrganisations(user)
         this.loadGameProgress(user.uid);
-
+        if(!this.voices?.length){
+          this.loadVoices();
+        }
       } else {
         this.subscriptions$.next([]); // Leegmaken bij uitloggen
       }
@@ -421,7 +425,18 @@ export class AuthService {
     this.signInWithProvider(new OAuthProvider('apple.com'), 'apple', onPage);
   }
 
-
+  loadVoices(){
+      if(this.voices.length==0){
+        this.functions.httpsCallable('getVoices')({language:this.translate.currentLang}).pipe(take(1)).subscribe((res:any) => {
+          this.voices = res.result;
+          if(!this.voices || this.voices.length==0 || typeof this.voices === 'string'){
+            this.voices = [];
+          }
+          this.voices = this.sortByPipe.transform(this.voices,-1,'name');
+          // console.log('voices',this.voices)
+        });
+      }
+    }
 
   // async signInWithGoogle() {
   //   const provider = new GoogleAuthProvider();

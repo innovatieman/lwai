@@ -9,6 +9,8 @@ export class RecordService {
   stream: MediaStream | null = null;
   analyzing: boolean = false;
   isSpeaking: boolean = false;
+  smartAudioContext: AudioContext | null = null;
+  smartRecordingActive: boolean = false;
   constructor(
     private auth:AuthService,
   ) { }
@@ -92,89 +94,7 @@ export class RecordService {
   // ✅ Slimme spraakopname met trimming van stilte aan begin en eind
 // Werkt met MediaRecorder + AudioContext (WebM opname, trimming via decode)
 
-  async startSmartRecording(conversationId: string, uploadCallback: (blob: Blob) => void) {
-    const volumeThreshold = 0.01;
-    const silenceDelay = 1000; // 1s stilte = stop
-    const preSpeechPadding = 500; // 0.5s vóór eerste spraak behouden
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-
-    const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/ogg;codecs=opus";
-    const mediaRecorder = new MediaRecorder(stream, { mimeType });
-    const chunks: Blob[] = [];
-    let startTime = Date.now();
-    let firstSpeechTime: number | null = null;
-    let silenceStart: number | null = null;
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunks.push(event.data);
-      }
-    };
-
-    mediaRecorder.start();
-    console.log("🎙️ Opname gestart (buffering spraak en stilte)");
-
-    const audioContext = new AudioContext();
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    const micSource = audioContext.createMediaStreamSource(stream);
-    micSource.connect(analyser);
-
-    const dataArray = new Uint8Array(analyser.fftSize);
-
-    const detect = () => {
-      analyser.getByteTimeDomainData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        const val = (dataArray[i] - 128) / 128;
-        sum += val * val;
-      }
-      const rms = Math.sqrt(sum / dataArray.length);
-
-      if (rms > volumeThreshold && !firstSpeechTime && !this.isSpeaking) {
-        firstSpeechTime = Date.now();
-        console.log("🗣️ Eerste spraak op:", firstSpeechTime - startTime, "ms na start");
-      }
-
-      if (firstSpeechTime && rms < volumeThreshold) {
-        if (!silenceStart) {
-          silenceStart = Date.now();
-        } else if (Date.now() - silenceStart > silenceDelay && mediaRecorder.state === 'recording') {
-          console.log("🤫 Stilte gedetecteerd, opname stoppen");
-          mediaRecorder.stop();
-          audioContext.close();
-        }
-      } else {
-        silenceStart = null;
-      }
-
-      if (mediaRecorder.state === 'recording') {
-        setTimeout(detect, 200);
-      }
-    };
-
-    detect();
-
-    mediaRecorder.onstop = async () => {
-      const blob = new Blob(chunks, { type: mimeType });
-      const arrayBuffer = await blob.arrayBuffer();
-      const decodedAudio = await audioContext.decodeAudioData(arrayBuffer);
-
-      const sampleRate = decodedAudio.sampleRate;
-      const startOffset = Math.max(0, ((firstSpeechTime ?? startTime) - startTime - preSpeechPadding) / 1000);
-      const endOffset = decodedAudio.duration; // we trimmen alleen de start
-
-      const frameCount = Math.floor((endOffset - startOffset) * sampleRate);
-      const trimmedBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
-      decodedAudio.copyFromChannel(trimmedBuffer.getChannelData(0), 0, Math.floor(startOffset * sampleRate));
-
-      const trimmedBlob = await this.exportBufferToWav(trimmedBuffer);
-      console.log("📤 Getrimde opname gereed voor upload:", trimmedBlob.size, "bytes");
-      this.uploadAudio(trimmedBlob, conversationId, uploadCallback);
-      // uploadCallback(trimmedBlob);
-    };
-  }
 
   // ✅ Zet AudioBuffer om naar WAV Blob
   exportBufferToWav(buffer: AudioBuffer): Promise<Blob> {
@@ -231,7 +151,7 @@ export class RecordService {
       this.analyser.fftSize = 2048;
 
       source.connect(this.analyser);
-      console.log("Wachten op stem...");
+      // console.log("Wachten op stem...");
       const dataArray = new Uint8Array(this.analyser.fftSize);
 
       const detectSpeech = () => {
@@ -244,7 +164,7 @@ export class RecordService {
         const rms = Math.sqrt(sum / dataArray.length);
 
         if (rms > this.volumeThreshold && !this.isSpeaking) {
-          console.log("Stem gedetecteerd, starten met opnemen...");
+          // console.log("Stem gedetecteerd, starten met opnemen...");
           this.listening = false;
           this.audioContext?.close();
           callback(this.stream!); // Geef stream mee aan startRecording
@@ -257,6 +177,109 @@ export class RecordService {
 
       detectSpeech();
     });
+  }
+
+  stopSmartRecording() {
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.smartRecordingActive = false; // voorkom dat onstop iets doet
+      this.mediaRecorder.stop();
+    }
+    if (this.smartAudioContext) {
+      this.smartAudioContext.close();
+      this.smartAudioContext = null;
+    }
+  }
+
+  async startSmartRecording(conversationId: string, uploadCallback: (blob: Blob) => void) {
+    const volumeThreshold = 0.01;
+    const silenceDelay = 1000; // 1s stilte = stop
+    const preSpeechPadding = 500; // 0.5s vóór eerste spraak behouden
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/ogg;codecs=opus";
+    const mediaRecorder = new MediaRecorder(stream, { mimeType });
+    const chunks: Blob[] = [];
+    let startTime = Date.now();
+    let firstSpeechTime: number | null = null;
+    let silenceStart: number | null = null;
+
+    this.mediaRecorder = mediaRecorder;
+    this.smartAudioContext = new AudioContext();
+    this.smartRecordingActive = true;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.start();
+    // console.log("🎙️ Opname gestart (buffering spraak en stilte)");
+    const audioContext = this.smartAudioContext;
+
+    // const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    const micSource = audioContext.createMediaStreamSource(stream);
+    micSource.connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.fftSize);
+
+    const detect = () => {
+      analyser.getByteTimeDomainData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const val = (dataArray[i] - 128) / 128;
+        sum += val * val;
+      }
+      const rms = Math.sqrt(sum / dataArray.length);
+
+      if (rms > volumeThreshold && !firstSpeechTime && !this.isSpeaking) {
+        firstSpeechTime = Date.now();
+        // console.log("🗣️ Eerste spraak op:", firstSpeechTime - startTime, "ms na start");
+      }
+
+      if (firstSpeechTime && rms < volumeThreshold) {
+        if (!silenceStart) {
+          silenceStart = Date.now();
+        } else if (Date.now() - silenceStart > silenceDelay && mediaRecorder.state === 'recording') {
+          // console.log("🤫 Stilte gedetecteerd, opname stoppen");
+          mediaRecorder.stop();
+          audioContext.close();
+        }
+      } else {
+        silenceStart = null;
+      }
+
+      if (mediaRecorder.state === 'recording') {
+        setTimeout(detect, 200);
+      }
+    };
+
+    detect();
+
+    mediaRecorder.onstop = async () => {
+      if (!this.smartRecordingActive) return;
+      this.smartRecordingActive = false;
+
+      const blob = new Blob(chunks, { type: mimeType });
+      const arrayBuffer = await blob.arrayBuffer();
+      const decodedAudio = await audioContext.decodeAudioData(arrayBuffer);
+
+      const sampleRate = decodedAudio.sampleRate;
+      const startOffset = Math.max(0, ((firstSpeechTime ?? startTime) - startTime - preSpeechPadding) / 1000);
+      const endOffset = decodedAudio.duration; // we trimmen alleen de start
+
+      const frameCount = Math.floor((endOffset - startOffset) * sampleRate);
+      const trimmedBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
+      decodedAudio.copyFromChannel(trimmedBuffer.getChannelData(0), 0, Math.floor(startOffset * sampleRate));
+
+      const trimmedBlob = await this.exportBufferToWav(trimmedBuffer);
+      // console.log("📤 Getrimde opname gereed voor upload:", trimmedBlob.size, "bytes");
+      this.uploadAudio(trimmedBlob, conversationId, uploadCallback);
+      // uploadCallback(trimmedBlob);
+    };
   }
 
   startRecordingWithStream(stream: MediaStream, type: string, conversationId: string, callback: Function) {
@@ -324,13 +347,13 @@ export class RecordService {
       };
 
       this.mediaRecorder.onstop = async () => {
-        console.log('Recording stopped');
+        // console.log('Recording stopped');
         this.recording = false;
         this.analyzing = true;
         clearTimeout(this.silenceTimeout);
 
         if (audioChunks.length === 0) {
-          console.error("Geen audio opgenomen!");
+          // console.error("Geen audio opgenomen!");
           return;
         }
 
@@ -339,7 +362,7 @@ export class RecordService {
         if (audioBlob.size > 0) {
           this.uploadAudio(audioBlob, conversationId, callback);
         } else {
-          console.error("AudioBlob is leeg!");
+          // console.error("AudioBlob is leeg!");
         }
 
         // Stop audio context
@@ -368,6 +391,7 @@ export class RecordService {
     this.noUpload = false;
     if (type === 'audioToText') {
       this.recording = true;
+      this.stream = null;
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   
       // Gebruik 'audio/mp4' voor Safari, of fallback naar 'audio/webm' voor andere browsers
@@ -392,23 +416,23 @@ export class RecordService {
       }, 60000); // Maximaal 60 seconden opnemen
   
       this.mediaRecorder.onstop = async () => {
-        console.log('Recording stopped');
+        // console.log('Recording stopped');
         this.recording = false;
         this.analyzing = true;
   
         // **Controleer of er daadwerkelijk audio is opgenomen**
         if (audioChunks.length === 0) {
-          console.error("Geen audio opgenomen! Mogelijk Safari bug.");
+          // console.error("Geen audio opgenomen! Mogelijk Safari bug.");
           return;
         }
   
         const audioBlob = new Blob(audioChunks, { type: mimeType });
   
         if (audioBlob.size > 0) {
-          console.log("Audio opgenomen, grootte:", audioBlob.size);
+          // console.log("Audio opgenomen, grootte:", audioBlob.size);
           this.uploadAudio(audioBlob, conversationId, callback);
         } else {
-          console.error("AudioBlob is nog steeds leeg!");
+          // console.error("AudioBlob is nog steeds leeg!");
         }
       };
   
@@ -423,7 +447,7 @@ export class RecordService {
   }
 
   stopRecording(callback?:Function) {
-    console.log('stopped');
+    // console.log('stopped');
     if (this.stream) {
       this.mediaRecorder?.stop();
       setTimeout(() => {
@@ -445,12 +469,12 @@ export class RecordService {
   async initiateRecording(conversationId: string) {
     const audioBlob = await this.getWavBlob('./assets/sounds/thankyou.wav');
     if (audioBlob.size > 0) {
-      console.log("Audio opgenomen, grootte:", audioBlob.size);
+      // console.log("Audio opgenomen, grootte:", audioBlob.size);
       this.uploadAudio(audioBlob, conversationId, () => {
-        console.log('init recording finished');
+        // console.log('init recording finished');
       });
     } else {
-      console.error("AudioBlob is nog steeds leeg!");
+      // console.error("AudioBlob is nog steeds leeg!");
     }
   }
 
@@ -616,10 +640,9 @@ export class RecordService {
       return;
     }
     try {
-      console.log("Uploading audio...");
       
       if (!audioBlob || audioBlob.size === 0) {
-        console.error("AudioBlob is empty!");
+        // console.error("AudioBlob is empty!");
         callback("error");
         return;
       }
@@ -628,14 +651,14 @@ export class RecordService {
   
       fileReader.onloadend = async () => {
         if (!fileReader.result) {
-          console.error("FileReader result is null or undefined.");
+          // console.error("FileReader result is null or undefined.");
           callback("error");
           return;
         }
   
         try {
           const base64data = this.arrayBufferToBase64(fileReader.result as ArrayBuffer);
-          console.log("Base64 conversion success:", base64data.slice(0, 50)); // Preview eerste 50 tekens
+          // console.log("Base64 conversion success:", base64data.slice(0, 50)); // Preview eerste 50 tekens
   
           const payload = {
             userId: this.auth.userInfo.uid,
@@ -651,27 +674,27 @@ export class RecordService {
           });
   
           if (!response.ok) {
-            console.error("Request failed:", response.status, response.statusText);
+            // console.error("Request failed:", response.status, response.statusText);
             callback("error");
             return;
           }
   
           const result = await response.json();
           if (result.transcription) {
-            console.log("Transcription:", result.transcription);
+            // console.log("Transcription:", result.transcription);
             callback(result.transcription);
           } else {
             callback(null);
           }
         } catch (err) {
-          console.error("Base64 conversion failed:", err);
+          // console.error("Base64 conversion failed:", err);
           callback("error");
         }
       };
   
       fileReader.readAsArrayBuffer(audioBlob);
     } catch (err) {
-      console.error("Unexpected error in uploadAudio:", err);
+      // console.error("Unexpected error in uploadAudio:", err);
       callback("error");
     }
   }

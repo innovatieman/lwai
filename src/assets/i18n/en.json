@@ -517,7 +517,9 @@
       "upgrade_to_pro":"Upgrade to Trainer Pro",
       "not_auto_renewal_confirm":"Are you sure you want to cancel your subscription? Your subscription will expire on the due date and will not be renewed.",
       "auto_renewal_disabled":"Your subscription has been canceled. It will expire on the due date and will not be renewed.",
-      "auto_renewal_enabled":"Your subscription will be automatically renewed on the due date."
+      "auto_renewal_enabled":"Your subscription will be automatically renewed on the due date.",
+      "incl_vat":"incl. VAT",
+      "excl_vat":"excl. VAT"
     },
     "cases": {
       "badge_video": "Video",
@@ -623,8 +625,7 @@
       "voice_on":"Start with voice",
       "conversation_ai":"Conversation with AI",
       "knowledge_item":"Knowledge",
-      "open_more":"Open more",
-      "no_module":"No module"
+      "open_more":"Open more"
     },
     "modules":{
         "edit_module":"Edit",
@@ -711,7 +712,7 @@
         "max_participants_reached":"The maximum number of participants has been reached. If you want to add more participants, you need to increase the number of participants in the Credit Management of the training.",
         "progress":"Progress",
         "no_progress": "There is no progress in this training yet.",
-        "price_elearning":"Determine the price of your e-learning per user incl. VAT",
+        "price_elearning":"Determine the price of your e-learning per user excl. VAT",
         "elearning_margin_alicialabs":"AliciaLabs margin is 20% of the price.",
         "elearning_publish_marketplace_title":"Publish your training on our Marketplace",
         "elearning_publish_marketplace_description":"Your training will be visible to organizations and users for direct purchase for 1 year. You can set the price yourself and receive 80% of the proceeds from this price. We take care of the marketing for AliciaLabs and the payment process for you.<br>Users will be separately asked if they want to purchase indefinite credits to follow the training if they do not have them yet.",
@@ -1207,7 +1208,9 @@
     "no_trainer_details":"The trainer has not yet provided any details about themselves or the organization.",
     "checking_code":"We are checking your special code...",
     "code_not_found":"The code is invalid or not found.",
-    "no_private_item_found":"This e-training is not found or not available without access code."
+    "no_private_item_found":"This e-training is not found or not available without access code.",
+    "prices_incl_vat":"Prices are inclusive of VAT",
+    "prices_excl_vat":"Prices are exclusive of VAT"
 
   },
   "media":{
@@ -1250,7 +1253,8 @@
     "add_to_your_order":"Add to your order",
     "login_failed":"Login failed. The password is incorrect for this existing user.",
     "processing":"Processing...",
-    "price_excl_tax":"Amount excl. VAT (21%)",
+    "price_excl_tax":"Amount excl. VAT",
+    "price_incl_tax":"Amount incl. VAT",
     "failure":"The payment has failed.",
     "disclaimer_alicialabs_platform":"This training is offered through the AliciaLabs platform.",
     "watch_example":"Watch the content"

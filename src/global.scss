@@ -120,6 +120,15 @@ ion-checkbox{
 .spacer{
     flex: 1 1 auto;
 }
+[font-6]{
+    font-size: 6px;
+}
+[font-8]{
+    font-size: 8px;
+}
+[font-10]{
+    font-size: 10px;
+}
 [font-12]{
     font-size: 12px;
 }
@@ -1350,3 +1359,10 @@ main{
     overflow-y: auto;
     background-color: white;
   }
+
+.agenda{
+    background: white;
+    padding: 15px 5px;
+    margin-top: 20px;
+    border-radius: 24px;
+}

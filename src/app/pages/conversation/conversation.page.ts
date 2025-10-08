@@ -327,6 +327,7 @@ export class ConversationPage implements OnInit {
     this.resizeSubscription = fromEvent(window, 'resize')
     .pipe(debounceTime(200))
     .subscribe(() => {
+      this.media.setScreenSize();
       this.rf.detectChanges();
     });
 
@@ -1073,7 +1074,6 @@ export class ConversationPage implements OnInit {
       return
     }
     this.record.listening = false;
-    console.log('start recording')
     if(event){
       event.preventDefault();
       event.stopPropagation();
@@ -1081,10 +1081,13 @@ export class ConversationPage implements OnInit {
     if(noText){
       this.conversation.fullRecording = true;
     }
+    else{
+      this.conversation.fullRecording = false;
+    }
     this.transcript = '';
     this.record.recording = true;
     this.rf.detectChanges();
-    console.log('waiting for speech')
+    // console.log('waiting for speech')
 
     // if(this.conversation.fullRecording){
     //   this.record.waitForSpeech((stream: MediaStream) => {
@@ -1127,6 +1130,7 @@ export class ConversationPage implements OnInit {
             this.record.recording = false;
             if(this.question){
               console.log('question from audio',this.question)
+              console.log('noText',noText,this.record.noUpload)
               if(noText&&!this.record.noUpload){
                 this.sendQuestion()
                 setTimeout(() => {
@@ -1137,27 +1141,34 @@ export class ConversationPage implements OnInit {
               }
               else if(this.record.noUpload){
                 this.record.noUpload = false;
+                console.log('no upload this time')
               }
               this.rf.detectChanges();
             }
+            else if(this.record.noUpload){
+              this.record.noUpload = false;
+              console.log('no upload this time')
+            }
+            this.rf.detectChanges();
             // this.rf.detectChanges();
           }
         });
     }
     else{
-        this.record.startRecordingSolo('audioToText', this.conversation.activeConversation.conversationId, (response: any) => {
-          if (response === 'error') {
-            this.toast.show(this.translate.instant('conversation.sound_error'));
-          } else if (response) {
-            this.loadingTextFromAudio = false;
-            this.question = this.question ? this.question + ' ' + response : response;
-            this.record.analyzing = false;
-            this.record.recording = false;
-            if(this.question){
-              this.rf.detectChanges();
-            }
+      this.record.stopSmartRecording();
+      this.record.startRecordingSolo('audioToText', this.conversation.activeConversation.conversationId, (response: any) => {
+        if (response === 'error') {
+          this.toast.show(this.translate.instant('conversation.sound_error'));
+        } else if (response) {
+          this.loadingTextFromAudio = false;
+          this.question = this.question ? this.question + ' ' + response : response;
+          this.record.analyzing = false;
+          this.record.recording = false;
+          if(this.question){
+            this.rf.detectChanges();
           }
-        });
+        }
+      });
     }
   }
 

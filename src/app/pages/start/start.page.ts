@@ -24,7 +24,9 @@ import { MenuPage } from 'src/app/components/menu/menu.page';
 import { SelectMenuService } from 'src/app/services/select-menu.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { fromEvent, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, take } from 'rxjs/operators';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
+import { SortByPipe } from 'src/app/pipes/sort-by.pipe';
 
 @Component({
   selector: 'app-start',
@@ -79,7 +81,6 @@ export class StartPage implements OnInit {
   maxCases: number = 15;
   pathname: string = window.location.pathname.split('/').pop() || '';
   subTab: string = '';
-  
   constructor(
     public nav:NavService,
     public cases:CasesService,
@@ -875,6 +876,19 @@ export class StartPage implements OnInit {
     modulesBreadCrumbs:any[] = []
     trainingItem:any = null
     item_id:string | null = null
+
+    openPathIds: string[] = [];
+    openItemId: string | null = null; // ← alleen dit item is open
+
+    setOpenPath(path: string[]) {
+      this.openPathIds = path;
+    }
+
+    toggleItem(item: any) {
+      this.openItemId = this.openItemId === item.id ? null : item.id;
+    }
+
+
     selectSubModule(module:any){
       // console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)

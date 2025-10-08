@@ -80,47 +80,6 @@ exports.createElearning = functions
     return new responder.Message({ id: elearningRef.id, message: 'Elearning created successfully' });
   })
 
-// exports.buyElearning = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
-//     if (!context.auth) {
-//       return new responder.Message('Not authorized', 401);
-//     }
-//     try {
-//         const elearningId = data.elearningId;
-//         const elearningRef = admin.firestore().collection('elearnings').doc(elearningId);
-//         const elearningDoc = await elearningRef.get();
-//         const elearningData = elearningDoc.data();
-//         if(!elearningData){
-//             return new responder.Message('Elearning not found', 404);
-//         }
-//         const elearningItemsRef = elearningRef.collection('items');
-//         const elearningItemsSnapshot = await elearningItemsRef.get();
-//         const elearningItems = elearningItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-//         // Process the elearning items as needed
-//         // ...
-//         const newTraining = await admin.firestore().collection('users').doc(context.auth.uid).collection('my_elearnings').add({
-//             user: context.auth.uid,
-//             elearningId: elearningId,
-//             startDate: moment().unix(),
-//             status: 'active',
-//             expires: moment().add(1, 'year').unix(),
-//             ...elearningData
-//         });
-//         // Optionally, you can add the items to the user's elearning
-//         const batch = admin.firestore().batch();
-//         elearningItems.forEach((item:any) => {
-//             item.publishType = 'elearning';
-//             const itemRef = admin.firestore().collection('users').doc(context.auth.uid).collection('my_elearnings').doc(newTraining.id).collection('items').doc(item.id);
-//             batch.set(itemRef, item);
-//         });
-//         await batch.commit();
-
-//         return new responder.Message('Elearning purchased successfully', 200);
-//     } catch (error) {
-//         console.error('Error fetching customer data:', error);
-//         return new responder.Message('Error fetching customer data', 500);
-//     }     
-// });
 
 
 exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {

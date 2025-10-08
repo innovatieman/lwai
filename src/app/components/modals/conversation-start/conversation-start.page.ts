@@ -9,6 +9,7 @@ import { IconsService } from 'src/app/services/icons.service';
 import { InfoService } from 'src/app/services/info.service';
 import { MediaService } from 'src/app/services/media.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { SelectItemPage } from '../select-item/select-item.page';
 
 @Component({
   selector: 'app-conversation-start',
@@ -47,6 +48,7 @@ export class ConversationStartPage implements OnInit {
     public auth:AuthService,
     private route:ActivatedRoute,
     private conversationService:ConversationService,
+    private modalController:ModalController,
     
   ) { }
 
@@ -376,7 +378,7 @@ export class ConversationStartPage implements OnInit {
       case 4:
         return this.caseItem.editable_by_user.goals.phases||this.caseItem.editable_by_user.goals.free||this.caseItem.editable_by_user.free_answer||this.caseItem.editable_by_user.goals.attitude
       case 5:
-        return this.caseItem.editable_by_user.openingMessage
+        return this.caseItem.editable_by_user.openingMessage||this.caseItem.voice
       
       default:
         return false;
@@ -430,5 +432,60 @@ export class ConversationStartPage implements OnInit {
     
     }
   }
+
+  selectVoice(){
+    let list:any[] = []
+    let sexHtml:any = {
+      female: '<span style="background-color:yellow;color:black;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_female')+'</span>',
+      male: '<span style="background-color:lightblue;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_male')+'</span>',
+      other: '<span style="background-color:lightgreen;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-right:5px;">'+this.translate.instant('cases.voice_sex_other')+'</span>'
+    }
+
+
+    for(let i=0;i<this.auth.voices.length;i++){
+      let voice:any = this.auth.voices[i]
+      let sample = "https://storage.cloud.google.com/lwai-3bac8.firebasestorage.app/voices/"+voice.name+"_"+this.translate.currentLang+".wav"
+      let html = '<div style="display:flex;margin:10px 0px;align-items:center"><div><span style="font-weight:bold;font-size:18px;">'+voice.name+'</span>[type]<br>[sex]<span style="font-size:12px;font-style:italic;">'+voice.short +'</span></div><span style="flex:auto 1 1"></span><audio style="height:36px;" controls><source src="'+sample+'" type="audio/mpeg">Your browser does not support the audio element.</audio>'
+      if(voice.type.toLowerCase()=='teenager'){
+        html = html.replace('[type]','<span style="background-color:orange;color:white;padding:2px 6px;font-size:10px;border-radius:4px;position:relative;margin-left:15px;top:-2px;">'+this.translate.instant('cases.voice_type_teenager')+'</span>')
+      }
+      else{
+        html = html.replace('[type]','')
+      }
+      html = html.replace('[sex]',sexHtml[voice.sex] || '')
+      list.push({
+        value:voice.name,
+        html:html,
+        name:voice.name + (voice.short ? ' ('+voice.short+')' : ''),
+      })
+    }
+    console.log(list)
+    this.selectItem('',list,(result:any)=>{
+      console.log(result)
+      if(result.data){
+        this.caseItem.voice = result.data.value;
+      }
+    },null,this.translate.instant('cases.select_voice'),{object:true})
+  }
+
+  public async selectItem(text:string,list:any[],callback:Function,iconList?:any,title?:string,extraData?:any){
+    const modalItem = await this.modalController.create({
+      component:SelectItemPage,
+      componentProps:{
+        text:text,
+        list:list,
+        iconList:iconList,
+        title:title,
+        extraData:extraData
+      },
+      cssClass:'listModal',
+    })
+    modalItem.onWillDismiss().then(result=>{
+      callback(result)
+    })
+    return await modalItem.present()
+  }
+    
+
 
 }
