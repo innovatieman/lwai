@@ -92,7 +92,6 @@ export class ExamplePage implements OnInit {
               await this.trainerService.loadItemsForTraining(this.id);
               this.itemsLoaded = true;
               if(!this.trainerService.breadCrumbs.length || !this.trainerService.breadCrumbs[0].item.id){
-                console.log('ensured loaded',this.type)
                 if(this.type =='training'){
                   let counter = 0;
                   let trainingInterval = setInterval(async ()=>{
@@ -138,7 +137,6 @@ export class ExamplePage implements OnInit {
         this.trainerService.loadItemsForTraining(this.id);
         this.itemsLoaded = true;
         if(!this.trainerService.breadCrumbs.length || !this.trainerService.breadCrumbs[0].item.id){
-          console.log('ensured loaded',this.type)
           if(this.type =='training'){
             let counter = 0;
             let trainingInterval = setInterval(async ()=>{
@@ -219,48 +217,92 @@ export class ExamplePage implements OnInit {
     return item;
   }
 
-  selectMenuTrainingItem(item:any){
-    if(item?.item){
-      item.item = this.resolveDeepItem(item.item)
+  // selectMenuTrainingItem(item:any){
+  //   if(item?.item){
+  //     item.item = this.resolveDeepItem(item.item)
+  //   }
+  //   console.log('selectMenuTrainingItem',item)
+  //   if(item?.path&&item?.item?.type!='module'){
+  //     this.modulesBreadCrumbs = []
+  //     for(let i=0;i<item.path.length;i++){
+  //       let pathItem = this.exampleItem('module',item.path[i])
+  //       this.modulesBreadCrumbs.push({...pathItem,type:'module'})
+  //     }
+  //     let selectedItem = this.exampleItem(item.item.type,item.item.id)
+  //     selectedItem.type=selectedItem.item_type
+  //     if(selectedItem.type == 'case'){
+  //       this.showCaseInfo(selectedItem)
+  //       return;
+  //     }
+
+  //     else{
+  //       this.selectTrainingItem(selectedItem,false,true)
+  //     }
+  //     console.log(this.modulesBreadCrumbs)
+  //   }
+  //   if(item?.item.type=='module'){
+  //     this.modulesBreadCrumbs = []
+  //     for(let i=0;i<item.path.length;i++){
+  //       let pathItem = this.exampleItem('module',item.path[i])
+  //       this.modulesBreadCrumbs.push({...pathItem,type:'module'})
+  //     }
+  //     let selectedItem = this.exampleItem(item.item.type,item.item.id)
+  //     selectedItem.type=selectedItem.item_type
+  //     this.modulesBreadCrumbs.push({...selectedItem,type:item.item.type})
+  //   }
+  //   else if(item?.type == 'module'){
+  //     this.modulesBreadCrumbs = []
+  //     let selectedItem = this.exampleItem(item.type,item.id)
+  //     console.log('selectedItem',selectedItem)
+  //     selectedItem.type=selectedItem.item_type
+  //     this.modulesBreadCrumbs.push({...selectedItem,type:item.type})
+  //       // return;
+  //     }
+  // }
+
+  isActiveItem(item:any):boolean{
+    if(this.modulesBreadCrumbs.length){
+      if(this.modulesBreadCrumbs[this.modulesBreadCrumbs.length-1]?.item){
+        return this.modulesBreadCrumbs[this.modulesBreadCrumbs.length-1].item.id == item.id
+      }
+      return this.modulesBreadCrumbs[this.modulesBreadCrumbs.length-1].id == item.id
     }
-    console.log('selectMenuTrainingItem',item)
-    if(item?.path&&item?.item?.type!='module'){
+    return false // this.selectedModule?.id == item.id
+  }
+
+  selectMenuTrainingItem(item:any){
+    if(item?.item && item?.item?.type !='module'){
       this.modulesBreadCrumbs = []
-      for(let i=0;i<item.path.length;i++){
+      console.log('selectMenuTrainingItem',item.path)
+      for(let i=0;i<item.path.length-1;i++){
         let pathItem = this.exampleItem('module',item.path[i])
         this.modulesBreadCrumbs.push({...pathItem,type:'module'})
       }
+      
       let selectedItem = this.exampleItem(item.item.type,item.item.id)
       selectedItem.type=selectedItem.item_type
       if(selectedItem.type == 'case'){
         this.showCaseInfo(selectedItem)
         return;
       }
-
       else{
         this.selectTrainingItem(selectedItem,false,true)
       }
-      console.log(this.modulesBreadCrumbs)
     }
-    if(item?.item.type=='module'){
-      this.modulesBreadCrumbs = []
-      for(let i=0;i<item.path.length;i++){
-        let pathItem = this.exampleItem('module',item.path[i])
-        this.modulesBreadCrumbs.push({...pathItem,type:'module'})
-      }
-      let selectedItem = this.exampleItem(item.item.type,item.item.id)
-      selectedItem.type=selectedItem.item_type
-      this.modulesBreadCrumbs.push({...selectedItem,type:item.item.type})
-    }
-    else if(item?.type == 'module'){
+    else if(item?.type == 'infoItem' || item?.type == 'case'){
       this.modulesBreadCrumbs = []
       let selectedItem = this.exampleItem(item.type,item.id)
-      console.log('selectedItem',selectedItem)
-      selectedItem.type=selectedItem.item_type
-      this.modulesBreadCrumbs.push({...selectedItem,type:item.type})
-        // return;
+      if(selectedItem.type == 'case'){
+        this.showCaseInfo(selectedItem)
+        return;
       }
+      else{
+        this.selectTrainingItem(selectedItem,false,true)
+      }
+    }
   }
+
+
 
 
   switchingItem:boolean = false

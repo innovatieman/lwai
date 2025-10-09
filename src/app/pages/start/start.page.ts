@@ -429,7 +429,6 @@ export class StartPage implements OnInit {
   }
 
   showCaseInfo(caseItem:any, logo?:string,training?:any){
-    // console.log('show case info',caseItem)
     if(logo){
       caseItem.logo = logo
     }
@@ -439,12 +438,25 @@ export class StartPage implements OnInit {
       }
       caseItem.trainerId =  training.trainerId || training.trainer_id
     }
+    
     this.modalService.showCaseInfo(caseItem, (response:any)=>{
       // console.log('case info response',response)
       if(response.data == 'read'){
         // Mark the case as read
         this.selectTrainingItem(caseItem);
         this.scrollItemsToTop()
+      }
+      if(response.data == 'startConversation'){
+        this.modalService.showConversationStart(caseItem).then((res)=>{
+          // console.log(res)
+          if(res){
+            console.log('caseItem',caseItem)
+            this.readInfoItem(this.showAll=='my_organisation',false, caseItem.id)
+            localStorage.setItem('activatedCase',caseItem.id)
+            localStorage.setItem('personalCase',JSON.stringify(caseItem))
+            this.nav.go('conversation/'+caseItem.id)
+          }
+        })
       }
     })
   }
@@ -726,171 +738,243 @@ export class StartPage implements OnInit {
   }
 
 
-    caseSuggestions: any[] = [];
-    updateCaseSuggestions(){
-      this.caseSuggestions = [];
-      const seed = this.helper.getDailySeed();
-      let cases:any = JSON.parse(JSON.stringify(this.visibleCases));
-      cases = cases.slice(0, 15);
-      let caseSuggestions = this.helper.shuffleArrayDeterministic(cases, seed);
+  caseSuggestions: any[] = [];
+  updateCaseSuggestions(){
+    this.caseSuggestions = [];
+    const seed = this.helper.getDailySeed();
+    let cases:any = JSON.parse(JSON.stringify(this.visibleCases));
+    cases = cases.slice(0, 15);
+    let caseSuggestions = this.helper.shuffleArrayDeterministic(cases, seed);
 
-      if(this.visibleCases.length){
-        // caseSuggestions = caseSuggestions.slice(0, 3 - (this.activeConversations.length > 2 ? 3 : this.activeConversations.length));
+    if(this.visibleCases.length){
+      // caseSuggestions = caseSuggestions.slice(0, 3 - (this.activeConversations.length > 2 ? 3 : this.activeConversations.length));
+    }
+    else{
+      cases = JSON.parse(JSON.stringify(this.cases.all));
+      cases = cases.sort((a:any, b:any) => a.order_rating - b.order_rating);
+      cases = cases.slice(0, 15);
+      caseSuggestions = this.helper.shuffleArrayDeterministic(cases, seed);
+      // caseSuggestions = caseSuggestions.slice(0, 3 - (this.activeConversations.length > 2 ? 3 : this.activeConversations.length));
+    }
+    //| filterKey : '!id' : activeConversationsIds
+    this.caseSuggestions = this.filterKeyPipe.transform(this.caseSuggestions, '!id', this.activeConversationsIds);
+    this.cases.suggestions = JSON.parse(JSON.stringify(caseSuggestions));
+
+  }
+  showSuggestions:boolean = false;
+  trackById(index: number, item: any) {
+    return item?.id || index;
+  }
+
+  doNothing(){
+
+  }
+  showCreateSelf:boolean = false;
+  updateVisibleCases() {
+    // | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterKey : 'level' : currentFilterLevels | filterSearch : searchTerm : false : ['title','tags']
+    
+    // console.log(this.cases.all)
+
+    const filtered = this.caseFilterPipe.transform(
+      this.cases.all,
+      this.currentFilterTypes.types,
+      this.currentFilterTypes.subjectTypes,
+      // []
+      this.extraFilters.open_to_user
+    );
+  
+    let filteredTypes = []
+    for(let i = 0; i < filtered.length; i++){
+      if(!this.showCreateSelf){
+        filteredTypes.push(filtered[i])
+      }
+      else if(this.showCreateSelf && filtered[i].create_self){
+        filteredTypes.push(filtered[i])
+      }
+    }
+
+    const searched = this.filterSearchPipe.transform(
+      filteredTypes,
+      this.searchTerm,
+      false,
+      ['title','tags','user_info','id']
+    );
+    const searchedLevels = this.filterKeyPipe.transform(
+      searched,
+      'level',
+      this.filterLevels(),
+    );
+    
+    // console.log('filtered')
+    this.filteredCases = searchedLevels;
+    this.filteredCases = this.filteredCases.sort((a, b) => a.order_rating - b.order_rating);
+    this.visibleCases = this.filteredCases.slice(0, this.maxCases);
+    if (this.infiniteScroll) {
+      this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+    }
+    // setTimeout(() => {
+    //   if (this.infiniteScroll) {
+    //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
+    //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+    //   }
+    // }, 400);
+
+    // setTimeout(() => {
+    //   if (this.infiniteScroll) {
+    //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
+    //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+    //   }
+    // }, 1000);
+
+    // setTimeout(() => {
+    //   if (this.infiniteScroll) {
+    //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
+    //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
+    //   }
+    // }, 1500);
+    this.updateCaseSuggestions();
+
+  }
+
+  loadMore(event?: any) {
+    this.maxCases += 15;
+    this.visibleCases = this.filteredCases.slice(0, this.maxCases);
+  
+    if (event) {
+      event.target.complete();
+    }
+  
+    if (this.maxCases >= this.filteredCases.length && event) {
+      event.target.disabled = true;
+    }
+  }
+
+  onFiltersChanged() {
+    this.maxCases = 15; // reset zichtbaar aantal
+    setTimeout(() => {
+      this.updateVisibleCases();
+    }, 200);
+  }
+  onSearchChanged() {
+    this.maxCases = 15;
+    this.updateVisibleCases();
+  }
+
+
+  selectModule(module:any,organisation?:boolean){
+    let countCheck = 0
+    let check = setInterval(() => {
+      countCheck++
+      if(countCheck > 100){
+        clearInterval(check)
+      }
+      if(!organisation){
+        
+        if(this.auth.activeCourses.length > 0 || this.auth.myElearnings?.length > 0){
+          clearInterval(check)
+          this.selectedModule = this.auth.getActiveCourse(module)
+        }
       }
       else{
-        cases = JSON.parse(JSON.stringify(this.cases.all));
-        cases = cases.sort((a:any, b:any) => a.order_rating - b.order_rating);
-        cases = cases.slice(0, 15);
-        caseSuggestions = this.helper.shuffleArrayDeterministic(cases, seed);
-        // caseSuggestions = caseSuggestions.slice(0, 3 - (this.activeConversations.length > 2 ? 3 : this.activeConversations.length));
-      }
-      //| filterKey : '!id' : activeConversationsIds
-      this.caseSuggestions = this.filterKeyPipe.transform(this.caseSuggestions, '!id', this.activeConversationsIds);
-      this.cases.suggestions = JSON.parse(JSON.stringify(caseSuggestions));
-
-    }
-    showSuggestions:boolean = false;
-    trackById(index: number, item: any) {
-      return item?.id || index;
-    }
-
-    doNothing(){
-
-    }
-    showCreateSelf:boolean = false;
-    updateVisibleCases() {
-      // | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterKey : 'level' : currentFilterLevels | filterSearch : searchTerm : false : ['title','tags']
-      
-      // console.log(this.cases.all)
-
-      const filtered = this.caseFilterPipe.transform(
-        this.cases.all,
-        this.currentFilterTypes.types,
-        this.currentFilterTypes.subjectTypes,
-        // []
-        this.extraFilters.open_to_user
-      );
-    
-      let filteredTypes = []
-      for(let i = 0; i < filtered.length; i++){
-        if(!this.showCreateSelf){
-          filteredTypes.push(filtered[i])
-        }
-        else if(this.showCreateSelf && filtered[i].create_self){
-          filteredTypes.push(filtered[i])
-        }
-      }
-
-      const searched = this.filterSearchPipe.transform(
-        filteredTypes,
-        this.searchTerm,
-        false,
-        ['title','tags','user_info','id']
-      );
-      const searchedLevels = this.filterKeyPipe.transform(
-        searched,
-        'level',
-        this.filterLevels(),
-      );
-      
-      // console.log('filtered')
-      this.filteredCases = searchedLevels;
-      this.filteredCases = this.filteredCases.sort((a, b) => a.order_rating - b.order_rating);
-      this.visibleCases = this.filteredCases.slice(0, this.maxCases);
-      if (this.infiniteScroll) {
-        this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
-      }
-      // setTimeout(() => {
-      //   if (this.infiniteScroll) {
-      //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
-      //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
-      //   }
-      // }, 400);
-
-      // setTimeout(() => {
-      //   if (this.infiniteScroll) {
-      //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
-      //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
-      //   }
-      // }, 1000);
-
-      // setTimeout(() => {
-      //   if (this.infiniteScroll) {
-      //     console.log('update visible cases', this.visibleCases.length, this.filteredCases.length);
-      //     this.infiniteScroll.disabled = this.visibleCases.length >= this.filteredCases.length;
-      //   }
-      // }, 1500);
-      this.updateCaseSuggestions();
-
-    }
-
-    loadMore(event?: any) {
-      this.maxCases += 15;
-      this.visibleCases = this.filteredCases.slice(0, this.maxCases);
-    
-      if (event) {
-        event.target.complete();
-      }
-    
-      if (this.maxCases >= this.filteredCases.length && event) {
-        event.target.disabled = true;
-      }
-    }
-
-    onFiltersChanged() {
-      this.maxCases = 15; // reset zichtbaar aantal
-      setTimeout(() => {
-        this.updateVisibleCases();
-      }, 200);
-    }
-    onSearchChanged() {
-      this.maxCases = 15;
-      this.updateVisibleCases();
-    }
-
-  
-    selectModule(module:any,organisation?:boolean){
-      let countCheck = 0
-      let check = setInterval(() => {
-        countCheck++
-        if(countCheck > 100){
+        if(this.auth.mySelectedOrganisation?.id){
           clearInterval(check)
+          this.selectedModule = this.auth.getActiveCourse(module,true)
+          // console.log('selected module',this.selectedModule)
         }
-        if(!organisation){
-          
-          if(this.auth.activeCourses.length > 0 || this.auth.myElearnings?.length > 0){
-            clearInterval(check)
-            this.selectedModule = this.auth.getActiveCourse(module)
-          }
-        }
-        else{
-          if(this.auth.mySelectedOrganisation?.id){
-            clearInterval(check)
-            this.selectedModule = this.auth.getActiveCourse(module,true)
-            // console.log('selected module',this.selectedModule)
-          }
-        }
-      }, 100);
+      }
+    }, 100);
+  }
+
+  modulesBreadCrumbs:any[] = []
+  trainingItem:any = null
+  item_id:string | null = null
+
+  openPathIds: string[] = [];
+
+  setOpenPath(path: string[]) {
+    this.openPathIds = path;
+  }
+
+  getItem(itemId: string, items?: any[]): any {
+    if (!this.selectedModule && !items) {
+      return null;
     }
 
-    modulesBreadCrumbs:any[] = []
-    trainingItem:any = null
-    item_id:string | null = null
-
-    openPathIds: string[] = [];
-    openItemId: string | null = null; // ← alleen dit item is open
-
-    setOpenPath(path: string[]) {
-      this.openPathIds = path;
+    if (!items) {
+      items = this.selectedModule.items;
     }
 
-    toggleItem(item: any) {
-      this.openItemId = this.openItemId === item.id ? null : item.id;
+    if (!items || items.length === 0) {
+      return null;
     }
+
+    for (let item of items) {
+      if (item.id === itemId) {
+        return item;
+      }
+
+      if (item.type === 'module' && item.items) {
+        const found = this.getItem(itemId, item.items);
+        if (found) {
+          return found;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  selectMenuTrainingItem(item:any){
+    if(item?.item && item?.item?.type !='module'){
+      this.modulesBreadCrumbs = []
+      for(let i=0;i<item.path.length-1;i++){
+        let pathItem = this.getItem(item.path[i])
+        this.modulesBreadCrumbs.push({...pathItem,type:'module'})
+      }
+      if(item?.item?.type == 'infoItem'){
+        this.selectTrainingItem(item.item);
+        setTimeout(() => {
+          this.scrollItemsToTop();
+        }, 300);
+      }
+      else if(item?.item?.type =='case'){
+        this.trainingItem = ''
+        this.showCaseInfo(this.auth.getTrainingItem(this.selectedModule.id,item.item.id,null,0,this.showAll=='my_organisation'),this.selectedModule.trainer.logo,this.selectedModule)
+      }
+    }
+    else if(item?.type == 'infoItem' || item?.type == 'case'){
+      this.modulesBreadCrumbs = []
+      if(item?.type == 'infoItem'){
+        this.selectTrainingItem(item);
+        setTimeout(() => {
+          this.scrollItemsToTop();
+        }, 300);
+      }
+      else if(item?.type =='case'){
+        this.trainingItem = ''
+        this.showCaseInfo(this.auth.getTrainingItem(this.selectedModule.id,item.id,null,0,this.showAll=='my_organisation'),this.selectedModule.trainer.logo,this.selectedModule)
+      }
+    }
+  }
+
+  itemMenuIsFinished(itemId:string,organisation?:boolean){
+    let item = this.getItem(itemId,this.selectedModule?.items)
+    return this.itemIsFinished(item,this.showAll=='my_organisation')
+  }
+
+  isActiveItem(item:any):boolean{
+    if(this.trainingItem?.id){
+      return this.trainingItem?.id == item.id
+    }
+    if(this.modulesBreadCrumbs.length){
+      return this.modulesBreadCrumbs[this.modulesBreadCrumbs.length-1].id == item.id
+    }
+    return this.selectedModule?.id == item.id
+  }
 
 
     selectSubModule(module:any){
-      // console.log('select submodule',module)
+      console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)
     }
 
@@ -995,12 +1079,13 @@ export class StartPage implements OnInit {
         this.selectedModule.basics.used_items = []
       }
       for(let i = 0; i < this.selectedModule.basics.used_items.length; i++){
-        if(this.selectedModule.basics.used_items[i].id == this.trainingItem.id){
+        if(this.selectedModule.basics.used_items[i].id == item_id){
           checked = true
         }
       }
+      console.log('checked',checked,item_id,this.selectedModule)
       if(!checked){
-        this.selectedModule.basics.used_items.push({id:this.trainingItem.id,read:moment().unix()})
+        this.selectedModule.basics.used_items.push({id:item_id,read:moment().unix()})
         if(!organisation){
           if(this.selectedModule.publishType=='elearning'){
             this.firestore.updateSubSub('users',this.auth.userInfo.uid,'my_elearnings',this.selectedModule.id,'items',item_id,{read:moment().unix()})
@@ -1011,15 +1096,15 @@ export class StartPage implements OnInit {
           }
           else{
 
-            this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',this.trainingItem.id,{read:moment().unix()})
+            this.firestore.setSubSub('participant_trainings',this.auth.userInfo.email,'trainings',this.selectedModule.id,'items',item_id,{read:moment().unix()})
             .then((res)=>{
-              console.log('read item',this.trainingItem.id)
+              console.log('read item',item_id)
               // this.auth.getActiveCourses(this.auth.userInfo.uid)
             })
           }
         }
         else{
-          this.firestore.setSubSub('participant_organisations',this.auth.userInfo.email,'organisations',this.auth.mySelectedOrganisation.id,'items',this.trainingItem.id,{read:moment().unix()})
+          this.firestore.setSubSub('participant_organisations',this.auth.userInfo.email,'organisations',this.auth.mySelectedOrganisation.id,'items',item_id,{read:moment().unix()})
           .then((res)=>{
             // this.auth.getMyOrganisations(this.auth.userInfo.uid,()=>{},true)
           })
@@ -1030,8 +1115,9 @@ export class StartPage implements OnInit {
       }
     }
 
-    itemIsFinished(item:any,organisation?:boolean){
-      if(item.type=='infoItem' && this.selectedModule?.publishType == 'elearning' && location.pathname.indexOf('my_organisation') == -1){
+    itemIsFinished(item:any,organisation?:boolean){ 
+
+      if((item.type=='infoItem' || item.type=='case') && this.selectedModule?.publishType == 'elearning' && location.pathname.indexOf('my_organisation') == -1){
         let fullItem = this.auth.getTrainingItem(this.selectedModule.id,item.id)
         if(fullItem && fullItem.read){
           return true

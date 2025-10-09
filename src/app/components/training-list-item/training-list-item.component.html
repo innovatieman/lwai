@@ -1,16 +1,15 @@
 <div class="training-item" >
-  <div class="title" [ngClass]="{'active': active}" (click)="toggle(item)" [ngStyle]="{'border-bottom': isOpen() ? 'solid 2px var(--ion-color-light-shade)' : 'solid 1px var(--ion-color-light-shade)'}">
+  <div class="title" [ngClass]="{'active': active}" (click)="toggle($event,item)" [ngStyle]="{'border-bottom': isOpen() ? 'solid 2px var(--ion-color-light-shade)' : 'solid 1px var(--ion-color-light-shade)'}">
     <fa-icon font-10 leftIcon *ngIf="item.items" [icon]="icon.get('faChevronDown')" chevron [ngStyle]="{'transform': isOpen() ? 'rotate(180deg)' : 'rotate(-90deg)'}"></fa-icon>
-    <fa-icon font-6 leftIcon *ngIf="!item.items" [icon]="icon.get('faCircleSolid')"></fa-icon>
-    <!-- <div leftIcon *ngIf="!item.items"></div> -->
-    <span>{{ item.title }} {{item.id}}</span>
+    <fa-icon font-6 leftIcon *ngIf="!item.items&&!finished" [icon]="icon.get('faCircleSolid')"></fa-icon>
+    <fa-icon font-16 leftIcon *ngIf="!item.items&&finished" text-success [icon]="icon.get('faCheck')"></fa-icon>
+    <!-- <span style="max-width:calc(100% - 72px)">{{ item.title }} {{item.id}}</span> -->
+    <span>{{ item.title }}</span>
     <div class="spacer"></div>
     <fa-icon rightIcon font-16 *ngIf="item.type=='infoItem'" [icon]="icon.get('faFileText')"></fa-icon>
     <fa-icon rightIcon font-16 *ngIf="item.type=='case'" [icon]="icon.get('faCommentsOutline')"></fa-icon>
     <div rightIcon *ngIf="item.items"></div>
-    <!-- <fa-icon rightIcon font-16 *ngIf="item.type=='module'" [icon]="icon.get('faList')"></fa-icon> -->
   </div>
-  <!-- <div>{{path}}</div> -->
 
   <div class="children" *ngIf="isOpen() && item.items">
     <app-training-list-item
@@ -20,7 +19,12 @@
       [path]="buildChildPath(sub.id)"
       (pathSelected)="onChildSelected($event)"
       [child]="true"
-      (itemSelected)="onItemSelected(path,$event)"
+      (itemSelected)="onItemSelected($event.path, $event.item)"
+      [itemMenuIsFinished]="itemMenuIsFinished"
+      [finished]="!itemMenuIsFinished ? false : itemMenuIsFinished(sub.id)"
+      [itemMenuIsActive]="itemMenuIsActive"
+      [active]="!itemMenuIsActive ? false : itemMenuIsActive(sub)"
+
     ></app-training-list-item>
   </div>
 </div>

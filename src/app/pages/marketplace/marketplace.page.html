@@ -363,9 +363,8 @@
                       </ion-card-content>
 
                     <div class="price" *ngIf="item.price_elearning">
-                      <!-- <span>€ {{(item.price_elearning + (auth.credits_unlimited_type ? 0 : 25)) | number : '1.0-0'}}</span> -->
                       <span>
-                        € {{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 25 : 20.66))).whole }}
+                        € {{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 20.66 : 20.66))).whole }}
                         <span style="font-size: 0.8em;margin-left:-5px">,{{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 25 : 20.66))).decimals }}</span>
                       </span>
                       <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type">({{'marketplace.with_credits' | translate}})</span>

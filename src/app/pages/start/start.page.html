@@ -277,16 +277,22 @@
                     </div>
 
 
-                    <!-- <div *ngIf="showAll=='my_trainings'&&selectedModule?.id &&!media.smallDevice" class="agenda" >
+                    <div *ngIf="(showAll=='my_trainings' || showAll=='my_organisation')&&selectedModule?.id &&!media.smallDevice && media.screenSize!='md'" class="agenda" >
+                        <div font-20 weight700 style="padding:0 10px 10px 15px;border-bottom:solid 1px var(--ion-color-light-shade)">{{'trainings.content' | translate}}</div>
                         <app-training-list-item
                             *ngFor="let item of selectedModule.items"
                             [item]="item"
                             [openPathIds]="openPathIds"
                             [path]="[item.id]"
                             (pathSelected)="setOpenPath($event)"
+                            (itemSelected)="selectMenuTrainingItem($event)"
+                            [finished]="itemMenuIsFinished(item.id,showAll=='my_organisation')"
+                            [itemMenuIsFinished]="itemMenuIsFinished.bind(this)"
+                            [active]="isActiveItem(item)"
+                            [itemMenuIsActive]="isActiveItem.bind(this)"
                         ></app-training-list-item>
 
-                    </div> -->
+                    </div>
                     
                 </ion-col>
                 

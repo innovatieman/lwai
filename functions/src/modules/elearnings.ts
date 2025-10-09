@@ -907,6 +907,7 @@ exports.sellElearningWithInvoice = functions.region('europe-west1').runWith({mem
 
             let newTrainingData:any = JSON.parse(JSON.stringify(elearningData));
             newTrainingData.originalTrainingId = elearningDoc.id;
+            newTrainingData.publishType = 'elearning';
             newTrainingData.trainer = {
               id: data.trainerId,
               name: trainerData.name || 'Trainer',

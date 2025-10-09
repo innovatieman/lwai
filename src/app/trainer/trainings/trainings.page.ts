@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -97,6 +97,7 @@ export class TrainingsPage implements OnInit {
     private selectMenuservice:SelectMenuService,
     private route:ActivatedRoute,
     private tutorial:tutorialService,
+    private rf: ChangeDetectorRef,
   ) { }
 
   ngOnInit() {
@@ -1145,10 +1146,14 @@ export class TrainingsPage implements OnInit {
               if(this.trainerService.breadCrumbs.length>1){
                 this.addItemToModuleById(this.trainerService.breadCrumbs[0].item, this.trainerService.breadCrumbs[this.trainerService.breadCrumbs.length-1].item.id,newItem)
                 this.update('items',true)
+                setTimeout(() => {
+                  this.rf.detectChanges()
+                }, 500);
               }
               else{
                 this.trainerService.trainingItem.items.push(newItem)
                 this.update('items',true)
+                this.rf.detectChanges()
               }
 
 

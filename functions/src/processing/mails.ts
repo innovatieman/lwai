@@ -589,7 +589,7 @@ exports.messagesToUser = functions.region('europe-west1').runWith({ memory: '1GB
       }
 
       messageToProcess.data = {
-        content: contentStart + elearningData.welcome_message || '',
+        content: contentStart + (elearningData.welcome_message || ''),
         subject: messageToProcess.subject,
       }
 

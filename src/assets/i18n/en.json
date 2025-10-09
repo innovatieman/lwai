@@ -625,7 +625,10 @@
       "voice_on":"Start with voice",
       "conversation_ai":"Conversation with AI",
       "knowledge_item":"Knowledge",
-      "open_more":"Open more"
+      "open_more":"Open more",
+      "export_visible_cases":"Export visible cases",
+      "export_visible_items":"Export visible items",
+      "no_module":"Not connected"
     },
     "modules":{
         "edit_module":"Edit",
@@ -734,7 +737,8 @@
         "training_welcome_message_title":"Welcome message for participants",
         "amount_credits_unlimited":"This amount will be charged to you as a trainer. With this amount, each participant has unlimited credits for one year to conduct conversations in the training.",
         "amount_credits_4k":"This amount will be charged to you as a trainer when the training is activated with the link below. With this amount, each participant has 4000 credits for one year to conduct conversations in the training. That is approximately 15-20 extensive conversations.",
-        "amount_credits":"How much in credits do you want to make available per participant?"
+        "amount_credits":"How much in credits do you want to make available per participant?",
+        "content":"Content"
       },
     "generate_case":{
       "title_step_0":"The basics",

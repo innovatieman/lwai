@@ -11,13 +11,16 @@ export class TrainingListItemComponent {
   @Input() openPathIds: string[] = [];
   @Input() path: string[] = [];
   @Input() active: boolean = false;
+  @Input() finished: boolean = false;
+  @Input() itemMenuIsFinished!: (itemId: string) => boolean; // ⬅️ voeg dit toe
+  @Input() itemMenuIsActive!: (itemId: string) => boolean; // ⬅️ voeg dit toe
 
   @Output() pathSelected = new EventEmitter<string[]>();
   @Output() itemSelected = new EventEmitter<any>();
   @Input() child!: boolean;
 
   constructor(
-    public icon: IconsService
+    public icon: IconsService,
   ) { }
 
 
@@ -25,20 +28,23 @@ export class TrainingListItemComponent {
     return this.openPathIds.includes(this.item.id);
   }
 
-  toggle(item?: any) {
+  toggle(event:Event,item?: any) {
+    event.stopPropagation();
     if(item?.items){
       if (this.isOpen()) {
           let newPath = [...this.path];
           newPath.pop();
           this.pathSelected.emit(newPath);
       } else {
-        this.pathSelected.emit(this.path); // dit pad open
+        this.pathSelected.emit(this.path);
       }
-      this.itemSelected.emit(item);
     }
     else{
-      console.log(item)
-      this.itemSelected.emit(item);
+      // this.itemSelected.emit(item);
+      this.itemSelected.emit({
+        item: this.resolveDeepItem(item),
+        path: this.path
+      });
     }
   }
 
@@ -46,10 +52,25 @@ export class TrainingListItemComponent {
     this.pathSelected.emit(childPath);
   }
 
+  resolveDeepItem(item: any): any {
+    while (item?.item) {
+      item = item.item;
+    }
+    return item;
+  }
+
+  lengthTree:number=0;
   onItemSelected(path: string[], item: any) {
-    console.log(path, item);
     try{
-      this.itemSelected.emit({ path: path, item: item });
+      console.log({
+        path: path,
+        item: this.resolveDeepItem(item)
+     });
+     this.itemSelected.emit({
+        path: path,
+        item: this.resolveDeepItem(item)
+     });
+
     }
     catch(e){
       console.error(e);

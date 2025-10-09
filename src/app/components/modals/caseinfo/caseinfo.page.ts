@@ -75,6 +75,10 @@ export class CaseinfoPage implements OnInit {
   }
 
   startConversation(caseItem:any){
+    if(caseItem.trainingId){
+      this.modalController.dismiss('startConversation')
+      return
+    }
     this.modalController.dismiss()
     this.showConversationStart(caseItem).then((res)=>{
       // console.log(res)

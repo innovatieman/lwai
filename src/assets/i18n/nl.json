@@ -624,7 +624,10 @@
         "voice_on":"Start met voice",
         "conversation_ai":"Gesprek met AI",
         "knowledge_item":"Kennis",
-        "open_more":"Open meer"
+        "open_more":"Open meer",
+        "export_visible_cases":"Exporteer zichtbare cases",
+        "export_visible_items:":"Exporteer zichtbare items",
+        "no_module":"Niet gekoppeld"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -733,7 +736,8 @@
         "training_welcome_message_title":"Welkomstbericht voor de deelnemers",
         "amount_credits_unlimited":"Dit bedrag wordt bij jou als trainer in rekening gebracht. Met dit bedrag heeft elke deelnemer onbeperkt credits voor een jaar om gesprekken te voeren in de training.",
         "amount_credits_4k":"Dit bedrag wordt bij jou als trainer in rekening gebracht, wanneer de training wordt geactiveerd via de onderstaande link. Met dit bedrag heeft elke deelnemer 4000 credits voor een jaar om gesprekken te voeren in de training. Dat zijn ongeveer 15-20 uitgebreide gesprekken.",
-        "amount_credits":"Hoeveel aan credits wil je per deelnemer beschikbaar stellen?"
+        "amount_credits":"Hoeveel aan credits wil je per deelnemer beschikbaar stellen?",
+        "content":"Inhoud"
     },
     "generate_case":{
         "title_step_0":"De basis",

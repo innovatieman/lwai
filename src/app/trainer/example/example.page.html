@@ -77,19 +77,19 @@
             </ion-item>
           </div>
 
-          <!-- <div *ngIf="!media.smallDevice&& exampleItem(type,id)" class="agenda" >
-            <div></div>
-              <app-training-list-item 
-                  *ngFor="let item of exampleItem(type,id).items"
-                  [item]="item"
-                  [openPathIds]="openPathIds"
-                  [path]="[item.id]"
-                  (pathSelected)="setOpenPath($event)"
-                  (itemSelected)="selectMenuTrainingItem($event)"
-                  [active]="item.id==latestBreadCrumbs.id"
-              ></app-training-list-item>
-
-          </div> -->
+          <div *ngIf="!media.smallDevice&& exampleItem(type,id)" class="agenda" >
+            <div font-20 weight700 style="padding:0 10px 10px 15px;border-bottom:solid 1px var(--ion-color-light-shade)">{{'trainings.content' | translate}}</div>
+            <app-training-list-item 
+                *ngFor="let item of exampleItem(type,id).items"
+                [item]="item"
+                [openPathIds]="openPathIds"
+                [path]="[item.id]"
+                (pathSelected)="setOpenPath($event)"
+                (itemSelected)="selectMenuTrainingItem($event)"
+                [active]="isActiveItem(item)"
+                [itemMenuIsActive]="isActiveItem.bind(this)"
+            ></app-training-list-item>
+          </div>
 
 
         </ion-col>
