@@ -280,6 +280,14 @@ const routes: Routes = [
     canActivate: [AdminGuard],
   },
   {
+    path: 'stream-case',
+    loadChildren: () => import('./pages/stream-case/stream-case.module').then( m => m.StreamCasePageModule)
+  },
+  {
+    path: 'stream-case/:stream_id',
+    loadChildren: () => import('./pages/stream-case/stream-case.module').then( m => m.StreamCasePageModule)
+  },
+  {
     path: '**',
     redirectTo: 'start',
     pathMatch: 'full'
