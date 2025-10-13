@@ -16,6 +16,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class StreamCasePage implements OnInit {
  basicData:any = {}
  finished:boolean = false;
+ parentOrigin:string = '';
   private leave$ = new Subject<boolean>();
   constructor(
     private route:ActivatedRoute,
@@ -39,6 +40,7 @@ export class StreamCasePage implements OnInit {
       let data = atob(stream_id);
       try{
         this.basicData = JSON.parse(data);
+        this.parentOrigin = document.referrer ? new URL(document.referrer).origin : '';
         this.startStream();
       }
       catch(e){
@@ -53,6 +55,16 @@ export class StreamCasePage implements OnInit {
     this.leave$.complete();
   }
 
+  getParentOrigin(): string | null {
+    try {
+      const ref = document.referrer;
+      if (!ref) return null;
+      const url = new URL(ref);
+      return url.origin;
+    } catch {
+      return null;
+    }
+  }
 
   count:number = 0;
 
@@ -66,6 +78,7 @@ export class StreamCasePage implements OnInit {
       trainerId: this.basicData.trainerId,
       trainingId: this.basicData.trainingId,
       caseId: this.basicData.caseId,
+      parentOrigin: this.parentOrigin
     }
     // console.log('stream data',streamData);
     try{
