@@ -56,8 +56,8 @@ export class StreamCasePage implements OnInit {
   }
 
   getParentOrigin(): string | null {
-
-    console.log('document', document);
+    console.log('start get parent origin');
+    console.log('document', document.referrer);
     try {
       let ref = document.referrer;
       if (!ref){
@@ -100,7 +100,8 @@ export class StreamCasePage implements OnInit {
             }
           });
         } else {
-          this.toast.show('Error starting stream: Invalid user data');
+          // this.toast.show('Error starting stream: Invalid user data');
+          this.toast.show('Error starting stream: '+res.result);
         }
       }, (error) => {
         console.error('Error calling startStream function:', error);
