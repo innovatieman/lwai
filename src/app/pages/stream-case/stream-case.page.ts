@@ -56,6 +56,8 @@ export class StreamCasePage implements OnInit {
   }
 
   getParentOrigin(): string | null {
+
+    console.log('window', window);
     try {
       let ref = document.referrer;
       if (!ref){
@@ -71,7 +73,7 @@ export class StreamCasePage implements OnInit {
   count:number = 0;
 
   async startStream(){
-    // console.log('start stream',this.basicData);
+    console.log('start stream',this.basicData);
     if(!this.basicData.trainerId || !this.basicData.trainingId || !this.basicData.caseId){
       this.toast.show('Trainer ID, Training ID and Case ID are required');
       return;
