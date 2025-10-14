@@ -57,11 +57,11 @@ export class StreamCasePage implements OnInit {
 
   getParentOrigin(): string | null {
 
-    console.log('window', window);
+    console.log('document', document);
     try {
       let ref = document.referrer;
       if (!ref){
-        return window.parent?.location?.host
+        return '';
       };
       const url = new URL(ref);
       return url.origin;
