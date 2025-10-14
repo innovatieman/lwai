@@ -40,7 +40,7 @@ export class StreamCasePage implements OnInit {
       let data = atob(stream_id);
       try{
         this.basicData = JSON.parse(data);
-        this.parentOrigin = document.referrer ? new URL(document.referrer).origin : '';
+        this.parentOrigin = this.getParentOrigin()||'';
         this.startStream();
       }
       catch(e){
@@ -57,12 +57,14 @@ export class StreamCasePage implements OnInit {
 
   getParentOrigin(): string | null {
     try {
-      const ref = document.referrer;
-      if (!ref) return null;
+      let ref = document.referrer;
+      if (!ref){
+        return window.parent?.location?.host
+      };
       const url = new URL(ref);
       return url.origin;
     } catch {
-      return null;
+      return '';
     }
   }
 
