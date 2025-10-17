@@ -29,9 +29,18 @@ export class StreamCasePage implements OnInit {
     private auth:AuthService
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
 
     window.addEventListener('message', this.receiveParentOrigin.bind(this), false);
+
+    // Eerst checken of iemand is ingelogd
+    const currentUser = await this.afAuth.currentUser;
+
+    if (currentUser) {
+      console.log('Gebruiker al ingelogd, log eerst uit...');
+      await this.logoutStream();  // eerst opruimen
+    }
+
 
     const stream_id = this.route.snapshot.paramMap.get('stream_id');
     if(stream_id){
@@ -165,5 +174,31 @@ export class StreamCasePage implements OnInit {
   }
 }
 
+
+// async logoutStream(): Promise<void> {
+//     try {
+//       await this.afAuth.signOut();
+//       this.auth.userInfo = {}
+//     } catch (error) {
+//       console.error('Logout error:', error);
+//       this.toast.show('logout failed');
+//     }
+//   }
+
+  async logoutStream(): Promise<void> {
+    try {
+      const currentUser = await this.afAuth.currentUser;
+      if (currentUser) {
+        console.log('Signing out...');
+        await this.afAuth.signOut();
+        this.auth.userInfo = {};
+      } else {
+        console.log('No user signed in, skipping logout.');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      this.toast.show('logout failed');
+    }
+  }
 
 }
