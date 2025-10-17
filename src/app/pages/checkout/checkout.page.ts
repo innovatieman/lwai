@@ -134,10 +134,12 @@ export class CheckoutPage implements OnInit {
               this.specialCodeChecked = true;
               if(response.status==200){
                 this.checkedSpecialCodes = response.result.validCodes;
+                this.sales.checkedSpecialCodes = this.checkedSpecialCodes;
               }
               else{
                 this.toast.show(this.translate.instant('marketplace.code_not_found'), 6000);
                 this.checkedSpecialCodes = [];
+                this.sales.checkedSpecialCodes = this.checkedSpecialCodes;
               }
             })
           }
@@ -533,6 +535,5 @@ export class CheckoutPage implements OnInit {
         this.toast.show(this.translate.instant('error_messages.failure'), 6000);
       }
     })
-
   }    
 }

@@ -77,7 +77,7 @@
             </ion-item>
           </div>
 
-          <div *ngIf="!media.smallDevice&& exampleItem(type,id)" class="agenda" >
+          <div *ngIf="!media.smallDevice&& exampleItem(type,id) && type!='module' && type!='infoItem'" class="agenda" >
             <div font-20 weight700 style="padding:0 10px 10px 15px;border-bottom:solid 1px var(--ion-color-light-shade)">{{'trainings.content' | translate}}</div>
             <app-training-list-item 
                 *ngFor="let item of exampleItem(type,id).items"
@@ -101,8 +101,8 @@
                       <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="!modulesBreadCrumbs.length">{{exampleItem(type,id).title}}</ion-card-title>
                       <ion-card-title basicPaddingLeft upperCase marginBottom font-20 weight600 *ngIf="modulesBreadCrumbs.length">{{modulesBreadCrumbs[modulesBreadCrumbs.length-1].title}}</ion-card-title>
                       <ion-card-content>
-                        <div font-16 weight500 *ngIf="!modulesBreadCrumbs.length">{{exampleItem(type,id).user_info}}</div>
-                        <div font-16 weight500 *ngIf="modulesBreadCrumbs.length"> {{modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info}}</div>
+                        <div font-16 weight500 *ngIf="!modulesBreadCrumbs.length" [innerHTML]="helper.convertLines(exampleItem(type,id).user_info)"></div>
+                        <div font-16 weight500 *ngIf="modulesBreadCrumbs.length" [innerHTML]="helper.convertLines(modulesBreadCrumbs[modulesBreadCrumbs.length-1].user_info)"></div>
                       </ion-card-content>
                   </ion-card>
               </ion-col>
