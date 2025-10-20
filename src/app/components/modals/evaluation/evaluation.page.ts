@@ -167,6 +167,12 @@ export class EvaluationPage implements OnInit {
 
   skillScoreDef(skill:string){
     let conversationLength = 0
+
+    if(this.options.conversation.stream){
+      return 0
+    }
+
+
     if(this.options.conversation.messages){
       conversationLength = (this.options.conversation.messages.length -1) /2
     }

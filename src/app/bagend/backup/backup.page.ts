@@ -34,6 +34,33 @@ export class BackupPage implements OnInit {
     })
   }
 
+  cleanPhotos(){
+    this.functions.httpsCallable('manualCleanPhotos')({}).subscribe(result=>{
+      console.log('Cleanup successful:', result);
+    })
+  }
+
+
+  createVideo(){
+    const callable = this.functions.httpsCallable('generateHeygenVideo');
+    callable({ title: 'Test Les', storyText: 'Deze is nog sneller dan de vorige keer.' }).subscribe({
+      next: (result) => {
+        console.log('Video creation initiated:', result);
+      },
+      error: (error) => {
+        console.error('Error creating video:', error);
+      }
+    });
+  }
+
+  movePhotosBack(){
+    this.functions.httpsCallable('manualMovePhotosBackFromDeleted')({}).subscribe(result=>{
+      console.log('Move back successful:', result);
+    })
+  }
+
+
+
   // getConversation(){
   //   if(!this.conversationId || this.conversationId.trim() === '') {
   //     console.warn('Geen conversationId opgegeven');

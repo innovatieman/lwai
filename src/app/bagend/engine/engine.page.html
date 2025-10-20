@@ -81,7 +81,6 @@
              <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
              <ion-select [placeholder]="activeAgent.id=='main' ? 'Basisgegevens' : 'Select Agent'" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="''" [expandedIcon]="''" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
                <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option>
-               <!-- <ion-select-option [value]="{title:'Fase indeling',id:'phaseList'}">{{'Fase indeling' | capitalize}}</ion-select-option> -->
                <ion-select-option *ngFor="let agent of agents | filterKey : 'type' : 'conversation'" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
              </ion-select>
              <span class="spacer"></span>
@@ -111,7 +110,6 @@
              <fa-icon [icon]="icon.get('faUser')" font-20 style="margin-right:20px;color:var(--ion-color-primary);"></fa-icon>  
              <ion-select [placeholder]="'Select Agent'" #select_btn_agents id="select_btn_agents" class="selectAgent" [toggleIcon]="''" [expandedIcon]="''" interface="popover" (click)="preventClick($event)" [(ngModel)]="activeAgent" (ionChange)="changeAgent(activeAgent)" fullwidth>
                <!-- <ion-select-option [value]="{title:'Basisgegevens',id:'main'}">{{'Basisgegevens' | capitalize}}</ion-select-option> -->
-               <!-- <ion-select-option [value]="{title:'Fase indeling',id:'phaseList'}">{{'Fase indeling' | capitalize}}</ion-select-option> -->
                <ion-select-option *ngFor="let agent of agents | filterKey : 'type' : 'support'" [value]="agent">{{agent.title | capitalize}}</ion-select-option>
              </ion-select>
              <span class="spacer"></span>

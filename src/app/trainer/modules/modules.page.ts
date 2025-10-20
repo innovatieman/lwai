@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { IonContent, IonInfiniteScroll, PopoverController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -43,7 +43,8 @@ export class ModulesPage implements OnInit {
   selectedTags:any[] = [];
   private leave$ = new Subject<void>();
   showHtml:boolean = false
-
+  @ViewChild('import_item') import_item!: ElementRef; 
+  
   configModules={
     toolbar: {
       container:[
@@ -1515,4 +1516,126 @@ shortMenu:any
       }
     })
   }
+
+
+  exportVisibleItems(){
+    if(!this.trainerService.isAdmin){
+      return
+    }
+    let items = []
+    for(let item of this.visibleItems){
+      let itemCopy = JSON.parse(JSON.stringify(item))
+      itemCopy.exportedType = 'module'
+      itemCopy.items = []
+      items.push(itemCopy)
+    }
+  
+    const base64 = this.encodeObjectToBase64(items); // encode naar base64
+
+    const blob = new Blob([base64], { type: 'text/plain;charset=utf-8' });
+    // const blob = new Blob([JSON.stringify(obj)], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    let title = 'selected_modules'
+    link.download = 'export_'+title+'.alicialabs';
+    link.click();
+    this.toast.show('De modules zijn geëxporteerd zonder cases of info-items.');
+  }
+
+  decodeBase64ToObject(base64: any): any {
+    const binary = atob(base64);
+    const bytes = new Uint8Array([...binary].map(c => c.charCodeAt(0)));
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  }
+
+  encodeObjectToBase64(obj: any): string {
+    const json = JSON.stringify(obj);
+    const utf8Bytes = new TextEncoder().encode(json); // UTF-8 → Uint8Array
+    const base64 = btoa(String.fromCharCode(...utf8Bytes));
+    return base64;
+  }
+
+  importClick(){
+    if(!this.trainerService.checkIsTrainerPro()){
+        return
+    }
+    this.import_item.nativeElement.click();
+  }
+
+  selectImportFile($event:any) {
+    if($event?.target?.files[0]){
+      this.readImportFile($event.target.files[0])
+    }
+
+  } 
+
+  readImportFile(file: File) {
+    var reader = new FileReader();
+    reader.onload = () => {
+        let obj = this.decodeBase64ToObject(reader.result)
+        this.importData(obj)
+    };
+    reader.readAsText(file);
+  }
+
+  importData(fileData:any,multiple:boolean = false){
+    if(!fileData) {
+      this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+      return;
+    }
+
+    if (fileData.exportedType !== 'module') {
+
+      if(!Array.isArray(fileData)){
+        this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+        return;
+      }
+      else{
+        for(let i=0;i<fileData.length;i++){
+          if(fileData[i].exportedType !== 'module'){
+            this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+            return;
+          }
+        }
+        for(let i=0;i<fileData.length;i++){
+          this.importData(fileData[i], true)
+        }
+        return;
+      }
+    }
+
+    let newItem:any = {}
+
+    try {
+        newItem.created = Date.now(); 
+        newItem.title = fileData.title + (multiple ? '' : ' - import');
+        newItem.photo = fileData.photo || '';
+        newItem.user_info = fileData.user_info || '';
+        newItem.module_type = "free";
+        newItem.tags = fileData.tags || [];
+        newItem.training_content = fileData.training_content || false;
+        newItem.items = [];
+    }
+     catch (error) {
+      this.toast.show(this.translate.instant('error_messages.invalid_file'), 4000, 'middle');
+      return;
+    }
+    this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'modules', newItem,async (res:any) => {
+      if(res && res.id){
+        if(!multiple){
+          try {
+            const found = await this.trainerService.waitForItem('module',newItem.created, 5000, 'created');
+            this.trainerService.moduleItem = found;
+          } catch (err) {
+            this.trainerService.moduleItem = { id: newItem.id, ...newItem };
+          }
+        }
+      } else {
+        this.toast.show(this.translate.instant('error_messages.import_failed'), 4000, 'middle');
+      }
+    })
+
+  }
+
 }

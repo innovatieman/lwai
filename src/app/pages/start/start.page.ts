@@ -775,6 +775,10 @@ export class StartPage implements OnInit {
     
     // console.log(this.cases.all)
 
+    
+
+
+
     const filtered = this.caseFilterPipe.transform(
       this.cases.all,
       this.currentFilterTypes.types,
@@ -782,16 +786,20 @@ export class StartPage implements OnInit {
       // []
       this.extraFilters.open_to_user
     );
-  
+
+    const seed = this.helper.getDailySeed();
+    let filteredShuffled = this.helper.shuffleArrayDeterministic(filtered, seed);
+    
     let filteredTypes = []
-    for(let i = 0; i < filtered.length; i++){
+    for(let i = 0; i < filteredShuffled.length; i++){
       if(!this.showCreateSelf){
-        filteredTypes.push(filtered[i])
+        filteredTypes.push(filteredShuffled[i])
       }
-      else if(this.showCreateSelf && filtered[i].create_self){
-        filteredTypes.push(filtered[i])
+      else if(this.showCreateSelf && filteredShuffled[i].create_self){
+        filteredTypes.push(filteredShuffled[i])
       }
     }
+    
 
     const searched = this.filterSearchPipe.transform(
       filteredTypes,

@@ -43,7 +43,8 @@
         "user":"Gebruiker",
         "copied_to_clipboard":"Gekopieerd naar klembord",
         "height":"Hoogte",
-        "width":"Breedte"
+        "width":"Breedte",
+        "option":"Optie"
     },
     "menu":{
         "login": "Inloggen",
@@ -208,7 +209,9 @@
         "agents_feedback_cipher":"Feedback cijfer",
         "agents_phases":"Gespreksniveau van het gesprek (fases)",
         "agents_goal":"Doel van het gesprek",
-        "agents_evaluation":"Evaluatie van het gesprek"
+        "agents_evaluation":"Evaluatie van het gesprek",
+        "editable_voice_statement_false":"Een gebruiker kan GEEN stem selecteren",
+        "editable_voice_statement_true":"Een gebruiker kan WEL een stem selecteren"
     },
     "languages":{
         "language":"Taal",
@@ -622,11 +625,13 @@
         "voice_sex_male":"Man",
         "voice_sex_other":"Overig",
         "voice_on":"Start met voice",
+        "voice_off":"Stop met voice",
+        "only_voice":"Alleen spraak",
         "conversation_ai":"Gesprek met AI",
         "knowledge_item":"Kennis",
         "open_more":"Open meer",
         "export_visible_cases":"Exporteer zichtbare cases",
-        "export_visible_items:":"Exporteer zichtbare items",
+        "export_visible_items":"Exporteer zichtbare items",
         "no_module":"Niet gekoppeld"
     },
     "modules":{
@@ -645,7 +650,9 @@
         "cannot_add_module_to_itself":"Er ontstaat een oneindige lus als je deze module toevoegt aan zichzelf. Kies een andere module.",
         "training_content_title":"Uitgebreide beschrijving van de training. Wordt alleen weergegeven bij een hoofdmodule.",
         "module_finished":"Module voltooid",
-        "new_tag":"Nieuw tag"
+        "new_tag":"Nieuw tag",
+        "export_visible_modules":"Exporteer zichtbare modules",
+        "import_module":"Importeer module"
     },
     "trainings":{
         "edit_training":"Bewerken",
@@ -688,6 +695,7 @@
         "closed_training":"Afgesloten",
         "organisation_training":"Organisatie",
         "games_training":"Games",
+        "stream_training":"Streams",
         "no_connected_items":"Dit deel van de training heeft (nog) geen onderdelen.",
         "close_training_verify":"Weet je zeker dat je deze training wilt afsluiten? De deelnemers kunnen de training dan niet meer volgen. Dit kan niet ongedaan gemaakt worden.",
         "close_training_verify_elearning":"Weet je zeker dat je deze e-training wilt afsluiten? De deelnemers kunnen de e-training dan niet meer kopen of activeren. De gebruiker die de training al hebben, kunnen er gebruik van blijven maken. Het afsluiten kan niet ongedaan gemaakt worden.",
@@ -722,7 +730,10 @@
         "elearning_publish_private_description":"Je kunt gebruikers uitnodigen om deel te nemen aan je training via je eigen kanalen. De prijs bepaal je helemaal zelf en de opbrengst is voor jou. Na het publiceren verschijnt er een rechtstreekse link die je aan gebruikers kunt geven.<br>De gebruikers krijgen automatisch credits om de training te volgen. De hoeveelheid (en de bijbehorende kosten) kun je hieronder instellen. Deze worden in rekening gebracht bij jou als trainer. Je ontvangt hier maandelijks een verzamelfactuur van.",
         "elearning_private_url_info":"Verstuur deze link naar gebruikers die toegang mogen krijgen tot de training.",
         "max_customers":"Hoeveel klanten mogen gebruik maken van deze link?<br><span style='font-size:0.8em;color:gray'>(0 = onbeperkt)</span>",
+        "max_users_total":"Hoeveel gebruikers mogen maximaal worden gekoppeld aan deze training?<br><span style='font-size:0.8em;color:gray'>(0 = onbeperkt)</span>",
+        "max_users":"Voor hoeveel gebruikers is deze training?",
         "allowed_domains":"Welke domeinen mogen deze link gebruiken? (bijv. jouwbedrijf.nl)<br><span style=font-size:0.8em;color:gray>Laat leeg voor alle domeinen. Meerdere domeinen scheiden met komma.</span>",
+        "allowed_domains_sales":"Zijn er specifieke domeinen toegestaan voor de gebruikers? (bijv. jouwbedrijf.nl)<br><span style=font-size:0.8em;color:gray>Vul hier het laatste deel van het e-mailadres in als je een specifiek domein wilt toestaan. Laat leeg voor alle domeinen. Meerdere domeinen scheiden met komma.</span>",
         "link_copied":"De link is gekopieerd naar je klembord.",
         "link_not_copied":"De link kon niet naar je klembord worden gekopieerd. Kopieer het handmatig.",
         "publishing_elearning":"Bezig met publiceren van de e-learning",
@@ -737,7 +748,29 @@
         "amount_credits_unlimited":"Dit bedrag wordt bij jou als trainer in rekening gebracht. Met dit bedrag heeft elke deelnemer onbeperkt credits voor een jaar om gesprekken te voeren in de training.",
         "amount_credits_4k":"Dit bedrag wordt bij jou als trainer in rekening gebracht, wanneer de training wordt geactiveerd via de onderstaande link. Met dit bedrag heeft elke deelnemer 4000 credits voor een jaar om gesprekken te voeren in de training. Dat zijn ongeveer 15-20 uitgebreide gesprekken.",
         "amount_credits":"Hoeveel aan credits wil je per deelnemer beschikbaar stellen?",
-        "content":"Inhoud"
+        "content":"Inhoud",
+        "publish_for_all_employees":"Publiceer voor alle medewerkers",
+        "publish_for_all_employees_info":"Om de training open te stellen voor medewerkers, moet je de training publiceren. Na publicatie hebben alle medewerkers van jouw organisatie toegang tot de training.",
+        "publish_for_some_employees":"Publiceer voor een selectie van medewerkers",
+        "publish_for_some_employees_info":"Je kunt ook zelf bepalen welke medewerkers toegang krijgen tot de training. Je kunt dan na het publiceren zelf deelnemers toevoegen aan de training.",
+        "publish_for_participants":"Publiceer voor deelnemers",
+        "publish_with_invoice":"Ontvang een factuur",
+        "publish_with_pay_direct":"Betaal direct",
+        "publish_for_participants_info":"Om de training open te kunnen stellen voor deelnemers, moet je de training publiceren. Na publicatie kun je de deelnemers koppelen of een deelname-link aanmaken.",
+        "publish_marketplace":"Publiceer op onze Marktplaats",
+        "publish_marketplace_info":"Je training wordt zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar. Je kunt zelf de prijs bepalen en krijgt 80% van de opbrengst van deze prijs. Wij regelen de marketing voor AliciaLabs en het betalingsproces voor je.",
+        "publish_stream":"Publiceer als stream",
+        "publish_stream_info":"Met een stream kunnen gebruikers direct cases oefenen zonder dat ze een account hoeven aan te maken. Deze cases kun je embedden in een elearning of website.<br>Hiervoor koop je een credit-pakket voor de training waarmee de stream wordt gefaciliteerd",
+        "sell_directly":"Verkoop rechtstreeks aan een klant",
+        "sell_directly_info":"Er zijn verschillende manieren om je training rechtstreeks te verkopen aan een klant. De beste manier is afhankelijk van de situatie. Kies hieronder de situatie die het beste bij je past.",
+        "sell_directly_participants_known":"Ik heb de gegevens van de deelnemers",
+        "sell_directly_participants_known_info":"Je selecteert zo zelf de klant en voegt direct de deelnemers toe. Dan bepaal je de prijs en activeer je de training direct voor de deelnemers. De factuur wordt naar de klant gestuurd en de deelnemers ontvangen een uitnodiging.",
+        "sell_directly_amount_known":"Ik weet alleen hoeveel deelnemers er meedoen",
+        "sell_directly_amount_known_info":"Je weet alleen hoeveel deelnemers er meedoen, maar niet wie. Je selecteert zo zelf de klant en geeft het aantal deelnemers op. Dan bepaal je de prijs en activeert de training direct voor de deelnemers. De factuur wordt naar de klant gestuurd. Je ontvangt een link die jij of de klant aan de deelnemers kunt geven om zich te registreren.",
+        "sell_directly_variable_amount":"Het aantal deelnemers is nog niet bekend",
+        "sell_directly_variable_amount_info":"Je weet nog niet hoeveel deelnemers er meedoen. Je selecteert zo zelf de klant en geeft een maximum aantal deelnemers (als die er zijn) en einddatum op. Dan bepaal je de prijs per deelnemer en een eventuele basisprijs. De factuur met een basisprijs wordt naar de klant gestuurd. Je ontvangt een link die jij of de klant aan de deelnemers kunt geven om zich te registreren. Aan het eind van iedere maand ontvangt de klant een factuur voor het werkelijke aantal deelnemers van die maand.",
+        "publish_select":"Publiceren kan op verschillende manieren. Kies hier de manier die het beste bij deze training past.",
+        "situation":"Situatie"
     },
     "generate_case":{
         "title_step_0":"De basis",
@@ -936,7 +969,10 @@
         "actions_between_conversations":"Is er iets gebeurd tussen dit en het vorige gesprek?",
         "next_conversation_title":"Ga verder in gesprek",
         "next_conversation_explanation":"Simuleer een vervolg op dit gesprek. Je kunt een nieuw gesprek aangaan met dezelfde AI-gesprekspartner en voortborduren op het vorige gesprek. Dit kan helpen om de relatie met de AI-gesprekspartner te verdiepen en meer inzicht te krijgen in de situatie.",
-        "conversation_closed":"Dit gesprek is afgesloten. Je kunt deze terugvinden bij je afgeronde cases, om na te lezen of om verder te praten."
+        "conversation_closed":"Dit gesprek is afgesloten. Je kunt deze terugvinden bij je afgeronde cases, om na te lezen of om verder te praten.",
+        "voice_on":"Start met voice",
+        "voice_off":"Stop met voice",
+        "only_voice":"Alleen spraak"
     },
     "terms":{
         "terms":"https://www.iubenda.com/gebruiksvoorwaarden/84749837",
@@ -952,7 +988,10 @@
         "starting":"Het gaat beginnen",
         "starting_instructions":"Geef aan hoe je het gesprek wilt beginnen. Je gesprekspartner zal hierop direct reageren als begin van het gesprek.",
         "opening":"Opening",
-        "opening_user":"Pas onderstaande opening aan, als je wilt."
+        "opening_user":"Pas onderstaande opening aan, als je wilt.",
+        "start_with_voice":"Start met geluid",
+        "start_without_voice":"Start zonder geluid",
+        "selected_voice":"Geselecteerde stem"
     },
     "useOptions":{
         "my_understanding":"Ik wil beter begrepen worden",
@@ -1072,8 +1111,8 @@
         "training_available_date":"Deze training of deel van de training is voor de deelnemers beschikbaar vanaf de ingestelde datum. Als deze datum leeg is of in het verleden ligt, dan is (dit deel van) de training direct beschikbaar voor de deelnemers.",
         "training_available_till":"Deze training of deel van de training is voor de deelnemers beschikbaar tot en met de ingestelde datum. Als deze datum leeg is, dan is (dit deel van) de training beschikbaar tot de training wordt gesloten.",
         "module_tags":"Hier kun je tags toevoegen aan de module of training. Deze tags worden gebruikt om de module te categoriseren en kunnen helpen bij het zoeken naar modules.",
-        "dashboard_admins":"Hier kun je de administrators van de organisatie beheren. Administrators hebben toegang tot de trainer omgeving en kunnen daar instellingen aanpassen en trainingen beheren.",
-        "add_admin":"Voeg administrator toe",
+        "dashboard_admins":"Hier kun je de trainers van de organisatie beheren. Trainers hebben toegang tot de trainer omgeving en kunnen daar instellingen aanpassen en trainingen beheren.",
+        "add_admin":"Voeg trainer toe",
         "add_employee":"Voeg medewerker toe",
         "add_employee_info":"Hier kun je een e-mailadres invoeren van iemand die je als medewerker wilt toevoegen aan de organisatie.",
         "training_add_employees":"Je kunt op twee manieren medewerkers toevoegen aan de organisatie:<br><br><strong><em>Zelf medewerkers toevoegen</em></strong></p>Klik op het plusje (+) en vul de e-mailadressen van de medewerkers in.<p><strong><em>Medewerkers importeren</em></strong></p>Wanneer je een lijst hebt van namen en e-mailadressen van de medewerkers kun je deze importeren. Klik op 'importeren' en gebruik het sjabloon om op de juiste manier een bestand te maken. Importeer dat bestand.",
@@ -1096,23 +1135,23 @@
         "setting_organisation":"Organisatie instellingen",
         "setting_organization":"Organisatie instellingen",
         "setting_trainer":"Trainer instellingen",
-        "admins":"Administrators",
-        "add_admin":"Zoek gebruiker om als administrator toe te voegen",
+        "admins":"Trainers",
+        "add_admin":"Zoek gebruiker om als trainer toe te voegen",
         "amount_employees":"Aantal medewerkers",
-        "max_admins":"Maximaal aantal administrators",
+        "max_admins":"Maximaal aantal trainers",
         "request_title":"Vraag om aanpassing",
         "request_amount_employees_text":"Je kunt het aantal medewerkers aanpassen. Geef hieronder aan wat je precies wilt aanpassen. Je ontvangt dan een offerte op maat.",
-        "request_amount_admins_text":"Je kunt het aantal administrators aanpassen. Geef hieronder aan wat je precies wilt aanpassen. Je ontvangt dan een offerte op maat.",
+        "request_amount_admins_text":"Je kunt het aantal trainers aanpassen. Geef hieronder aan wat je precies wilt aanpassen. Je ontvangt dan een offerte op maat.",
         "request_send_success":"Je verzoek is verstuurd. We nemen zo snel mogelijk contact met je op.",
-        "email_admin":"E-mailadres van de administrator",
-        "add_admin_success":"De administrator is toegevoegd.",
-        "add_admin_error":"Er is iets misgegaan bij het toevoegen van de administrator. Probeer het later nog eens.",
+        "email_admin":"E-mailadres van de trainer",
+        "add_admin_success":"De trainer is toegevoegd.",
+        "add_admin_error":"Er is iets misgegaan bij het toevoegen van de trainer. Probeer het later nog eens.",
         "search_admin_error":"De gebruiker is niet gevonden. Controleer het e-mailadres en probeer het opnieuw.",
         "found_admin":"Gevonden gebruiker",
-        "admin_deleted":"De administrator is verwijderd.",
-        "search_admin_exists":"Deze gebruiker is al administrator van de organisatie.",
+        "admin_deleted":"De trainer is verwijderd.",
+        "search_admin_exists":"Deze gebruiker is al trainer van de organisatie.",
         "add_admin_employee_required":"Er kunnen alleen gebruikers worden toegevoegd die al geregistreerd zijn als medewerker van de organisatie.",
-        "max_admins_reached":"Het maximum aantal administrators is bereikt. Je kunt geen nieuwe administrators toevoegen.",
+        "max_admins_reached":"Het maximum aantal trainers is bereikt. Je kunt geen nieuwe trainers toevoegen.",
         "max_employees_reached":"Het maximum aantal medewerkers is bereikt. Je kunt geen nieuwe medewerkers toevoegen.",
         "knowledge":"Specifieke kennis",
         "knowledge_feedback":"Kennis voor feedback en suggesties",
@@ -1316,7 +1355,13 @@
         "revenue_total_marketplace":"Totale omzet marketplace",
         "revenue_total_direct":"Totale omzet directe verkoop",
         "costs_credits_private":"Kosten credits verkoop eigen kanaal",
-        "costs":"Kosten"
+        "costs":"Kosten",
+        "step_select_customer":"Selecteer klant",
+        "new_customer":"Nieuwe klant",
+        "select_customer":"Selecteer eerst een klant, of maak een nieuwe aan.",
+        "your_profit":"Jouw winst",
+        "profit":"Winst",
+        "details_sale":"Details van deze verkoop"
         
     
     

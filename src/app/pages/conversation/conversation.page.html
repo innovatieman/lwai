@@ -44,7 +44,7 @@
         </div>
         
         <ion-buttons slot="end" flex center-ver style="margin-right: 15px;">
-          <ion-button *ngIf="!conversation.activeConversation.trainingId" [color]="auth.credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline" (click)="nav.go('account/credits')">
+          <ion-button *ngIf="!conversation.activeConversation.trainingId&&!conversation.activeConversation.stream" [color]="auth.credits.total>0 ? 'success' : 'danger'" class="creditsButton" fill="outline" (click)="nav.go('account/credits')">
             <span *ngIf="auth.credits.total&&!auth.credits_unlimited_type&&!auth.isEmployee">{{auth.credits.total}} <span *ngIf="!media.smallDevice">{{'standards.credits' | translate}}</span></span>
             <span *ngIf="(auth.credits.total&&auth.credits_unlimited_type)||auth.isEmployee" flex center-ver>
               <ion-icon name="infinite" noMargin slot="end" style="font-size: 18px;"></ion-icon>
@@ -430,9 +430,7 @@
             </ion-col>
             <ion-col [size]="media.smallDevice ? 3 : 2">
               <ion-row>
-                <!-- <ion-col size="12" *ngIf="conversation.activeConversation.closed">
-                  <ion-button noMargin color="danger" fill="solid" expand="block" (click)="showEvaluation()">Evaluatie</ion-button>
-                </ion-col> -->
+
                 <ion-col size="6" noPadding>
                   <ion-button id="assistent_menu" color="secondary" fill="clear" (click)="auth.credits.total<=0 ? noCredits() :  toggleHelp()">
                     <fa-icon slot="icon-only" [icon]="icon.get('faGraduationCap')" pointer></fa-icon>

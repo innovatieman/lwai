@@ -43,7 +43,8 @@
         "user":"User",
         "copied_to_clipboard":"Copied to clipboard",
         "height":"Height",
-        "width":"Width"
+        "width":"Width",
+        "option":"Option"
       },
       "menu": {
         "login": "Log in",
@@ -208,7 +209,9 @@
       "agents_feedback_cipher":"Feedback score",
       "agents_phases":"Conversation level (phases",
       "agents_goal":"Goal of the conversation",
-      "agents_evaluation":"Evaluation of the conversation"
+      "agents_evaluation":"Evaluation of the conversation",
+      "editable_voice_statement_false":"A user CANNOT select a voice",
+      "editable_voice_statement_true":"A user CAN select a voice"
     },
     "languages": {
       "language": "Language",
@@ -623,6 +626,8 @@
       "voice_sex_male":"Male",
       "voice_sex_other":"Other",
       "voice_on":"Start with voice",
+      "voice_off":"Stop with voice",
+      "only_voice":"Only voice",
       "conversation_ai":"Conversation with AI",
       "knowledge_item":"Knowledge",
       "open_more":"Open more",
@@ -646,7 +651,9 @@
         "cannot_add_module_to_itself":"An infinite loop would occur if you add this module to itself. Please choose another module.",
         "training_content_title":"Detailed description of the training. Only displayed for a main module.",
         "module_finished":"Module finished",
-        "new_tag":"New tag"
+        "new_tag":"New tag",
+        "export_visible_modules":"Export visible modules",
+        "import_module":"Import module"
       },
     "trainings":{
         "edit_training":"Edit training",
@@ -689,6 +696,7 @@
         "closed_training":"Closed",
         "organisation_training":"Organization",
         "games_training":"Games",
+        "stream_training":"Streams",
         "no_connected_items":"This part of the training has no items yet.",
         "close_training_verify": "Are you sure you want to close this training? Participants will no longer be able to follow the training. This cannot be undone.",
         "close_training_verify_elearning": "Are you sure you want to close this e-training? Participants will no longer be able to purchase or activate the e-training. Users who already have the training can continue to use it. Closing cannot be undone.",
@@ -723,7 +731,10 @@
         "elearning_publish_private_description":"You can invite users to participate in your training through your own channels. You set the price entirely yourself and the proceeds are yours. After publishing, a direct link will appear that you can give to users.<br>Users will automatically receive credits to follow the training. The amount (and the associated costs) can be set below. These will be charged to you as a trainer. You will receive a consolidated invoice for this monthly.",
         "elearning_private_url_info":"Send this link to users who may gain access to the training.",
         "max_customers":"How many customers may use this link?<br><span style='font-size:0.8em;color:gray'>(0 = unlimited)</span>",
+        "max_users_total":"How many users may be linked to this training?<br><span style='font-size:0.8em;color:gray'>(0 = unlimited)</span>",
+        "max_users":"How many users is this training for?",
         "allowed_domains":"Which domains may use this link? (e.g. yourcompany.nl)<br><span style='font-size:0.8em;color:gray'>Leave empty for all domains. Separate multiple domains with commas.</span>",
+        "allowed_domains_sales":"Are there specific domains allowed for users? (e.g. yourcompany.nl)<br><span style=font-size:0.8em;color:gray>Fill in the last part of the email address if you want to allow a specific domain. Leave empty for all domains. Separate multiple domains with commas.</span>",
         "link_copied":"The link has been copied to your clipboard.",
         "link_not_copied":"The link could not be copied to your clipboard. Please copy it manually.",
         "publishing_elearning":"Busy publishing the e-learning",
@@ -738,7 +749,28 @@
         "amount_credits_unlimited":"This amount will be charged to you as a trainer. With this amount, each participant has unlimited credits for one year to conduct conversations in the training.",
         "amount_credits_4k":"This amount will be charged to you as a trainer when the training is activated with the link below. With this amount, each participant has 4000 credits for one year to conduct conversations in the training. That is approximately 15-20 extensive conversations.",
         "amount_credits":"How much in credits do you want to make available per participant?",
-        "content":"Content"
+        "content":"Content",
+        "publish_for_all_employees":"Publish for all employees",
+        "publish_for_all_employees_info":"To make the training available to employees, you must publish the training. After publication, all employees of your organization will have access to the training.",
+        "publish_for_some_employees":"Publish for a selection of employees",
+        "publish_for_some_employees_info":"You can also determine which employees have access to the training. You can then add participants to the training yourself after publication.",
+        "publish_for_participants":"Publish for participants",
+        "publish_with_invoice":"Receive an invoice",
+        "publish_with_pay_direct":"Pay now",
+        "publish_for_participants_info":"To make the training available to participants, you must publish the training. After publication, you can link the participants or create a participation link.",
+        "publish_marketplace":"Publish on our Marketplace",
+        "publish_marketplace_info":"Your training will be visible to organizations and users for direct purchase for 1 year. You can set the price yourself and receive 80% of the proceeds from this price. We take care of the marketing for AliciaLabs and the payment process for you.",
+        "publish_stream":"Publish as stream",
+        "publish_stream_info":"With a stream, users can practice cases directly without having to create an account. These cases can be embedded in e-learning or websites.<br>To facilitate the stream, you purchase a credit package for the training.",
+        "sell_directly":"Sell directly to a customer",
+        "sell_directly_participants_known":"I have the details of the participants",
+        "sell_directly_participants_known_info":"You select the customer yourself and add the participants directly. You then determine the price and activate the training directly for the participants. The invoice is sent to the customer and the participants receive an invitation.",
+        "sell_directly_amount_known":"I only know how many participants are involved",
+        "sell_directly_amount_known_info":"You only know how many participants are involved, but not who. You select the customer yourself and specify the number of participants. You then determine the price and activate the training directly for the participants. The invoice is sent to the customer. You receive a link that you or the customer can give to the participants to register.",
+        "sell_directly_variable_amount":"The number of participants is not yet known",
+        "sell_directly_variable_amount_info":"You do not yet know how many participants will be involved. You select the customer yourself and specify a maximum number of participants (if there is a maximum) and an end date. You then determine the price per participant and any base price. The invoice with a base price is sent to the customer. You receive a link that you or the customer can give to the participants to register. At the end of each month, the customer receives an invoice for the actual number of participants for that month.",
+        "publish_select":"Publishing can be done in various ways. Choose the method that best suits this training.",
+        "situation":"Situation"
       },
     "generate_case":{
       "title_step_0":"The basics",
@@ -937,7 +969,11 @@
       "actions_between_conversations":"Has anything happened between this and the previous conversation?",
       "next_conversation_title":"Continue the conversation",
       "next_conversation_explanation":"Simulate a continuation of this conversation. You can start a new conversation with the same AI conversation partner and build on the previous conversation. This can help deepen the relationship with the AI conversation partner and gain more insight into the situation.",
-      "conversation_closed":"This conversation has been closed. You can find it in your completed cases to review or continue the discussion."
+      "conversation_closed":"This conversation has been closed. You can find it in your completed cases to review or continue the discussion.",
+      "voice_on":"Start with voice",
+      "voice_off":"Stop with voice",
+      "only_voice":"Only voice"
+
     },
     "terms":{
       "terms":"https://www.iubenda.com/terms-and-conditions/75452715",
@@ -953,7 +989,10 @@
       "starting":"It's about to start",
       "starting_instructions":"Indicate how you want to start the conversation. Your conversation partner will respond to this directly as the beginning of the conversation.",
       "opening":"Opening",
-      "opening_user":"Adjust the opening below, if you want."
+      "opening_user":"Adjust the opening below, if you want.",
+      "start_with_voice":"Start with sound",
+      "start_without_voice":"Start without sound",
+      "selected_voice":"Selected voice"
   },
   "useOptions":{
         "my_understanding":"I want to be better understood",
@@ -1073,8 +1112,8 @@
     "training_available_date":"This training or part of the training is available to participants from the set date. If this date is empty or in the past, then (this part of) the training is immediately available to participants.",
     "training_available_till":"This training or part of the training is available to participants until the set date. If this date is empty, then (this part of) the training is available until the training is closed.",
     "module_tags":"Here you can add tags to the module or training. These tags are used to categorize the module and can help in searching for modules.",
-    "dashboard_admins":"Here you can manage the administrators of the organization. Administrators have access to the trainer environment and can adjust settings and manage trainings.",
-    "add_admin":"Add administrator",
+    "dashboard_admins":"Here you can manage the trainers of the organization. Trainers have access to the trainer environment and can adjust settings and manage trainings.",
+    "add_admin":"Add trainer",
     "add_employee":"Add employee",
     "add_employee_info":"Here you can enter an email address of someone you want to add as an employee to the organization.",
     "training_add_employees":"You can add employees to the organization in two ways:<br><br><strong><em>Add employees yourself</em></strong></p>Click on the plus sign (+) and fill in the email addresses of the employees.<p><strong><em>Import employees</em></strong></p>If you have a list of names and email addresses of the employees, you can import them. Click on 'import' and use the template to create a file in the correct format. Import that file.",
@@ -1097,23 +1136,23 @@
       "setting_organisation":"Organization settings",
       "setting_organization":"Organization settings",
       "setting_trainer":"Trainer settings",
-      "admins":"Administrators",
-      "add_admin":"Find a user to add as administrator",
+      "admins":"Trainers",
+      "add_admin":"Find a user to add as trainer",
       "amount_employees":"Number of employees",
-      "max_admins":"Maximum number of administrators",
+      "max_admins":"Maximum number of trainers",
       "request__title":"Request adjustment",
       "request_amount_employees_text":"You can adjust the number of employees. Indicate below what you want to adjust. You will then receive a customized quote.",
-      "request_amount_admins_text":"You can adjust the number of administrators. Indicate below what you want to adjust. You will then receive a customized quote.",
+      "request_amount_admins_text":"You can adjust the number of trainers. Indicate below what you want to adjust. You will then receive a customized quote.",
       "request_send_success":"Your request has been sent. You will receive a quote as soon as possible.",
-      "email_admin":"Email address of the administrator",
+      "email_admin":"Email address of the trainer",
       "add_admin_success":"Administrator is successfully added.",
-      "add_admin_error":"Something went wrong while adding the administrator. Please try again later.",
+      "add_admin_error":"Something went wrong while adding the trainer. Please try again later.",
       "search_admin_error":"The user was not found. Please check the email address and try again.",
       "found_admin":"Found user",
-      "admin_deleted":"The administrator has been successfully removed.",
-      "search_admin_exists":"This user is already an administrator.",
+      "admin_deleted":"The trainer has been successfully removed.",
+      "search_admin_exists":"This user is already an trainer.",
       "add_admin_employee_required":"You can only add users who are already registered as an employee of the organization.",
-      "max_admins_reached":"The maximum number of administrators has been reached. You cannot add any new administrators.",
+      "max_admins_reached":"The maximum number of trainers has been reached. You cannot add any new trainers.",
       "max_employees_reached":"The maximum number of employees has been reached. You cannot add any new employees.",
       "knowledge":"Specific knowledge",
       "knowledge_feedback":"Knowledge for feedback and suggestions",
@@ -1311,7 +1350,14 @@
     "revenue_total_marketplace":"Total revenue marketplace",
     "revenue_total_direct":"Total revenue directe verkoop",
     "costs_credits_private":"Costs credits sales own channel",
-    "costs":"Costs"
+    "costs":"Costs",
+    "step_select_customer":"Select customer",
+    "new_customer":"New customer",
+    "select_customer":"Select a customer first, or create a new one.",
+    "your_profit":"your profit",
+    "profit":"profit",
+    "details_sale":"Details of this sale"
+
 
 
 

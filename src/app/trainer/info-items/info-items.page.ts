@@ -605,7 +605,7 @@ export class InfoItemsPage implements OnInit {
 
     async selectAvatar(event:Event,extraPhoto:boolean = false,ratio:string = 'knowledge'){
       this.media.selectAvatar(event,(res:any)=>{
-        console.log(res)
+        // console.log(res)
         if(res?.status==200&&res?.result.url){
           if(!extraPhoto){
             this.trainerService.infoItem.photo = res.result.url
@@ -1365,7 +1365,7 @@ export class InfoItemsPage implements OnInit {
 
           // setTimeout(async () => {
           let prompt = result.data[0].value + '\n' + result.data[1].value
-            console.log(prompt)
+            // console.log(prompt)
             this.toast.showLoader()
 
             let url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/generateAndStoreImageRunway'

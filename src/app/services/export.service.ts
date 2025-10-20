@@ -52,7 +52,7 @@ export class ExportService {
       }
       else if(doc.messages[i].role == 'assistant'){
         doc.messages[i].role = 'Gesprekspartner'
-        doc.messages[i].attitude = this.infoService.getAttitude(this.getAttitude(conversation,i+1)).title
+        doc.messages[i].attitude = this.infoService.getAttitude(this.getAttitude(conversation,i+1)) ?  this.infoService.getAttitude(this.getAttitude(conversation,i+1)).title : ''
         doc.messages[i].content = this.cleanReactionPipe.transform(doc.messages[i].content)
         doc.messages[i].content = this.formatAiTextPipe.transform(doc.messages[i].content)
       }

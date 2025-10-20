@@ -7,6 +7,7 @@ import { ToastController } from '@ionic/angular';
 import { NavService } from './services/nav.service';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 const originalSetTimeout = window.setTimeout;
 
@@ -22,9 +23,15 @@ export class AppComponent {
     private toggleConsole:ToggleConsoleService,
     private swUpdate: SwUpdate,
     private toastController: ToastController,
-    private nav:NavService
+    private nav:NavService,
+    private afAuth:AngularFireAuth
   ) {
     this.setRealViewportHeight();
+
+    if(localStorage.getItem('streamCase')){
+      this.logout('stream-case/finished')
+      return
+    }
 
     // window.addEventListener('resize', this.setRealViewportHeight);
 
@@ -51,6 +58,25 @@ export class AppComponent {
         }, 2000);
       });
     })
+  }
+
+
+  async logout(location?:any,stream?:boolean): Promise<void> {
+    if(!location){
+      location = '/login';
+    }
+    try {
+      await this.afAuth.signOut();
+      if(localStorage.getItem('streamCase') || stream){
+        localStorage.removeItem('streamCase')
+      }
+      this.nav.go(location);
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   }
 
 

@@ -35,6 +35,72 @@ export class SalesService {
     private functions: AngularFireFunctions,
   ) { }
 
+  customerFields(customer?:any){
+    let fields = [
+      {
+        type:'text',
+        title:this.translate.instant('form.company')+'*',
+        value:customer?.company || '',
+        required:true,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.address')+'*',
+        value:customer?.address || '',
+        required:true,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.zip')+'*',
+        value:customer?.zip || '',
+        required:true,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.city')+'*',
+        value:customer?.city || '',
+        required:true,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.country')+'*',
+        value:customer?.country || '',
+        required:true,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.phone'),
+        value:customer?.phone || '',
+        required:false,
+      },
+      {
+        type:'email',
+        title:this.translate.instant('form.email')+'*',
+        value:customer?.email || '',
+        required:true,
+      },
+      {
+        type:'email',
+        title:this.translate.instant('form.email_invoice')+'*',
+        value:customer?.email_invoice || '',
+        required:true,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.reference'),
+        value:customer?.reference || '',
+        required:false,
+      },
+      {
+        type:'text',
+        title:this.translate.instant('form.tax_nr'),
+        value:customer?.tax_nr || '',
+        required:false,
+      },
+    ]
+    return fields
+  }
+  
   getElearnings(callback?:any) {
     this.firestoreService.query('elearnings', 'open_to_public', true).subscribe((elearnings:any[]) => {
       this.elearnings = elearnings.map(e => {
@@ -175,6 +241,7 @@ export class SalesService {
   }
 
    activateWithCode(elearning:any) {
+    // console.log('Activating elearning with code:', elearning);
     this.toast.showLoader();
     if(!elearning || !elearning.id) {
       this.toast.hideLoader();
@@ -182,6 +249,7 @@ export class SalesService {
       return;
     }
     let specialCode = '';
+    // console.log('checkedSpecialCodes',this.checkedSpecialCodes)
     for(let code of this.checkedSpecialCodes) {
       if(elearning.id === code.elearningId) {
         specialCode = code.specialCode;

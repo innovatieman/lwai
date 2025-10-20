@@ -211,8 +211,16 @@ export class tutorialService {
       this.activeTutorial = this.tutorialsPerPage[page][trigger]
       this.shepherdService.defaultStepOptions = defaultStepOptions;
       this.shepherdService.modal = true;
+      if(!this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang])){
+        this.exit()
+        return
+      }
       let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang].steps)
       console.log(steps)
+      if(!steps){
+        this.exit()
+        return
+      }
       this.shepherdService.addSteps(steps);
       this.shepherdService.start();
     }
@@ -220,6 +228,9 @@ export class tutorialService {
 
   getContent(page:string,trigger:string,step:number,field:string){
     let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang].steps)
+    if(!steps){
+      return ''
+    }
     let stepData = steps[step]
     if(stepData){
       if(stepData[field]){
@@ -245,7 +256,13 @@ export class tutorialService {
 
   tutorialSteps(steps:any){
     // console.log(steps)
+    if(!steps||steps.length==0){
+      return null
+    }
     let newSteps:any[] = []
+    if(steps.steps){
+      steps = steps.steps
+    }
     steps.forEach((step:any)=>{
       
       let buttons:any[] = []

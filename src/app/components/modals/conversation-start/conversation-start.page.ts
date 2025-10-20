@@ -91,7 +91,7 @@ export class ConversationStartPage implements OnInit {
       }
 
       this.caseItemOriginal = JSON.parse(JSON.stringify(this.caseItem))
-      console.log(this.caseItem)
+      // console.log(this.caseItem)
     }
     else{
       this.modalCtrl.dismiss()

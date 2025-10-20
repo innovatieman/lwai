@@ -282,3 +282,34 @@
   text-transform: none;
   color: var(--ion-color-danger);
 }
+
+.arrowDown {
+  position: relative;
+  width: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-top: 30px solid transparent
+}
+
+.arrowDownCenter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 36px solid transparent;
+  border-right: 36px solid transparent;
+  border-top: 36px solid #D6E5FD;
+  top: -30px;
+  left: -36px;
+}
+
+.publishTypeTitle{
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-left:20px;
+  margin-top: 20px;
+  color: var(--ion-color-secondary);
+  text-transform: uppercase;
+}
+

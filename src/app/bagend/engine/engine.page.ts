@@ -900,6 +900,11 @@ export class EnginePage implements OnInit {
     this.modalService.showText(newList,'Attitude lijst')
   }
 
+  getAllPhases(){
+    console.log(this.activeItem)
+
+  }
+
 
 
   // setVoices(){

@@ -423,6 +423,9 @@ export class ConversationPage implements OnInit {
   
   startConversation(caseItem:any,personal?:boolean){
     // console.log('start conversation',JSON.parse(JSON.stringify(caseItem)),personal)
+    if(caseItem.stream){
+      localStorage.setItem('streamCase','true')
+    }
     this.started = true
     let countTries = 0
     if(!personal){
@@ -646,6 +649,7 @@ export class ConversationPage implements OnInit {
   }
 
   endConversation(){
+    
     // console.log('end conversation',this.conversation.originUrl)
     if(this.conversation.activeConversation.closed){
       if(this.conversation.originUrl){
@@ -662,10 +666,8 @@ export class ConversationPage implements OnInit {
       }
     }
 
-    this.modalService.showVerification(
-      this.translate.instant('buttons.close'),
-      this.translate.instant('conversation.close_text'),
-      [
+    
+    let buttons = [
         {
           text:this.translate.instant('buttons.continue_now'),
           value:false,
@@ -695,6 +697,27 @@ export class ConversationPage implements OnInit {
         fullWidth:true
       }
     ]
+    if(this.conversation.activeConversation.stream || localStorage.getItem('streamCase')){
+      buttons = [{
+        text:this.translate.instant('buttons.continue_now'),
+        value:false,
+        color:'dark',
+        fill:'outline'
+      },
+      {
+        text:this.translate.instant('buttons.end'),
+        value:'end',
+        color:'success',
+        fill:'solid',
+        full:true
+
+      }]
+    }
+
+    this.modalService.showVerification(
+      this.translate.instant('buttons.close'),
+      this.translate.instant('conversation.close_text'),
+      buttons
     ).then(response=>{
       
       if(response=='end'){
@@ -839,8 +862,12 @@ export class ConversationPage implements OnInit {
         // let skills = JSON.parse(this.conversation.activeConversation.skills[0].content)
         // console.log(skills)
 
-        this.modalService.showEvaluation({closing:this.conversation.activeConversation.close[0].content,skills:this.conversation.activeConversation.skills[0].content,title: 'Afsluiting',buttons:[{text:'Gelezen',value:true,color:'secondary'}],firstTime:firstTime,conversation_level:this.conversation.activeConversation.level,conversation:this.conversation.activeConversation,exportPdf:'conversation'},async ()=>{
+        this.modalService.showEvaluation({closing:this.conversation.activeConversation.close[0].content,skills:this.conversation.activeConversation.stream ? '' : this.conversation.activeConversation.skills[0].content,title: 'Afsluiting',buttons:[{text:'Gelezen',value:true,color:'secondary'}],firstTime:firstTime,conversation_level:this.conversation.activeConversation.level,conversation:this.conversation.activeConversation,exportPdf:'conversation'},async ()=>{
 
+          if(this.conversation.activeConversation.stream || localStorage.getItem('streamCase')){
+            this.auth.logout('stream-case/finished')
+            return
+          }
           
           
         

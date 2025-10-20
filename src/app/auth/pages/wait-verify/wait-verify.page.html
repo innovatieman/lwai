@@ -209,7 +209,7 @@
 
                 <ion-col [size]="helper.cardSize" *ngIf="auth.activeCourses?.length">
                   <ion-card noPadding pointer fullheight class="'caseItem skipSuggestion" flex center-ver center-hor (click)="stopVideo();nav.go('start/my_trainings')">
-                    <ion-card-content noPadding fullHeight>
+                    <ion-card-content noPadding fullHeight fullWidth>
                       <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(' + auth.activeCourses[0]?.photo + ')'}"></div>
                       <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                           <ion-card-header>

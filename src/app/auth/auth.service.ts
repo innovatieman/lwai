@@ -661,13 +661,16 @@ export class AuthService {
 
 
   // Uitloggen
-  async logout(location?:any): Promise<void> {
+  async logout(location?:any,stream?:boolean): Promise<void> {
     if(!location){
       location = '/login';
     }
     try {
       await this.afAuth.signOut();
       this.userInfo = {}
+      if(localStorage.getItem('streamCase') || stream){
+        localStorage.removeItem('streamCase')
+      }
       this.nav.go(location);
       setTimeout(() => {
         window.location.reload();
@@ -778,9 +781,29 @@ export class AuthService {
           }
           return;
         }
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(async (doc) => {
           let item:any = doc.data()
           item.id = doc.id
+
+          // const docRef = this.firestore.doc(`trainers/${item.id}`);
+          // // SETTINGS
+          // await docRef.collection('settings').snapshotChanges().pipe(
+          //   map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+          // ).subscribe({
+          //   next: settings => {
+          //     item.settings = settings;
+          //     settings.forEach((s:any) => {
+          //       if (s.trainerPro) item.isTrainerPro = s.trainerPro;
+          //       if (s.affiliate) item.affiliate = s.affiliate;
+          //     });
+          //     this.organisations.push(item)
+          //   },
+          //   error: () => {
+          //     console.log('error loading settings');
+          //     item.settings = [];
+          //     this.organisations.push(item)
+          //   }
+          // });
           this.organisations.push(item)
         });
         this.organisations = this.organisations.sort((a:any,b:any)=>{
@@ -872,6 +895,7 @@ export class AuthService {
       }
       if(type == 'trainerPro' && this.organisations.length && this.nav.activeOrganisationId){
         for(let i=0;i<this.organisations.length;i++){
+          // console.log(this.organisations[i].name,this.organisations[i])
           if(this.organisations[i].trainerPro && this.organisations[i].id == this.nav.activeOrganisationId){
             return of(true)
           }

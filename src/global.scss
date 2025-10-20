@@ -491,6 +491,9 @@ ion-checkbox{
 [borderBottom]{
     border-bottom: solid 2px var(--ion-color-primary);
 }
+[outlinePrimary]{
+    outline: solid 2px var(--ion-color-primary);
+}
 
 [singleLine]{
     border-bottom: solid 2px var(--ion-color-primary);
@@ -613,6 +616,7 @@ blockquote {
     padding: 20px;
     border-radius: 16px;
     font-style: italic;
+    margin-top: 30px;
 }
 blockquote {
     span,p{

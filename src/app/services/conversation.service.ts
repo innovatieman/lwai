@@ -297,7 +297,7 @@ export class ConversationService implements OnDestroy {
           }
           this.messages.push({role:'system',content:'',id:"0"})
           this.messages.push({role:'user',content:this.caseItem.openingMessage || '',id:"1"})
-          console.log('voiceActive',this.voiceActive)
+          // console.log('voiceActive',this.voiceActive)
           this.record.initiateRecording(conversationId)
           if(this.voiceActive){
             this.openai_chat_voice(obj)
@@ -842,6 +842,12 @@ export class ConversationService implements OnDestroy {
       prompt:message,
       voice:this.caseItem.voice || this.activeConversation.voice || ''
     }
+    if(this.activeConversation.trainerId){
+      obj.training = {
+        trainerId: this.activeConversation.trainerId,
+        trainingId: this.activeConversation.trainingId,
+      }
+    }
     // console.log(obj)
     this.tempTextUser = message
     // this.record.recording = false;
@@ -1259,6 +1265,10 @@ export class ConversationService implements OnDestroy {
   async closeConversationWithoutEvaluation(callback:Function) {
     this.toast.showLoader(this.translate.instant('conversation.closing_conversation'))
     this.firestoreService.updateSub('users', this.auth.userInfo.uid, 'conversations', this.activeConversation.conversationId, {closed: new Date().getTime()}).then(()=>{
+      if(this.activeConversation.stream || localStorage.getItem('streamCase')){
+        this.auth.logout('stream-case/finished')
+        return
+      }
       this.toast.hideLoader()
       callback()
     })
@@ -1301,8 +1311,8 @@ export class ConversationService implements OnDestroy {
       instructionType:'close',
       categoryId:this.caseItem.conversation || this.activeConversation.conversationType,
     }
-    console.log(this.activeConversation)
-    console.log(obj)
+    // console.log(this.activeConversation)
+    // console.log(obj)
     const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/closingGemini", {
       method: "POST",
       headers: {
