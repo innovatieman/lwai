@@ -20,6 +20,7 @@ import { TrainerService } from 'src/app/services/trainer.service';
 import * as moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
 import { SortByPipe } from 'src/app/pipes/sort-by.pipe';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 
 @Component({
   selector: 'app-cases',
@@ -66,6 +67,7 @@ export class CasesPage implements OnInit {
     public selectMenuservice:SelectMenuService,
     private popoverController:PopoverController,
     private sortByPipe:SortByPipe,
+    private functions:AngularFireFunctions
   ) { }
 
 
@@ -676,13 +678,44 @@ export class CasesPage implements OnInit {
     const scrollPosition = window.scrollY;
 
     if(this.trainerService.breadCrumbs && this.trainerService.breadCrumbs[0]?.type == 'training'){
+
+      const updateInArray = (array: any[]) => {
+        if (!Array.isArray(array)) return;
+        array.forEach((element) => {
+          const matchingItem = [caseItem].find((i:any) => i.id && i.id === element.id);
+          if (matchingItem) {
+            if(field && matchingItem[field] !== undefined){
+              element[field] = matchingItem[field];
+            }
+          }
+          if (element.items && Array.isArray(element.items)) {
+            updateInArray(element.items);
+          }
+        });
+      };
+
       if(field){
         this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',caseItem.id,caseItem[field],field,()=>{
           setTimeout(() => {
             window.scrollTo(0, scrollPosition);
           }, 100);
+
+          updateInArray(this.trainerService.breadCrumbs[0].item?.items);
+          this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,{items:this.trainerService.breadCrumbs[0].item?.items},()=>{});
+
+          if(this.trainerService.breadCrumbs[0].item?.status=='published' && this.trainerService.breadCrumbs[0].item?.publishType == 'elearning'){
+            this.functions.httpsCallable('adjustElearning')({
+              elearningId: this.trainerService.breadCrumbs[0].item.id,
+              trainerId: this.nav.activeOrganisationId,
+              items:[caseItem],
+              updates: {
+                [field]: caseItem[field]
+              },
+            }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{});
+          }
         },isArray)
       }
+
     }
     else{
       if(field){

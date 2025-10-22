@@ -111,7 +111,7 @@
               <fa-icon font-24 slot="end" [icon]="icon.get('faFileExport')"></fa-icon>
           </ion-item>
 
-          <ion-item detail="false" lines="none" button (click)="deleteItem()" class="itemButton" *ngIf="trainerService.infoItem?.id" noMargin>
+          <ion-item detail="false" lines="none" button (click)="deleteItem()" class="itemButton" *ngIf="trainerService.infoItem?.id && trainerService.breadCrumbs[0]?.type != 'training'" noMargin>
             <div font-20 weight700 text-danger>{{'cases.remove_item' | translate}}</div>
             <fa-icon font-24 slot="end" text-danger [icon]="icon.get('faTrashAlt')"></fa-icon>
           </ion-item>

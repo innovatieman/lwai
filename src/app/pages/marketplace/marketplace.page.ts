@@ -58,6 +58,7 @@ export class MarketplacePage implements OnInit {
   specialCodeChecked: boolean = false;
   resizeSubscription:Subscription | null = null;
   pricesInclVat: boolean = true;
+  hideCreditsText: boolean = false;
   constructor(
     public media: MediaService,
     public icon:IconsService,
@@ -93,6 +94,9 @@ export class MarketplacePage implements OnInit {
       }
       if(params.has('trainerIds')){
         this.searchParams.trainerIds = params.get('trainerIds').split(',') || [];
+      }
+      if(params.has('hideCreditsText')){
+        this.hideCreditsText = params.get('hideCreditsText') === '1';
       }
       else{
         this.searchParams.trainerIds = [];

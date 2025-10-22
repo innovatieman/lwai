@@ -367,7 +367,7 @@
                         € {{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 20.66 : 20.66))).whole }}
                         <span style="font-size: 0.8em;margin-left:-5px">,{{ getFormattedPrice(item.price_elearning + (auth.credits_unlimited_type ? 0 : (pricesInclVat ? 25 : 20.66))).decimals }}</span>
                       </span>
-                      <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type">({{'marketplace.with_credits' | translate}})</span>
+                      <span marginLeft font-12 weight400 italic *ngIf="!auth.credits_unlimited_type && !hideCreditsText">({{'marketplace.with_credits' | translate}})</span>
                     </div>
                     <div class="price" *ngIf="!item.price_elearning || item.price_elearning == 0">{{'marketplace.free' | translate}}</div>
                   </ion-card>

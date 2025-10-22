@@ -50,6 +50,7 @@ export class DashboardPage implements OnInit {
   showHtml:boolean = false
   embedHeight:string = '800';
   embedWidth:string = '100%';
+  hideCreditsText:boolean = false;
   configModules={
     toolbar: {
       container:[
@@ -344,7 +345,8 @@ export class DashboardPage implements OnInit {
   }
 
   get embedCode(){
-    return `<iframe id="alicialabs_marketplace" width="${this.embedWidth}" height="${this.embedHeight}" style="border: none;" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><script>const iframe = document.getElementById("alicialabs_marketplace");iframe.src = "https://conversation.alicialabs.com/marketplace/filter?trainerIds=${this.nav.activeOrganisationId}&ts=" + Date.now();</script>`
+    let hideCreditsText = this.hideCreditsText ? '&hideCreditsText=1' : '';
+    return `<iframe id="alicialabs_marketplace" width="${this.embedWidth}" height="${this.embedHeight}" style="border: none;" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><script>const iframe = document.getElementById("alicialabs_marketplace");iframe.src = "https://conversation.alicialabs.com/marketplace/filter?trainerIds=${this.nav.activeOrganisationId}${hideCreditsText}&ts=" + Date.now();</script>`
   }
 
   addEmployee(){

@@ -1201,7 +1201,8 @@
       "trainer_info_example":"View as user",
       "embed_code":"Your website",
       "embed_title":"Place your e-trainings on your own website",
-      "embed_text":"<ul><li>Copy the embed code below. This code places the tool as an iframe on your own page.</li><li>Paste the code into the HTML of your website where you want the tool to be visible.</li><li>Save your page and reload. The tool will be automatically loaded and will always show the most up-to-date version. This embed code is privacy-friendly and automatically refreshes without caching.</li><li>You can adjust the width and height in the embed code if needed.</li></ul>"
+      "embed_text":"<ul><li>Copy the embed code below. This code places the tool as an iframe on your own page.</li><li>Paste the code into the HTML of your website where you want the tool to be visible.</li><li>Save your page and reload. The tool will be automatically loaded and will always show the most up-to-date version. This embed code is privacy-friendly and automatically refreshes without caching.</li><li>You can adjust the width and height in the embed code if needed.</li></ul>",
+      "hideCreditsText":"Hide the text 'Incl. credits' in the price display in the marketplace."
   },
   "marketplace":{
     "add_training":"Add training",

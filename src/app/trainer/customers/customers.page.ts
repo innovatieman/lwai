@@ -15,6 +15,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
 import { tutorialService } from 'src/app/services/tutorial.service';
 import * as moment from 'moment';
+import { SalesService } from 'src/app/services/sales.service';
 @Component({
   selector: 'app-customers',
   templateUrl: './customers.page.html',
@@ -48,6 +49,7 @@ export class CustomersPage implements OnInit {
     private route:ActivatedRoute,
     private modalService:ModalService,
     private tutorial:tutorialService,
+    private sales:SalesService
   ) { }
 
   ngOnInit() {
@@ -191,74 +193,10 @@ export class CustomersPage implements OnInit {
     }, 2000);
   }
 
-  customerFields(customer?:any){
-    let fields = [
-      {
-        type:'text',
-        title:this.translate.instant('form.company')+'*',
-        value:customer?.company || '',
-        required:true,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.address')+'*',
-        value:customer?.address || '',
-        required:true,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.zip')+'*',
-        value:customer?.zip || '',
-        required:true,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.city')+'*',
-        value:customer?.city || '',
-        required:true,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.country')+'*',
-        value:customer?.country || '',
-        required:true,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.phone'),
-        value:customer?.phone || '',
-        required:false,
-      },
-      {
-        type:'email',
-        title:this.translate.instant('form.email')+'*',
-        value:customer?.email || '',
-        required:true,
-      },
-      {
-        type:'email',
-        title:this.translate.instant('form.email_invoice')+'*',
-        value:customer?.email_invoice || '',
-        required:true,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.reference'),
-        value:customer?.reference || '',
-        required:false,
-      },
-      {
-        type:'text',
-        title:this.translate.instant('form.tax_nr'),
-        value:customer?.tax_nr || '',
-        required:false,
-      },
-    ]
-    return fields
-  }
+  
 
   addCustomer(){
-    let fields = this.customerFields();
+    let fields = this.sales.customerFields();
 
     this.modalService.inputFields(this.translate.instant('customers.add_customer'),this.translate.instant('customers.add_customer_text'),fields,(result:any)=>{
       console.log('result',result)
@@ -295,7 +233,7 @@ export class CustomersPage implements OnInit {
       event.preventDefault();
     }
     console.log('editCustomer',customer)
-    let fields = this.customerFields(customer);
+    let fields = this.sales.customerFields(customer);
 
     this.modalService.inputFields(this.translate.instant('customers.add_customer'),this.translate.instant('customers.add_customer_text'),fields,(result:any)=>{
       console.log('result',result)
@@ -336,7 +274,7 @@ export class CustomersPage implements OnInit {
     this.leave$.complete();
   }
 
-  addTraining(customer:any,training?:any){
+  addTraining(customer?:any,training?:any){
       console.log(training)
 
     let trainings = this.trainerService.trainings.filter(t=>t.status!='closed');

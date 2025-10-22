@@ -706,14 +706,27 @@
             <ion-card-header>
               <ion-card-title>{{'dashboard.embed_title' | translate}}</ion-card-title>
               <div font-16 weight400 [innerHtml]="translate.instant('dashboard.embed_text') | sanitizeHtml"></div>
-              <div flex center-ver marginTop>
-                <ion-label>{{'standards.height' | translate}}</ion-label>
-                <ion-input style="width:150px;" marginLeft class="inputAmount" type="text" [(ngModel)]="embedHeight" font-20 weight700></ion-input>
-              </div>
-              <div flex center-ver marginTop>
-                <ion-label>{{'standards.width' | translate}}</ion-label>
-                <ion-input style="width:150px;" marginLeft class="inputAmount" type="text" [(ngModel)]="embedWidth" font-20 weight700></ion-input>
-              </div>
+              <ion-row>
+                <ion-col [size]="media.smallDevice ? '12' : '6'">
+                  <div flex center-ver marginTop>
+                    <ion-label>{{'standards.height' | translate}}</ion-label>
+                    <ion-input style="width:150px;" marginLeft class="inputAmount" type="text" [(ngModel)]="embedHeight" font-20 weight700></ion-input>
+                  </div>
+                </ion-col>
+                <ion-col [size]="media.smallDevice ? '12' : '6'">
+                  <div flex center-ver marginTop>
+                    <ion-label>{{'standards.width' | translate}}</ion-label>
+                    <ion-input style="width:150px;" marginLeft class="inputAmount" type="text" [(ngModel)]="embedWidth" font-20 weight700></ion-input>
+                  </div>
+                </ion-col>
+                <ion-col [size]="media.smallDevice ? '12' : '12'">
+                  <div flex center-ver marginTop>
+                    <ion-checkbox  label-placement="end" mode="md" class="checkbox" color="primary" [(ngModel)]="hideCreditsText" font-16 weight700>
+                      <span>{{'dashboard.hideCreditsText' | translate}}</span>
+                    </ion-checkbox>
+                  </div>
+                </ion-col>
+              </ion-row>
             </ion-card-header>
             <ion-card-content relative>
               <ion-textarea readonly class="codePart" rows="6" fullwidth>{{embedCode}}</ion-textarea>

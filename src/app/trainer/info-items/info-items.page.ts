@@ -18,6 +18,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { TrainerService } from 'src/app/services/trainer.service';
 import * as moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 
 @Component({
   selector: 'app-info-items',
@@ -80,6 +81,8 @@ export class InfoItemsPage implements OnInit {
       public levelService:LevelsService,
       private popoverController:PopoverController,
       private selectMenuservice:SelectMenuService,
+      private functions:AngularFireFunctions
+      
     ) { }
   
     ngOnInit() {
@@ -89,7 +92,6 @@ export class InfoItemsPage implements OnInit {
     }
   
   ionViewWillEnter(){
-    console.log('trainerService.selectedModuleInfoItems',this.trainerService.selectedModuleInfoItems)
     this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
         if (userInfo) {
           this.auth.hasActive('trainer').pipe(takeUntil(this.leave$)).subscribe((trainer)=>{
@@ -139,7 +141,6 @@ export class InfoItemsPage implements OnInit {
   ionViewWillLeave() {
     this.leave$.next();
     this.leave$.complete();
-    console.log('trainerService.selectedModuleInfoItems',this.trainerService.selectedModuleInfoItems)
   }
 
     shortMenu:any
@@ -555,6 +556,22 @@ export class InfoItemsPage implements OnInit {
       }
       const scrollPosition = window.scrollY;
       if(this.trainerService.breadCrumbs && this.trainerService.breadCrumbs[0]?.type == 'training'){
+
+        const updateInArray = (array: any[]) => {
+          if (!Array.isArray(array)) return;
+          array.forEach((element) => {
+            const matchingItem = [infoItem].find((i:any) => i.id && i.id === element.id);
+            if (matchingItem) {
+              if(field && matchingItem[field] !== undefined){
+                element[field] = matchingItem[field];
+              }
+            }
+            if (element.items && Array.isArray(element.items)) {
+              updateInArray(element.items);
+            }
+          });
+        };
+
         if(field){
 
           infoItem[field] = infoItem[field] || ''
@@ -572,6 +589,23 @@ export class InfoItemsPage implements OnInit {
             setTimeout(() => {
               window.scrollTo(0, scrollPosition);
             }, 100);
+
+            updateInArray(this.trainerService.breadCrumbs[0].item?.items);
+
+            updateInArray(this.trainerService.breadCrumbs[0].item?.items);
+            this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,{items:this.trainerService.breadCrumbs[0].item?.items},()=>{});
+
+            if(this.trainerService.breadCrumbs[0].item?.status=='published' && this.trainerService.breadCrumbs[0].item?.publishType == 'elearning'){
+              this.functions.httpsCallable('adjustElearning')({
+                elearningId: this.trainerService.breadCrumbs[0].item.id,
+                trainerId: this.nav.activeOrganisationId,
+                items:[infoItem],
+                updates: {
+                  [field]: infoItem[field]
+                },
+              }).pipe(takeUntil(this.leave$)).subscribe((res:any)=>{});
+            }
+
           },isArray)
         }
       }

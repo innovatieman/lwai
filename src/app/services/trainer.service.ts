@@ -46,6 +46,9 @@ export class TrainerService {
   affiliates:any[] = []
   affiliateLoaded:boolean = false
   publishType: string = 'training';
+  selectedSellDirectly: string = '';
+  selectedPublishType: string = '';
+  showPrivateSell: boolean = false;
   isOrgAdmin: boolean = false;
   segments:any[] = []
   segmentsOrganized:any = []
@@ -127,11 +130,13 @@ export class TrainerService {
       this.infoItem = {}
       this.breadCrumbs = []
       this.affiliateLoaded = false
+      this.publishType = 'training';
       this.loadTrainerInfo(()=>{
         if(this.trainerInfo.affiliate){
           this.getAffiliates();
         }
         this.trainerInfoLoaded$.next(true);
+        if (this.trainerInfo.organisation) {this.publishType = 'organisation'};
         // this.trainerInfoLoaded.emit(true);
       });
     })
@@ -266,175 +271,6 @@ export class TrainerService {
     }
   }
 
-  // loadTrainerInfo(callback?:Function,unsubscribe?:boolean) {
-  //   if(!this.nav.activeOrganisationId){
-  //     this.trainerInfo = {}
-  //     return
-  //   }
-  //   let trainerSubscription = this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //     .get()
-  //     .subscribe((doc) => {
-  //       if (doc.exists) {
-  //         // console.log("exists")
-  //         this.trainerInfo = doc.data();
-  //         // get employees from subcollection
-  //         this.trainerInfo.id = doc.id
-  //         this.trainerInfo.employees = []
-  //         this.trainerInfo.settings = []
-  //         // this.isTrainerPro = this.trainerInfo.trainerPro == true
-  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //           .collection('employees')
-  //           .snapshotChanges()
-  //           .pipe(
-  //             // Map documenten naar objecten
-  //             map(docs =>
-  //               docs.map((e: any) => ({
-  //                 id: e.payload.doc.id,
-  //                 ...e.payload.doc.data(),
-  //               }))
-  //             ),
-  //           )
-  //           .subscribe(employees => {
-  //             this.trainerInfo.employees = employees.map(doc => ({
-  //               ...doc,
-  //             }));
-  //             if (callback) {
-  //               callback();
-  //             }
-  //           });
-  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //           .collection('settings')
-  //           .snapshotChanges()
-  //           .pipe(
-  //             // Map documenten naar objecten
-  //             map(docs =>
-  //               docs.map((e: any) => ({
-  //                 id: e.payload.doc.id,
-  //                 ...e.payload.doc.data(),
-  //               }))
-  //             ),
-  //           )
-  //           .subscribe(settings => {
-  //             this.trainerInfo.settings = settings.map(doc => ({
-  //               ...doc,
-  //               id: doc.id || '',
-  //             }));
-  //             if (this.trainerInfo.settings && this.trainerInfo.settings.length>0) {
-  //               for (let i = 0; i < this.trainerInfo.settings.length; i++) {
-  //                 if(this.trainerInfo.settings[i].trainerPro){
-  //                   this.isTrainerPro = this.trainerInfo.settings[i].trainerPro == true
-  //                   // console.log('isTrainerPro',this.isTrainerPro,this.trainerInfo.settings[i])
-  //                 }
-  //                 if(this.trainerInfo.settings[i].affiliate){
-  //                   this.trainerInfo.affiliate = this.trainerInfo.settings[i].affiliate
-  //                 }
-  //               }
-  //             }
-  //             if (callback) {
-  //               callback();
-  //             }
-  //           });
-  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //           .collection('knowledge')
-  //           .snapshotChanges()
-  //           .pipe(
-  //             // Map documenten naar objecten
-  //             map(docs =>
-  //               docs.map((e: any) => ({
-  //                 id: e.payload.doc.id,
-  //                 ...e.payload.doc.data(),
-  //               }))
-  //             ),
-  //           )
-  //           .subscribe(knowledgeItems => {
-  //             this.trainerInfo.knowledgeItems = knowledgeItems.map(doc => ({
-  //               ...doc,
-  //             }));
-
-  //             // get knowledgeItems-documents from subcollection
-  //             this.trainerInfo.knowledgeItems.forEach((item:any)=>{
-  //               item.documents = []
-  //               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //                 .collection('knowledge').doc(item.id)
-  //                 .collection('documents')
-  //                 .snapshotChanges()
-  //                 .pipe(
-  //                   // Map documenten naar objecten
-  //                   map(docs =>
-  //                     docs.map((e: any) => ({
-  //                       id: e.payload.doc.id,
-  //                       ...e.payload.doc.data(),
-  //                     }))
-  //                   ),
-  //                 )
-  //                 .subscribe(documents => {
-  //                   item.documents = documents.map(doc => ({
-  //                     ...doc,
-  //                   }));
-  //                 });
-  //             });
-
-  //           });
-  //         this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //           .collection('purchases')
-  //           .snapshotChanges()
-  //           .pipe(
-  //             // Map documenten naar objecten
-  //             map(docs =>
-  //               docs.map((e: any) => ({
-  //                 id: e.payload.doc.id,
-  //                 ...e.payload.doc.data(),
-  //               }))
-  //             ),
-  //           )
-  //           .subscribe(purchaseItems => {
-  //             this.trainerInfo.purchaseItems = purchaseItems.map(doc => ({
-  //               ...doc,
-  //             }));
-
-  //             // get purchaseItems-documents from subcollection
-  //             this.trainerInfo.purchaseItems.forEach((item:any)=>{
-  //               item.documents = []
-  //               this.fire.collection('trainers').doc(this.nav.activeOrganisationId)
-  //                 .collection('purchases')
-  //                 .snapshotChanges()
-  //                 .pipe(
-  //                   // Map documenten naar objecten
-  //                   map(docs =>
-  //                     docs.map((e: any) => ({
-  //                       id: e.payload.doc.id,
-  //                       ...e.payload.doc.data(),
-  //                     }))
-  //                   ),
-  //                 )
-  //                 .subscribe(documents => {
-  //                   item.documents = documents.map(doc => ({
-  //                     ...doc,
-  //                   }));
-  //                 });
-  //             });
-
-  //           });
-
-
-  //           if (this.trainerInfo.affiliate) {
-  //             this.getAffiliates();
-  //           }
-  //           if (this.trainerInfo.organisation) {
-  //             this.publishType = 'organisation';
-  //           }
-
-  //       } else {
-  //         // console.log("No such document!");
-  //       }
-  //     });
-  //     if(unsubscribe){
-  //       setTimeout(() => {
-  //         trainerSubscription.unsubscribe();
-  //       }, 300);
-  //     }
-
-  // }
 
   loadTrainerInfo(callback?: Function, unsubscribe?: boolean) {
     if (!this.nav.activeOrganisationId) {
@@ -450,7 +286,7 @@ export class TrainerService {
     const TOTAL_STEPS = 5; // employees, settings, knowledge, purchases
     let subSubSteps = 0;   
     const tryFinish = () => {
-      if (completedSteps === TOTAL_STEPS && subSubSteps === 0 && callback) {
+      if (completedSteps === TOTAL_STEPS && subSubSteps <= 0 && callback) {
         callback();
       }
     };
@@ -461,6 +297,8 @@ export class TrainerService {
     };
 
     let trainerSubscription = docRef.get().subscribe(doc => {
+
+
       if (!doc.exists) return;
       this.trainerInfo = doc.data();
       this.trainerInfo.id = doc.id;
@@ -478,6 +316,7 @@ export class TrainerService {
           maybeCallback();
         },
         error: () => {
+          console.log('error loading employees');
           this.trainerInfo.employees = [];
           maybeCallback();
         }
@@ -493,9 +332,11 @@ export class TrainerService {
             if (s.trainerPro) this.isTrainerPro = s.trainerPro;
             if (s.affiliate) this.trainerInfo.affiliate = s.affiliate;
           });
+          console.log('loadTrainerInfo settings finished');
           maybeCallback();
         },
         error: () => {
+          console.log('error loading settings');
           this.trainerInfo.settings = [];
           maybeCallback();
         }
@@ -553,6 +394,7 @@ export class TrainerService {
           }
         },
         error: () => {
+          console.log('error loading customers');
           this.trainerInfo.customers = [];
           maybeCallback();
         }
@@ -637,13 +479,13 @@ export class TrainerService {
 
       // Eventuele extra setup
       if (this.trainerInfo.affiliate) this.getAffiliates();
-      if (this.trainerInfo.organisation) this.publishType = 'organisation';
+      if (this.trainerInfo.organisation) {this.publishType = 'organisation'};
     });
 
     if (unsubscribe) {
-      // setTimeout(() => {
+      setTimeout(() => {
         trainerSubscription.unsubscribe();
-      // }, 300);
+      }, 300);
     }
   }
 

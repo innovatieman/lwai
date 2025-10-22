@@ -1200,7 +1200,8 @@
         "trainer_info_example":"Bekijk als gebruiker",
         "embed_code":"Eigen website",
         "embed_title":"Plaats je e-trainingen op je eigen website",
-        "embed_text":"<ul><li>Kopieer de onderstaande insluitcode (embed-code). Deze code plaatst de tool als een iframe op je eigen pagina.</li><li>Plak de code in de HTML van je website op de plek waar je de tool zichtbaar wilt maken.</li><li>Sla je pagina op en herlaad. De tool wordt automatisch geladen en toont altijd de meest actuele versie. Deze embed-code is privacyvriendelijk en ververst automatisch zonder caching.</li><li>Pas eventueel de breedte en hoogte aan in de insluitcode.</li></ul>"
+        "embed_text":"<ul><li>Kopieer de onderstaande insluitcode (embed-code). Deze code plaatst de tool als een iframe op je eigen pagina.</li><li>Plak de code in de HTML van je website op de plek waar je de tool zichtbaar wilt maken.</li><li>Sla je pagina op en herlaad. De tool wordt automatisch geladen en toont altijd de meest actuele versie. Deze embed-code is privacyvriendelijk en ververst automatisch zonder caching.</li><li>Pas eventueel de breedte en hoogte aan in de insluitcode.</li></ul>",
+        "hideCreditsText":"Verberg de tekst 'Incl. credits' bij de prijsweergave in de marketplace."
     },
     "marketplace":{
         "add_training":"Training toevoegen",
