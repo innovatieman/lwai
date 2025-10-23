@@ -201,9 +201,8 @@
 
 
                 <div>
-                  <h3 weight700 font-22 *ngIf="(sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id)?.length">{{'checkout.add_to_your_order' | translate}}</h3>
-                  <ion-card basicPadding style="margin:10px 0px;" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | maxLength : 3">
-                  <!-- <ion-card basicPadding style="margin:10px 0px;" noShadow borderMedium  *ngFor="let item of sales.elearnings | maxLength : 3" pointer (click)="addToExtraOrderList(item)"> -->
+                  <h3 weight700 font-22 *ngIf="(sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | filterKey : 'originalTrainingId' : (sales.elearningItem(item_id).extraSales ? sales.elearningItem(item_id).extraSales : []))?.length">{{'checkout.add_to_your_order' | translate}}</h3>
+                  <!-- <ion-card basicPadding style="margin:10px 0px;" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | maxLength : 3">
                     <ion-row>
                       <ion-col [size]="media.smallDevice ? 12 : 4">
                         <div *ngIf="item.photo" fullwidth [ngStyle]="{'height':!media.smallDevice?'100px':'100px'}" marginBottom>
@@ -215,7 +214,30 @@
                         <div font-14 weight400 marginBottom [innerHTML]="helper.convertSpaces(item.user_info) | sanitizeHtml" class="textContainer"></div>
                         <div flex center-ver>
                           <div font-16 weight600>€ {{item.price_elearning | number : '1.2-2'}}</div>
-                          <!-- <div class="spacer"></div> -->
+                          <ion-button marginLeft fill="solid" color="primary" *ngIf="!inExtraOrderList(item.id)">{{'buttons.add' | translate}}</ion-button>
+                          <ion-button marginLeft fill="solid" color="success" *ngIf="inExtraOrderList(item.id)">{{'buttons.added' | translate}}</ion-button>
+                        </div>
+                      </ion-col>
+                      <ion-col *ngIf="!media.smallDevice" [size]="1" relative>
+                        <div class="addOrderCheckBox">
+                          <ion-checkbox [checked]="inExtraOrderList(item.id)" ></ion-checkbox>
+                        </div>
+                      </ion-col>
+                    </ion-row>
+                  </ion-card> -->
+
+                  <ion-card basicPadding style="margin:10px 0px;" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | filterKey : 'originalTrainingId' : (sales.elearningItem(item_id).extraSales ? sales.elearningItem(item_id).extraSales : [])| maxLength : 3">
+                    <ion-row>
+                      <ion-col [size]="media.smallDevice ? 12 : 4">
+                        <div *ngIf="item.photo" fullwidth [ngStyle]="{'height':!media.smallDevice?'150px':'100px'}" marginBottom>
+                          <img [src]="item.photo" borderRadius24 alt="" style="width:100%;height:100%;object-fit:cover;">
+                        </div>
+                      </ion-col>
+                      <ion-col [size]="media.smallDevice ? 12 : 7" relative>
+                        <div font-16 weight600>{{item.title}}</div>
+                        <div font-14 weight400 marginBottom [innerHTML]="helper.convertSpaces(item.user_info) | sanitizeHtml" class="textContainer"></div>
+                        <div flex center-ver>
+                          <div font-16 weight600>€ {{item.price_elearning | number : '1.2-2'}}</div>
                           <ion-button marginLeft fill="solid" color="primary" *ngIf="!inExtraOrderList(item.id)">{{'buttons.add' | translate}}</ion-button>
                           <ion-button marginLeft fill="solid" color="success" *ngIf="inExtraOrderList(item.id)">{{'buttons.added' | translate}}</ion-button>
                         </div>

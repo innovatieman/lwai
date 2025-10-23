@@ -770,7 +770,13 @@
         "sell_directly_variable_amount":"The number of participants is not yet known",
         "sell_directly_variable_amount_info":"You do not yet know how many participants will be involved. You select the customer yourself and specify a maximum number of participants (if there is a maximum) and an end date. You then determine the price per participant and any base price. The invoice with a base price is sent to the customer. You receive a link that you or the customer can give to the participants to register. At the end of each month, the customer receives an invoice for the actual number of participants for that month.",
         "publish_select":"Publishing can be done in various ways. Choose the method that best suits this training.",
-        "situation":"Situation"
+        "situation":"Situation",
+        "add_extra_sales":"Add extra sales options",
+        "select_extra_sales":"Select extra sales options",
+        "marketplace_extra_sales_info":"Add any extra e-trainings of yours for this training on the Marketplace here. These extra sales options will be shown at checkout to organizations and users who want to purchase the training.",
+        "training_no_longer_available":"Training no longer available",
+        "order_marketplace":"Order Marketplace"
+  
       },
     "generate_case":{
       "title_step_0":"The basics",
@@ -1202,7 +1208,7 @@
       "embed_code":"Your website",
       "embed_title":"Place your e-trainings on your own website",
       "embed_text":"<ul><li>Copy the embed code below. This code places the tool as an iframe on your own page.</li><li>Paste the code into the HTML of your website where you want the tool to be visible.</li><li>Save your page and reload. The tool will be automatically loaded and will always show the most up-to-date version. This embed code is privacy-friendly and automatically refreshes without caching.</li><li>You can adjust the width and height in the embed code if needed.</li></ul>",
-      "hideCreditsText":"Hide the text 'Incl. credits' in the price display in the marketplace."
+      "show_credits_text":"Show the text 'Incl. credits' in the price display in the marketplace."
   },
   "marketplace":{
     "add_training":"Add training",

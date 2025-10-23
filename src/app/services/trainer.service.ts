@@ -332,7 +332,6 @@ export class TrainerService {
             if (s.trainerPro) this.isTrainerPro = s.trainerPro;
             if (s.affiliate) this.trainerInfo.affiliate = s.affiliate;
           });
-          console.log('loadTrainerInfo settings finished');
           maybeCallback();
         },
         error: () => {

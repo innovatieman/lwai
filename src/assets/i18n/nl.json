@@ -770,7 +770,12 @@
         "sell_directly_variable_amount":"Het aantal deelnemers is nog niet bekend",
         "sell_directly_variable_amount_info":"Je weet nog niet hoeveel deelnemers er meedoen. Je selecteert zo zelf de klant en geeft een maximum aantal deelnemers (als die er zijn) en einddatum op. Dan bepaal je de prijs per deelnemer en een eventuele basisprijs. De factuur met een basisprijs wordt naar de klant gestuurd. Je ontvangt een link die jij of de klant aan de deelnemers kunt geven om zich te registreren. Aan het eind van iedere maand ontvangt de klant een factuur voor het werkelijke aantal deelnemers van die maand.",
         "publish_select":"Publiceren kan op verschillende manieren. Kies hier de manier die het beste bij deze training past.",
-        "situation":"Situatie"
+        "situation":"Situatie",
+        "add_extra_sales":"Voeg extra verkoopopties toe",
+        "select_extra_sales":"Selecteer extra verkoopopties",
+        "marketplace_extra_sales_info":"Voeg hier eventueel andere e-trainingen van jou toe voor deze training op de Marktplaats. Deze extra verkoopopties worden bij de checkout getoond aan organisaties en gebruikers die de training willen aanschaffen.",
+        "training_no_longer_available":"Training niet meer beschikbaar",
+        "order_marketplace":"Volgorde Marketplace"
     },
     "generate_case":{
         "title_step_0":"De basis",
@@ -1201,7 +1206,7 @@
         "embed_code":"Eigen website",
         "embed_title":"Plaats je e-trainingen op je eigen website",
         "embed_text":"<ul><li>Kopieer de onderstaande insluitcode (embed-code). Deze code plaatst de tool als een iframe op je eigen pagina.</li><li>Plak de code in de HTML van je website op de plek waar je de tool zichtbaar wilt maken.</li><li>Sla je pagina op en herlaad. De tool wordt automatisch geladen en toont altijd de meest actuele versie. Deze embed-code is privacyvriendelijk en ververst automatisch zonder caching.</li><li>Pas eventueel de breedte en hoogte aan in de insluitcode.</li></ul>",
-        "hideCreditsText":"Verberg de tekst 'Incl. credits' bij de prijsweergave in de marketplace."
+        "show_credits_text":"Toon de tekst 'Incl. credits' bij de prijsweergave in de marketplace."
     },
     "marketplace":{
         "add_training":"Training toevoegen",

@@ -3301,4 +3301,66 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }
 
   }
+
+  toggleMarketplaceOrder(){
+    let trainings = this.filterKeyPipe.transform(this.trainerService.trainings,'marketplace',true)
+    trainings = this.filterKeyPipe.transform(trainings,'status','published')
+
+    if(!this.trainerService.trainingItem.marketplaceOrder){
+      this.trainerService.trainingItem.marketplaceOrder = trainings.length + 1
+    }
+    if(this.trainerService.trainingItem.marketplaceOrder == 1){
+      this.trainerService.trainingItem.marketplaceOrder = trainings.length
+    }
+    else{
+      this.trainerService.trainingItem.marketplaceOrder = this.trainerService.trainingItem.marketplaceOrder - 1
+    }
+    this.update('marketplaceOrder')
+
+  }
+
+  openExtraSalesModal(){
+    let list:any[] = []
+    let trainings = this.filterKeyPipe.transform(this.trainerService.trainings,'marketplace',true)
+    trainings = this.filterKeyPipe.transform(trainings,'status','published')
+    trainings = this.filterKeyPipe.transform(trainings,'publishType','elearning')
+    trainings = trainings.filter((t:any) => t.id != this.trainerService.trainingItem.id)
+    for(let i=0;i<trainings.length;i++){
+      list.push({
+        value: trainings[i].id,
+        title: trainings[i].title,
+      })
+    }
+    if(this.trainerService.trainingItem.extraSales){
+      for(let i=0;i<this.trainerService.trainingItem.extraSales.length;i++){
+        let index = list.findIndex(l=>l.value==this.trainerService.trainingItem.extraSales[i])
+        if(index>-1){
+          list[index].selected = true
+        }
+      }
+    }
+
+    this.modalService.selectItem(this.translate.instant('trainings.add_extra_sales'), list, (result: any) => {
+      if( result.data ) {
+
+        if(result.data.length>3){
+          this.toast.show(this.translate.instant('trainings.max_extra_sales'),4000,'middle')
+          return
+        }
+
+        if(!this.trainerService.trainingItem.extraSales){
+          this.trainerService.trainingItem.extraSales = []
+        }
+        for(let i=0;i<result.data.length;i++){
+          if(!this.trainerService.trainingItem.extraSales.includes(result.data[i].value)){
+            this.trainerService.trainingItem.extraSales.push(result.data[i].value)
+          }
+        }
+        if(result.data.length==0){
+          this.trainerService.trainingItem.extraSales = []
+        }
+        this.update('extraSales',true)
+      }
+    },null,'',{object:true,multiple:true,field:'title'})
+  }
 }

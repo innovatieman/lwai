@@ -46,14 +46,6 @@
     </div>
     <div *ngIf="media.smallDevice" class="buttonBarMobileBackground"></div>
 
-      <!-- <div *ngIf="media.smallDevice&&!trainerService.trainingItem?.id&& allTags().length">
-          <div *ngFor="let tag of allTags()" class="tagItemMobile" [ngClass]="{'selectedModule':tagSelected(tag)}" (click)="toggleTag(tag)">
-            <ion-label>{{ tag | capitalize }}</ion-label>
-            <fa-icon marginLeft text-light [icon]="icon.get('faTimes')" *ngIf="tagSelected(tag)"></fa-icon>
-          </div>
-      </div> -->
-    <!-- </div> -->
-
   <ion-grid>
     
 
@@ -359,12 +351,23 @@
                     </ion-card-header>
                     <ion-card-content *ngIf="showTitleInfo&&showPart=='items'">
                       <ion-row noPadding>
-                        <ion-col [size]="media.smallDevice ? 12 : 8">
+                        <ion-col [size]="media.smallDevice ? 12 : (trainerService.trainingItem.status=='published' && trainerService.trainingItem.publishType=='elearning' && trainerService.trainingItem.marketplace ? 6 : 8)">
                           <ion-item detail="false" lines="none" listCard [disabled]="trainerService.trainingItem.status=='closed'">
                             <ion-label position="floating">{{'cases.title' | translate}}</ion-label>
                             <ion-input style="margin-left:10px" weight700 type="text" (ionChange)="changeItem(trainerService.breadCrumbs[0].item.items,trainerService.trainingItem.id,'title',trainerService.trainingItem.title,true)" [(ngModel)]="trainerService.trainingItem.title"></ion-input>
                           </ion-item>
                         </ion-col>
+
+                        <ion-col [size]="media.smallDevice ? 12 : 2" align-right *ngIf="trainerService.trainingItem.status=='published' && trainerService.trainingItem.publishType=='elearning' && trainerService.trainingItem.marketplace">
+                          <ion-button fill="outline" color="primary" class="saveButton" (click)="toggleMarketplaceOrder()">
+                            <div>
+                              <div>{{trainerService.trainingItem.marketplaceOrder || 'nvt'}}</div>
+                              <div font-10>{{'trainings.order_marketplace' | translate}}</div>
+                            </div>
+
+                          </ion-button>
+                        </ion-col>
+
                         <ion-col [size]="media.smallDevice ? 12 : 4" align-right *ngIf="trainerService.trainingItem.status=='concept'">
                           <ion-button fill="outline" color="primary" class="saveButton" (click)="showPart='publish';centerSelectItems()">
                             {{'buttons.publish' | translate}}
@@ -1704,7 +1707,35 @@
                     <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" *ngIf="changesInPublishSituation()" (click)="republishElearning()">{{'buttons.change' | translate}}</ion-button>
                   </div> -->
                 </ion-card-content>
-              </ion-card>
+            </ion-card>
+
+          </ion-row>
+
+           <ion-row noPadding *ngIf="trainerService.trainingItem?.id && showPart=='publish_elearning' && trainerService.trainingItem?.status=='published'">
+
+            <ion-card basicPadding [ngStyle]="{'outline':'solid 2px var(--ion-color-primary)'}" *ngIf="trainerService.trainerInfo.trainer">
+                <ion-card-header>
+                  <ion-card-title flex center-ver>
+                    <span weight600>{{'Extra verkoopopties' | translate}}</span>
+                    <span class="spacer"></span>
+                    <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_publish','buttons.publish',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
+                  </ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                  <ion-row>
+                    <ion-col size="12">
+                      <ion-text font-14 [innerHtml]="translate.instant('trainings.marketplace_extra_sales_info')"></ion-text>
+                    </ion-col>
+                    <ion-col size="12">
+                      <ion-card basicPadding borderPrimary style="margin-top:10px" *ngFor="let extraSale of trainerService.trainingItem.extraSales">
+                        <div weight500>{{trainerService.getTraining(extraSale).title || 'trainings.training_no_longer_available' | translate}}</div>
+                      </ion-card>
+                    </ion-col>
+
+                    <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" (click)="openExtraSalesModal()">{{'trainings.select_extra_sales' | translate}}</ion-button>
+                  </ion-row>
+                </ion-card-content>
+            </ion-card>
 
           </ion-row>
 

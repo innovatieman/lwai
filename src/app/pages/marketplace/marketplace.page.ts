@@ -58,7 +58,7 @@ export class MarketplacePage implements OnInit {
   specialCodeChecked: boolean = false;
   resizeSubscription:Subscription | null = null;
   pricesInclVat: boolean = true;
-  hideCreditsText: boolean = false;
+  showCreditsText: boolean = false;
   constructor(
     public media: MediaService,
     public icon:IconsService,
@@ -95,11 +95,11 @@ export class MarketplacePage implements OnInit {
       if(params.has('trainerIds')){
         this.searchParams.trainerIds = params.get('trainerIds').split(',') || [];
       }
-      if(params.has('hideCreditsText')){
-        this.hideCreditsText = params.get('hideCreditsText') === '1';
-      }
       else{
-        this.searchParams.trainerIds = [];
+        this.searchParams.hideCreditsText = [];
+      }
+      if(params.has('showCreditsText')){
+        this.showCreditsText = params.get('showCreditsText') === '1';
       }
       if(params.has('specialCode')){
         this.searchParams.specialCode = params.get('specialCode') || '';
@@ -607,7 +607,7 @@ export class MarketplacePage implements OnInit {
     if(this.searchParams.private && this.searchParams.private == '1' && this.checkedSpecialCodes && Array.isArray(this.checkedSpecialCodes) && this.checkedSpecialCodes.length > 0){
       let elearningIds = this.checkedSpecialCodes.map(c => c.elearningId);
       startList = startList.filter(e => elearningIds.includes(e.id));
-      console.log('Filtered startList:', startList);
+      // console.log('Filtered startList:', startList);
     }
     else if(this.searchParams.private){
       startList = [];
@@ -645,6 +645,20 @@ export class MarketplacePage implements OnInit {
     );
 
     this.filteredItems = extraFiltered4;
+
+    if(this.searchParams.trainerIds && Array.isArray(this.searchParams.trainerIds) && this.searchParams.trainerIds.length > 0){
+      this.filteredItems = this.filteredItems.sort((a, b) => {
+        const aOrder = a.marketplaceOrder ?? Number.POSITIVE_INFINITY;
+        const bOrder = b.marketplaceOrder ?? Number.POSITIVE_INFINITY;
+        return aOrder - bOrder;
+      }); 
+    }
+
+
+
+
+
+
     // this.filteredCases = this.filteredCases.sort((a, b) => a.order_rating - b.order_rating);
     this.visibleItems = this.filteredItems.slice(0, this.maxItems);
     if (this.infiniteScroll) {
@@ -652,7 +666,6 @@ export class MarketplacePage implements OnInit {
     }
 
     if(this.searchParams.open) {
-      console.log('Visible items for open:', this.visibleItems);
       if(this.visibleItems[0]){
         this.searchParams.open = 0;
         if(this.searchParams.specialCode){
