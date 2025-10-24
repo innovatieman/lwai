@@ -1055,4 +1055,9 @@ export class MarketplacePage implements OnInit {
     return { whole, decimals };
   }
 
+  titleLines(title: string){
+    return title.trim().replace(/<[^>]*>/g, '').split('  ').join('<br>')
+  }
+
+
 }

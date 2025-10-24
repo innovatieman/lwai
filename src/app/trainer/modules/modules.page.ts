@@ -44,7 +44,7 @@ export class ModulesPage implements OnInit {
   private leave$ = new Subject<void>();
   showHtml:boolean = false
   @ViewChild('import_item') import_item!: ElementRef; 
-  
+  deleting:boolean = false
   configModules={
     toolbar: {
       container:[
@@ -1165,6 +1165,29 @@ shortMenu:any
       this.nav.go('trainer/info-items')
     }
   }
+
+  deleteVisibleItems(){
+    this.modalService.showConfirmation(this.translate.instant('cases.delete_visible_items_confirmation')).then((result:any) => {
+      if(result){
+        this.deleting = true;
+        let countMax = this.visibleItems.length;
+        // Logica om zichtbare items te verwijderen
+        for(let i=0;i<this.visibleItems.length;i++){
+        // for(let i=0;i<1;i++){
+          this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'modules',this.visibleItems[i].id).then(()=>{
+            console.log('deleted visible item');
+            countMax--;
+            if(countMax === 0){
+              this.deleting = false;
+              this.updateVisibleItems();
+            }
+          });
+        }
+        
+      }
+    });
+  }
+
   deleteItem(item:any){
     // console.log('deleteItem',item)
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {

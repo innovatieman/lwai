@@ -64,6 +64,7 @@ export class InfoItemsPage implements OnInit {
         }
       }
     }
+    deleting:boolean = false
     constructor(
       public nav: NavService,
       public icon:IconsService,
@@ -715,6 +716,9 @@ export class InfoItemsPage implements OnInit {
     }
   
     updateVisibleItems() {
+    if(this.deleting){
+      return
+    }
       // <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
   
       // const filtered = this.caseFilterPipe.transform(
@@ -1314,7 +1318,7 @@ export class InfoItemsPage implements OnInit {
 
     try {
         newItem.created = Date.now();
-        newItem.title = fileData.title + ' - import' || 'import item';
+        newItem.title = fileData.title + (multiple ? '' : ' - import') || 'import item';
         newItem.audio_url = fileData.audio_url || '';
         newItem.user_info = fileData.user_info || '';
         newItem.type = fileData.type || 'text';
@@ -1443,6 +1447,28 @@ export class InfoItemsPage implements OnInit {
         }
       },{buttons:[{action:'standards_generate_photo',title:this.translate.instant('cases.generate_instructions_original'),color:'dark',fill:'outline'}]});
 
+  }
+
+  deleteVisibleItems(){
+    this.modalService.showConfirmation(this.translate.instant('cases.delete_visible_items_confirmation')).then((result:any) => {
+      if(result){
+        this.deleting = true;
+        let countMax = this.visibleItems.length;
+        // Logica om zichtbare items te verwijderen
+        for(let i=0;i<this.visibleItems.length;i++){
+        // for(let i=0;i<1;i++){
+          this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'infoItems',this.visibleItems[i].id).then(()=>{
+            console.log('deleted visible item');
+            countMax--;
+            if(countMax === 0){
+              this.deleting = false;
+              this.updateVisibleItems();
+            }
+          });
+        }
+        
+      }
+    });
   }
 
 

@@ -90,7 +90,6 @@ export class CasesPage implements OnInit {
   // }
 
 
-
   ngOnInit() {
     // setTimeout(() => {
     //   this.speak('Would you like to create a case? Click the plus button below to get started.');
@@ -354,6 +353,30 @@ export class CasesPage implements OnInit {
   //     }
   //   })
   // }
+
+  deleting:boolean = false
+  deleteVisibleItems(){
+    this.modalService.showConfirmation(this.translate.instant('cases.delete_visible_items_confirmation')).then((result:any) => {
+      if(result){
+        this.deleting = true;
+        let countMax = this.visibleCases.length;
+        // Logica om zichtbare items te verwijderen
+        for(let i=0;i<this.visibleCases.length;i++){
+        // for(let i=0;i<1;i++){
+          this.firestore.deleteSub('trainers',this.nav.activeOrganisationId,'cases',this.visibleCases[i].id).then(()=>{
+            console.log('deleted visible case');
+            countMax--;
+            if(countMax === 0){
+              this.deleting = false;
+              this.updateVisibleCases();
+            }
+          });
+        }
+        
+      }
+    });
+  }
+
 
   deleteCase(caseItem?: any) {
     if (!caseItem?.id) {
@@ -883,6 +906,10 @@ export class CasesPage implements OnInit {
   }
 
   async updateVisibleCases() {
+    if(this.deleting){
+      return
+    }
+    // console.log('updating visible cases')
     // <!-- <ion-col [size]="helpers.cardSizeSmall" *ngFor="let caseItem of cases | caseFilter: currentFilterTypes.types : currentFilterTypes.subjectTypes : extraFilters.open_to_user | filterSearch : searchTerm : false : ['title']"> -->
 
     // const filtered = this.caseFilterPipe.transform(
@@ -1569,11 +1596,27 @@ export class CasesPage implements OnInit {
     return JSON.parse(json);
   }
 
+  // encodeObjectToBase64(obj: any): string {
+  //   const json = JSON.stringify(obj);
+  //   console.log(obj)
+  //   const utf8Bytes = new TextEncoder().encode(json); // UTF-8 → Uint8Array
+  //   const base64 = btoa(String.fromCharCode(...utf8Bytes));
+  //   return base64;
+  // }
+
   encodeObjectToBase64(obj: any): string {
     const json = JSON.stringify(obj);
-    const utf8Bytes = new TextEncoder().encode(json); // UTF-8 → Uint8Array
-    const base64 = btoa(String.fromCharCode(...utf8Bytes));
+    const utf8Bytes = new TextEncoder().encode(json);
+    const base64 = this.uint8ToBase64(utf8Bytes);
     return base64;
+  }
+
+  uint8ToBase64(bytes: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
   }
 
 
