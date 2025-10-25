@@ -237,7 +237,7 @@
                         <div font-16 weight600>{{item.title}}</div>
                         <div font-14 weight400 marginBottom [innerHTML]="helper.convertSpaces(item.user_info) | sanitizeHtml" class="textContainer"></div>
                         <div flex center-ver>
-                          <div font-16 weight600>€ {{item.price_elearning | number : '1.2-2'}}</div>
+                          <div font-16 weight600>€ {{(item.price_elearning * (pricesInclVat ? 1.21 : 1)) | number : '1.2-2'}}</div>
                           <ion-button marginLeft fill="solid" color="primary" *ngIf="!inExtraOrderList(item.id)">{{'buttons.add' | translate}}</ion-button>
                           <ion-button marginLeft fill="solid" color="success" *ngIf="inExtraOrderList(item.id)">{{'buttons.added' | translate}}</ion-button>
                         </div>
