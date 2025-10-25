@@ -8,7 +8,7 @@
   <ion-grid>
     <ion-row>
       <ion-col size="12" style="padding:30px;">
-        <ion-card [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
+        <ion-card style="background:white" [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
           <ion-row>
             
 
@@ -18,7 +18,7 @@
                   
                   <ion-card-header *ngIf="media.smallDevice" noPadding marginBottom>
                     <ion-card-title center font-28 weight700>
-                      <span>{{sales.elearningItem(item_id).title}}</span>
+                      <span style="color:var(--ion-color-dark)">{{sales.elearningItem(item_id).title}}</span>
                     </ion-card-title>
                   </ion-card-header>
 
@@ -226,7 +226,7 @@
                     </ion-row>
                   </ion-card> -->
 
-                  <ion-card basicPadding style="margin:10px 0px;" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | filterKey : 'originalTrainingId' : (sales.elearningItem(item_id).extraSales ? sales.elearningItem(item_id).extraSales : [])| maxLength : 3">
+                  <ion-card basicPadding style="margin:10px 0px;background:white" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | filterKey : 'originalTrainingId' : (sales.elearningItem(item_id).extraSales ? sales.elearningItem(item_id).extraSales : [])| maxLength : 3">
                     <ion-row>
                       <ion-col [size]="media.smallDevice ? 12 : 4">
                         <div *ngIf="item.photo" fullwidth [ngStyle]="{'height':!media.smallDevice?'150px':'100px'}" marginBottom>
@@ -253,7 +253,7 @@
 
 
                 <h3 weight700 font-22>{{'checkout.order_summary' | translate}}</h3>
-                <ion-card basicPadding noMargin noShadow borderLight>
+                <ion-card basicPadding noMargin noShadow borderLight style="background:white">
                   <ion-item *ngIf="sales.elearningItem(item_id)">
                     <ion-label>
                       <div font-16 weight600>{{sales.elearningItem(item_id).title}}</div>

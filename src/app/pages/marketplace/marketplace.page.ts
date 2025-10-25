@@ -157,6 +157,7 @@ export class MarketplacePage implements OnInit {
       this.media.setScreenSize();
       this.rf.detectChanges();
     });
+
   }
 
   ionViewWillEnter() {

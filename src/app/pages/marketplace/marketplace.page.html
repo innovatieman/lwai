@@ -118,7 +118,21 @@
                   <div style="height:52px;"></div> 
               </ion-col> -->
               
-              <ion-col size="9" *ngIf="activeTab=='elearnings'&&!item_id"></ion-col>
+              <ion-col size="6" *ngIf="activeTab=='elearnings'&&!item_id"></ion-col>
+
+              <ion-col size="3" *ngIf="activeTab=='elearnings'&&!item_id">
+                <label class="custom-switch">
+                  <input type="checkbox" [(ngModel)]="pricesInclVat">
+                  <span class="slider">
+                    <span class="label-text" italic>
+                      <div>{{ pricesInclVat ? ('standards.incl' | translate) : ('standards.excl' | translate) }}</div>
+                      <div>{{'trainings.costs_taxes' | translate}}</div>
+                    </span>
+                    <span class="knob"></span>
+                  </span>
+                </label>
+
+              </ion-col>
 
               <ion-col size="3" noPadding *ngIf="activeTab=='elearnings'&&!item_id">
                   <ion-card pointer noMargin style="padding:12px" center id="btn_filter" *ngIf="!showLogin" (click)="showFilterSmall = !showFilterSmall">
@@ -142,7 +156,7 @@
       </ion-col>
       <ion-col *ngIf="media.smallDevice  && activeTab=='elearnings'&&!item_id && !showLogin" [size]="12" class="selectColumn" style="padding-bottom:0;overflow-y:hidden;">
         <ion-card noMargin flex fullwidth center-ver style="padding:5px 10px;margin-top:5px!important">
-            <ion-searchbar (ionInput)="onSearchChanged()" [(ngModel)]="searchParams.search" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'background' : media.smallDevice ? 'white' : 'initial','--background' : media.smallDevice ? 'white' : 'initial'}"></ion-searchbar>
+            <ion-searchbar style="min-height: 36px;" (ionInput)="onSearchChanged()" [(ngModel)]="searchParams.search" [placeholder]="translate.instant('buttons.search')" fullwidth [ngStyle]="{'background' : media.smallDevice ? 'white' : 'initial','--background' : media.smallDevice ? 'white' : 'initial'}"></ion-searchbar>
         </ion-card>
       </ion-col>
       
@@ -303,7 +317,7 @@
         <ion-col [size]="(media.smallDevice && activeTab!='filter') || (activeTab=='filter' && firstLoaded) ? 12 : 9" class="detailColumn" center-left>
           
 
-        <div flex center-ver *ngIf="activeTab=='elearnings' || activeTab=='filter'"  style="padding:0 20px;">
+        <div flex center-ver *ngIf=" (!media.smallDevice && activeTab=='elearnings') || (media.smallDevice && activeTab=='filter')"  style="padding:0 20px;">
           <div class="spacer"></div>
           <ion-toggle [(ngModel)]="pricesInclVat">
             <span weight600 font-12 *ngIf="pricesInclVat">{{'marketplace.prices_incl_vat' | translate}}</span>

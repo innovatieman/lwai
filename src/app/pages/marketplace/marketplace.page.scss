@@ -127,3 +127,70 @@ ion-searchbar{
     font-weight: 500;
     display: inline-block;
 }
+
+.custom-switch {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  height: 36px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: background-color 0.3s;
+    border-radius: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+    font-weight: 500;
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+
+  .knob {
+    position: absolute;
+    height: 28px;
+    width: 28px;
+    border-radius: 50%;
+    background-color: white;
+    top: 4px;
+    left: 4px;
+    transition: transform 0.3s;
+    z-index: 1;
+  }
+
+  input:checked + .slider {
+    background-color: #3880ff;
+  }
+
+  input:checked + .slider .knob {
+    transform: translateX(46px);
+  }
+
+  input:checked + .slider .label-text {
+    transform: translateX(-25px);
+  }
+
+  .label-text {
+    transition: transform 0.3s;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+    left: 15px;
+  }
+}
