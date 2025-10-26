@@ -44,7 +44,9 @@
         "copied_to_clipboard":"Copied to clipboard",
         "height":"Height",
         "width":"Width",
-        "option":"Option"
+        "option":"Option",
+        "incl":"incl.",
+        "excl":"excl."
       },
       "menu": {
         "login": "Log in",
@@ -633,7 +635,9 @@
       "open_more":"Open more",
       "export_visible_cases":"Export visible cases",
       "export_visible_items":"Export visible items",
-      "no_module":"Not connected"
+      "no_module":"Not connected",
+      "delete_visible_items_confirmation":"Are you sure you want to delete all visible items?",
+      "delete_visible_items":"Delete visible items"
     },
     "modules":{
         "edit_module":"Edit",
@@ -1185,6 +1189,7 @@
       "expert_add_book_instructions":"Add an extra document to the expert knowledge.",
       "bankaccount":"Bank account",
       "bank_invoice":"Bank and invoice details",
+      "invoice":"Invoice details",
       "bankaccount_for_return":"Bank account for refunds",
       "bankaccount_iban":"IBAN",
       "bankaccount_bic":"BIC",
@@ -1208,7 +1213,9 @@
       "embed_code":"Your website",
       "embed_title":"Place your e-trainings on your own website",
       "embed_text":"<ul><li>Copy the embed code below. This code places the tool as an iframe on your own page.</li><li>Paste the code into the HTML of your website where you want the tool to be visible.</li><li>Save your page and reload. The tool will be automatically loaded and will always show the most up-to-date version. This embed code is privacy-friendly and automatically refreshes without caching.</li><li>You can adjust the width and height in the embed code if needed.</li></ul>",
-      "show_credits_text":"Show the text 'Incl. credits' in the price display in the marketplace."
+      "show_credits_text":"Show the text 'Incl. credits' in the price display in the marketplace.",
+      "knowledge_at_least_one_document":"You must keep at least one document.",
+      "complete_invoice_info":"Fill in all invoice details to continue."
   },
   "marketplace":{
     "add_training":"Add training",

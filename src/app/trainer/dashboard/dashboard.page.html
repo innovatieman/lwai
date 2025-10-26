@@ -102,9 +102,10 @@
             </ion-item>
           </div>
 
-          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainerPro" [ngClass]="{'activeItem': showPart=='bank','notActiveItem': showPart!='bank'}">
+          <div style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="trainerService.isTrainer" [ngClass]="{'activeItem': showPart=='bank','notActiveItem': showPart!='bank'}">
             <ion-item detail="false" lines="none" button (click)="showPart = 'bank'" class="itemButton"  noMargin>
-                <div font-20 weight700>{{'dashboard.bank_invoice' | translate}}</div>
+                <div font-20 weight700 *ngIf="trainerService.isTrainerPro">{{'dashboard.bank_invoice' | translate}}</div>
+                <div font-20 weight700 *ngIf="!trainerService.isTrainerPro">{{'dashboard.invoice' | translate}}</div>
                 <fa-icon font-24 slot="end" [icon]="icon.get('faPiggyBank')"></fa-icon>
             </ion-item>
           </div>
@@ -447,21 +448,21 @@
           </ion-card>
           
           <ion-card basicPadding *ngIf="showPart=='bank'&&trainerDataLoaded">
-            <ion-card-header>
+            <ion-card-header *ngIf="trainerService.isTrainerPro">
               <ion-card-title flex center-ver>
-                <span weight600 titleIcon>{{'dashboard.bankaccount_for_return' | translate}}</span>
+                <span weight600>{{'dashboard.bankaccount_for_return' | translate}}</span>
                 <span class="spacer"></span>
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
 
-              <div flex center-ver marginBottom *ngIf="changesInBankAccount()">
+              <div flex center-ver marginBottom *ngIf="changesInBankAccount() && trainerService.isTrainerPro">
                 <div class="spacer"></div>
                 <ion-button class="saveButton" color="medium" fill="clear" (click)="undoBankAccount()">{{'buttons.undo' | translate}}</ion-button>
                 <ion-button marginLeft class="saveButton" (click)="updateBankAccount()">{{'buttons.changes_save' | translate}}</ion-button>
               </div>
 
-              <ion-row>
+              <ion-row *ngIf="trainerService.isTrainerPro">
                 <ion-col size="7"><div weight600 font-18 style="padding:10px 0px">{{'dashboard.bankaccount_iban' | translate}}</div></ion-col>
                 <ion-col size="5">
                   <ion-input class="inputAmount" type="text" uppercase [(ngModel)]="originalBankAccount.iban" font-20 weight700>
@@ -481,11 +482,11 @@
 
               
 
-              <div singleLine marginBottom marginTop></div>
+              <div singleLine marginBottom marginTop *ngIf="trainerService.isTrainerPro"></div>
 
               <ion-card-header>
                 <ion-card-title flex center-ver>
-                  <span weight600 titleIcon>{{'dashboard.invoice_information' | translate}}</span>
+                  <span weight600>{{'dashboard.invoice_information' | translate}}</span>
                   <span class="spacer"></span>
                 </ion-card-title>
               </ion-card-header>
@@ -692,7 +693,7 @@
                         <span weight600>{{doc.fileName}}</span>
                         <div class="spacer"></div>
                         <fa-icon pointer titleIcon font-24 (click)="nav.goto('https://storage.googleapis.com/lwai-3bac8.firebasestorage.app/' + doc.filePath,true)" [icon]="icon.get('faEye')"></fa-icon>
-                        <fa-icon pointer titleIcon font-24 trash *ngIf="item.documents?.length>1" (click)="deleteExpertDocument(doc, item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
+                        <fa-icon pointer titleIcon font-24 trash (click)="deleteExpertDocument(doc, item)" [icon]="icon.get('faTrashAlt')"></fa-icon>
                       </ion-card-title>
                     </ion-card>
                   </div>
@@ -764,7 +765,7 @@
                             <div class="spacer"></div>
                             <ion-button class="saveButton" fill="clear" size="small" style="opacity:0.6" color="medium" *ngIf="isTrainerPro&&setting.autorenew" (click)="trainerService.autoRenewal(false)">{{'page_account.cancel_subscription' | translate}}</ion-button>
                             <ion-button class="saveButton" fill="solid" size="small" *ngIf="isTrainerPro&&!setting.autorenew" (click)="trainerService.autoRenewal(true)">{{'page_account.renew_subscription' | translate}}</ion-button>
-                            <ion-button class="saveButton" fill="solid" size="small" *ngIf="!isTrainerPro" (click)="trainerService.registerAsTrainerPro()">{{'page_account.upgrade_to_pro' | translate}}</ion-button>
+                            <ion-button class="saveButton" fill="solid" size="small" *ngIf="!isTrainerPro" (click)="registerAsTrainerPro()">{{'page_account.upgrade_to_pro' | translate}}</ion-button>
                           </div>
                         </div>
 
@@ -814,7 +815,7 @@
                 </ion-col>
 
                 <ion-col [size]="helper.cardSizeSmall">
-                  <ion-card noPadding pointer class="caseItem caseItem_with_ribbon" (click)="trainerService.registerAsTrainerPro()"> <!--(click)="accountService.showProductInfo(product)">-->
+                  <ion-card noPadding pointer class="caseItem caseItem_with_ribbon" (click)="registerAsTrainerPro()"> <!--(click)="accountService.showProductInfo(product)">-->
                       <ion-card-content noPadding fullHeight>
                           <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
                             <div class="title">{{'page_account.trainer_pro' | translate}}</div>
@@ -1163,7 +1164,7 @@
                           </ion-button>
                         </td>
                         <td>
-                          <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainerPro" (click)="trainerService.registerAsTrainerPro()">
+                          <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainerPro" (click)="registerAsTrainerPro()">
                             <span *ngIf="isTrainer">
                               {{'buttons.upgrade' | translate}}
                             </span>
@@ -1573,7 +1574,7 @@
 
                           <tr>
                             <td colspan="2" style="text-align: center;">
-                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainerPro" (click)="trainerService.registerAsTrainerPro()">
+                              <ion-button class="saveButton cardButton" fill="outline" size="small" font-20 [disabled]="isTrainerPro" (click)="registerAsTrainerPro()">
                                 <span *ngIf="isTrainer&&!isTrainerPro">
                                   {{'buttons.upgrade' | translate}}
                                 </span>

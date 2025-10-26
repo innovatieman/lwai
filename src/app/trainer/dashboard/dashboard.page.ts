@@ -1220,6 +1220,10 @@ export class DashboardPage implements OnInit {
   }
 
   deleteExpertDocument(document:any,knowledgeItem:any){
+    if(knowledgeItem.documents?.length<2){
+      this.toast.show(this.translate.instant('dashboard.knowledge_at_least_one_document'), 4000, 'middle');
+      return;
+    }
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
         this.toast.showLoader()
@@ -1276,10 +1280,21 @@ export class DashboardPage implements OnInit {
     };
   }
 
-  updateInvoice(){
-    if(!this.trainerService.checkIsTrainerPro()){
-      return;
+  registerAsTrainerPro(){
+    if(!this.trainerService.trainerInfo?.invoice?.name){
+      this.toast.show(this.translate.instant('dashboard.complete_invoice_info'),4000,'middle')
+      this.showPart = 'bank'; 
+      return
     }
+    this.trainerService.registerAsTrainerPro();
+  }
+
+
+
+  updateInvoice(){
+    // if(!this.trainerService.checkIsTrainerPro()){
+    //   return;
+    // }
 
     if(!this.originalInvoice.name && !this.originalInvoice.zip && !this.originalInvoice.city && !this.originalInvoice.address && !this.originalInvoice.vat_number && !this.originalInvoice.country && !this.originalInvoice.email && !this.originalInvoice.reference){
       this.trainerService.trainerInfo.invoice = {
