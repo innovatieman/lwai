@@ -43,7 +43,7 @@
   </ion-list>
 
   <ion-grid style="padding:0px 5px">
-    <ion-row *ngIf="customMenu&&!listShape&&!shareMenu">
+    <ion-row *ngIf="customMenu&&!listShape&&!shareMenu&&!customList" marginBottom>
       <ion-col size="6" *ngFor="let p of appPages; let i = index">
         <ion-card class="customMenuItem" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
           <ion-row>
@@ -61,7 +61,7 @@
       </ion-col>
     </ion-row>
 
-    <ion-row *ngIf="customMenu&&!listShape&&shareMenu" marginBottom>
+    <ion-row *ngIf="customMenu&&!listShape&&shareMenu&&!customList" marginBottom>
       <ion-col size="12">
         <div font-18 weight600 basicPadding style="padding-bottom:0" flex center-ver>
           <span>Deel dit!</span>
@@ -75,6 +75,31 @@
             <fa-icon *ngIf="p.icon" [icon]="icon.get(p.icon)" [ngStyle]="{'color':p.color}" class="shareIcon"></fa-icon>
         </ion-card>
         <div class="shareMenuTitle" [innerHTML]="p.title"></div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="customMenu&&!listShape&&!shareMenu&&customList" marginBottom marginTop>
+      <ion-col size="12" *ngFor="let p of appPages; let i = index">
+        <ion-card class="customMenuItem" style="margin:0px 10px;" (click)="(p.url ? nav.go(p.url) : popoverController.dismiss());dismissPopover(p)">
+          <ion-row>
+            <ion-col size="2">
+              <div *ngIf="p.image" class="menuItemImage" [ngStyle]="{'background-image':'url(' + p.image + ')','background-size': p.logo ? 'contain' : 'cover'}"></div>
+              <div *ngIf="p.icon" class="menuItemIcon">
+                <fa-icon [icon]="icon.get(p.icon)"></fa-icon>
+              </div>
+            </ion-col>
+            <ion-col size="10">
+              <div class="menuItemTitle">
+                <div style="display:block;">
+                  <div style="text-align:left;font-weight:600" [innerHTML]="p.title"></div>
+                  <div *ngIf="p.subTitle" style="text-align:left;font-weight:400;font-size:0.9em;text-wrap:normal;" [innerHTML]="p.subTitle"></div>
+                </div>
+                <div class="spacer" *ngIf="p.note"></div>
+                <div *ngIf="p.note" style="font-size:1em;text-align:right;font-weight:600;min-width:75px;width:75px;display:block" [innerHTML]="p.note"></div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>

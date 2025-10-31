@@ -81,3 +81,52 @@ exports.createStripeProduct = functions.region("europe-west1")
       console.error("Fout bij het aanmaken van Stripe-product:", error);
     }
   });
+
+
+exports.updateStripeProductPrice = functions.region("europe-west1")
+  .runWith({ memory: '1GB' })
+  .firestore
+  .document("elearnings/{elearningId}")
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+
+    // Controleer of de prijs is gewijzigd
+    if (beforeData.price_elearning !== afterData.price_elearning) {
+      try {
+        const oldPriceId = beforeData.stripePriceId;
+
+        // Nieuwe prijs aanmaken
+        const newPrice = await stripe.prices.create({
+          unit_amount: afterData.price_elearning * 100,
+          currency: "eur",
+          product: afterData.stripeProductId,
+          tax_behavior: 'exclusive',
+        });
+
+        // Optioneel: oude prijs deactiveren
+        if (oldPriceId) {
+          await stripe.prices.update(oldPriceId, { active: false });
+        }
+
+        // Nieuwe prijs-ID opslaan
+        await change.after.ref.update({
+          stripePriceId: newPrice.id,
+        });
+
+      } catch (error) {
+        console.error("Fout bij bijwerken Stripe-prijs:", error);
+      }
+    }
+
+    if(beforeData.status !== afterData.status && afterData.status=='closed'){
+      try{
+        const productId = afterData.stripeProductId;
+        if(productId){
+          await stripe.products.update(productId, { active: false });
+        }
+      } catch (error) {
+        console.error("Fout bij het sluiten van Stripe-product:", error);
+      }
+    }
+  });

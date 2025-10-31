@@ -238,6 +238,18 @@
           </ion-item>
         </div>
 
+
+        <div marginBottom style="padding:10px 0px;border-radius:16px;margin-top:15px" *ngIf="auth.myOrganisationsList?.length && auth.mySelectedOrganisation && auth.mySelectedOrganisation.name" class="notActiveItem">
+            <ion-item detail="false" lines="none" button (click)="gotoOrganisation()" class="itemButton">
+                <div font-20 weight700>{{auth.mySelectedOrganisation.name}}</div>
+                <ion-thumbnail slot="end" *ngIf="auth.mySelectedOrganisation.logo" noMargin flex center-ver center-hor borderRadius16 style="background:white;">
+                    <img [src]="auth.mySelectedOrganisation.logo" style="width:40px;height:40px;border-radius:0;object-fit:contain;">
+                </ion-thumbnail>
+                <fa-icon font-24 slot="end" *ngIf="!auth.mySelectedOrganisation.logo" [icon]="icon.get('faGripHorizontal')"></fa-icon>
+                <fa-icon font-24 slot="end" *ngIf="auth.myOrganisationsList.length>1" [icon]="icon.get('faChevronDown')" (click)="selectOrganisation($event)"></fa-icon>
+            </ion-item>
+        </div>
+
         <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" *ngIf="auth.userInfo.email&&auth.userCredentials?.emailVerified" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}" >
 
           <ion-item detail="false" lines="none" button (click)="nav.go('marketplace/manual')" class="itemButton" [detail]="false">
@@ -354,7 +366,10 @@
                       <ion-card-content noPadding fullHeight>
                           <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
                           <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
-                          
+                          <div class="shareButtonCase copyCaseTrainer" pointer (click)="media.shareTraining(item,pricesInclVat,$event)">
+                              <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+                              <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
+                          </div>
                           <div flex center center-ver center-hor style="height:calc(100% - 275px)">
                               <ion-card-header>
                                   <ion-card-title font-18 weight600 [innerHTML]="titleLines(item.title)"></ion-card-title>

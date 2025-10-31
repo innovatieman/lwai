@@ -66,7 +66,7 @@ const creditsCost:any = {
 }
 
 // firebase deploy --only functions:chatGemini,functions:choicesGemini,functions:factsGemini,functions:backgroundGemini,functions:phasesGemini,functions:feedbackGemini,functions:closingGemini,functions:case_prompt_gemini,functions:soundToTextGemini,functions:skillsGemini
-
+// firebase deploy --only functions:chatGemini,functions:choicesGemini,functions:factsGemini,functions:backgroundGemini,functions:phasesGemini,functions:feedbackGemini,functions:closingGemini,functions:case_prompt_gemini,functions:soundToTextGemini,functions:skillsGemini,functions:chatExpertGemini,functions:chatGeminiVoiceStream,functions:chatGeminiVoiceElevenlabsStream,functions:chatGeminiVoiceElevenlabsStream2,functions:chatGeminiVoiceOpenAiTTS
 
 exports.chatGemini = onRequest( 
   { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
@@ -173,7 +173,7 @@ exports.chatGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['reaction']);
       }
       else{
@@ -391,7 +391,7 @@ exports.chatExpertGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['reaction']);
       }
       else{
@@ -553,7 +553,7 @@ exports.choicesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['choices']);
       }
       else{
@@ -687,7 +687,7 @@ exports.factsGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['facts']);
       }
       else{
@@ -831,7 +831,7 @@ exports.backgroundGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['background']);
       }
       else{
@@ -968,7 +968,7 @@ exports.phasesGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       ////////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['phases']);
       }
       else{
@@ -1128,7 +1128,7 @@ exports.feedbackGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         console.log("Updating credits for user");
         await updateCredits(body.userId, creditsCost['feedback']);
       }
@@ -1428,7 +1428,7 @@ exports.closingGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['closing']);
       }
       else{
@@ -1585,7 +1585,7 @@ exports.skillsGemini = onRequest(
       ////////////////////////////////////////////////////////////////////
       // Update credits
       //////////////////////////////////////////////////////////////////
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['skills']);
       }
       else{
@@ -1703,7 +1703,7 @@ exports.soundToTextGemini = onRequest(
 
 
       // ✅ Credits bijwerken
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCosts);
       }
       else{
@@ -2192,7 +2192,7 @@ exports.chatGeminiVoiceStream = onRequest(
 
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
 
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, 1); // creditsCost['reaction']
       } else {
         await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
@@ -2370,7 +2370,7 @@ exports.chatGeminiVoiceElevenlabsStream = onRequest(
       await stopLoading(body);
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
 
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, 1);
       } else {
         await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
@@ -2512,7 +2512,7 @@ exports.chatGeminiVoiceElevenlabsStream2 = onRequest(
       // await stopLoading(body);
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
 
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, 1);
       } else {
         await updateCreditsTraining(body.userEmail, 1, body.training.trainingId, body.training.trainerId);
@@ -2858,7 +2858,7 @@ exports.chatGeminiVoiceOpenAiTTS = onRequest(
 
       // console.log("Tekst naar OpenAI TTS:", finalText);
 
-      let voiceObj:any = await getVoiceObject(body.voice,language,completeGeminiMessage);
+      let voiceObj:any = await getVoiceObject(body.voice,language,completeGeminiMessage,body.accent);
 
       if(!voiceObj){
         console.log("Geen voice object gevonden, standaard onyx zonder instructions");
@@ -2904,13 +2904,14 @@ exports.chatGeminiVoiceOpenAiTTS = onRequest(
       await addTokenUsages(body, promptTokens.promptTokenCount, promptTokens.candidatesTokenCount, "reaction");
       await addTokenUsageVoice(body, voiceObj, "reaction_voice");
 
-      if(!body.training?.trainingId || !body.training?.trainerId){
+      if(!body.training?.trainingId || !body.training?.trainerId || body.training?.practiceMode){
         await updateCredits(body.userId, creditsCost['reaction']);
         await updateCredits(body.userId, creditsCost['reaction_voice']);
       }
       else{
         await updateCreditsTraining(body.userEmail,creditsCost['reaction'],body.training.trainingId,body.training.trainerId);
-        await updateCreditsTraining(body.userEmail,creditsCost['reaction_voice'],body.training.trainingId,body.training.trainerId);
+        console.log('creditsCost reaction_voice: ' + creditsCost['reaction_voice']);
+        await updateCreditsTraining(body.userEmail,creditsCost['reaction_voice'],body.training.trainingId,body.training.trainerId); 
       }
 
     } catch (err) {
@@ -4193,7 +4194,7 @@ async function getCasusUpdatePrevious(userId:string, caseData:any,daysBetweenCon
     return casusUpdates;
 }
 
-async function getVoiceObject(voiceId:string, language:string, text:string){
+async function getVoiceObject(voiceId:string, language:string, text:string,accent?:string){
   if(!voiceId || voiceId == ''){
     return null;
   }
@@ -4221,6 +4222,17 @@ async function getVoiceObject(voiceId:string, language:string, text:string){
           voiceData.instructions = voiceData.instructions + '\n\n' + (attitudeInfo.voice_instructions || '');
         }
       }
+      if(!accent){
+        accent = '';
+      }
+      else{
+        accent = accent.trim();
+        accent = 'Speak with a ' + accent + ' accent\n\n';
+      }
+      if(accent && accent != ''){
+        voiceData.instructions = voiceData.instructions.replace('[accent]', accent);
+      }
+
       return voiceData;
     }
   }

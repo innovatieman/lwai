@@ -523,7 +523,6 @@ export class MediaService {
   async shareCase(caseItem:any,event:any){
     event.preventDefault()
     event.stopPropagation()
-    console.log(caseItem)
     if(!caseItem.id&&caseItem.caseId){
       caseItem.id = caseItem.caseId
     }
@@ -550,6 +549,30 @@ export class MediaService {
       else{
         this.showShareMenu(event,`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`,this.translate.instant('share.basic_text_case').replace('[case_title]',caseItem.title).replace('[case_user_info]',caseItem.user_info).replace('[case_link]',`https://preview.alicialabs.com/${this.translate.currentLang}/${caseItem.id}`).replaceAll('\n','%0D%0A'),this.translate.instant('share.basic_title'))
       }
+    }
+  }
+
+  async shareTraining(trainingItem:any,pricesInclVat:boolean,event:any){
+    event.preventDefault()
+    event.stopPropagation()
+    if(!trainingItem.id&&trainingItem.trainingId){
+      trainingItem.id = trainingItem.trainingId
+    }
+    let vatText = ''
+    if(!pricesInclVat){
+      vatText = "/false"
+    }
+    else{
+      vatText = "/true"
+    }
+    if (navigator.share&&this.platform.is('mobile')) {
+        await navigator.share({
+          title:  this.translate.instant('share.basic_title'),
+          text: this.translate.instant('share.basic_text_training').replace('[training_title]',trainingItem.title).replace('[training_user_info]',trainingItem.user_info).replace('[training_link]',`https://preview.alicialabs.com/etraining/direct/${trainingItem.id}${vatText}`)
+        });
+
+    } else {
+        this.showShareMenu(event,`https://preview.alicialabs.com/etraining/direct/${trainingItem.id}${vatText}`,this.translate.instant('share.basic_text_training').replace('[training_title]',trainingItem.title).replace('[training_user_info]',trainingItem.user_info).replace('[training_link]',`https://preview.alicialabs.com/etraining/direct/${trainingItem.id}${vatText}`).replaceAll('\n','%0D%0A'),this.translate.instant('share.basic_title'))
     }
   }
 
@@ -644,8 +667,11 @@ export class MediaService {
       window.open(link, '_blank');
     }
     else if(this.selectMenuservice.selectedItem?.copy){
-      text = text.replaceAll('%0D%0A','\n')
-      navigator.clipboard.writeText(text).then(() => {
+      // text = text.replaceAll('%0D%0A','\n')
+      // navigator.clipboard.writeText(text).then(() => {
+      //   this.toast.show(this.translate.instant('share.copied'),2000)
+      // });
+       navigator.clipboard.writeText(url).then(() => {
         this.toast.show(this.translate.instant('share.copied'),2000)
       });
     }

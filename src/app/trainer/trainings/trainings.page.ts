@@ -54,6 +54,7 @@ export class TrainingsPage implements OnInit {
   extraCostOptions:any = {}
   showHtml:boolean = false
   publishTypes:any[] = []
+  publishLocations:any[] = []
   private leave$ = new Subject<void>();
 
    configModules={
@@ -380,9 +381,9 @@ export class TrainingsPage implements OnInit {
   get privateUrl(){
     // if(location.host.substring(0,9)=='localhost'){
       // return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/marketplace/elearnings?trainingId=' + this.trainerService.trainingItem.id + '&specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '&open=1&private=1';
-      return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/checkout/' + this.trainerService.trainingItem.id + '?specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId);
+      // return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/checkout/' + this.trainerService.trainingItem.id + '?specialCode=' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId);
     // }
-    // return 'https://marketplace.alicialabs.com/etraining/direct/' + this.trainerService.trainingItem.id + '/' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '/1';
+    return 'https://preview.alicialabs.com/etraining/direct/' + this.trainerService.trainingItem.id + '/' + (this.trainerService.trainingItem.privatePricesInclVat ? 'true' : 'false') + '/' + this.calcSpecialCode(this.trainerService.breadCrumbs[0].item.id,this.nav.activeOrganisationId) + '';
   }
 
   streamingUrl(item:any):string{
@@ -418,6 +419,7 @@ export class TrainingsPage implements OnInit {
       }, 2000);
     }
     this.showPart = 'items'
+    this.trainerService.publishType = ''
     if(training.results && training.results.length){
       training.organizedResults = this.trainerService.organizeResults(training.results,training)
     }
@@ -705,6 +707,7 @@ export class TrainingsPage implements OnInit {
       this.publishTypes
     );
 
+
     if(this.publishTypes[0] == 'training'){
 
       const extraFilteredHere = this.filterKeyPipe.transform(
@@ -722,6 +725,17 @@ export class TrainingsPage implements OnInit {
     //   'free_question',
     //   this.extraFilters.photo
     // );
+    if(this.publishLocations.length && this.publishLocations[0]=='marketplace'){
+      extraFiltered4 = extraFiltered4.filter((e:any) => {
+        return e.marketplace === true
+      })
+    }
+    else if(this.publishLocations.length && this.publishLocations[0]=='private'){
+      extraFiltered4 = extraFiltered4.filter((e:any) => {
+        return e.private === true
+      })
+    }
+
 
     this.filteredItems = extraFiltered4;
     // this.filteredCases = this.filteredCases.sort((a, b) => a.order_rating - b.order_rating);
@@ -1879,7 +1893,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   centerSelectItems(){
-    console.log(this.trainerService.publishType);
+    // console.log(this.trainerService.publishType);
     if(this.trainerService.publishType!='training'){
       return
     }
@@ -2090,10 +2104,10 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       }
     ]).then((result:any) => {
       console.log(result)
-      if(result = 'pay_direct'){
+      if(result == 'pay_direct'){
         this.publishTraining()
       }
-      else if(result = 'invoice'){
+      else if(result == 'invoice'){
         this.publishTraining(false,true)
       }
     })
@@ -2344,6 +2358,22 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       this.publishTypes = []
     }
     this.updateVisibleItems()
+  }
+
+  filterPublishLocation(type:string){
+    if(type){
+      this.publishLocations = [type]
+    }
+    else{
+      this.publishLocations = []
+    }
+    this.updateVisibleItems()
+  }
+  filterLocationHas(type:string){
+    if(this.publishLocations.indexOf(type) > -1){
+      return true
+    }
+    return false
   }
 
   filterWith(type:string){
@@ -2955,7 +2985,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     })
   }
 
-  async publishSellDirectly(){
+  async publishSellDirectly(selectedSellDirectly?:string){
     let customer:any = null
     let training = this.trainerService.trainingItem
     if(!training.price){
@@ -2988,6 +3018,420 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
             country: result.data.customer.country,
           },
           price: result.data.prices,
+          credits: result.data.credits || 1000000,
+          reference: result.data.customer.reference || '',
+          products:[],
+        }
+        let product:any = {
+          id: result.data.training.id,
+        }
+        item.products.push(product)
+  
+        this.toast.showLoader()
+
+        if(!result.data.customer.id){
+          customer = {
+            company:result.data.customer.company,
+            address:result.data.customer.address,
+            zip:result.data.customer.zip,
+            city:result.data.customer.city,
+            country:result.data.customer.country || 'NL',
+            phone:result.data.customer.phone || '',
+            email:result.data.customer.email,
+            email_invoice:result.data.customer.email_invoice || result.data.customer.email,
+            reference:result.data.customer.reference || '',
+            tax_nr:result.data.customer.tax_nr || '',
+            created:moment().unix(),
+            createdBy:this.auth.userInfo.uid,
+            orgId:this.nav.activeOrganisationId,
+          }
+  
+          this.toast.showLoader()
+          await this.firestore.createSub('trainers',this.nav.activeOrganisationId,'customers',customer,(response:any)=>{
+            // this.toast.show(this.translate.instant('customers.created_successfully'),3000,'bottom')
+            // this.toast.hideLoader()
+            console.log('new customer',response)
+            customer.id = response.id
+          })
+        }
+        else{
+          customer = result.data.customer
+        }
+
+        this.functions.httpsCallable('sellElearningWithInvoice')(item).pipe(take(1)).subscribe({
+          next: (res:any) => {
+            // console.log('res',res)
+            if(res?.status!='200'){
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+            }
+            else {
+              if(!training){
+                this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'trainings',{
+                  trainingId: result.data.training.id,
+                  trainingTitle: result.data.training.title,
+                  price: result.data.prices,
+                  soldBy: this.auth.userInfo.uid,
+                  timestamp: moment().unix(),
+                  expires: moment().add(1,'year').unix(),
+                },(response:any)=>{
+                  for(let u of result.data.users){
+                    this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'users',{
+                      email: u.email,
+                      displayName: u.displayName || '',
+                      trainingId: result.data.training.id,
+                      trainingTitle: result.data.training.title,
+                      timestamp: moment().unix(),
+                      soldBy: this.auth.userInfo.uid,
+                      customerTrainingId: response.id,
+                    })
+                  }
+                })
+              }
+              else{
+                for(let u of result.data.users){
+                  this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'users',{
+                    email: u.email,
+                    displayName: u.displayName || '',
+                    trainingId: result.data.training.id,
+                    trainingTitle: result.data.training.title,
+                    timestamp: moment().unix(),
+                    soldBy: this.auth.userInfo.uid,
+                    customerTrainingId: training.id,
+                  })
+                }
+              }
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('customers.training_and_invoice_sent'),4000,'middle')
+              setTimeout(() => {
+                this.toast.hideLoader()
+              }, 2000);
+            }
+          }
+        })
+      })
+  
+    }
+
+    else if(this.trainerService.selectedSellDirectly=='amount_known'){
+      
+      if(training?.status=='published'){
+        this.toast.show(this.translate.instant('trainings.action_make_copy_first'),4000,'middle')
+        return
+      }
+
+      let trainings = [training]// this.trainerService.trainings.filter(t=>t.status!='closed');
+      this.modalService.startSalesTraining({customer:customer,trainings:trainings,training:training,onlyUser:false,onlyUserAmount:true},async (result:any)=>{
+        // console.log('startSalesTraining',result)
+        if(!result || !result.data){
+          return;
+        }
+        
+        // if(!result.data.users || !result.data.users.length){
+        //   this.toast.show(this.translate.instant('customers.add_at_least_one_user'),4000,'middle')
+        //   return;
+        // }
+  
+        let item:any = {
+          onlyUsers: result.data.onlyUsers || false,
+          users: result.data.maxCustomers || 0,
+          trainerId: this.nav.activeOrganisationId,
+          company: result.data.customer.company,
+          company_email: result.data.customer.email,
+          address:{
+            line1: result.data.customer.address,
+            postal_code: result.data.customer.zip,
+            city: result.data.customer.city,
+            country: result.data.customer.country,
+          },
+          price: result.data.prices,
+          credits: result.data.credits || 1000000,
+          reference: result.data.customer.reference || '',
+          products:[],
+          maxCustomers: result.data.maxCustomers || 0,
+          allowedDomains: result.data.allowedDomains || '',
+        }
+        let product:any = {
+          id: result.data.training.id,
+        }
+        item.products.push(product)
+  
+        this.toast.showLoader()
+
+        if(!result.data.customer.id){
+          customer = {
+            company:result.data.customer.company,
+            address:result.data.customer.address,
+            zip:result.data.customer.zip,
+            city:result.data.customer.city,
+            country:result.data.customer.country || 'NL',
+            phone:result.data.customer.phone || '',
+            email:result.data.customer.email,
+            email_invoice:result.data.customer.email_invoice || result.data.customer.email,
+            reference:result.data.customer.reference || '',
+            tax_nr:result.data.customer.tax_nr || '',
+            created:moment().unix(),
+            createdBy:this.auth.userInfo.uid,
+            orgId:this.nav.activeOrganisationId,
+          }
+  
+          // this.toast.showLoader()
+          await this.firestore.createSub('trainers',this.nav.activeOrganisationId,'customers',customer,(response:any)=>{
+            // this.toast.show(this.translate.instant('customers.created_successfully'),3000,'bottom')
+            // this.toast.hideLoader()
+            // console.log('new customer',response)
+            customer.id = response.id
+          })
+        }
+        else{
+          customer = result.data.customer
+        }
+        // console.log('new customer complete',customer)
+
+        this.functions.httpsCallable('sellElearningPrivate')(item).pipe(take(1)).subscribe({
+          next: (res:any) => {
+            console.log('res',res)
+            if(res?.status!='200'){
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+            }
+            else {
+
+              this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',training.id,{
+                price_elearning: result.data.prices.trainingPrice,
+                prices: result.data.prices,
+                status: 'published',
+                publishType: 'elearning',
+                private: true,
+                max_customers: result.data.maxCustomers || 0,
+                allowed_domains: result.data.allowedDomains || '',
+              })
+
+              this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'trainings',{
+                trainingId: result.data.training.id,
+                trainingTitle: result.data.training.title,
+                price: result.data.prices,
+                soldBy: this.auth.userInfo.uid,
+                timestamp: moment().unix(),
+                expires: moment().add(1,'year').unix(),
+              },(response:any)=>{
+                // for(let u of result.data.users){
+                //   this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'users',{
+                //     email: u.email,
+                //     displayName: u.displayName || '',
+                //     trainingId: result.data.training.id,
+                //     trainingTitle: result.data.training.title,
+                //     timestamp: moment().unix(),
+                //     soldBy: this.auth.userInfo.uid,
+                //     customerTrainingId: response.id,
+                //   })
+                // }
+              })
+
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('customers.training_and_invoice_sent_private'),4000,'middle')
+              setTimeout(() => {
+                let adjustedTraining = this.trainerService.getTraining(result.data.training.id)
+                this.selectTraining(adjustedTraining)
+                setTimeout(() => {
+                  this.showPart = 'elearning_private_link'
+                  this.toast.hideLoader()
+                }, 300);
+              }, 500);
+            }
+          }
+        })
+      })
+  
+    }
+
+    else if(this.trainerService.selectedSellDirectly=='variable_amount'){
+      if(training?.status=='published'){
+        this.toast.show(this.translate.instant('trainings.action_make_copy_first'),4000,'middle')
+        return
+      }
+
+      let trainings = [training]// this.trainerService.trainings.filter(t=>t.status!='closed');
+      this.modalService.startSalesTraining({customer:customer,trainings:trainings,training:training,onlyUser:false,variable_amount:true},async (result:any)=>{
+        // console.log('startSalesTraining',result)
+        if(!result || !result.data){
+          return;
+        }
+        
+        // if(!result.data.users || !result.data.users.length){
+        //   this.toast.show(this.translate.instant('customers.add_at_least_one_user'),4000,'middle')
+        //   return;
+        // }
+  
+        let item:any = {
+          onlyUsers: result.data.onlyUsers || false,
+          users: result.data.maxCustomers || 0,
+          trainerId: this.nav.activeOrganisationId,
+          company: result.data.customer.company,
+          company_email: result.data.customer.email,
+          address:{
+            line1: result.data.customer.address,
+            postal_code: result.data.customer.zip,
+            city: result.data.customer.city,
+            country: result.data.customer.country,
+          },
+          price: result.data.prices,
+          credits: result.data.credits || 1000000,
+          reference: result.data.customer.reference || '',
+          products:[],
+          maxCustomers: result.data.maxCustomers || 0,
+          allowedDomains: result.data.allowedDomains || '',
+        }
+        let product:any = {
+          id: result.data.training.id,
+        }
+        item.products.push(product)
+  
+        this.toast.showLoader()
+
+        if(!result.data.customer.id){
+          customer = {
+            company:result.data.customer.company,
+            address:result.data.customer.address,
+            zip:result.data.customer.zip,
+            city:result.data.customer.city,
+            country:result.data.customer.country || 'NL',
+            phone:result.data.customer.phone || '',
+            email:result.data.customer.email,
+            email_invoice:result.data.customer.email_invoice || result.data.customer.email,
+            reference:result.data.customer.reference || '',
+            tax_nr:result.data.customer.tax_nr || '',
+            created:moment().unix(),
+            createdBy:this.auth.userInfo.uid,
+            orgId:this.nav.activeOrganisationId,
+          }
+  
+          // this.toast.showLoader()
+          await this.firestore.createSub('trainers',this.nav.activeOrganisationId,'customers',customer,(response:any)=>{
+            // this.toast.show(this.translate.instant('customers.created_successfully'),3000,'bottom')
+            // this.toast.hideLoader()
+            // console.log('new customer',response)
+            customer.id = response.id
+          })
+        }
+        else{
+          customer = result.data.customer
+        }
+        // console.log('new customer complete',customer)
+
+        this.functions.httpsCallable('sellElearningPrivateOpen')(item).pipe(take(1)).subscribe({
+          next: (res:any) => {
+            console.log('res',res)
+            if(res?.status!='200'){
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+            }
+            else {
+              
+              this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',training.id,{
+                price_elearning: result.data.prices.trainingPrice,
+                prices: result.data.prices,
+                status: 'published',
+                publishType: 'elearning',
+                private: true,
+                max_customers: result.data.maxCustomers || 0,
+                allowed_domains: result.data.allowedDomains || '',
+              })
+
+              this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'trainings',{
+                trainingId: result.data.training.id,
+                trainingTitle: result.data.training.title,
+                price: result.data.prices,
+                soldBy: this.auth.userInfo.uid,
+                timestamp: moment().unix(),
+                expires: moment().add(1,'year').unix(),
+              },(response:any)=>{
+                // for(let u of result.data.users){
+                //   this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'users',{
+                //     email: u.email,
+                //     displayName: u.displayName || '',
+                //     trainingId: result.data.training.id,
+                //     trainingTitle: result.data.training.title,
+                //     timestamp: moment().unix(),
+                //     soldBy: this.auth.userInfo.uid,
+                //     customerTrainingId: response.id,
+                //   })
+                // }
+              })
+
+              this.toast.hideLoader()
+              if(result.data.prices.trainingPrice && result.data.prices.trainingPrice>0){
+                this.toast.show(this.translate.instant('customers.training_and_invoice_sent_private_open_one_time'),4000,'middle'),
+                this.showPart = 'elearning_private_link'
+                setTimeout(() => {
+                  this.toast.hideLoader()
+                }, 2000);
+              }
+              else{
+                this.toast.show(this.translate.instant('customers.training_and_invoice_sent_private_open'),4000,'middle')
+                this.showPart = 'elearning_private_link'
+                setTimeout(() => {
+                  this.toast.hideLoader()
+                }, 2000);
+              }
+            }
+          }
+        })
+      })
+  
+    }
+
+    if(this.trainerService.selectedSellDirectly=='sell_directly_free' || selectedSellDirectly=='sell_directly_free'){
+      
+      // if(!this.trainerService.checkIsTrainerPro()){
+      //   this.toast.show(this.translate.instant('cases.expert_knowledge_pro_required'))
+      //   return
+      // }
+      
+      if(!this.trainerService.trainerInfo.invoice?.name){
+        this.toast.show(this.translate.instant('trainings.add_invoice_address'), 4000, 'middle');
+        return
+      }
+      let trainings = [training]// this.trainerService.trainings.filter(t=>t.status!='closed');
+      customer = this.trainerService.trainerInfo.invoice 
+      customer = {
+        company:this.trainerService.trainerInfo.invoice.name,
+        address:this.trainerService.trainerInfo.invoice.address,
+        zip:this.trainerService.trainerInfo.invoice.zip,
+        city:this.trainerService.trainerInfo.invoice.city,
+        country:this.trainerService.trainerInfo.invoice.country,
+        phone:this.trainerService.trainerInfo.invoice.phone,
+        email:this.trainerService.trainerInfo.email,
+        email_invoice:this.trainerService.trainerInfo.invoice,
+        reference:this.trainerService.trainerInfo.invoice.reference,
+        tax_nr:this.trainerService.trainerInfo.invoice.vat_number,
+      }
+
+      this.modalService.startSalesTraining({customer:customer,trainings:trainings,training:training,onlyUser:false,free:true},async (result:any)=>{
+        console.log('startSalesTraining',result)
+        if(!result || !result.data){
+          return;
+        }
+        
+        if(!result.data.users || !result.data.users.length){
+          this.toast.show(this.translate.instant('customers.add_at_least_one_user'),4000,'middle')
+          return;
+        }
+  
+        let item:any = {
+          onlyUsers: result.data.onlyUsers || false,
+          users: result.data.users,
+          trainerId: this.nav.activeOrganisationId,
+          company: result.data.customer.company,
+          company_email: result.data.customer.email,
+          address:{
+            line1: result.data.customer.address,
+            postal_code: result.data.customer.zip,
+            city: result.data.customer.city,
+            country: result.data.customer.country,
+          },
+          price: result.data.prices,
+          credits: result.data.credits || 1000000,
           reference: result.data.customer.reference || '',
           products:[],
         }
@@ -3027,8 +3471,6 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
           customer = result.data.customer
         }
         console.log('new customer complete',customer)
-
-        return
 
         this.functions.httpsCallable('sellElearningWithInvoice')(item).pipe(take(1)).subscribe({
           next: (res:any) => {
@@ -3074,225 +3516,10 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
                 }
               }
               this.toast.hideLoader()
-              this.toast.show(this.translate.instant('customers.training_and_invoice_sent'),4000,'middle')
-            }
-          }
-        })
-      })
-  
-    }
-
-    else if(this.trainerService.selectedSellDirectly=='amount_known'){
-      
-      let trainings = [training]// this.trainerService.trainings.filter(t=>t.status!='closed');
-      this.modalService.startSalesTraining({customer:customer,trainings:trainings,training:training,onlyUser:false,onlyUserAmount:true},async (result:any)=>{
-        console.log('startSalesTraining',result)
-        if(!result || !result.data){
-          return;
-        }
-        
-        // if(!result.data.users || !result.data.users.length){
-        //   this.toast.show(this.translate.instant('customers.add_at_least_one_user'),4000,'middle')
-        //   return;
-        // }
-  
-        let item:any = {
-          onlyUsers: result.data.onlyUsers || false,
-          users: [],
-          trainerId: this.nav.activeOrganisationId,
-          company: result.data.customer.company,
-          company_email: result.data.customer.email,
-          address:{
-            line1: result.data.customer.address,
-            postal_code: result.data.customer.zip,
-            city: result.data.customer.city,
-            country: result.data.customer.country,
-          },
-          price: result.data.prices,
-          reference: result.data.customer.reference || '',
-          products:[],
-          maxCustomers: result.data.maxCustomers || 0,
-          allowedDomains: result.data.allowedDomains || '',
-        }
-        let product:any = {
-          id: result.data.training.id,
-        }
-        item.products.push(product)
-  
-        this.toast.showLoader()
-
-        if(!result.data.customer.id){
-          customer = {
-            company:result.data.customer.company,
-            address:result.data.customer.address,
-            zip:result.data.customer.zip,
-            city:result.data.customer.city,
-            country:result.data.customer.country || 'NL',
-            phone:result.data.customer.phone || '',
-            email:result.data.customer.email,
-            email_invoice:result.data.customer.email_invoice || result.data.customer.email,
-            reference:result.data.customer.reference || '',
-            tax_nr:result.data.customer.tax_nr || '',
-            created:moment().unix(),
-            createdBy:this.auth.userInfo.uid,
-            orgId:this.nav.activeOrganisationId,
-          }
-  
-          this.toast.showLoader()
-          await this.firestore.createSub('trainers',this.nav.activeOrganisationId,'customers',customer,(response:any)=>{
-            // this.toast.show(this.translate.instant('customers.created_successfully'),3000,'bottom')
-            // this.toast.hideLoader()
-            console.log('new customer',response)
-            customer.id = response.id
-          })
-        }
-        else{
-          customer = result.data.customer
-        }
-        console.log('new customer complete',customer)
-
-        return
-
-        this.functions.httpsCallable('sellElearningPrivate')(item).pipe(take(1)).subscribe({
-          next: (res:any) => {
-            console.log('res',res)
-            if(res?.status!='200'){
+              this.toast.show(this.translate.instant('customers.training_and_invoice_sent_private_free'),4000,'middle')
+              setTimeout(() => {
               this.toast.hideLoader()
-              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
-            }
-            else {
-              this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'trainings',{
-                trainingId: result.data.training.id,
-                trainingTitle: result.data.training.title,
-                price: result.data.prices,
-                soldBy: this.auth.userInfo.uid,
-                timestamp: moment().unix(),
-                expires: moment().add(1,'year').unix(),
-              },(response:any)=>{
-                // for(let u of result.data.users){
-                //   this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'users',{
-                //     email: u.email,
-                //     displayName: u.displayName || '',
-                //     trainingId: result.data.training.id,
-                //     trainingTitle: result.data.training.title,
-                //     timestamp: moment().unix(),
-                //     soldBy: this.auth.userInfo.uid,
-                //     customerTrainingId: response.id,
-                //   })
-                // }
-              })
-
-              this.toast.hideLoader()
-              this.toast.show(this.translate.instant('customers.training_and_invoice_sent'),4000,'middle')
-            }
-          }
-        })
-      })
-  
-    }
-
-    else if(this.trainerService.selectedSellDirectly=='variable_amount'){
-      
-      let trainings = [training]// this.trainerService.trainings.filter(t=>t.status!='closed');
-      this.modalService.startSalesTraining({customer:customer,trainings:trainings,training:training,onlyUser:false,variable_amount:true},async (result:any)=>{
-        console.log('startSalesTraining',result)
-        if(!result || !result.data){
-          return;
-        }
-        
-        // if(!result.data.users || !result.data.users.length){
-        //   this.toast.show(this.translate.instant('customers.add_at_least_one_user'),4000,'middle')
-        //   return;
-        // }
-  
-        let item:any = {
-          onlyUsers: result.data.onlyUsers || false,
-          users: [],
-          trainerId: this.nav.activeOrganisationId,
-          company: result.data.customer.company,
-          company_email: result.data.customer.email,
-          address:{
-            line1: result.data.customer.address,
-            postal_code: result.data.customer.zip,
-            city: result.data.customer.city,
-            country: result.data.customer.country,
-          },
-          price: result.data.prices,
-          reference: result.data.customer.reference || '',
-          products:[],
-          maxCustomers: result.data.maxCustomers || 0,
-          allowedDomains: result.data.allowedDomains || '',
-        }
-        let product:any = {
-          id: result.data.training.id,
-        }
-        item.products.push(product)
-  
-        this.toast.showLoader()
-
-        if(!result.data.customer.id){
-          customer = {
-            company:result.data.customer.company,
-            address:result.data.customer.address,
-            zip:result.data.customer.zip,
-            city:result.data.customer.city,
-            country:result.data.customer.country || 'NL',
-            phone:result.data.customer.phone || '',
-            email:result.data.customer.email,
-            email_invoice:result.data.customer.email_invoice || result.data.customer.email,
-            reference:result.data.customer.reference || '',
-            tax_nr:result.data.customer.tax_nr || '',
-            created:moment().unix(),
-            createdBy:this.auth.userInfo.uid,
-            orgId:this.nav.activeOrganisationId,
-          }
-  
-          this.toast.showLoader()
-          await this.firestore.createSub('trainers',this.nav.activeOrganisationId,'customers',customer,(response:any)=>{
-            // this.toast.show(this.translate.instant('customers.created_successfully'),3000,'bottom')
-            // this.toast.hideLoader()
-            console.log('new customer',response)
-            customer.id = response.id
-          })
-        }
-        else{
-          customer = result.data.customer
-        }
-        console.log('new customer complete',customer)
-
-        return
-
-        this.functions.httpsCallable('sellElearningPrivate')(item).pipe(take(1)).subscribe({
-          next: (res:any) => {
-            console.log('res',res)
-            if(res?.status!='200'){
-              this.toast.hideLoader()
-              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
-            }
-            else {
-              this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'trainings',{
-                trainingId: result.data.training.id,
-                trainingTitle: result.data.training.title,
-                price: result.data.prices,
-                soldBy: this.auth.userInfo.uid,
-                timestamp: moment().unix(),
-                expires: moment().add(1,'year').unix(),
-              },(response:any)=>{
-                // for(let u of result.data.users){
-                //   this.firestore.createSubSub('trainers',this.nav.activeOrganisationId,'customers',customer.id,'users',{
-                //     email: u.email,
-                //     displayName: u.displayName || '',
-                //     trainingId: result.data.training.id,
-                //     trainingTitle: result.data.training.title,
-                //     timestamp: moment().unix(),
-                //     soldBy: this.auth.userInfo.uid,
-                //     customerTrainingId: response.id,
-                //   })
-                // }
-              })
-
-              this.toast.hideLoader()
-              this.toast.show(this.translate.instant('customers.training_and_invoice_sent'),4000,'middle')
+              }, 2000);
             }
           }
         })

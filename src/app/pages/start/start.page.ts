@@ -982,7 +982,6 @@ export class StartPage implements OnInit {
 
 
     selectSubModule(module:any){
-      console.log('select submodule',module)
       this.modulesBreadCrumbs.push(module)
     }
 
@@ -1091,7 +1090,6 @@ export class StartPage implements OnInit {
           checked = true
         }
       }
-      console.log('checked',checked,item_id,this.selectedModule)
       if(!checked){
         this.selectedModule.basics.used_items.push({id:item_id,read:moment().unix()})
         if(!organisation){

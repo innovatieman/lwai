@@ -41,6 +41,10 @@ const routes: Routes = [
     loadChildren: () => import('./auth/pages/register/register.module').then( m => m.RegisterPageModule)
   },
   {
+    path: 'register/:subscription',
+    loadChildren: () => import('./auth/pages/register/register.module').then( m => m.RegisterPageModule)
+  },
+  {
     path: 'login',
     loadChildren: () => import('./auth/pages/login/login.module').then( m => m.LoginPageModule)
   },

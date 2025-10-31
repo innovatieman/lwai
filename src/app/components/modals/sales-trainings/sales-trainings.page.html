@@ -1,8 +1,8 @@
 
 <div header padding20 flex center-ver>
   <div class="title">
-    <h3 class="subtitle-top" *ngIf="step === 1" noMargin>{{ 'customers.direct_sales_training' | translate }}</h3>
-    <h3 class="subtitle-top" *ngIf="selectedTraining&&step>1" noMargin>{{ selectedTraining.title }}</h3>
+    <h3 class="subtitle-top" *ngIf="step === 1 || step === 2" noMargin>{{ 'customers.direct_sales_training' | translate }}</h3>
+    <h3 class="subtitle-top" *ngIf="selectedTraining&&step>2" noMargin>{{ selectedTraining.title }}</h3>
 
     
   </div>
@@ -13,9 +13,37 @@
 </div>
 <div style="padding:30px;padding-top:0;overflow: auto;line-height:1.6;background:white;" [ngStyle]="{'max-height':'calc('+(vh * 100)+'px - 275px)'}">
   
-    <!-- Stap 1 -->
+
+  <!-- Stap 1 -->
   <ng-container *ngIf="step === 1">
-    <h2 font-20>{{'customers.step' | translate}} 1: {{ steps[0].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} 1: {{ steps[0].title }}</span>
+      <span class="spacer"></span>
+      <ion-button fill="clear" color="primary" (click)="editCustomer()">{{'customers.new_customer' | translate}}</ion-button>
+    </h2>
+    <div>
+      <ion-searchbar borderRadius16 placeholder="{{'buttons.search' | translate}}" [(ngModel)]="searchTermCustomer" (ionClear)="searchTermCustomer=''" (ionCancel)="searchTermCustomer=''" showCancelButton="focus"></ion-searchbar>
+    </div>
+    <ion-list borderRadius16>
+      <ion-item button detail="false" *ngIf="customer && !customer?.id" [ngStyle]="{'--background': 'var(--ion-color-primary)'}"  lines="none" style="margin-bottom:10px;border:1px solid var(--ion-color-primary);border-radius:16px;">
+        <ion-radio fullwidth slot="start" [value]="customer" mode="ios" [color]="'light'">
+          <ion-label weight600 [ngStyle]="{'color': 'white'}">{{ customer.company }}</ion-label>
+        </ion-radio>
+      </ion-item>
+
+      <ion-radio-group [(ngModel)]="customer">
+        <ion-item button detail="false" [ngStyle]="{'--background': existingCustomer?.id === customer?.id ? 'var(--ion-color-primary)' : 'transparent'}" *ngFor="let existingCustomer of (trainerService.trainerInfo?.customers | filterSearch : searchTermCustomer : false : ['company','email','phone','city','email_invoice']) | sortBy : 1 : 'company'" lines="none" style="margin-bottom:10px;border:1px solid var(--ion-color-primary);border-radius:16px;" (click)="validationError = ''">
+          <ion-radio fullwidth slot="start" [value]="existingCustomer" mode="ios" [color]="'light'">
+            <ion-label weight600 [ngStyle]="{'color': existingCustomer?.id === customer?.id ? 'white' : 'var(--color-global)'}">{{ existingCustomer.company }}</ion-label>
+          </ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+  </ng-container>
+
+  <!-- Stap 2 -->
+  <ng-container *ngIf="step === 2">
+    <h2 font-20>{{'customers.step' | translate}} 2: {{ steps[1].title }}</h2>
     <ion-list borderRadius16>
       <ion-radio-group [(ngModel)]="selectedTraining">
         <ion-item button detail="false" [ngStyle]="{'--background': selectedTraining?.id === training.id ? 'var(--ion-color-primary)' : 'transparent'}" *ngFor="let training of trainings" lines="none" style="margin-bottom:10px;border:1px solid var(--ion-color-primary);border-radius:16px;" (click)="validationError = ''">
@@ -29,9 +57,9 @@
     </ion-list>
   </ng-container>
 
-  <!-- Stap 2 -->
-  <ng-container *ngIf="step === 2">
-    <h2 font-20>{{'customers.step' | translate}} 2: {{ steps[1].title }}</h2>
+  <!-- Stap 3 -->
+  <ng-container *ngIf="step === 3 && !onlyUserAmount && !variable_amount">
+    <h2 font-20>{{'customers.step' | translate}} 3: {{ steps[2].title }}</h2>
     <ion-item *ngFor="let user of users; let i = index" detail="false" lines="none" style="--padding-start:0">
       <ion-input style="width:50%" class="userInput" type="email" (keydown)="validationError = ''" [(ngModel)]="user.email" placeholder="E-mailadres (verplicht)"></ion-input>
       <ion-input style="width:50%" class="userInput" type="text" (keydown)="validationError = ''" [(ngModel)]="user.displayName" placeholder="Naam (optioneel)"></ion-input>
@@ -53,9 +81,31 @@
     </div>
   </ng-container>
 
+
   <!-- Stap 3 -->
-  <ng-container *ngIf="step === 3">
+  <ng-container *ngIf="step === 3 && (onlyUserAmount || variable_amount)">
     <h2 font-20>{{'customers.step' | translate}} 3: {{ steps[2].title }}</h2>
+    <ion-row>
+      <ion-col size="8" *ngIf="onlyUserAmount"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.max_users') | sanitizeHtml"></div></ion-col>
+      <ion-col size="8" *ngIf="variable_amount"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.max_users_total') | sanitizeHtml"></div></ion-col>
+      <ion-col size="4">
+        <ion-input id="input1" class="inputAmount" type="number" step="1" min="0" [(ngModel)]="maxCustomers" font-20 weight700>
+        </ion-input>
+      </ion-col>
+      <ion-col size="8"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.allowed_domains_sales') | sanitizeHtml"></div></ion-col>
+      <ion-col size="4">
+        <ion-input id="input1" class="inputAmount" style="font-size:14px" type="text" step="1" min="0" [(ngModel)]="allowedDomains" font-20 weight700>
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-text color="danger" *ngIf="validationError">
+      <p>{{ validationError }}</p>
+    </ion-text>
+  </ng-container>
+
+  <!-- Stap 4 -->
+  <ng-container *ngIf="step === 4 && !variable_amount && !free">
+    <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
 
     <ion-item detail="false" lines="none" relative *ngIf="taxInput=='excl'">
       <ion-label  >
@@ -80,9 +130,18 @@
       </ion-input>
       <div absolute *ngIf="!hideBasePriceIncl" class="formatPriceInput">{{ basePriceIncl | currency:'EUR':'' }}</div>
     </ion-item>
+
     <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
-      <ion-label>{{'customers.unlimited_credits_for' | translate}} {{prices().users}} {{prices().users>1 ? ('customers.users' | translate) : ('customers.user' | translate)}}:</ion-label>
+      <ion-label>
+        <span pointer (click)="changeCredits($event)">
+          {{'customers.'+selectedCredits.label+'_credits_for' | translate}} {{prices().users}} {{prices().users>1 ? ('customers.users' | translate) : ('customers.user' | translate)}}:
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
+        </span>
+      </ion-label>
       <ion-label slot="end">{{ prices().creditCosts | currency:'EUR' }}</ion-label>
+    </ion-item>
+    <ion-item *ngIf="selectedCredits.label!='unlimited'" detail="false" lines="none" style="--padding-end: 17px;margin-top:-15px;margin-bottom:10px;border-bottom:1px solid var(--ion-color-medium)">
+      <ion-text trash font-12 italic>{{ 'customers.credits_explanation_'+selectedCredits.label | translate }}</ion-text>
     </ion-item>
     <ion-item detail="false" lines="none" style="--padding-end: 17px;">
       <ion-label><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></ion-label>
@@ -99,48 +158,326 @@
   </ng-container>
 
   <!-- Stap 4 -->
-  <ng-container *ngIf="step === 4">
+  <ng-container *ngIf="step === 4 && !variable_amount && free">
     <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
-    <table customerDetails>
-      <tr>
-        <td><strong>{{'standards.customer' | translate}}:</strong></td>
-        <td>{{ customer?.company }}</td>
-      </tr>
-      <tr>
-        <td><strong>{{'standards.training' | translate}}:</strong></td>
-        <td>{{ selectedTraining?.title }}</td>
-      </tr>
-      <tr>
-        <td><strong>{{'customers.users' | translate}}:</strong></td>
-        <td>
-          <div>{{ users.length }} {{ users.length > 1 ? ('customers.users' | translate) : ('customers.user' | translate) }}</div>
-          <ul>
-            <li *ngFor="let user of users">{{ user.email }} <span *ngIf="user.displayName" marginLeft>({{ user.displayName }})</span></li>
-          </ul>
-        </td>
-      </tr>
-      <tr>
-        <td><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></td>
-        <td>{{ prices().totalPriceExcl | currency:'EUR' }}</td>
-      </tr>
-      <tr>
-        <td><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></td>
-        <td>{{ prices().totalPriceIncl | currency:'EUR' }}</td>
-      </tr>
-    </table>
+
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+      <ion-label>
+        <span pointer (click)="changeCredits($event)">
+          {{'customers.'+selectedCredits.label+'_credits_for' | translate}} {{prices().users}} {{prices().users>1 ? ('customers.users' | translate) : ('customers.user' | translate)}}:
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
+        </span>
+      </ion-label>
+      <ion-label slot="end">{{ prices().creditCosts | currency:'EUR' }}</ion-label>
+    </ion-item>
+    <ion-item *ngIf="selectedCredits.label!='unlimited'" detail="false" lines="none" style="--padding-end: 17px;margin-top:-15px;margin-bottom:10px;border-bottom:1px solid var(--ion-color-medium)">
+      <ion-text trash font-12 italic>{{ 'customers.credits_explanation_'+selectedCredits.label | translate }}</ion-text>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;">
+      <ion-label><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></ion-label>
+      <ion-label slot="end"><strong>{{ prices().totalPriceExcl | currency:'EUR' }}</strong></ion-label>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+      <ion-label>{{'customers.tax' | translate}}: </ion-label>
+      <ion-label slot="end">{{ prices().totalVAT | currency:'EUR' }}</ion-label>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;">
+      <ion-label><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></ion-label>
+      <ion-label slot="end"><strong>{{ prices().totalPriceIncl | currency:'EUR' }}</strong></ion-label>
+    </ion-item>
   </ng-container>
+
+   <!-- Stap 4 -->
+  <ng-container *ngIf="step === 4 && variable_amount">
+    <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
+
+    <h3 font-18 weight700>{{'customers.one_time_price' | translate}}</h3>
+
+    <ion-item detail="false" lines="none" relative *ngIf="taxInput=='excl'" style="border-bottom:1px solid var(--ion-color-medium);margin-bottom:10px;">
+      <ion-label  >
+        <span pointer (click)="changeTaxInput($event)"> {{'customers.basic_price_excl_tax' | translate}}
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
+        </span>
+      </ion-label>
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePrice = true" (ionBlur)="hideBasePrice = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePrice')" [(ngModel)]="basePrice">
+        <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
+      </ion-input>
+      <div absolute *ngIf="!hideBasePrice" class="formatPriceInput">{{ basePrice | currency:'EUR':'' }}</div>
+    </ion-item>
+    
+    <ion-item detail="false" lines="none" *ngIf="taxInput=='incl'"  style="border-bottom:1px solid var(--ion-color-medium);margin-bottom:10px;">
+      <ion-label>
+        <span pointer (click)="changeTaxInput($event)">
+          {{'customers.basic_price_incl_tax' | translate}}
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
+        </span>
+      </ion-label>
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePriceIncl = true" (ionBlur)="hideBasePriceIncl = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceIncl')" [(ngModel)]="basePriceIncl">
+        <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
+      </ion-input>
+      <div absolute *ngIf="!hideBasePriceIncl" class="formatPriceInput">{{ basePriceIncl | currency:'EUR':'' }}</div>
+    </ion-item>
+    
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;">
+      <ion-label><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></ion-label>
+      <ion-label slot="end"><strong>{{ prices().trainingPrice | currency:'EUR' }}</strong></ion-label>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+      <ion-label>{{'customers.tax' | translate}}: </ion-label>
+      <ion-label slot="end">{{ prices().trainingPriceVat | currency:'EUR' }}</ion-label>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;">
+      <ion-label><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></ion-label>
+      <ion-label slot="end"><strong>{{ prices().trainingPriceIncl | currency:'EUR' }}</strong></ion-label>
+    </ion-item>
+    
+    
+    <h3 font-18 weight700 style="margin-top:30px;">{{'customers.price_per_user' | translate}}</h3>
+
+
+    <ion-item detail="false" lines="none" relative *ngIf="taxInput=='excl'">
+      <ion-label  >
+        <span> {{'customers.price_excl_tax_per_user' | translate}}
+        </span>
+      </ion-label>
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePrice = true" (ionBlur)="hideBasePrice = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceUser')" [(ngModel)]="basePriceUser">
+        <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
+      </ion-input>
+      <div absolute *ngIf="!hideBasePrice" class="formatPriceInput">{{ basePriceUser | currency:'EUR':'' }}</div>
+    </ion-item>
+    
+
+    <ion-item detail="false" lines="none" *ngIf="taxInput=='incl'">
+      <ion-label>
+        <span>
+          {{'customers.price_incl_tax_per_user' | translate}}
+        </span>
+      </ion-label>
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePriceIncl = true" (ionBlur)="hideBasePriceIncl = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceUserIncl')" [(ngModel)]="basePriceUserIncl">
+        <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
+      </ion-input>
+      <div absolute *ngIf="!hideBasePriceIncl" class="formatPriceInput">{{ basePriceUserIncl | currency:'EUR':'' }}</div>
+    </ion-item>
+
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+      <ion-label>
+        <span pointer (click)="changeCredits($event)">
+          {{'customers.'+selectedCredits.label+'_credits_for' | translate}} {{prices().users}} {{prices().users>1 ? ('customers.users' | translate) : ('customers.user' | translate)}}:
+          <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
+        </span>
+      </ion-label>
+      <ion-label slot="end">{{ prices().creditCosts | currency:'EUR' }}</ion-label>
+    </ion-item>
+    <ion-item *ngIf="selectedCredits.label!='unlimited'" detail="false" lines="none" style="--padding-end: 17px;margin-top:-15px;margin-bottom:10px;border-bottom:1px solid var(--ion-color-medium)">
+      <ion-text trash font-12 italic>{{ 'customers.credits_explanation_'+selectedCredits.label | translate }}</ion-text>
+    </ion-item>
+
+    <!-- <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+      <ion-label>{{'customers.unlimited_credits_for' | translate}} {{prices().users}} {{prices().users>1 ? ('customers.users' | translate) : ('customers.user' | translate)}}:</ion-label>
+      <ion-label slot="end">{{ prices().creditCosts | currency:'EUR' }}</ion-label>
+    </ion-item> -->
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;">
+      <ion-label><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></ion-label>
+      <ion-label slot="end"><strong>{{ prices().totalPricePerUserExcl | currency:'EUR' }}</strong></ion-label>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+      <ion-label>{{'customers.tax' | translate}}: </ion-label>
+      <ion-label slot="end">{{ prices().totalPricePerUserVat | currency:'EUR' }}</ion-label>
+    </ion-item>
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;">
+      <ion-label><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></ion-label>
+      <ion-label slot="end"><strong>{{ prices().totalPricePerUserIncl | currency:'EUR' }}</strong></ion-label>
+    </ion-item>
+  </ng-container>
+
+  <!-- Stap 5 -->
+  <ng-container *ngIf="step === 5 && !variable_amount">
+    <h2 font-20>{{'customers.step' | translate}} 5: {{ steps[4].title }}</h2>
+    <ion-row>
+      <ion-col size="6" style="padding-bottom:20px;">
+        <h3 weight600 font-18 style="padding-left:20px">{{'customers.details_sale' | translate}}</h3>
+        <table customerDetails>
+          <tr>
+            <td><strong>{{'standards.customer' | translate}}:</strong></td>
+            <td>{{ customer?.company }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'standards.training' | translate}}:</strong></td>
+            <td>{{ selectedTraining?.title }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.users' | translate}}:</strong></td>
+            <td *ngIf="!onlyUserAmount">
+              <div>{{ users.length }} {{ users.length > 1 ? ('customers.users' | translate) : ('customers.user' | translate) }}</div>
+              <ul>
+                <li *ngFor="let user of users">{{ user.email }} <span *ngIf="user.displayName" marginLeft>({{ user.displayName }})</span></li>
+              </ul>
+            </td>
+            <td *ngIf="onlyUserAmount">
+              <div>{{ maxCustomers }} {{ maxCustomers > 1 ? ('customers.users' | translate) : ('customers.user' | translate) }}</div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>{{'standards.credits' | translate}}:</strong></td>
+            <td>{{'customers.credits_' + selectedCredits.label | translate}}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></td>
+            <td>{{ prices().totalPriceExcl | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></td>
+            <td>{{ prices().totalPriceIncl | currency:'EUR' }}</td>
+          </tr>
+        </table>
+      </ion-col>
+
+      <ion-col size="6" style="padding-bottom:20px;">
+        <h3 weight600 font-18 style="padding-left:20px">{{'customers.your_profit' | translate}}</h3>
+        <table customerDetails>
+          <tr>
+            <td><strong>{{'customers.price_excl_tax' | translate}}:</strong></td>
+            <td>{{ prices().trainingPrice | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'marketplace.revenue_margin' | translate}} (5%):</strong></td>
+            <td>{{ prices().marginAliciaLabs | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.your_profit' | translate}}:</strong></td>
+            <td><strong>{{ prices().marginTrainer | currency:'EUR' }}</strong></td>
+          </tr>
+        </table>
+      </ion-col>
+    </ion-row>
+  </ng-container>
+
+  <!-- Stap 5 -->
+  <ng-container *ngIf="step === 5 && variable_amount">
+    <h2 font-20>{{'customers.step' | translate}} 5: {{ steps[4].title }}</h2>
+    <ion-row>
+      <ion-col size="4" style="padding-bottom:20px;">
+        <h3 weight600 font-18 style="padding-left:20px">{{'customers.details_sale' | translate}}</h3>
+        <table customerDetails>
+          <tr>
+            <td><strong>{{'standards.customer' | translate}}:</strong></td>
+            <td>{{ customer?.company }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'standards.training' | translate}}:</strong></td>
+            <td>{{ selectedTraining?.title }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.users' | translate}}:</strong></td>
+            <td>
+              <div *ngIf="maxCustomers > 0">{{ maxCustomers }} {{ maxCustomers > 1 ? ('customers.users' | translate) : ('customers.user' | translate) }}</div>
+              <div *ngIf="maxCustomers == 0">{{ 'customers.unlimited_users' | translate }}</div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>{{'standards.credits' | translate}}:</strong></td>
+            <td>{{'customers.credits_' + selectedCredits.label | translate}}</td>
+          </tr>
+        </table>
+
+      </ion-col>
+
+      <ion-col size="4" style="padding-bottom:20px;">
+
+        <h3 weight600 font-18 style="padding-left:20px;margin-top:20px;">{{'customers.one_time_price' | translate}}</h3>
+
+        <table customerDetails style="margin-top:10px;">
+          <tr>
+            <td><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></td>
+            <td>{{ prices().trainingPrice | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></td>
+            <td>{{ prices().trainingPriceIncl | currency:'EUR' }}</td>
+          </tr>
+        </table>
+
+      </ion-col>
+
+      <ion-col size="4" style="padding-bottom:20px;">
+
+        <h3 weight600 font-18 style="padding-left:20px;margin-top:20px;">{{'customers.price_per_user' | translate}}</h3>
+
+        <table customerDetails style="margin-top:10px;">
+          <tr>
+            <td><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></td>
+            <td>{{ prices().totalPricePerUserExcl | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.total_price_incl_tax' | translate}}:</strong></td>
+            <td>{{ prices().totalPricePerUserIncl | currency:'EUR' }}</td>
+          </tr>
+        </table>
+      </ion-col>
+    </ion-row>
+
+    <div singleLine></div>
+
+    <ion-row *ngIf="!prices().trainingPrice && !prices().pricePerUserExcl">
+      <ion-col size="12" style="padding-bottom:20px;">
+        <p italic>{{'customers.no_profit' | translate}}</p>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="prices().trainingPrice > 0 || prices().pricePerUserExcl > 0">
+      <ion-col size="6" *ngIf="prices().trainingPrice > 0" style="padding-bottom:20px;">
+        <h3 weight600 font-18 style="padding-left:20px;margin-top:20px;">{{'customers.your_profit_one_time' | translate}}</h3>
+        <table customerDetails>
+          <tr>
+            <td><strong>{{'customers.price_excl_tax' | translate}}:</strong></td>
+            <td>{{ prices().trainingPrice | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'marketplace.revenue_margin' | translate}} (5%):</strong></td>
+            <td>{{ prices().marginAliciaLabs | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.your_profit_one_time' | translate}}:</strong></td>
+            <td><strong>{{ prices().marginTrainer | currency:'EUR' }}</strong></td>
+          </tr>
+        </table>
+      </ion-col>
+
+      <ion-col size="6" *ngIf="prices().pricePerUserExcl > 0" style="padding-bottom:20px;">
+        <h3 weight600 font-18 style="padding-left:20px;margin-top:20px;">{{'customers.your_profit_per_user' | translate}}</h3>
+        <table customerDetails>
+          <tr>
+            <td><strong>{{'customers.price_excl_tax' | translate}}:</strong></td>
+            <td>{{ prices().pricePerUserExcl | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'marketplace.revenue_margin' | translate}} (5%):</strong></td>
+            <td>{{ prices().marginAliciaLabsUser | currency:'EUR' }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{'customers.your_profit_per_user' | translate}}:</strong></td>
+            <td><strong>{{ prices().marginTrainerUser | currency:'EUR' }}</strong></td>
+          </tr>
+        </table>
+      </ion-col>
+
+    </ion-row>
+  </ng-container>
+
 
 
 </div>
 
 <ion-footer>
   <ion-toolbar style="padding:10px 20px;">
-    <ion-buttons slot="start" *ngIf="(step==2 && !onlyUser) || (step > 2 && step <= 4)">
+    <ion-buttons slot="start" *ngIf="(step==2 && !onlyTraining) || (step==3 && !onlyUser) || (step > 3 && step <= 5)">
       <ion-button class="saveButton" (click)="prevStep()">{{'buttons.previous' | translate}}</ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button class="saveButton" fill="outline" *ngIf="step < 4" (click)="nextStep()">{{'buttons.next' | translate}}</ion-button>
-      <ion-button class="saveButton" fill="solid" color="primary" *ngIf="step === 4" (click)="confirm()">{{'customers.activate_send_invoice' | translate}}</ion-button>
+      <ion-button class="saveButton" fill="outline" *ngIf="step < 5" (click)="nextStep()">{{'buttons.next' | translate}}</ion-button>
+      <ion-button  class="saveButton" fill="solid" color="primary" *ngIf="step === 5 && !variable_amount" (click)="confirm()">{{'customers.activate_send_invoice' | translate}}</ion-button>
+      <ion-button  class="saveButton" fill="solid" color="primary" *ngIf="step === 5 && variable_amount && prices().trainingPrice" (click)="confirm()">{{'customers.activate_send_invoice' | translate}}</ion-button>
+      <ion-button  class="saveButton" fill="solid" color="primary" *ngIf="step === 5 && variable_amount && !prices().trainingPrice" (click)="confirm()">{{'buttons.activate' | translate}}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>

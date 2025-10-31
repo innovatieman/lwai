@@ -453,7 +453,9 @@ export class ExamplePage implements OnInit {
   }
 
   showCaseInfo(caseItem:any){
-    this.modalService.showCaseInfo(caseItem)
+    let item = JSON.parse(JSON.stringify(caseItem))
+    item.practiceMode = true;
+    this.modalService.showCaseInfo(item)
   }
 
   setPageParam(){

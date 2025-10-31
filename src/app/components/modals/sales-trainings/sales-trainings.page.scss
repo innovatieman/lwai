@@ -11,7 +11,7 @@ ion-content {
   background: white;
   z-index: 3;
   width: 100px;
-  height: 30px;
+  height: 28px;
   top: 14px;
 }
 [customerDetails]{
@@ -20,6 +20,15 @@ ion-content {
     padding: 8px 16px;
     border:solid 1px var(--ion-color-medium);
   }
+}
+.inputAmount{
+  text-align: center;
+  border: solid 2px var(--ion-color-primary);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 100%;
+  // --padding-start: 20px;
+  // padding-left: 60px;
 }
 
 .userInput{

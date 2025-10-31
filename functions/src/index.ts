@@ -52,5 +52,7 @@ export * from './ai-organization/marketing/google-ads'
 export * from './modules/elearnings'
 export * from './payment/invoices'
 export * from './payment/buy'
+export * from './modules/streaming'
+export * from './maintenance/photos'
 
 

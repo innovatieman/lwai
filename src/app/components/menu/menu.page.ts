@@ -24,6 +24,7 @@ export class MenuPage implements OnInit {
   isAdmin: boolean = false;
   @Input() customMenu:boolean = false
   @Input() listShape:boolean = false
+  @Input() customList:boolean = false
   @Input() shareMenu:boolean = false
   public selectedIndex = 0;
   @Input() pages:any 

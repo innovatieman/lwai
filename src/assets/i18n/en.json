@@ -46,7 +46,8 @@
         "width":"Width",
         "option":"Option",
         "incl":"incl.",
-        "excl":"excl."
+        "excl":"excl.",
+        "no_credits":"No credits"
       },
       "menu": {
         "login": "Log in",
@@ -143,6 +144,8 @@
         "approve":"Approve",
         "watch":"Watch",
         "publish":"Publish",
+        "publish_extra":"Publish more",
+        "publication":"Publication",
         "knowledge":"Knowledge",
         "my_organisation":"My organization",
         "your_organisation":"Your organization",
@@ -637,7 +640,8 @@
       "export_visible_items":"Export visible items",
       "no_module":"Not connected",
       "delete_visible_items_confirmation":"Are you sure you want to delete all visible items?",
-      "delete_visible_items":"Delete visible items"
+      "delete_visible_items":"Delete visible items",
+      "accent":"Accent"
     },
     "modules":{
         "edit_module":"Edit",
@@ -773,14 +777,21 @@
         "sell_directly_amount_known_info":"You only know how many participants are involved, but not who. You select the customer yourself and specify the number of participants. You then determine the price and activate the training directly for the participants. The invoice is sent to the customer. You receive a link that you or the customer can give to the participants to register.",
         "sell_directly_variable_amount":"The number of participants is not yet known",
         "sell_directly_variable_amount_info":"You do not yet know how many participants will be involved. You select the customer yourself and specify a maximum number of participants (if there is a maximum) and an end date. You then determine the price per participant and any base price. The invoice with a base price is sent to the customer. You receive a link that you or the customer can give to the participants to register. At the end of each month, the customer receives an invoice for the actual number of participants for that month.",
+        "sell_directly_free":"I want to offer the training for free",
+        "sell_directly_free_info":"You add the participants directly. The participants then receive free access to the training. You will receive the invoice for the credits you make available to the participants.",
         "publish_select":"Publishing can be done in various ways. Choose the method that best suits this training.",
         "situation":"Situation",
+        "extra_sales":"Extra sales options",
         "add_extra_sales":"Add extra sales options",
         "select_extra_sales":"Select extra sales options",
         "marketplace_extra_sales_info":"Add any extra e-trainings of yours for this training on the Marketplace here. These extra sales options will be shown at checkout to organizations and users who want to purchase the training.",
         "training_no_longer_available":"Training no longer available",
-        "order_marketplace":"Order Marketplace"
-  
+        "order_marketplace":"Order Marketplace",
+        "elearning_publish_private_show_prices_vat":"Extra costs will be displayed incl. VAT.",
+        "private_link":"Participation link for users",
+        "action_make_copy_first":"This action can only be performed on training that has not yet been published. Make a copy of the training and perform the action there.",
+        "elearnings_marketplace":"E-trainings Marketplace",
+        "elearnings_private":"E-trainings Private"
       },
     "generate_case":{
       "title_step_0":"The basics",
@@ -981,6 +992,7 @@
       "next_conversation_explanation":"Simulate a continuation of this conversation. You can start a new conversation with the same AI conversation partner and build on the previous conversation. This can help deepen the relationship with the AI conversation partner and gain more insight into the situation.",
       "conversation_closed":"This conversation has been closed. You can find it in your completed cases to review or continue the discussion.",
       "voice_on":"Start with voice",
+      "voice_on_mobile":"Voice",
       "voice_off":"Stop with voice",
       "only_voice":"Only voice"
 
@@ -1133,7 +1145,8 @@
     "trainer_details":"Provide more information about yourself or your organization here. This will be displayed when a user views your information.<br>This information can be found by clicking on your logo in your trainings.",
     "case_voice":"Here you can choose the voice of the AI conversation partner. You can choose from different voices. The voices may vary in accent, intonation, and speed.<br><br>The attitude of the AI conversation partner in the conversation can of course influence the way of speaking.<br><br>Try out different voices to see which one best fits your case.",
     "case_voice_on": "Turn on this option if you want the AI conversation partner to respond with a voice instead of chat.",
-    "welcome_message":"Here you can enter a welcome message that users will receive via email when they sign up for the training."
+    "welcome_message":"Here you can enter a welcome message that users will receive via email when they sign up for the training.",
+    "case_accent":"Here you can add the accent of the AI conversation partner or leave it empty for a neutral voice. The voice is also generated by AI and the accent may have a stronger effect at times than others.<br><br>Try out different accents to see which one best fits your case."
   },
     "dashboard":{
       "organisation":"Organization",
@@ -1267,8 +1280,8 @@
     "code_not_found":"The code is invalid or not found.",
     "no_private_item_found":"This e-training is not found or not available without access code.",
     "prices_incl_vat":"Prices are inclusive of VAT",
-    "prices_excl_vat":"Prices are exclusive of VAT"
-
+    "prices_excl_vat":"Prices are exclusive of VAT",
+    "marketplace":"Search E-training"
   },
   "media":{
     "photo_upload":"Upload photo",
@@ -1314,7 +1327,10 @@
     "price_incl_tax":"Amount incl. VAT",
     "failure":"The payment has failed.",
     "disclaimer_alicialabs_platform":"This training is offered through the AliciaLabs platform.",
-    "watch_example":"Watch the content"
+    "watch_example":"Watch the content",
+    "good_for":"Good for",
+    "extended_conversations":"extended conversations",
+    "warning_no_credits":"WARNING: Without credits you cannot practice conversations."
   },
   "form":{
     "name":"Name",
@@ -1347,11 +1363,17 @@
     "sold_trainings":"Sold trainings",
     "no_trainings":"There are no trainings sold to this customer yet.",
     "training_and_invoice_sent":"The invoice has been sent to the customer. The selected users now have access to the training and have received a notification.",
+    "training_and_invoice_sent_private":"The training has been activated and the invoice has been sent to the customer. You can now send the link to the customer that gives access to the training. You can always find this link in the training.",
+    "training_and_invoice_sent_private_open":"The training has been activated. You can now send the link to the customer that gives access to the training. You can always find this link in the training. Monthly, we will send an invoice to the customer for users who have gained access.",
+    "training_and_invoice_sent_private_open_one_time":"The training has been activated and the basic invoice has been sent to the customer. You can now send the link to the customer that gives access to the training. You can always find this link in the training. Monthly, we will send an invoice to the customer for users who have gained access.",
+    "training_and_invoice_sent_private_free":"The training has been activated and the invoice has been sent to the customer. You can now send the link to the customer that gives access to the training. You can always find this link in the training. Monthly, we will send an invoice to the customer for users who have gained access.",
     "users":"Users",
     "user":"User",
     "price_excl_tax":"Price training excl. VAT",
     "price_incl_tax":"Price training incl. VAT",
     "unlimited_credits_for":"Unlimited credits for",
+    "4000_credits_for":"4000 credits for",
+    "0_credits_for":"0 credits for",
     "total_price_excl_tax":"Total excl. VAT",
     "total_price_incl_tax":"Total incl. VAT",
     "tax":"VAT (21%)",
@@ -1370,12 +1392,25 @@
     "select_customer":"Select a customer first, or create a new one.",
     "your_profit":"your profit",
     "profit":"profit",
-    "details_sale":"Details of this sale"
+    "details_sale":"Details of this sale",
+    "basic_price_excl_tax":"Basic price excl. VAT",
+    "basic_price_incl_tax":"Basic price incl. VAT",
+    "price_excl_tax_per_user":"Price excl. VAT per user",
+    "price_incl_tax_per_user":"Price incl. VAT per user",
+    "price_per_user":"Price per user",
+    "one_time_price":"One-time price",
+    "unlimited_users":"Unlimited users",
+    "your_profit_one_time":"your one-time profit",
+    "your_profit_per_user":"your profit per user",
+    "no_profit":"You make no profit on this sale.",
+    "credits_unlimited": "unlimited credits per user",
+    "credits_4000": "4000 credits per user",
+    "credits_0": "0 credits per user",
+    "credits_explanation_unlimited": "The user can practice unlimited with your training and all cases in AliciaLabs for one year.",
+    "credits_explanation_4000": "The user has a limited number of credits to practice conversations with your training (chat: about 14-20 conversations, voice: not available with these credits). After that, the user can purchase additional or unlimited credits themselves.",
+    "credits_explanation_0": "The user has no credits to practice conversations with your training. The user can purchase additional or unlimited credits themselves."
 
-
-
-
-
+    
 
   }
 }

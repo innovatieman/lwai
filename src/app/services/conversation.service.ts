@@ -286,7 +286,8 @@ export class ConversationService implements OnDestroy {
             prompt:this.caseItem.openingMessage || '',
             steadFastness:this.caseItem.steadFastness,
             voice:this.caseItem.voice || this.activeConversation.voice || '',
-            extra_knowledge:this.caseItem.extra_knowledge || ''
+            extra_knowledge:this.caseItem.extra_knowledge || '',
+            accent:this.caseItem.accent || ''
           }
           if(this.caseItem.trainerId){
             obj.trainerId = this.caseItem.trainerId
@@ -577,7 +578,7 @@ export class ConversationService implements OnDestroy {
 
   async openai_chat_voice(obj: any) {
     this.update.emit(true);
-    console.log(this.activeConversation.messages)
+    // console.log(this.activeConversation.messages)
 
     if(!obj.voice){
       obj.voice = 'ARIOBKJtltx2F7r1TMzI'// 'AyQGttFzg1EY7EIKkpHs';
@@ -840,7 +841,9 @@ export class ConversationService implements OnDestroy {
       instructionType:'reaction',
       attitude:this.attitude,
       prompt:message,
-      voice:this.caseItem.voice || this.activeConversation.voice || ''
+      voice:this.caseItem.voice || this.activeConversation.voice || '',
+      extra_knowledge:this.caseItem.extra_knowledge || '',
+      accent:this.caseItem.accent || ''
     }
     if(this.activeConversation.trainerId){
       obj.training = {
@@ -1117,10 +1120,10 @@ export class ConversationService implements OnDestroy {
   }
 
   getFeedbackChat(index:number,type:string,id?:string){
-    if(!this.messages || this.messages.length<1){
+    if(!this.activeConversation.messages || this.activeConversation.messages.length<1){
       return {};
     }
-    let messages = JSON.parse(JSON.stringify(this.messages))
+    let messages = JSON.parse(JSON.stringify(this.activeConversation.messages))
     let feedbackList = []
     if(!this.activeConversation.feedback || this.activeConversation.feedback.length<1){
       return '';

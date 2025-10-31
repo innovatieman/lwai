@@ -275,7 +275,7 @@ export class AccountService {
     }
   }
 
-  async buyMultiple(items: any[],metadata?: any) {
+  async buyMultiple(items: any[],metadata?: any,invoice?:boolean) {
 
     const user = await this.auth.userInfo;
     if (!user) return;
@@ -436,6 +436,12 @@ export class AccountService {
       // }
   }
 
+  getProductByCredits(credits:number){
+    if(!this.products){
+      return null;
+    }
+    return this.products.find((product:any) => product.credits === credits) || null;  
+  }
 
   getUnlimitedChatProduct(){
     return this.products.find((product:any) => product.credits === 1000000) || null;

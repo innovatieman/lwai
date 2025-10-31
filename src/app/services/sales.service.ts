@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FirestoreService } from './firestore.service';
-import { takeUntil } from 'rxjs';
+import { takeUntil, timeout } from 'rxjs';
 import { AccountService } from './account.service';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -314,6 +314,80 @@ export class SalesService {
           this.toast.show(this.translate.instant('marketplace.activation_successful'), 6000);
           setTimeout(() => {
             this.nav.go('start/my_trainings');
+          }, 2000);
+        })
+      },
+      error: (error:any) => {
+        console.error('Purchase failed:', error);
+        this.toast.hideLoader();
+        this.toast.show(this.translate.instant('error_messages.failure'), 6000);
+      }
+    });
+  }
+
+  activateFree(elearning:any) {
+    // console.log('Activating elearning with code:', elearning);
+    // this.toast.showLoader();
+    if(!elearning || !elearning.id) {
+      this.toast.hideLoader();
+      this.toast.show(this.translate.instant('error_messages.failure'), 6000);
+      return;
+    }
+
+    this.functions.httpsCallable('activateFreeTraining')({ elearningId: elearning.id }).subscribe({
+      next: (response:any) => {
+        if(response.status == 500) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('marketplace.not_logged_in'), 6000);
+          return;
+        }
+        else if(response.status == 404) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('error_messages.failure'), 6000);
+          return;
+        }
+        else if(response.status == 400) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('marketplace.activation_failed_code'), 6000);
+          return;
+        }
+        else if(response.status == 402) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('marketplace.activation_failed_used'), 6000);
+          return;
+        }
+        else if(response.status == 405) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('marketplace.activation_already_used'), 6000);
+          return;
+        }
+        else if(response.status == 406) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('marketplace.activation_not_private'), 6000);
+          return;
+        }
+        else if(response.status !== 200) {
+          console.log('Purchase error:', response);
+          this.toast.hideLoader();
+          this.toast.show(this.translate.instant('error_messages.failure'), 6000);
+          return;
+        }
+        // console.log('Purchase successful:', response);
+        this.auth.getMyElearnings(this.auth.userInfo.uid, () => {
+          this.toast.hideLoader();
+          this.auth.getCredits(this.auth.userInfo.uid);
+          this.toast.show(this.translate.instant('marketplace.activation_successful'), 6000);
+          setTimeout(() => {
+            this.nav.go('start/my_trainings');
+            setTimeout(() => {
+              this.toast.hideLoader();
+            }, 2000);
           }, 2000);
         })
       },

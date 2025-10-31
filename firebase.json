@@ -22,11 +22,11 @@
           "function": "directToTrainings"
         },
         {
-          "source": "/etraining/direct/:id/:specialcode",
+          "source": "/etraining/direct/:id/:pricesInclVat",
           "function": "directToTrainings"
         },
         {
-          "source": "/etraining/direct/:id/:specialcode/:private",
+          "source": "/etraining/direct/:id/:pricesInclVat/:specialcode",
           "function": "directToTrainings"
         }
       ],

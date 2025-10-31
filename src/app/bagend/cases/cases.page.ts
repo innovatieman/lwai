@@ -711,7 +711,7 @@ export class CasesPage implements OnInit {
   }
 
   loadImages(){
-    this.firestore.get('ai-avatars').subscribe((images:any)=>{
+    this.firestore.get('avatars').subscribe((images:any)=>{
       this.images = images.map((e:any) => {
         return { ...e.payload.doc.data(), id:e.payload.doc.id }
       })

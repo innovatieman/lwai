@@ -55,3 +55,24 @@
     right:10px;
     pointer-events: none;
 }
+
+ion-radio {
+  --border-radius: 4px;
+  --inner-border-radius: 4px;
+
+  --color: #fff;
+  --color-checked: #fff; //var(--ion-color-primary);
+}
+
+ion-radio.ios::part(container) {
+  width: 20px;
+  height: 20px;
+
+  border: 2px solid #fff;// #ddd;
+  border-radius: 4px;
+}
+
+.radio-checked.ios::part(container) {
+  border-color: #fff;//var(--ion-color-primary);
+  display:none!important;
+}

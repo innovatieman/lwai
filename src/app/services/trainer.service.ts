@@ -45,7 +45,7 @@ export class TrainerService {
   originEdit:string = ''
   affiliates:any[] = []
   affiliateLoaded:boolean = false
-  publishType: string = 'training';
+  publishType: string = '';
   selectedSellDirectly: string = '';
   selectedPublishType: string = '';
   showPrivateSell: boolean = false;
@@ -130,13 +130,13 @@ export class TrainerService {
       this.infoItem = {}
       this.breadCrumbs = []
       this.affiliateLoaded = false
-      this.publishType = 'training';
+      this.publishType = '';
       this.loadTrainerInfo(()=>{
         if(this.trainerInfo.affiliate){
           this.getAffiliates();
         }
         this.trainerInfoLoaded$.next(true);
-        if (this.trainerInfo.organisation) {this.publishType = 'organisation'};
+        // if (this.trainerInfo.organisation) {this.publishType = 'organisation'};
         // this.trainerInfoLoaded.emit(true);
       });
     })
@@ -478,7 +478,7 @@ export class TrainerService {
 
       // Eventuele extra setup
       if (this.trainerInfo.affiliate) this.getAffiliates();
-      if (this.trainerInfo.organisation) {this.publishType = 'organisation'};
+      // if (this.trainerInfo.organisation) {this.publishType = 'organisation'};
     });
 
     if (unsubscribe) {
@@ -1739,12 +1739,12 @@ export class TrainerService {
 
   }
 
-  registerAsTrainerPro(){
+  registerAsTrainerPro(invoice?:boolean){
 
     if(!this.auth.organisations.length){
       this.registerAsTrainer((response:any)=>{
         if(response){
-          this.registerAsTrainerPro()
+          this.registerAsTrainerPro(invoice)
         }
       })
     }
@@ -1760,7 +1760,7 @@ export class TrainerService {
         trainerId:this.nav.activeOrganisationId
       };
       product.organisationId = this.nav.activeOrganisationId;
-      this.buy(product,metadata)
+      this.buy(product,metadata,invoice)
     }
 
 
@@ -1792,8 +1792,8 @@ export class TrainerService {
       })
   }
 
-  async buy(item: any,metadata?: any) {
-    this.accountService.buyMultiple([item],metadata);
+  async buy(item: any,metadata?: any,invoice?:boolean) {
+    this.accountService.buyMultiple([item],metadata,invoice);
     return;
     const user = await this.auth.userInfo;
     if (!user) {

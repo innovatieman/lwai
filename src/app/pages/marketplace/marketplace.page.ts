@@ -1061,4 +1061,58 @@ export class MarketplacePage implements OnInit {
   }
 
 
+  gotoOrganisation(event?:any,organisationId?:any){
+    if(event){
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    if(!organisationId){
+      this.nav.go('start/my_organisation/');
+    }
+    else{
+      this.auth.mySelectedOrganisation = this.auth.organisationTrainings.find(org => org.id === organisationId);
+      localStorage.setItem('organisationTrainingId', this.auth.mySelectedOrganisation.id);
+      this.nav.go('start/my_organisation');
+    }
+  }
+
+  async selectOrganisation(event?:any){
+    if(event){
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    let list = []
+    for(let i=0;i<this.auth.organisationTrainings.length;i++){
+      list.push({
+        title:this.auth.organisationTrainings[i].name,
+        icon:this.auth.organisationTrainings[i].logo ? '' :'faGripHorizontal',
+        image:this.auth.organisationTrainings[i].logo ? this.auth.organisationTrainings[i].logo : '',
+        id:this.auth.organisationTrainings[i].id,
+        value:this.auth.organisationTrainings[i].id,
+        logo:this.auth.organisationTrainings[i].logo !=undefined,
+      })
+    }
+
+    this.shortMenu = await this.popoverController.create({
+      component: MenuPage,
+      componentProps:{
+        customMenu:true,
+        pages:list
+      },
+      cssClass: 'customMenu',
+      event: event,
+      translucent: false,
+      reference:'trigger',
+    });
+    this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+    await this.shortMenu.present();
+    await this.shortMenu.onWillDismiss().then((result:any)=>{
+      // console.log(this.selectMenuservice.selectedItem)
+      if(this.selectMenuservice.selectedItem){
+        this.gotoOrganisation(event,this.selectMenuservice.selectedItem.id)
+      }
+    })
+  }
+
+
 }

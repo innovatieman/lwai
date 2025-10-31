@@ -28,8 +28,13 @@
                     <img [src]="sales.elearningItem(item_id).trainer?.logo" alt="" style="width:100%;height:100%;object-fit:contain;">
                   </div>
                   
-                  <div *ngIf="!media.smallDevice" center marginBottom>
+                  <div *ngIf="!media.smallDevice" center marginBottom flex center-ver>
                     <ion-button class="saveButton" fill="outline" (click)="showExample()">{{'checkout.watch_example' | translate}}</ion-button>
+                    <ion-button class="saveButton" style="position:static" color="medium" fill="outline" marginLeft (click)="media.shareTraining(sales.elearningItem(item_id),pricesInclVat,$event)">
+                      <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+                      <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
+                    </ion-button>
+                    
                   </div>
 
                   <div *ngIf="sales.elearningItem(item_id).photo && media.smallDevice" [ngStyle]="{'height':!media.smallDevice?'200px':'200px'}" marginBottom>
@@ -39,8 +44,12 @@
 
                   <div [innerHTML]="helper.convertSpaces(sales.elearningItem(item_id).training_content) | sanitizeHtml" font-16 marginBottom  class="textContainer"></div>
                   
-                  <div *ngIf="media.smallDevice" center marginBottom>
+                  <div *ngIf="media.smallDevice" center marginBottom flex center-ver>
                     <ion-button class="saveButton" fill="outline" (click)="showExample()">{{'checkout.watch_example' | translate}}</ion-button>
+                    <ion-button class="saveButton" style="position:static" color="medium" fill="outline" marginLeft (click)="media.shareTraining(sales.elearningItem(item_id),pricesInclVat,$event)">
+                      <ion-icon name="share-outline" font-22 *ngIf="this.media.isAppleDevice"></ion-icon>
+                      <ion-icon name="share-social-outline" font-22 *ngIf="!this.media.isAppleDevice"></ion-icon>
+                    </ion-button>
                   </div>
 
                   <div>
@@ -252,6 +261,28 @@
                 </div>
 
 
+                <h3 weight700 font-22 *ngIf="!auth.credits_unlimited_type">{{'standards.credits' | translate}}</h3>
+              
+
+                <ion-card *ngIf="!auth.credits_unlimited_type" basicPadding noMargin noShadow style="background:white" [ngStyle]="{'border': selectedCredits==0 ? 'solid 2px rgba(var(--ion-color-danger-rgb),0.6)' : 'solid 2px var(--ion-color-light)'}">
+                <div flex center-ver relative style="padding-right:20px;cursor:pointer;" (click)="selectCredits($event)">
+                  <div relative flex center-ver center-hor noOverflow borderRadius10 style="min-width:100px;width:100px;height:60px;margin-right:10px;">
+                    <img src="assets/img/credits_{{selectedCredits}}.webp" alt="Credits" >
+                  </div>
+                  <div>
+                    <span *ngIf="selectedCredits!=1000000" text-secondary weight500>{{selectedCredits || 0}} {{'standards.credits' | translate}}</span>
+                    <span *ngIf="selectedCredits==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
+                  </div>
+                  <div class="spacer"></div>
+                  <div style="min-width:30px">
+                    <fa-icon pointer titleIcon font-18 text-secondary [icon]="icon.get('faPen')"></fa-icon>
+                  </div>
+                </div>
+              </ion-card> 
+
+
+
+
                 <h3 weight700 font-22>{{'checkout.order_summary' | translate}}</h3>
                 <ion-card basicPadding noMargin noShadow borderLight style="background:white">
                   <ion-item *ngIf="sales.elearningItem(item_id)">
@@ -262,17 +293,28 @@
                     <div text-end>
                       <div font-16 weight600 *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
                       <div font-16 weight600 *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{0 | number : '1.2-2'}}</div>
-                      <div font-16 weight400 style="text-decoration: line-through;" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id))">€ {{sales.elearningItem(item_id).price_elearning * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
+                      <div font-16 weight400 style="text-decoration: line-through;" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id)) && sales.elearningItem(item_id).price_elearning">€ {{sales.elearningItem(item_id).price_elearning * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
                   <ion-item *ngIf="sales.elearningItem(item_id)">
                     <ion-label>
-                      <div font-16 weight600>{{'checkout.unlimited_credits_year' | translate}}</div>
-                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type">{{'checkout.unlimited_credits_description' | translate}}</div>
+                      <!-- <div font-16 weight600>{{'checkout.unlimited_credits_year' | translate}}</div> -->
+                      <div font-16 weight600 trash *ngIf="!auth.credits_unlimited_type && !selectedCredits">{{'standards.no_credits' | translate}}</div>
+                      <div font-14 weight600 trash *ngIf="!auth.credits_unlimited_type && !selectedCredits">{{'checkout.warning_no_credits' | translate}}</div>
+                     
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits!=1000000">{{accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits}} {{'standards.credits' | translate}}</div>
+                      <div font-16 weight600 *ngIf="(!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits==1000000) || auth.credits_unlimited_type">{{'checkout.unlimited_credits_year' | translate}}</div>
+
+                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits!=1000000">{{'checkout.good_for' | translate}} {{accountService.getProductByCredits(selectedCredits)?.conversations}} {{'checkout.extended_conversations' | translate}}</div>
+                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits==1000000">{{'checkout.unlimited_credits_description' | translate}}</div>
+
+                      <!-- <div font-14 weight500 *ngIf="!auth.credits_unlimited_type">{{'checkout.unlimited_credits_description' | translate}}</div> -->
                       <div font-14 weight500 *ngIf="auth.credits_unlimited_type">{{'checkout.unlimited_credits_already' | translate}}</div>
                     </ion-label>
                     <div text-end>
-                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type">€ {{(pricesInclVat ? 25 : 20.66) | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && (!hasValidSpecialCodeCredits(sales.elearningItem(item_id)) || hasValidSpecialCodeCredits(sales.elearningItem(item_id))!=selectedCredits)">€ {{(getActivePrice(accountService.getProductByCredits(selectedCredits)?.prices)).value * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && hasValidSpecialCode(sales.elearningItem(item_id)) && hasValidSpecialCodeCredits(sales.elearningItem(item_id))==selectedCredits">€ {{0 | number : '1.2-2'}}</div>
+                      <!-- <div font-14 weight400 style="text-decoration: line-through;" *ngIf="!auth.credits_unlimited_type && hasValidSpecialCode(sales.elearningItem(item_id)) && hasValidSpecialCodeCredits(sales.elearningItem(item_id))==selectedCredits">€ {{(getActivePrice(accountService.getProductByCredits(selectedCredits)?.prices)).value * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div> -->
                       <div font-16 weight600 *ngIf="auth.credits_unlimited_type">€ {{0 | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
@@ -312,29 +354,40 @@
                       {{'checkout.terms1' | translate}} 
                       <a (click)="nav.goto(translate.instant('terms.terms'),true)"> {{'checkout.terms2' | translate}} </a> 
                       {{'checkout.terms3' | translate}} 
-                      <a (click)="nav.goto(translate.instant('terms.privacy'),true)"> {{'checkout.terms4' | translate}} </a>.
+                      <a (click)="nav.goto(translate.instant('terms.privacy'),true)"> {{'checkout.terms4' | translate}}</a>.
                     </div>
                   </ion-checkbox>
                 </ion-item>
               </form>
               <div>
-                <ion-button expand="block" size="large" *ngIf="(!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total) && !userForm.controls['isCompany'].value" (click)="buyItems()" [disabled]="!userForm.valid || processing">
+                <ion-button expand="block" size="large" *ngIf="(!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total) && !userForm.controls['isCompany'].value && calculatePrice().total" (click)="buyItems()" [disabled]="!userForm.valid || processing">
                   {{'checkout.to_checkout' | translate}} 
                 </ion-button>
+
+                <ion-button expand="block" color="success" size="large" *ngIf="(!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total) && !userForm.controls['isCompany'].value && !calculatePrice().total" (click)="activateFree(sales.elearningItem(item_id))" [disabled]="!userForm.valid || processing">
+                  {{'buttons.activate' | translate}}
+                </ion-button>
+
                 <ion-row noPadding>
-                  <ion-col [size]="media.smallDevice ? 12 : 6" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value">
+                  <ion-col [size]="12" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value && !calculatePrice().total">
+                    <ion-button expand="block" size="large" *ngIf="(!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total) && !userForm.controls['isCompany'].value && !calculatePrice().total" (click)="activateFree(sales.elearningItem(item_id))" [disabled]="!userForm.valid || processing">
+                      {{'buttons.activate' | translate}}
+                    </ion-button>
+                  </ion-col>
+                  <ion-col [size]="media.smallDevice ? 12 : 6" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value && calculatePrice().total">
                     <ion-button expand="block" size="large" color="primary" (click)="buyItems()" [disabled]="!userForm.valid || processing">
                       {{'checkout.to_checkout_direct' | translate}} 
                     </ion-button>
                   </ion-col>
 
-                  <ion-col [size]="media.smallDevice ? 12 : 6" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value">
+                  <ion-col [size]="media.smallDevice ? 12 : 6" noPadding *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) && userForm.controls['isCompany'].value && calculatePrice().total">
                     <ion-button expand="block" size="large" color="warning" (click)="buyItems(true)" [disabled]="!userForm.valid || processing">
                       {{'checkout.to_checkout_invoice' | translate}} 
                     </ion-button>
                   </ion-col>
                 </ion-row>
-                <ion-button expand="block" color="success" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id)) && !calculatePrice().total" (click)="sales.activateWithCode(sales.elearningItem(item_id))" [disabled]="!userForm.valid || processing">{{'buttons.activate' | translate}}</ion-button>
+                <ion-button expand="block" color="success" *ngIf="hasValidSpecialCode(sales.elearningItem(item_id)) && !calculatePrice().total" (click)="activateWithCode(sales.elearningItem(item_id))" [disabled]="!userForm.valid || processing">{{'buttons.activate' | translate}}</ion-button>
+                
                 <div center class="paymentMethodsIcons" *ngIf="!hasValidSpecialCode(sales.elearningItem(item_id)) || calculatePrice().total" style="margin-top:10px;">
                   <img src="assets/img/ideal.svg" alt="iDEAL" title="iDEAL">
                   <img src="assets/img/paypal.svg" alt="PayPal" title="PayPal">

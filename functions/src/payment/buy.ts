@@ -402,8 +402,15 @@ exports.createCheckoutSession = functions.region('europe-west1').runWith({ memor
   let objMetadata: any = { userId, organisationId, employees: numEmployees.toString() };
   if (metadata) objMetadata = { ...objMetadata, ...metadata };
 
+  const taxRateRef = await admin.firestore().collection('taxRates').where('country', '==', 'NL').where('inclusive', '==', false).limit(1).get();
+    const taxRateData = !taxRateRef.empty ? taxRateRef.docs[0].data() : null;
+    let taxRateId = taxRateData?.stripeTaxRateId || null;
+    if(!taxRateId){
+      taxRateId = 'txr_1SERzwBO4NSBi4kfaVmCMi6x'; // Standaard NL excl.21%
+    }
+
   let sessionItem:any = {
-    line_items: [{ price: stripePriceId, quantity: 1, tax_rates: ['txr_1SDMzTBO4NSBi4kfeOYSAXyQ'] }],
+    line_items: [{ price: stripePriceId, quantity: 1, tax_rates: [taxRateId] }],
     mode: 'payment',
     customer: stripeId,
     customer_update: {
@@ -412,20 +419,8 @@ exports.createCheckoutSession = functions.region('europe-west1').runWith({ memor
     success_url: `${successPath}`,
     cancel_url: `${cancelPath}`,
     metadata: objMetadata,
-    automatic_tax: { enabled: true },
     invoice_creation: { enabled: true }
   }
-
-  if(userInfo.invoice){
-    sessionItem['payment_method_types'] = ['billie'];
-    sessionItem['payment_method_options'] = {
-        billie: {
-          capture_method: 'manual',
-        }
-      };
-  }
-  console.log('invoice:', userInfo.invoice); 
-  console.log('sessionItem:', JSON.stringify(sessionItem));
 
   const session = await stripe.checkout.sessions.create(sessionItem);
 

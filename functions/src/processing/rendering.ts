@@ -79,44 +79,82 @@ exports.directToTrainings = onRequest(
     console.log("Request URL:", req.url);
     const pathOptions = req.path.split("/").filter(Boolean);
     const elearningId = pathOptions[2]; // bijv. "1234567890"
-    const specialcode = pathOptions[3]; // bijv. "abc123"
-    // const privateFlag = pathOptions[4];
-
+    let vatFalse = pathOptions[3]; // bijv. "abc123"
+    if(vatFalse==='false'){
+      vatFalse = true;
+    }
+    else{
+      vatFalse = false;
+    }
+    const specialcode = pathOptions[4]; // bijv. "abc123"
     if (!elearningId) {
         res.status(400).send("Missing elearningId");
         return;
     }
     
     try {
-        const elearningDoc = await db
+      let elearningData:any = null
+
+        let elearningDoc = await db
         .collection("elearnings")
         .where("originalTrainingId", "==", elearningId)
+        .where('status', '==', 'published')
         .limit(1)
         .get();
 
         if (elearningDoc.empty) {
-        res.status(404).send("Elearning not found");
-        return;
+
+          let elearningDoc = await db
+            .collection("elearnings")
+            .doc(elearningId)
+            .get();
+
+          if (!elearningDoc.exists) {
+              res.status(404).send("Elearning not found");
+              return;
+          }
+          else{
+            elearningData = elearningDoc.data();
+          }
+        }
+        else{
+          elearningData = elearningDoc.docs[0].data();
         }
 
-        const elearningData = elearningDoc.docs[0].data();
-        let redirectUrl = `marketplace/elearnings/${elearningId}`;
-        if(specialcode){
-          redirectUrl += `?specialCode=${specialcode}`;
+        
+        let redirectUrl = `checkout/${elearningId}/standalone`;
+        if(vatFalse){
+          redirectUrl += `?pricesInclVat=false`;
         }
-        // if(privateFlag){
-        //   redirectUrl += `&private=1`;
-        // }
-        const encodedRedirectUrl = encodeURIComponent(redirectUrl);
+        if(specialcode){
+          if(vatFalse){
+            redirectUrl += `&specialCode=${specialcode}`;
+          }
+          else{
+            redirectUrl += `?specialCode=${specialcode}`;
+          }
+        }
         const imageUrl = await getOrCreateOgImageTraining(elearningId, elearningData);
+        console.log('imageUrl', imageUrl);
         let contentUrl = `https://marketplace.alicialabs.com/etraining/direct/${elearningId}`;
+        if(pathOptions[3]){
+          contentUrl = '/' + pathOptions[3]
+        }
         if(specialcode){
           contentUrl += `/${specialcode}`;
         }
-        // if(privateFlag){
-        //   contentUrl += `/private`;
-        // }
-        console.log('redirecting to', `https://conversation.alicialabs.com/${encodedRedirectUrl}`);
+
+        let description = stripHtmlTags(elearningData?.user_info)
+        if(description.length <100){
+         let extraDescription = " "
+         extraDescription +=  stripHtmlTags(elearningData.training_content)
+         if(extraDescription.length > 200){
+          extraDescription = extraDescription.substring(0, 200) + "..."
+         } 
+         description += extraDescription
+        }
+
+
         const html = `
         <!DOCTYPE html>
         <html lang="en">
@@ -125,7 +163,7 @@ exports.directToTrainings = onRequest(
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>AliciaLabs AI: ${escapeHtml(elearningData?.title)}</title>
             <meta property="og:title" content="${escapeHtml(elearningData?.trainer.name)}: ${escapeHtml(elearningData?.title)}" />
-            <meta property="og:description" content="${escapeHtml(elearningData?.user_info)}" />
+            <meta property="og:description" content="${escapeHtml(description)}" />
             <meta property="og:image" content="${escapeHtml(imageUrl)}" />
             <meta property="og:url" content="${escapeHtml(contentUrl)}" />
             <meta name="twitter:card" content="summary_large_image" />
@@ -222,10 +260,32 @@ async function generateOgTrainingImage(data:any) {
         const buffer1 = Buffer.from(arrayBuffer1);
         const pngBuffer1 = await sharp(buffer1).png().toBuffer(); // 👉 converteer WebP naar PNG
         const logo1 = await loadImage(pngBuffer1);
-        const logo1Height = 270 //height / 4; // 25% van de hoogte
-        const logo1Width = 270 //(logo.width / logo.height) * logoHeight;
-        ctx.drawImage(logo1, 780, 23, logo1Width, logo1Height);
-        console.log('trainer gelukt', logo1Path);
+        // const logo1Height = 270 //height / 4; // 25% van de hoogte
+        // const logo1Width = 270 //(logo.width / logo.height) * logoHeight;
+        // ctx.drawImage(logo1, 780, 23, logo1Width, logo1Height);
+
+        const maxLogoWidth = 270;
+        const maxLogoHeight = 270;
+        const frameX = 780; 
+        const frameY = 23;
+        const aspectRatio = logo1.width / logo1.height;
+
+        let logo1Width = maxLogoWidth;
+        let logo1Height = maxLogoHeight;
+
+        if (aspectRatio > 1) {
+          logo1Height = maxLogoWidth / aspectRatio;
+        } else {
+          logo1Width = maxLogoHeight * aspectRatio;
+        }
+
+        const x = frameX + (maxLogoWidth - logo1Width) / 2;
+        const y = frameY + (maxLogoHeight - logo1Height) / 2;
+
+        ctx.drawImage(logo1, x, y, logo1Width, logo1Height);
+
+
+        // console.log('trainer gelukt', logo1Path);
         // const logo2 = await loadImage(logoPath);
         const logo2Height = 270 //height / 4; // 25% van de hoogte
         const logo2Width = 270 //(logo.width / logo.height) * logoHeight;
@@ -337,15 +397,18 @@ async function getOrCreateOgImage(caseId:string, caseData:any) {
     return canvas.toBuffer("image/png");
   }
 
-
+function stripHtmlTags(input?: string): string {
+  if(!input) return "";
+  return input.replace(/<[^>]*>/g, '');
+}
   
-  function escapeHtml(text:string) {
-    if (!text) return "";
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+function escapeHtml(text:string) {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
   

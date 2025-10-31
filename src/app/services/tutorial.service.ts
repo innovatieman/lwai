@@ -216,7 +216,7 @@ export class tutorialService {
         return
       }
       let steps = this.tutorialSteps(this.tutorialsPerPage[page][trigger].languages[this.translate.currentLang].steps)
-      console.log(steps)
+      // console.log(steps)
       if(!steps){
         this.exit()
         return

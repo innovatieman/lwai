@@ -46,7 +46,8 @@
         "width":"Breedte",
         "option":"Optie",
         "incl":"incl.",
-        "excl":"excl."
+        "excl":"excl.",
+        "no_credits":"Geen credits"
     },
     "menu":{
         "login": "Inloggen",
@@ -143,6 +144,8 @@
         "approve":"Goedkeuren",
         "watch":"Bekijk",
         "publish":"Publiceren",
+        "publish_extra":"Meer Publiceren",
+        "publication":"Publicatie",
         "knowledge":"Kennis",
         "my_organisation":"Mijn organisatie",
         "your_organisation":"Jouw organisatie",
@@ -636,7 +639,8 @@
         "export_visible_items":"Exporteer zichtbare items",
         "no_module":"Niet gekoppeld",
         "delete_visible_items_confirmation":"Weet je zeker dat je alle zichtbare items wilt verwijderen?",
-        "delete_visible_items":"Verwijder zichtbare items"
+        "delete_visible_items":"Verwijder zichtbare items",
+        "accent":"Accent"
     },
     "modules":{
         "edit_module":"Bewerken",
@@ -773,13 +777,22 @@
         "sell_directly_amount_known_info":"Je weet alleen hoeveel deelnemers er meedoen, maar niet wie. Je selecteert zo zelf de klant en geeft het aantal deelnemers op. Dan bepaal je de prijs en activeert de training direct voor de deelnemers. De factuur wordt naar de klant gestuurd. Je ontvangt een link die jij of de klant aan de deelnemers kunt geven om zich te registreren.",
         "sell_directly_variable_amount":"Het aantal deelnemers is nog niet bekend",
         "sell_directly_variable_amount_info":"Je weet nog niet hoeveel deelnemers er meedoen. Je selecteert zo zelf de klant en geeft een maximum aantal deelnemers (als die er zijn) en einddatum op. Dan bepaal je de prijs per deelnemer en een eventuele basisprijs. De factuur met een basisprijs wordt naar de klant gestuurd. Je ontvangt een link die jij of de klant aan de deelnemers kunt geven om zich te registreren. Aan het eind van iedere maand ontvangt de klant een factuur voor het werkelijke aantal deelnemers van die maand.",
+        "sell_directly_free":"Ik wil de training gratis aanbieden",
+        "sell_directly_free_info":"Je voegt zo direct de deelnemers toe. De deelnemers krijgen dan gratis toegang tot de training. Je ontvangt zelf de factuur voor de credits die je aan de deelnemers beschikbaar stelt.",
+        "publish_method":"Hoe wil je de training publiceren?",
         "publish_select":"Publiceren kan op verschillende manieren. Kies hier de manier die het beste bij deze training past.",
         "situation":"Situatie",
+        "extra_sales":"Extra verkoopopties",
         "add_extra_sales":"Voeg extra verkoopopties toe",
         "select_extra_sales":"Selecteer extra verkoopopties",
         "marketplace_extra_sales_info":"Voeg hier eventueel andere e-trainingen van jou toe voor deze training op de Marktplaats. Deze extra verkoopopties worden bij de checkout getoond aan organisaties en gebruikers die de training willen aanschaffen.",
         "training_no_longer_available":"Training niet meer beschikbaar",
-        "order_marketplace":"Volgorde Marketplace"
+        "order_marketplace":"Volgorde Marketplace",
+        "elearning_publish_private_show_prices_vat":"Extra kosten worden weergegeven incl. BTW.",
+        "private_link":"Deelnamelink voor gebruikers",
+        "action_make_copy_first":"Deze actie kan alleen met training die nog niet gepubliceerd is. Maak een kopie van de training en voer daar de actie uit.",
+        "elearnings_marketplace":"E-trainingen Marketplace",
+        "elearnings_private":"E-trainingen Private"
     },
     "generate_case":{
         "title_step_0":"De basis",
@@ -980,6 +993,7 @@
         "next_conversation_explanation":"Simuleer een vervolg op dit gesprek. Je kunt een nieuw gesprek aangaan met dezelfde AI-gesprekspartner en voortborduren op het vorige gesprek. Dit kan helpen om de relatie met de AI-gesprekspartner te verdiepen en meer inzicht te krijgen in de situatie.",
         "conversation_closed":"Dit gesprek is afgesloten. Je kunt deze terugvinden bij je afgeronde cases, om na te lezen of om verder te praten.",
         "voice_on":"Start met voice",
+        "voice_on_mobile":"Voice",
         "voice_off":"Stop met voice",
         "only_voice":"Alleen spraak"
     },
@@ -1036,6 +1050,7 @@
         "basic_site":"`Ken jij AliciaLabs al?\nIk ga dit eens uitproberen.\nMet AliciaLabs kun je realistische gesprekken simuleren en direct feedback krijgen. Je krijgt 300 gratis credits bij aanmelding! Probeer het ook eens via https://www.alicialabs.com/",
         "basic_title":"Ken jij AliciaLabs al?",
         "basic_text_case":"Ken jij AliciaLabs al?\nIk heb net onderstaand interessant gesprek geoefend:\n\n[case_title].\n[case_user_info].\n\nWil jij deze situatie ook oefenen en je gespreksvaardigheden verbeteren? Met AliciaLabs kun je realistische gesprekken simuleren en direct feedback krijgen. Je krijgt 300 gratis credits bij aanmelding! Probeer het ook eens hier [case_link].",
+        "basic_text_training":"Ken jij AliciaLabs al?\nIk denk dat deze e-training iets is voor jou:\n\n[training_title].\n[training_user_info].\n\nWil jij deze interactieve training ook volgen en je gespreksvaardigheden verbeteren? Met AliciaLabs kun je realistische gesprekken simuleren en direct feedback krijgen. Bekijk meer over de training hier: [training_link].",
         "copied":"Gekopieerd naar klembord"
     },
     "communicationSkills":{
@@ -1131,7 +1146,8 @@
         "trainer_details":"Geef hier meer informatie over jezelf of je organisatie. Dit wordt getoond wanneer een gebruiker jouw informatie bekijkt.<br>Deze informatie kan gevonden worden door op je logo te klikken bij je trainingen.",
         "case_voice":"Hier kun je de stem van de AI-gesprekspartner kiezen. Je kunt kiezen uit verschillende stemmen. De stemmen kunnen verschillen in accent, intonatie en snelheid.<br><br>De attitude van de AI-gesprekspartner in het gesprek kan uiteraard invloed hebben op de manier van spreken. <br><br>Probeer verschillende stemmen uit om te zien welke het beste past bij jouw case.",
         "case_voice_on":"Zet deze optie aan als je wilt dat de AI-gesprekspartner met een stem reageert in plaats van met chat.",
-        "welcome_message":"Hier kun je een welkomstbericht invoeren dat gebruikers als e-mail ontvangen wanneer ze zijn aangemeld voor de training."
+        "welcome_message":"Hier kun je een welkomstbericht invoeren dat gebruikers als e-mail ontvangen wanneer ze zijn aangemeld voor de training.",
+        "case_accent":"Hier kun je het accent van de AI-gesprekspartner toevoegen of het leeg laten voor een neutrale stem. De stem wordt ook door AI gegenereerd en het accent zal de ene keer een sterker effect hebben dan de andere keer.<br><br>Probeer verschillende accenten uit om te zien welke het beste past bij jouw case."
     },
     "dashboard":{
         "organisation":"Organisatie",
@@ -1265,7 +1281,8 @@
         "code_not_found":"De code is ongeldig of niet gevonden.",
         "no_private_item_found":"Deze e-training is niet gevonden of niet beschikbaar zonder toegangscode.",
         "prices_incl_vat":"Prijzen zijn inclusief BTW",
-        "prices_excl_vat":"Prijzen zijn exclusief BTW"
+        "prices_excl_vat":"Prijzen zijn exclusief BTW",
+        "marketplace":"Zoek E-training"
     },
     "media":{
         "photo_upload":"Upload foto",
@@ -1312,7 +1329,10 @@
         "price_incl_tax":"Bedrag incl. BTW (21%)",
         "failure":"De betaling is niet gelukt.",
         "disclaimer_alicialabs_platform":"Deze training wordt aangeboden via het AliciaLabs platform.",
-        "watch_example":"Bekijk de inhoud"
+        "watch_example":"Bekijk de inhoud",
+        "good_for":"Goed voor",
+        "extended_conversations":"uitgebreide gesprekken",
+        "warning_no_credits":"LET OP: Zonder credits kun je geen gesprekken oefenen."
     },
     "form":{
         "name":"Naam",
@@ -1351,11 +1371,17 @@
         "step_confirm_and_send_invoice":"Bevestig en verstuur factuur",
         "send_invoice_and_access":"Verstuur factuur en geef toegang",
         "training_and_invoice_sent":"De factuur is verstuurd naar de klant. De geselecteerde gebruikers hebben nu toegang tot de training en hebben een bericht ontvangen.",
+        "training_and_invoice_sent_private":"De training is opengezet en de factuur is verstuurd naar de klant. Je kunt nu de link naar de klant sturen die toegang geeft tot de training. Deze kun je altijd terugvinden bij de training.",
+        "training_and_invoice_sent_private_open":"De training is opengezet. Je kunt nu de link naar de klant sturen die toegang geeft tot de training. Deze kun je altijd terugvinden bij de training. Maandelijks zullen we een factuur sturen naar de klant voor gebruikers die toegang hebben gekregen.",
+        "training_and_invoice_sent_private_open_one_time":"De training is opengezet en de basisfactuur is verstuurd naar de klant. Je kunt nu de link naar de klant sturen die toegang geeft tot de training. Deze kun je altijd terugvinden bij de training. Maandelijks zullen we een factuur sturen naar de klant voor gebruikers die toegang hebben gekregen.",
+        "training_and_invoice_sent_private_free":"De training is opengezet en de factuur is naar je verstuurd. De geselecteerde gebruikers hebben nu toegang tot de training en hebben een bericht ontvangen.",
         "users":"Gebruikers",
         "user":"Gebruiker",
         "price_excl_tax":"Prijs training excl. BTW",
         "price_incl_tax":"Prijs training incl. BTW",
         "unlimited_credits_for":"Onbeperkte credits voor",
+        "4000_credits_for":"4000 credits voor",
+        "0_credits_for":"0 credits voor",
         "total_price_excl_tax":"Totaal excl. BTW",
         "total_price_incl_tax":"Totaal incl. BTW",
         "tax":"BTW (21%)",
@@ -1374,10 +1400,23 @@
         "select_customer":"Selecteer eerst een klant, of maak een nieuwe aan.",
         "your_profit":"Jouw winst",
         "profit":"Winst",
-        "details_sale":"Details van deze verkoop"
-        
-    
-    
+        "details_sale":"Details van deze verkoop",
+        "basic_price_excl_tax":"Basisprijs excl. BTW",
+        "basic_price_incl_tax":"Basisprijs incl. BTW",
+        "price_excl_tax_per_user":"Prijs excl. BTW per gebruiker",
+        "price_incl_tax_per_user":"Prijs incl. BTW per gebruiker",
+        "price_per_user":"Prijs per gebruiker",
+        "one_time_price":"Eenmalige prijs",
+        "unlimited_users":"Onbeperkt aantal gebruikers",
+        "your_profit_one_time":"Jouw eenmalige winst",
+        "your_profit_per_user":"Jouw winst per gebruiker",
+        "no_profit":"Je maakt geen winst op deze verkoop.",
+        "credits_unlimited": "Onbeperkte credits per gebruiker",
+        "credits_4000": "4000 credits per gebruiker",
+        "credits_0": "0 credits per gebruiker",
+        "credits_explanation_unlimited": "De gebruiker kan een jaar lang onbeperkte oefenen met je training en alle cases in AliciaLabs.",
+        "credits_explanation_4000": "De gebruiker heeft een beperkt aantal credits om gesprekken te oefenen met je training (chat: ongeveer 14-20 gesprekken, voice: niet bescrhikbaar met deze credits). Daarna kan de gebruiker zelf extra of onbeperkte credits kopen.",
+        "credits_explanation_0": "De gebruiker heeft geen credits om gesprekken te oefenen met je training. De gebruiker kan zelf extra of onbeperkte credits kopen."
     }
 }
 

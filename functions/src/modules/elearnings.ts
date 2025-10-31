@@ -137,6 +137,37 @@ exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'
         }
       });
       await batch.commit();
+
+      let foundItem:boolean = false;
+      const updateInArray = (array: any[]) => {
+        if (!Array.isArray(array)) return;
+        array.forEach((element) => {
+          const matchingItem = items.find((i) => i.id && i.id === element.id);
+          if (matchingItem) {
+            foundItem = true;
+            for(let key in updates){
+              if(matchingItem[key] !== undefined){
+                element[key] = matchingItem[key];
+              }
+            }
+          }
+          if (element.items && Array.isArray(element.items)) {
+            updateInArray(element.items);
+          }
+        });
+      };
+
+      updateInArray(elearningData.items);
+
+      if(!foundItem){
+        console.log('No matching items found in elearning data for updates:', items);
+      }
+
+      await admin.firestore().collection('elearnings').doc(elearningDoc.id).update({
+        items: elearningData.items,
+      });
+
+
     }
     else if(deleteItems && Array.isArray(deleteItems)) {
       // console.log('Deleting items', deleteItems, 'from:', elearningDoc.id);
@@ -149,6 +180,28 @@ exports.adjustElearning = functions.region('europe-west1').runWith({memory:'1GB'
           batch.delete(itemRef);
       });
       await batch.commit();
+
+      const updateInArray = (array: any[]) => {
+        if (!Array.isArray(array)) return;
+        array.forEach((element) => {
+          const matchingItem = deleteItems.find((i) => i && i === element.id);
+          if (matchingItem) {
+            const index = array.indexOf(element);
+            if (index > -1) {
+              array.splice(index, 1);
+            }
+          }
+          if (element.items && Array.isArray(element.items)) {
+            updateInArray(element.items);
+          }
+        });
+      };
+      updateInArray(elearningData.items);
+
+      await admin.firestore().collection('elearnings').doc(elearningDoc.id).update({
+        items: elearningData.items,
+      });
+
     }
     else if(specialCode || allowedDomains || max_customers) {
       // Update the special code
@@ -237,7 +290,7 @@ exports.elearningCheckSpecialCodes = functions.region('europe-west1').runWith({m
       const specialCodeRef = elearningRef.collection('specialcode');
       const specialCodeSnapshot = await specialCodeRef.where('specialCode', 'in', specialCodes).get();
       specialCodeSnapshot.forEach(doc => {
-        validCodes.push({ elearningId, specialCode: doc.data().specialCode });
+        validCodes.push({ elearningId, specialCode: doc.data().specialCode, credits: doc.data().credits || null});
       });
     }
     return new responder.Message({ validCodes }, 200);
@@ -384,6 +437,11 @@ exports.activateElearningWithCode = functions.region('europe-west1').runWith({me
       return new responder.Message('Maximum number of customers reached for this elearning', 402);
     }
 
+    //confirm email user
+    admin.auth().updateUser(context.auth.uid, {
+      emailVerified: true
+    });
+
     let connectToOrg = false;
 
     if(data.organisationId){
@@ -488,9 +546,8 @@ exports.activateElearningWithCode = functions.region('europe-west1').runWith({me
           await batch.commit();
 
           await addCreditsToUser(context.auth.uid, elearningData.amount_credits || 1000000);
-          await sendInvoiceToTrainer(elearningData.trainerId, elearningData.originalTrainingId, context.auth.uid, 25, true,elearningData.amount_credits || 1000000);
+          await sendInvoiceToTrainer(elearningData.trainerId, elearningData.originalTrainingId, context.auth.uid, (elearningData.amount_credits!= 1000000 ? 9.92 : 20.66), true,elearningData.amount_credits || 1000000);
         }
-
 
         await registerActivation(context.auth.uid, elearningData.originalTrainingId, elearningData.trainerId,data.specialCode,null,null,elearningData.amount_credits || 1000000);
 
@@ -498,6 +555,137 @@ exports.activateElearningWithCode = functions.region('europe-west1').runWith({me
     } catch (error) {
         console.error('Error fetching customer data:', error);
         return new responder.Message('Error fetching customer data', 500);
+    }     
+});
+
+exports.activateFreeTraining = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 500);
+    }
+
+    const reachedMax = await maxCustomersReached(data.elearningId);
+    if (reachedMax) {
+      return new responder.Message('Maximum number of customers reached for this elearning', 402);
+    }
+
+    //confirm email user
+    admin.auth().updateUser(context.auth.uid, {
+      emailVerified: true
+    });
+
+    let connectToOrg = false;
+
+    if(data.organisationId){
+      // check if user is part of organisation
+      const orgRef = await admin.firestore().collection('trainers').doc(data.organisationId).get();
+      if(!orgRef.exists){
+        return new responder.Message('Organisation not found', 500);
+      }
+      const orgData = orgRef.data();
+      if(!orgData || !orgData.organisation){
+        return new responder.Message('Organisation is not active', 500);
+      }
+      if(!orgData.admins || orgData.admins.indexOf(context.auth.uid)===-1){
+        return new responder.Message('User is not part of the admins', 500);
+      }
+
+      const orgSettings = await admin.firestore().collection('trainers').doc(data.organisationId).collection('settings').doc('organisation').get();
+      if(!orgSettings.exists){
+        return new responder.Message('Organisation settings not found', 500);
+      }
+      const orgSettingsData = orgSettings.data();
+      if(!orgSettingsData || !orgSettingsData.active){
+        return new responder.Message('Organisation is not active', 500);
+      }
+      connectToOrg = true;
+    }
+    
+
+    try {
+        const elearningId = data.elearningId;
+        const elearningRef = admin.firestore().collection('elearnings').doc(elearningId);
+        const elearningDoc = await elearningRef.get();
+        const elearningData = elearningDoc.data();
+        if(!elearningData){
+            return new responder.Message('Elearning not found', 404);
+        }
+
+        if(!elearningData.private){
+          return new responder.Message('Elearning is not private, specialCode not possible', 406);
+        }
+
+        const isActivated = await isAlreadyActivated(context.auth.uid, elearningData.originalTrainingId);
+        if (isActivated) {
+          return new responder.Message('Elearning already activated', 405);
+        }
+
+
+        const elearningItemsRef = elearningRef.collection('items');
+        const elearningItemsSnapshot = await elearningItemsRef.get();
+        const elearningItems = elearningItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        let newTrainingData:any = JSON.parse(JSON.stringify(elearningData));
+        delete newTrainingData['private'];
+        delete newTrainingData['marketplace'];
+        delete newTrainingData['amount_participants'];
+        delete newTrainingData['expected_conversations'];
+        delete newTrainingData['specialCode'];
+        delete newTrainingData['allowed_domains'];
+        delete newTrainingData['max_customers'];
+        delete newTrainingData['open_to_public'];
+        delete newTrainingData['stripePriceId'];
+        delete newTrainingData['stripeProductId'];
+        delete newTrainingData['type_credits'];
+        delete newTrainingData['startDate'];
+        delete newTrainingData['endDate'];
+
+        if(connectToOrg){
+
+          const newTraining = await admin.firestore().collection('trainers').doc(data.organisationId).collection('my_elearnings').add({
+              elearningId: elearningId,
+              startDate: moment().unix(),
+              status: 'active',
+              expires: moment().add(1, 'year').unix(),
+              ...newTrainingData
+          });
+
+          const batch = admin.firestore().batch();
+          elearningItems.forEach((item:any) => {
+              item.publishType = 'elearning';
+              const itemRef = admin.firestore().collection('trainers').doc(data.organisationId).collection('my_elearnings').doc(newTraining.id).collection('items').doc(item.id);
+              batch.set(itemRef, item);
+          });
+          await batch.commit();
+        }
+
+        else{
+          const newTraining = await admin.firestore().collection('users').doc(context.auth.uid).collection('my_elearnings').add({
+              user: context.auth.uid,
+              elearningId: elearningId,
+              startDate: moment().unix(),
+              status: 'active',
+              expires: moment().add(1, 'year').unix(),
+              ...newTrainingData
+          });
+  
+          const batch = admin.firestore().batch();
+          elearningItems.forEach((item:any) => {
+              item.publishType = 'elearning';
+              const itemRef = admin.firestore().collection('users').doc(context.auth.uid).collection('my_elearnings').doc(newTraining.id).collection('items').doc(item.id);
+              batch.set(itemRef, item);
+          });
+          await batch.commit();
+
+          // await addCreditsToUser(context.auth.uid, elearningData.amount_credits || 1000000);
+          // await sendInvoiceToTrainer(elearningData.trainerId, elearningData.originalTrainingId, context.auth.uid, (elearningData.amount_credits!= 1000000 ? 9.92 : 20.66), true,elearningData.amount_credits || 1000000);
+        }
+
+        await registerActivation(context.auth.uid, elearningData.originalTrainingId, elearningData.trainerId,data.specialCode,null,null,elearningData.amount_credits || 1000000);
+
+        return new responder.Message('Elearning activated successfully', 200);
+    } catch (error) {
+        console.error('Error activating data:', error);
+        return new responder.Message('Error activating data', 500);
     }     
 });
 
@@ -536,6 +724,9 @@ exports.buyElearningWithInvoice = functions.region('europe-west1').runWith({memo
       connectToOrg = true;
     }
     
+    admin.auth().updateUser(context.auth.uid, {
+      emailVerified: true
+    });
 
     try {
 
@@ -812,6 +1003,10 @@ exports.sellElearningWithInvoice = functions.region('europe-west1').runWith({mem
           return new responder.Message('Price is required for invoice purchase', 400);
         }
 
+        if(!data.credits){
+          data.credits = 1000000;
+        }
+
         if(!data.products || !Array.isArray(data.products) || data.products.length===0){
           return new responder.Message('No products provided for invoice purchase', 400);
         }
@@ -1031,7 +1226,8 @@ exports.sellElearningWithInvoice = functions.region('europe-west1').runWith({mem
                   });
 
 
-                  await addCreditsToUser(userId, 1000000);
+                  // await addCreditsToUser(userId, 1000000);
+                  await addCreditsToUser(userId, data.credits || 1000000);
 
                 }
               }
@@ -1112,4 +1308,396 @@ async function checkUserLogin(uid: string): Promise<boolean> {
     console.error('Fout bij ophalen gebruiker:', error);
     return false;
   }
+}
+
+
+exports.sellElearningPrivate = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 500);
+    }
+    
+    try {
+        if(!data.trainerId){
+          return new responder.Message('Trainer ID is required for invoice purchase', 400);
+        }
+
+        if(!data.price && (!data.price.totalPriceIncl || data.price.totalPriceIncl<=0)){
+          return new responder.Message('Price is required for invoice purchase', 400);
+        }
+
+        if(!data.products || !Array.isArray(data.products) || data.products.length===0){
+          return new responder.Message('No products provided for invoice purchase', 400);
+        }
+
+        if(!data.credits){
+          data.credits = 1000000;
+        }
+
+        if(!data.company){
+          return new responder.Message('Company name is required for invoice purchase', 400);
+        }
+
+        if(!data.company_email){
+          return new responder.Message('Company email is required for invoice purchase', 400);
+        }
+
+        if(!data.address || !data.address.line1 || !data.address.city || !data.address.postal_code || !data.address.country){
+          return new responder.Message('Address is required for invoice purchase', 400);
+        }
+
+        // for(const prod of data.products){
+        //   if(!prod.description || !prod.amount){
+        //     return new responder.Message('Each product must have description and amount', 400);
+        //   }
+        // }
+
+        let trainerRef = await admin.firestore().collection('trainers').doc(data.trainerId).get();
+        if(!trainerRef.exists){
+          return new responder.Message('Trainer not found', 400);
+        }
+        let trainerData = trainerRef.data();
+        if(!trainerData || !trainerData.trainerPro){
+          return new responder.Message('Trainer is not authorized.', 400);
+        }
+
+        let invoiceItem:any ={
+          
+          email: data.company_email,
+          name: data.company,
+          address: {
+            line1: data.address.line1,
+            postal_code: data.address.postal_code,
+            city: data.address.city,
+            country: data.address.country,
+          },
+          tax_percent: 21,
+          userId: data.company_email || '',
+          items:[],
+          description: `Bedankt voor je bestelling bij ${trainerData.name}.`,
+          footer: `Heb je vragen over deze factuur? Neem dan contact op met ${trainerData.name} via '${trainerData.email || context?.auth?.token?.email || 'onze support'}'.`,
+        }
+        if(data.reference){
+          invoiceItem.reference = data.reference;
+        }
+
+        let items = [];
+        for(const prod of data.products){
+          if(prod.id){
+            const elearningRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(prod.id);
+            const elearningDoc = await elearningRef.get();
+            const elearningData = elearningDoc.data();
+        
+            if(!elearningData){
+                return new responder.Message('Elearning not found', 404);
+            }
+
+            let item:any = {
+              description: elearningData.title + ' | ' + trainerData.name + ' |  for ' + data.price.users + '  user' + (data.price.users>1 ? 's' : '') + ', for 1 year',
+              amount: Math.round((data.price.totalPriceExcl || 0) * 100),
+              quantity: 1
+            }
+
+            invoiceItem.items.push(JSON.parse(JSON.stringify(item)));
+            item.elearningId = prod.id;
+            items.push(item);
+          }
+        }
+
+
+        if(invoiceItem.items.length===0){
+          return new responder.Message('No valid items to invoice', 400);
+        }
+
+        await admin.firestore().collection('invoices_elearnings').add(invoiceItem);
+        await admin.firestore().collection('trainers').doc(data.trainerId).collection('purchases').add({...invoiceItem, direct:true, purchased: moment().unix(),prices:data.price, excl_tax:true});
+
+        for(const item of items){
+
+          if(item.elearningId){
+            const elearningRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(item.elearningId);
+            const elearningDoc = await elearningRef.get();
+            const elearningData = elearningDoc.data();
+            // const elearningItemsRef = elearningRef.collection('items');
+            // const elearningItemsSnapshot = await elearningItemsRef.get();
+            // const elearningItems = elearningItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+
+            let newTrainingData:any = JSON.parse(JSON.stringify(elearningData));
+            newTrainingData.originalTrainingId = elearningDoc.id;
+            newTrainingData.publishType = 'elearning';
+            newTrainingData.trainer = {
+              id: data.trainerId,
+              name: trainerData.name || 'Trainer',
+              logo: trainerData.logo || '',
+              trainer_details: trainerData.trainer_details || '',
+            }
+
+
+            newTrainingData.created = Date.now();
+            newTrainingData.originalTrainingId = item.elearningId;
+            newTrainingData.publishType = 'elearning';
+            newTrainingData.trainerId = data.trainerId;
+            newTrainingData.status = 'published';
+            newTrainingData.open_to_public = true;
+            newTrainingData.marketplace = false;
+            newTrainingData.private = true;
+            newTrainingData.price_elearning = 0;
+            newTrainingData.paid_by_trainer = true;
+            newTrainingData.amount_credits = data.credits || 1000000;
+
+            let allowed_domains = elearningData.allowed_domains || '';
+            let max_customers = elearningData.max_customers || 0;
+
+            delete newTrainingData.allowed_domains;
+            delete newTrainingData.max_customers;
+            delete newTrainingData.specialCode;
+
+            const trainingItemsRef = db.collection('trainers').doc(data.trainerId).collection('trainings').doc(item.elearningId).collection('items');
+            const trainingItemsSnapshot = await trainingItemsRef.get();
+            // const trainingItems = trainingItemsSnapshot.docs.map(doc => { return { id: doc.id, ...doc.data() }; });
+            const trainingItems = trainingItemsSnapshot.docs.map(doc => {
+              const { trainingId, trainerId, ...rest } = doc.data(); // trainingId en trainerId eruit halen
+              return { id: doc.id, ...rest };             // rest bevat alles behalve trainingId en trainerId
+            });
+
+            // Create a new elearning document in the 'elearnings' collection
+            const elearningRefNew = db.collection('elearnings').doc();
+            await elearningRefNew.set(newTrainingData);
+
+            // Add training items to the new elearning document
+            const batch = db.batch();
+            trainingItems.forEach(async item => {
+
+              // const itemRefPath = `elearnings/${elearningRefNew.id}/items/${item.id}`;
+              // console.log('Path:', itemRefPath);
+              // try {
+              //   await db.doc(itemRefPath).set(item);
+              // } catch (e) {
+              //   console.error('Fout bij toevoegen van item:', e, 'Item:', item);
+              // }
+              // console.log('Adding item to elearning:', elearningRefNew.id);
+              const itemRef = db.collection('elearnings').doc(elearningRefNew.id).collection('items').doc(item.id);
+              batch.set(itemRef, item);
+            });
+
+            console.log('Committing batch for elearning items...');
+            await batch.commit();
+            await setSpecialCode(newTrainingData,elearningRefNew.id,data.trainerId,allowed_domains,max_customers);
+            
+          }
+        }
+
+        return new responder.Message('Elearning sold successfully', 200);
+    
+    } catch (error) {
+        console.error('Error creating invoice:', error);
+        return new responder.Message('Error creating invoice', 500);
+    }     
+});
+
+exports.sellElearningPrivateOpen = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 500);
+    }
+    
+    try {
+        if(!data.trainerId){
+          return new responder.Message('Trainer ID is required for invoice purchase', 400);
+        }
+
+        if(!data.price && (!data.price.totalPricePerUserExcl || data.price.totalPricePerUserExcl<0)){
+          return new responder.Message('Price is required for invoice purchase', 400);
+        }
+
+        if(!data.products || !Array.isArray(data.products) || data.products.length===0){
+          return new responder.Message('No products provided for invoice purchase', 400);
+        }
+
+        if(!data.credits){
+          data.credits = 1000000;
+        }
+
+        if(!data.company){
+          return new responder.Message('Company name is required for invoice purchase', 400);
+        }
+
+        if(!data.company_email){
+          return new responder.Message('Company email is required for invoice purchase', 400);
+        }
+
+        if(!data.address || !data.address.line1 || !data.address.city || !data.address.postal_code || !data.address.country){
+          return new responder.Message('Address is required for invoice purchase', 400);
+        }
+
+        // for(const prod of data.products){
+        //   if(!prod.description || !prod.amount){
+        //     return new responder.Message('Each product must have description and amount', 400);
+        //   }
+        // }
+
+        let trainerRef = await admin.firestore().collection('trainers').doc(data.trainerId).get();
+        if(!trainerRef.exists){
+          return new responder.Message('Trainer not found', 400);
+        }
+        let trainerData = trainerRef.data();
+        if(!trainerData || !trainerData.trainerPro){
+          return new responder.Message('Trainer is not authorized.', 400);
+        }
+
+        let invoiceItem:any ={
+          
+          email: data.company_email,
+          name: data.company,
+          address: {
+            line1: data.address.line1,
+            postal_code: data.address.postal_code,
+            city: data.address.city,
+            country: data.address.country,
+          },
+          tax_percent: 21,
+          userId: data.company_email || '',
+          items:[],
+          description: `Bedankt voor je bestelling bij ${trainerData.name}.`,
+          footer: `Heb je vragen over deze factuur? Neem dan contact op met ${trainerData.name} via '${trainerData.email || context?.auth?.token?.email || 'onze support'}'.`,
+        }
+        if(data.reference){
+          invoiceItem.reference = data.reference;
+        }
+
+        let items = [];
+        for(const prod of data.products){
+          if(prod.id){
+            const elearningRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(prod.id);
+            const elearningDoc = await elearningRef.get();
+            const elearningData = elearningDoc.data();
+        
+            if(!elearningData){
+                return new responder.Message('Elearning not found', 404);
+            }
+
+            let item:any = {
+              description: elearningData.title + ' | ' + trainerData.name + ', invoices per user will follow separately',
+              amount: Math.round((data.price.trainingPrice || 0) * 100),
+              quantity: 1
+            }
+
+            invoiceItem.items.push(JSON.parse(JSON.stringify(item)));
+            item.elearningId = prod.id;
+            items.push(item);
+          }
+        }
+
+
+        if(invoiceItem.items.length===0){
+          return new responder.Message('No valid items to invoice', 400);
+        }
+
+        if(data.price.trainingPrice && data.price.trainingPrice>0){
+          await admin.firestore().collection('invoices_elearnings').add(invoiceItem);
+        }
+        await admin.firestore().collection('trainers').doc(data.trainerId).collection('purchases').add({...invoiceItem, direct:true, purchased: moment().unix(),prices:data.price, excl_tax:true});
+
+        for(const item of items){
+
+          if(item.elearningId){
+            const elearningRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(item.elearningId);
+            const elearningDoc = await elearningRef.get();
+            const elearningData = elearningDoc.data();
+            // const elearningItemsRef = elearningRef.collection('items');
+            // const elearningItemsSnapshot = await elearningItemsRef.get();
+            // const elearningItems = elearningItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+
+            let newTrainingData:any = JSON.parse(JSON.stringify(elearningData));
+            newTrainingData.originalTrainingId = elearningDoc.id;
+            newTrainingData.publishType = 'elearning';
+            newTrainingData.trainer = {
+              id: data.trainerId,
+              name: trainerData.name || 'Trainer',
+              logo: trainerData.logo || '',
+              trainer_details: trainerData.trainer_details || '',
+            }
+
+
+            newTrainingData.created = Date.now();
+            newTrainingData.originalTrainingId = item.elearningId;
+            newTrainingData.publishType = 'elearning';
+            newTrainingData.trainerId = data.trainerId;
+            newTrainingData.status = 'published';
+            newTrainingData.open_to_public = true;
+            newTrainingData.marketplace = false;
+            newTrainingData.private = true;
+            newTrainingData.price_elearning = 0;
+            newTrainingData.paid_by_trainer = true;
+            newTrainingData.amount_credits = data.credits || 1000000;
+
+            let allowed_domains = elearningData.allowed_domains || '';
+            let max_customers = elearningData.max_customers || 0;
+
+            delete newTrainingData.allowed_domains;
+            delete newTrainingData.max_customers;
+            delete newTrainingData.specialCode;
+
+            const trainingItemsRef = db.collection('trainers').doc(data.trainerId).collection('trainings').doc(item.elearningId).collection('items');
+            const trainingItemsSnapshot = await trainingItemsRef.get();
+            // const trainingItems = trainingItemsSnapshot.docs.map(doc => { return { id: doc.id, ...doc.data() }; });
+            const trainingItems = trainingItemsSnapshot.docs.map(doc => {
+              const { trainingId, trainerId, ...rest } = doc.data(); // trainingId en trainerId eruit halen
+              return { id: doc.id, ...rest };             // rest bevat alles behalve trainingId en trainerId
+            });
+
+            // Create a new elearning document in the 'elearnings' collection
+            const elearningRefNew = db.collection('elearnings').doc();
+            await elearningRefNew.set(newTrainingData);
+
+            // Add training items to the new elearning document
+            const batch = db.batch();
+            trainingItems.forEach(item => {
+              const itemRef = db.collection('elearnings').doc(elearningRefNew.id).collection('items').doc(item.id);
+              batch.set(itemRef, item);
+            });
+
+            await batch.commit();
+            await setSpecialCode(newTrainingData,elearningRefNew.id,data.trainerId,allowed_domains,max_customers);
+            
+          }
+        }
+
+        return new responder.Message('Elearning sold successfully', 200);
+    
+    } catch (error) {
+        console.error('Error creating invoice:', error);
+        return new responder.Message('Error creating invoice', 500);
+    }     
+});
+
+
+async function setSpecialCode(trainingItem:any,id:string,trainerId:string,allowed_domains?:string,max_customers?:number){
+  let specialCode = calcSpecialCode(trainingItem.originalTrainingId,trainerId);
+  const elearningRef = db.collection('elearnings').doc(id).collection('specialcode').doc(specialCode)
+  await elearningRef.set({
+    elearningId: trainingItem.originalTrainingId,
+    trainerId: trainerId,
+    specialCode: specialCode,
+    allowedDomains: allowed_domains || '',
+    max_customers: max_customers || 0,
+    credits: trainingItem.amount_credits || 0,
+  });
+}
+
+function calcSpecialCode(trainingId:any,trainerId:any){
+  let specialCode = '';
+  const numberList1 = ['3','7','4','9','6'];
+  const numberList2 = ['8','1','5','0','4'];
+  const numberListId = ['3','0','7'];
+  for(let i = 0; i < numberList1.length; i++) {
+    specialCode += trainingId[numberList1[i]];
+  }
+  for(let i = 0; i < numberListId.length; i++) {
+    specialCode += trainerId[numberListId[i]];
+  }
+  for(let i = 0; i < numberList2.length; i++) {
+    specialCode += trainingId[numberList2[i]];
+  }
+  return specialCode
 }

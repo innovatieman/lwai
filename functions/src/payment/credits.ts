@@ -400,6 +400,9 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
     if(trainerData.invoice_redirect){
         invoice_redirect = true;
     }
+    if(data.invoice){
+        invoice_redirect = true;
+    }
 
     const trainerPro = await isTrainerPro(trainerId);
 
@@ -410,25 +413,24 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
     const dummyEmail = `trainer_${trainerId}@ai-inbound.alicialabs.com`;
     let dummyUser;
     try {
-    // Probeer de dummy user op te halen
-    dummyUser = await admin.auth().getUserByEmail(dummyEmail);
-    // console.log('Dummy user gevonden:', dummyUser.uid);
+        // Probeer de dummy user op te halen
+        dummyUser = await admin.auth().getUserByEmail(dummyEmail);
+        // console.log('Dummy user gevonden:', dummyUser.uid);
     } catch (error: any) {
-    if (error.code === 'auth/user-not-found') {
-        // Maak de dummy user aan
-        dummyUser = await admin.auth().createUser({
-        email: dummyEmail,
-        password: Math.random().toString(36).slice(-10), // random wachtwoord
-        displayName: `Trainer ${trainerId}`,
-        });
-        // console.log('Dummy user aangemaakt:', dummyUser.uid);
-    } else {
-        console.error('Fout bij ophalen of aanmaken dummy user:', error);
-        throw new functions.https.HttpsError('internal', 'Kon dummy user niet aanmaken');
-    }
+        if (error.code === 'auth/user-not-found') {
+            // Maak de dummy user aan
+            dummyUser = await admin.auth().createUser({
+                email: dummyEmail,
+                password: Math.random().toString(36).slice(-10), // random wachtwoord
+                displayName: `Trainer ${trainerId}`,
+            });
+            // console.log('Dummy user aangemaakt:', dummyUser.uid);
+        } else {
+            console.error('Fout bij ophalen of aanmaken dummy user:', error);
+            throw new functions.https.HttpsError('internal', 'Kon dummy user niet aanmaken');
+        }
     }
 
-  
     try {
       // 🔄 Ophalen van bestaande Stripe klant
         const customerRef = admin.firestore().collection('customers').doc(dummyUser.uid);
@@ -436,155 +438,223 @@ exports.publishTraining = functions.region('europe-west1').runWith({memory:'1GB'
         const customerData = customerDoc.data();
         let stripeCustomerId = customerData?.stripeCustomerId;
 
-        await customerRef.update({admins: trainerData.admins || [uid] });
+        if(stripeCustomerId){
+            await customerRef.update({admins: trainerData.admins || [uid] });
+        }
 
-    if(!stripeCustomerId){
-        // const customerStripe = await stripe.customers.create({ email: context.auth.token.email });
-        // await customerRef.set({ stripeCustomerId: customerStripe.id, email: context.auth.token.email });
-        const customerStripe = await stripe.customers.create({ 
-            email: dummyEmail,
-            name: trainerData?.name || `Trainer ${trainerId}`,
-            metadata: {
+
+        if(!stripeCustomerId){
+            // const customerStripe = await stripe.customers.create({ email: context.auth.token.email });
+            // await customerRef.set({ stripeCustomerId: customerStripe.id, email: context.auth.token.email });
+            const customerStripe = await stripe.customers.create({ 
+                email: dummyEmail,
+                name: trainerData?.name || `Trainer ${trainerId}`,
+                metadata: {
+                    trainerId: trainerId,
+                    type: 'organisation',
+                }
+            });
+
+            await customerRef.set({ 
+                stripeCustomerId: customerStripe.id, 
+                email: dummyEmail,
                 trainerId: trainerId,
-                type: 'organisation',
-            }
-        });
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                admins: trainerData.admins || [uid],
+            });
+            stripeCustomerId = customerStripe.id;
+        }
 
-        await customerRef.set({ 
-            stripeCustomerId: customerStripe.id, 
-            email: dummyEmail,
-            trainerId: trainerId,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            admins: trainerData.admins || [uid],
-        });
-        stripeCustomerId = customerStripe.id;
-    }
+        if(!invoice_redirect){
 
-    if(!invoice_redirect){
-
-        const session = await admin.firestore()
-        .collection('customers')
-        .doc(dummyUser.uid)
-        .collection('checkout_sessions')
-        .add({
-            mode: 'payment',
-            customer: stripeCustomerId,
-            email: context.auth.token.email,
-            line_items: [{
-                price_data: {
-                    currency: 'eur',
-                    product_data: {
-                        name: 'AliciaLabs Credits - '+ trainingData.title,
-                        description: `${participants} participants`
+            const session = await admin.firestore()
+            .collection('customers')
+            .doc(dummyUser.uid)
+            .collection('checkout_sessions')
+            .add({
+                mode: 'payment',
+                customer: stripeCustomerId,
+                email: context.auth.token.email,
+                line_items: [{
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: 'AliciaLabs Credits - '+ trainingData.title,
+                            description: `${participants} participants`
+                        },
+                        unit_amount: trainingPrice.totalCostsPlusTax
                     },
-                    unit_amount: trainingPrice.totalCostsPlusTax
+                    quantity: 1,
+                }],
+                metadata: {
+                    uid: uid,
+                    trainerId: trainerId,
+                    participants: participants.toString(),
+                    trainingId: trainingId,
+                    credits: trainingPrice.credits,
+                    conversations: trainingPrice.totalConversations || 1,
+                    type: trainingData.type || 'chat',
+                    type_credits: type_credits,
+                    unlimited: type_credits=='unlimited' || false,
+                    publish: true,
                 },
-                quantity: 1,
-            }],
-            metadata: {
-                uid: uid,
-                trainerId: trainerId,
-                participants: participants.toString(),
-                trainingId: trainingId,
-                credits: trainingPrice.credits,
-                conversations: trainingPrice.totalConversations || 1,
-                type: trainingData.type || 'chat',
-                type_credits: type_credits,
-                unlimited: type_credits=='unlimited' || false,
-                publish: true,
-            },
-            success_url: 'https://conversation.alicialabs.com/trainer?success=true&training='+trainingId,
-            cancel_url: 'https://conversation.alicialabs.com/modules?success=false&training='+trainingId,
-            automatic_tax: { enabled: true },
-            tax_code:"txcd_10000000",
-            allow_promotion_codes: true,
-            invoice_creation: {
-                enabled: true
-            },
-            payment_intent_data:{
-                setup_future_usage: 'off_session'
-            }
-        });
-
-        const sessionId = session.id;
-        return new responder.Message({ sessionId, customerId: dummyUser.uid }, 200);
-    }
-
-    else{
-        let publishDate = moment().unix();
-        if(trainingData.published){
-            publishDate = trainingData.published;
-        }
-        let amount_participants = trainingData.amount_participants;
-        if(extra && extra.amount_participants){
-            amount_participants = amount_participants + extra.amount_participants;
-        }
-        let updateObject:any = {
-            status: 'published',
-            published: publishDate,
-            amount_participants: amount_participants,
-        }
-        let amount_period = trainingData.amount_period;
-        if(amount_period && extra && extra.amount_period){
-            amount_period = amount_period + extra.amount_period;
-        }
-        if(amount_period){
-            updateObject.amount_period = amount_period;
-        }
-        if(extra && extra.expected_conversations){
-            updateObject.expected_conversations = trainingData.expected_conversations + extra.expected_conversations;
-        }
-        await trainingRef.update(updateObject);
-        admin.firestore().collection('emailsToProcess').add({
-            template: 'free',
-            to: 'alicia@innovatieman.nl',
-            language: 'nl',
-            data: {
-                name: 'Mark',
-                content: {
-                    body:'Beste Mark, <br> De training '+trainingData.title+' van trainer '+trainerData.name+' is gepubliceerd. <br> De klant heeft gekozen voor een factuur. <br><br>Kosten: €'+(trainingPrice.totalCostsPlusTax/100)+' incl. BTW<br><br> Met vriendelijke groet, <br> AliciaLabs',
-                    subject: 'Factuur voor training '+trainingData.title + 'sturen',
+                success_url: 'https://conversation.alicialabs.com/trainer?success=true&training='+trainingId,
+                cancel_url: 'https://conversation.alicialabs.com/modules?success=false&training='+trainingId,
+                automatic_tax: { enabled: true },
+                tax_code:"txcd_10000000",
+                allow_promotion_codes: true,
+                invoice_creation: {
+                    enabled: true
                 },
-                subject: 'Factuur voor training '+trainingData.title + 'sturen',
-
-            }
-        })
-        if(!extra){
-            await admin.firestore().collection('trainers').doc(trainerId).collection('trainings').doc(trainingId)
-            .collection('credits').add({
-                total: trainingPrice.credits,
-                amount: type_credits=='unlimited' ? 1000000 :  trainingPrice.credits,
-                added:moment().unix(),
-                created: moment().unix(),
-                expires: trainingPrice.expires,
-                participants: trainingData.amount_participants,
-                credits: trainingPrice.credits,
-                conversations: trainingPrice.totalConversations || 1,
-                type: trainingData.type || 'chat',
-                type_credits: type_credits,
-                unlimited: type_credits=='unlimited' || false,
+                payment_intent_data:{
+                    setup_future_usage: 'off_session'
+                }
             });
+
+            const sessionId = session.id;
+            return new responder.Message({ sessionId, customerId: dummyUser.uid }, 200);
         }
+
         else{
-            await admin.firestore().collection('trainers').doc(trainerId).collection('trainings').doc(trainingId)
-            .collection('credits').add({
-                total: trainingPrice.credits,
-                amount: type_credits=='unlimited' ? 1000000 :  trainingPrice.credits,
-                added:moment().unix(),
-                created: moment().unix(),
-                expires: trainingPrice.expires,
-                participants: trainingData.amount_participants + extra.amount_participants,
-                credits: trainingPrice.credits,
-                conversations: trainingPrice.totalConversations || 1,
-                type: trainingData.type || 'chat',
-                type_credits: type_credits,
-                unlimited: type_credits=='unlimited' || false,
-            });
-        }
-    }
 
-    // const sessionId = session.id;
-    return new responder.Message({ send_invoice:true, invoice_redirect }, 200);
+            let invoiceItem:any ={
+
+                email: trainerData.invoice.email,
+                name: trainerData.invoice.name,
+                address: {
+                    line1: trainerData.invoice.address,
+                    postal_code: trainerData.invoice.zip,
+                    city: trainerData.invoice.city,
+                    country: trainerData.invoice.country,
+                },
+                metadata: {
+                    uid: uid,
+                    trainerId: trainerId,
+                    participants: participants.toString(),
+                    trainingId: trainingId,
+                    credits: trainingPrice.credits,
+                    conversations: trainingPrice.totalConversations || 1,
+                    type: trainingData.type || 'chat',
+                    type_credits: type_credits,
+                    unlimited: type_credits=='unlimited' || false,
+                    publish: true,
+                },
+                tax_percent: 21,
+                userId: data.company_email || '',
+                items:[],
+                description: `Bedankt voor je bestelling bij AliciaLabs.`,
+                footer: `Heb je vragen over deze factuur? Neem dan contact op met AliciaLabs via 'support@alicialabs.com'.`,
+            }
+            if(data.reference){
+                invoiceItem.reference = data.reference;
+            }
+
+            let items = [];
+            for(const prod of data.products){
+                if(prod.id){
+                const elearningRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(prod.id);
+                const elearningDoc = await elearningRef.get();
+                const elearningData = elearningDoc.data();
+            
+                if(!elearningData){
+                    return new responder.Message('Elearning not found', 404);
+                }
+
+                let item:any = {
+                    description: elearningData.title + ' | ' + trainerData.name + ' |  for ' + data.price.users + '  user' + (data.price.users>1 ? 's' : '') + ', for 1 year',
+                    amount: Math.round((data.price.totalPriceExcl || 0) * 100),
+                    quantity: 1
+                }
+
+                invoiceItem.items.push(JSON.parse(JSON.stringify(item)));
+                item.elearningId = prod.id;
+                items.push(item);
+                }
+            }
+
+
+            if(invoiceItem.items.length===0){
+                return new responder.Message('No valid items to invoice', 400);
+            }
+
+            await admin.firestore().collection('invoices_elearnings').add(invoiceItem);
+
+            ///// tot hier was nieuw /////
+
+            let publishDate = moment().unix();
+            if(trainingData.published){
+                publishDate = trainingData.published;
+            }
+            let amount_participants = trainingData.amount_participants;
+            if(extra && extra.amount_participants){
+                amount_participants = amount_participants + extra.amount_participants;
+            }
+            let updateObject:any = {
+                status: 'published',
+                published: publishDate,
+                amount_participants: amount_participants,
+            }
+            let amount_period = trainingData.amount_period;
+            if(amount_period && extra && extra.amount_period){
+                amount_period = amount_period + extra.amount_period;
+            }
+            if(amount_period){
+                updateObject.amount_period = amount_period;
+            }
+            if(extra && extra.expected_conversations){
+                updateObject.expected_conversations = trainingData.expected_conversations + extra.expected_conversations;
+            }
+            await trainingRef.update(updateObject);
+            admin.firestore().collection('emailsToProcess').add({
+                template: 'free',
+                to: 'alicia@innovatieman.nl',
+                language: 'nl',
+                data: {
+                    name: 'Mark',
+                    content: {
+                        body:'Beste Mark, <br> De training '+trainingData.title+' van trainer '+trainerData.name+' is gepubliceerd. <br> De klant heeft gekozen voor een factuur. <br><br>Kosten: €'+(trainingPrice.totalCostsPlusTax/100)+' incl. BTW<br><br> Met vriendelijke groet, <br> AliciaLabs',
+                        subject: 'Factuur voor training '+trainingData.title + 'sturen',
+                    },
+                    subject: 'Factuur voor training '+trainingData.title + 'sturen',
+
+                }
+            })
+            if(!extra){
+                await admin.firestore().collection('trainers').doc(trainerId).collection('trainings').doc(trainingId)
+                .collection('credits').add({
+                    total: trainingPrice.credits,
+                    amount: type_credits=='unlimited' ? 1000000 :  trainingPrice.credits,
+                    added:moment().unix(),
+                    created: moment().unix(),
+                    expires: trainingPrice.expires,
+                    participants: trainingData.amount_participants,
+                    credits: trainingPrice.credits,
+                    conversations: trainingPrice.totalConversations || 1,
+                    type: trainingData.type || 'chat',
+                    type_credits: type_credits,
+                    unlimited: type_credits=='unlimited' || false,
+                });
+            }
+            else{
+                await admin.firestore().collection('trainers').doc(trainerId).collection('trainings').doc(trainingId)
+                .collection('credits').add({
+                    total: trainingPrice.credits,
+                    amount: type_credits=='unlimited' ? 1000000 :  trainingPrice.credits,
+                    added:moment().unix(),
+                    created: moment().unix(),
+                    expires: trainingPrice.expires,
+                    participants: trainingData.amount_participants + extra.amount_participants,
+                    credits: trainingPrice.credits,
+                    conversations: trainingPrice.totalConversations || 1,
+                    type: trainingData.type || 'chat',
+                    type_credits: type_credits,
+                    unlimited: type_credits=='unlimited' || false,
+                });
+            }
+        }
+
+        // const sessionId = session.id;
+        return new responder.Message({ send_invoice:true, invoice_redirect }, 200);
 
 
     } catch (error) {

@@ -1280,16 +1280,43 @@ export class DashboardPage implements OnInit {
     };
   }
 
-  registerAsTrainerPro(){
+  registerAsTrainerPro(invoice?:boolean){
     if(!this.trainerService.trainerInfo?.invoice?.name){
       this.toast.show(this.translate.instant('dashboard.complete_invoice_info'),4000,'middle')
       this.showPart = 'bank'; 
       return
     }
-    this.trainerService.registerAsTrainerPro();
+    this.trainerService.registerAsTrainerPro(invoice);
   }
 
-
+  choosePaymentMethod(){
+    this.modalService.showVerification(this.translate.instant('trainings.publish_for_participants'),'', [
+      {
+        text: this.translate.instant('buttons.cancel'),
+        value: false,
+        color: 'dark',
+        fill: 'clear'
+      },
+      {
+        text: this.translate.instant('trainings.publish_with_invoice'),
+        value: 'invoice',
+        color: 'warning',
+      },
+      {
+        text: this.translate.instant('trainings.publish_with_pay_direct'),
+        value: 'pay_direct',
+        color: 'primary',
+      }
+    ]).then((result:any) => {
+      console.log(result)
+      if(result == 'pay_direct'){
+        this.registerAsTrainerPro()
+      }
+      else if(result == 'invoice'){
+        this.registerAsTrainerPro(true)
+      }
+    })
+  }
 
   updateInvoice(){
     // if(!this.trainerService.checkIsTrainerPro()){

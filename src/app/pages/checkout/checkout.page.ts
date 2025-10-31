@@ -39,6 +39,7 @@ export class CheckoutPage implements OnInit {
   processing: boolean = false;
   standAloneMode: boolean = false;
   pricesInclVat: boolean = true;
+  selectedCredits:any = 1000000;
   private leave$ = new Subject<void>();
   constructor(
     private fb: FormBuilder,
@@ -53,7 +54,7 @@ export class CheckoutPage implements OnInit {
     private firestoreService: FirestoreService,
     public helper:HelpersService,
     private functions: AngularFireFunctions,
-    private accountService:AccountService,
+    public accountService:AccountService,
     private modalService:ModalService,
     private selectMenuservice:SelectMenuService,
     public sales:SalesService,
@@ -135,6 +136,9 @@ export class CheckoutPage implements OnInit {
               if(response.status==200){
                 this.checkedSpecialCodes = response.result.validCodes;
                 this.sales.checkedSpecialCodes = this.checkedSpecialCodes;
+                if(this.checkedSpecialCodes.length > 0 && this.checkedSpecialCodes[0].credits) {
+                  this.selectedCredits = this.checkedSpecialCodes[0].credits;
+                }
               }
               else{
                 this.toast.show(this.translate.instant('marketplace.code_not_found'), 6000);
@@ -258,6 +262,18 @@ export class CheckoutPage implements OnInit {
     return false;
   }
 
+   hasValidSpecialCodeCredits(elearning:any) {
+    if(!elearning || !this.checkedSpecialCodes || !Array.isArray(this.checkedSpecialCodes) || this.checkedSpecialCodes.length === 0) {
+      return 0;
+    }
+    for(let code of this.checkedSpecialCodes) {
+      if(elearning.id === code.elearningId) {
+        return code.credits;
+      }
+    }
+    return 0;
+  }
+
   calculatePrice(){
     let total = 0;
     if(this.sales.elearningItem(this.item_id)){
@@ -281,12 +297,19 @@ export class CheckoutPage implements OnInit {
       }
     }
     if(!this.auth?.credits_unlimited_type) {
-      total += 20.66;
-    } 
+      if(!this.selectedCredits || this.selectedCredits == 0) {
+        total += 0;
+      }
+      else if (this.sales.elearningItem(this.item_id) && this.hasValidSpecialCodeCredits(this.sales.elearningItem(this.item_id)) && this.selectedCredits===this.hasValidSpecialCodeCredits(this.sales.elearningItem(this.item_id))) {
+        total += 0;
+      }
+      else {
+        total +=  this.selectedCreditPrice.value || 0;
+      }
+    }
     return {
       total: total,
       tax: (total * 0.21).toFixed(2),
-      // excl_tax: (total - (total * 0.21)).toFixed(2),
       incl_tax: (total + (total * 0.21)).toFixed(2)
     }
   }
@@ -341,6 +364,44 @@ export class CheckoutPage implements OnInit {
         }
       })
     }
+
+  
+
+  async activateWithCode(trainingItem:any){
+    // let userData = JSON.parse(JSON.stringify(this.userForm.value))
+    if(this.processing) {
+      return;
+    }
+    if(!this.userForm.valid) {
+      this.toast.show(this.translate.instant('error_messages.fill_all_required'), 6000);
+      return;
+    }
+
+    // this.processing = true;
+    this.toast.showLoader(this.translate.instant('checkout.processing'));
+    let authentication = await this.authenticate();
+
+    let count = 0
+    const interval = await setInterval(async () => {
+      count++
+      if(count>50){
+        clearInterval(interval);
+        this.toast.hideLoader();
+        this.processing = false;
+        this.toast.show(this.translate.instant('elearnings.purchase_failed'), 6000);
+      }
+      if(this.auth.userInfo && authentication!='logged_in'){
+        if(this.auth.userInfo.language && this.auth.userInfo.language!=this.translate.currentLang){
+          this.nav.setLang(this.auth.userInfo.language)
+        }
+        this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:this.userForm.controls['email'].value,buy:true,displayName:this.userForm.controls['name'].value})
+      }
+      clearInterval(interval);
+    }, 300);
+    // console.log('user authenticated, activating with code',this.auth.userInfo.uid);
+    this.sales.activateWithCode(trainingItem);
+  }
+
 
 
   async buyItems(invoice?:boolean,organisationId?:string) {
@@ -397,7 +458,12 @@ export class CheckoutPage implements OnInit {
     }
 
     if(!this.auth?.credits_unlimited_type) {
-      products.push({...this.accountService.getUnlimitedChatProduct(), quantity: 1, amount:1,description:'temp'});
+      if(this.selectedCredits && this.selectedCredits > 0) {
+        let product = this.accountService.getProductByCredits(this.selectedCredits)
+        if(product && product.id){
+          products.push({...product, quantity: 1, amount:1,description:'temp'});
+        }
+      }
     }
 
 
@@ -456,6 +522,41 @@ export class CheckoutPage implements OnInit {
       
     }, 300);
 
+  }
+
+  async activateFree(trainingItem:any){
+    // let userData = JSON.parse(JSON.stringify(this.userForm.value))
+    if(this.processing) {
+      return;
+    }
+    if(!this.userForm.valid) {
+      this.toast.show(this.translate.instant('error_messages.fill_all_required'), 6000);
+      return;
+    }
+
+    // this.processing = true;
+    this.toast.showLoader(this.translate.instant('checkout.processing'));
+    let authentication = await this.authenticate();
+
+    let count = 0
+    const interval = await setInterval(async () => {
+      count++
+      if(count>50){
+        clearInterval(interval);
+        this.toast.hideLoader();
+        this.processing = false;
+        this.toast.show(this.translate.instant('elearnings.purchase_failed'), 6000);
+      }
+      if(this.auth.userInfo && authentication!='logged_in'){
+        if(this.auth.userInfo.language && this.auth.userInfo.language!=this.translate.currentLang){
+          this.nav.setLang(this.auth.userInfo.language)
+        }
+        this.firestoreService.create('user_languages',{language:this.translate.currentLang,email:this.userForm.controls['email'].value,buy:true,displayName:this.userForm.controls['name'].value})
+      }
+      clearInterval(interval);
+    }, 300);
+    // console.log('user authenticated, activating with code',this.auth.userInfo.uid);
+    this.sales.activateFree(trainingItem);
   }
 
   async authenticate(){
@@ -536,4 +637,94 @@ export class CheckoutPage implements OnInit {
       }
     })
   }    
+
+  getActivePrice(prices:any[]){
+    if(!prices || !Array.isArray(prices) || prices.length==0){
+      return {
+        value: 0,
+        inclVat: 0
+      }
+    }
+    let activePrice = prices.filter(p=>p.active)[0]
+    return activePrice ? 
+    {
+      value: activePrice.unit_amount / 100,
+      inclVat: (activePrice.unit_amount / 100) * 1.21
+    } : {
+      value: 0,
+      inclVat: 0
+    }
+  }
+
+  get selectedCreditPrice(){
+    if(!this.selectedCredits){
+      return {
+        value: 0,
+        vat: 0,
+        inclVat: 0
+      }
+    }
+    let product = this.accountService.getProductByCredits(this.selectedCredits)
+    if(!product || !product.prices || !Array.isArray(product.prices) || product.prices.length==0){
+      return {
+        value: 0,
+        vat: 0,
+        inclVat: 0
+      }
+    }
+    let price = this.getActivePrice(product.prices)
+    return {
+      value: price.value,
+      vat: price.value * 0.21,
+      inclVat: price.inclVat
+    }
+
+  }
+
+  async selectCredits(event?: any){
+    console.log(this.accountService.products)
+      let list = []
+      for(let i=0;i<this.accountService.products.length;i++){
+        list.push({
+          title: (this.accountService.products[i].stripe_metadata_credits=='1000000' ? this.translate.instant('trainings.credits_unlimited') : this.accountService.products[i].stripe_metadata_credits) + ' ' + this.translate.instant('credits.credits'),
+          subTitle:(this.accountService.products[i].stripe_metadata_credits=='1000000' ? this.translate.instant('page_account.credits_unlimited_chat') : this.accountService.products[i].conversations) + ' ' + this.translate.instant('page_account.credits_conversations'),
+          image:'assets/img/credits_' + this.accountService.products[i].stripe_metadata_credits + '.webp',
+          note:'€ ' + (this.getActivePrice(this.accountService.products[i].prices).value * (this.pricesInclVat ? 1.21 : 1)).toFixed(2).replace('.',','), //+ (this.pricesInclVat ? ' incl. btw' : ' excl. btw'),
+          logo:true,
+          id:this.accountService.products[i].id,
+          value:parseInt(this.accountService.products[i].stripe_metadata_credits),
+        })
+      }
+      list.push({
+          title:0 + ' ' + this.translate.instant('credits.credits'),
+          subTitle:'LET OP: Zonder credits kun je geen gesprekken voeren.',
+          image:'assets/img/credits_0.webp',
+          note:'€ 0,00',
+          logo:true,
+          id:'0',
+          value:0,
+        })
+
+      list = list.sort((a,b) => b.value - a.value); 
+  
+      this.shortMenu = await this.popoverController.create({
+        component: MenuPage,
+        componentProps:{
+          customMenu:true,
+          pages:list,
+          customList:true,
+        },
+        cssClass: 'customMenu',
+        event: event,
+        translucent: false,
+        reference:'trigger',
+      });
+      this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+      await this.shortMenu.present();
+      await this.shortMenu.onWillDismiss().then((result:any)=>{
+        if(this.selectMenuservice.selectedItem){
+          this.selectedCredits = this.selectMenuservice.selectedItem.value
+        }
+      })
+    }
 }

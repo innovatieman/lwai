@@ -364,12 +364,6 @@
                                 </ion-item>
 
                                 <ion-item detail="false" lines="none" listCard>
-                                    <ion-label position="stacked">{{'cases.free_question' | translate}}</ion-label>
-                                    <ion-input [(ngModel)]="trainerService.caseItem.free_question" (ionChange)="update('free_question')"></ion-input>
-                                    <fa-icon pointer slot="end" titleIcon font-24 (click)="trainerService.tooltip('case_free_input','cases.free_question')" [icon]="icon.get('faInfoCircle')"></fa-icon>
-                                </ion-item>
-
-                                <ion-item detail="false" lines="none" listCard>
                                     <ion-label position="stacked">{{'standards.level' | translate}}</ion-label>
                                     <ion-select interface="popover" [(ngModel)]="trainerService.caseItem.level" (ionChange)="update('level')">
                                         <ion-select-option *ngFor="let level of [1,2,3,4,5]" [value]="level">{{level}}</ion-select-option>
@@ -448,7 +442,7 @@
                                     </ion-item>
                                 </ion-col> 
 
-                                <ion-col [size]="media.smallDevice ? 12 : 8" *ngIf="trainerService.isAdmin">
+                                <ion-col [size]="media.smallDevice ? 12 : 4" *ngIf="trainerService.isAdmin">
                                     <ion-item pointer detail="false" lines="none" listCard (click)="trainerService.voices.length ? selectVoice() : trainerService.loadVoices()" class="ionItemTypes" fullwidth>
                                         <ion-label position="stacked" style="margin-bottom:10px">{{'cases.select_voice' | translate}}</ion-label>
                                         <div style="min-height:40px">
@@ -463,6 +457,15 @@
                                         <fa-icon pointer slot="end" titleIcon font-24 (click)="trainerService.tooltip('case_voice','cases.select_voice',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
                                     </ion-item>
                                 </ion-col>
+
+                                <ion-col [size]="media.smallDevice ? 12 : 4" *ngIf="trainerService.isAdmin">
+                                    <ion-item detail="false" lines="none" listCard style="height:73px;">
+                                        <ion-label position="stacked">{{'cases.accent' | translate}}</ion-label>
+                                        <ion-input [(ngModel)]="trainerService.caseItem.accent" (ionChange)="update('accent')"></ion-input>
+                                        <fa-icon pointer slot="end" titleIcon font-24 (click)="trainerService.tooltip('case_accent','cases.accent')" [icon]="icon.get('faInfoCircle')"></fa-icon>
+                                    </ion-item>
+                                </ion-col>
+                                
 
                                 <ion-col [size]="media.smallDevice ? 12 : 4" *ngIf="trainerService.isAdmin">
                                     <ion-item detail="false" lines="none" listCard fullwidth>
