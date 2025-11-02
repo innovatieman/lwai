@@ -77,6 +77,22 @@ exports.createElearning = functions
 
     await batch.commit();
 
+    if(data.invoice){
+      let invoiceItem:any = {
+        email:data.invoice.email,
+        name:data.invoice.name,
+        address:data.invoice.address,
+        items:data.invoice.items,
+        userId:data.invoice.userId,
+        reference:data.invoice.reference,
+        description:data.invoice.description,
+        footer:data.invoice.footer
+      }
+      await db.collection('invoices_elearnings').add(invoiceItem)
+    }
+
+
+
     return new responder.Message({ id: elearningRef.id, message: 'Elearning created successfully' });
   })
 

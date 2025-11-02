@@ -33,7 +33,7 @@ export class CasesPage implements OnInit {
   
   [x:string]: any;
   searchTerm: string = '';
-  categories: any[] = [];
+  // categories: any[] = [];
   selectedModuule:string = '';
   showBasics: boolean = false;
   showUserInput: boolean = false;
@@ -149,7 +149,7 @@ export class CasesPage implements OnInit {
       this.updateVisibleCases();
     })
 
-    this.loadCategories()
+    // this.loadCategories()
   }
 
   ionViewWillLeave() {
@@ -158,25 +158,26 @@ export class CasesPage implements OnInit {
     console.log('trainerService.selectedModuleCases',this.trainerService.selectedModuleCases)
   }
 
-  private loadCategories() {
-    let catsSubscription = this.firestore.get('categories').pipe(takeUntil(this.leave$)).subscribe((categories) => {
-      this.categories = categories.map( (category:any) => {
-        // add OpeningMessage tot the category
-        let catData = category.payload.doc.data()
-        this.getOpeningMessage(category.payload.doc.id,(result:any) => {
-          this.addToCategory(category.payload.doc.id,'openingMessage',result)
-        })
-        return { id: category.payload.doc.id, ...catData }
-        // console.log(catData)
-      })
-      catsSubscription.unsubscribe()
-    })
-  }
+  // private loadCategories() { 
+  //   let catsSubscription = this.firestore.get('categories').pipe(takeUntil(this.leave$)).subscribe((categories) => {
+  //     this.trainerService.categories = categories.map( (category:any) => {
+  //       // add OpeningMessage tot the category
+  //       let catData = category.payload.doc.data()
+  //       this.getOpeningMessage(category.payload.doc.id,(result:any) => {
+  //         this.addToCategory(category.payload.doc.id,'openingMessage',result)
+  //       })
+  //       return { id: category.payload.doc.id, ...catData }
+  //       // console.log(catData)
+  //     })
+  //     console.log('loaded categories',this.categories)
+  //     catsSubscription.unsubscribe()
+  //   })
+  // }
 
   addToCategory(category:string,field:string,value:any){
-    for(let i=0;i<this.categories.length;i++){
-      if(this.categories[i].id === category){
-        this.categories[i][field] = value
+    for(let i=0;i<this.trainerService.categories.length;i++){
+      if(this.trainerService.categories[i].id === category){
+        this.trainerService.categories[i][field] = value
       }
     }
   }
@@ -610,8 +611,8 @@ export class CasesPage implements OnInit {
   }
   
   categoryInfo(id:string){
-    if(!this.categories.length) return {}
-    let category = this.categories.filter((e:any) => {
+    if(!this.trainerService.categories.length) return {}
+    let category = this.trainerService.categories.filter((e:any) => {
       return e.id === id
     })
     return category[0]
@@ -629,7 +630,7 @@ export class CasesPage implements OnInit {
 
     if(this.trainerService.caseItem?.conversation=='expert'){
       if(!this.trainerService.checkIsTrainerPro()){
-        this.toast.show(this.translate.instant('cases.expert_knowledge_pro_required'))
+        // this.toast.show(this.translate.instant('cases.expert_knowledge_pro_required'))
         this.trainerService.caseItem.conversation = ''
         this.update('conversation')
         this.trainerService.caseItem.openingMessage = ''

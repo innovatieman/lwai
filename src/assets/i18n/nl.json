@@ -745,7 +745,7 @@
         "link_copied":"De link is gekopieerd naar je klembord.",
         "link_not_copied":"De link kon niet naar je klembord worden gekopieerd. Kopieer het handmatig.",
         "publishing_elearning":"Bezig met publiceren van de e-learning",
-        "elearning_created":"De e-learning is aangemaakt. Je kunt deze nu delen met gebruikers.",
+        "elearning_created":"De e-learning is gepubliceerd op de marketplace. Gebruikers kunnen de training nu aanschaffen.",
         "add_invoice_address":"Je hebt nog geen factuuradres opgegeven. Voeg deze toe in je organisatiegegevens.",
         "price_elearning_org_min":"Bepaal de minimum prijs voor een organisatie (excl. BTW)",
         "price_elearning_org_max":"Bepaal de maximum prijs voor een organisatie (excl. BTW)",
@@ -792,7 +792,11 @@
         "private_link":"Deelnamelink voor gebruikers",
         "action_make_copy_first":"Deze actie kan alleen met training die nog niet gepubliceerd is. Maak een kopie van de training en voer daar de actie uit.",
         "elearnings_marketplace":"E-trainingen Marketplace",
-        "elearnings_private":"E-trainingen Private"
+        "elearnings_private":"E-trainingen Private",
+        "publish_elearning_verify_text":"Weet je zeker dat je deze e-training wilt publiceren? De e-training wordt dan zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar voor de prijs die je hebt opgegeven.",
+        "publish_elearning_verify_text_invoice":"Weet je zeker dat je deze e-training wilt publiceren? De e-training wordt dan zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar voor de prijs die je hebt opgegeven. Je ontvangt voor de publicatie een factuur.",
+        "costs_without_pro":"Kosten zonder Trainer Pro abonnement",
+        "temporarily_free":"Tijdelijke gratis"
     },
     "generate_case":{
         "title_step_0":"De basis",

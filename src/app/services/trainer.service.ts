@@ -53,6 +53,7 @@ export class TrainerService {
   segments:any[] = []
   segmentsOrganized:any = []
   voices:any[] = []
+  categories:any[] = []
   isAdmin: boolean = false;
   trainingSubItems:any = {};
   selectedModuleCases:string = ''
@@ -99,6 +100,7 @@ export class TrainerService {
         this.isTrainer = userInfo.isTrainer;
         this.auth.hasActive('trainer').subscribe((trainer)=>{
           this.loadVoices();
+          this.loadCategories();
           this.loadTrainerInfo(()=>{
             this.trainerInfoLoaded$.next(true);
           });
@@ -140,10 +142,15 @@ export class TrainerService {
         // this.trainerInfoLoaded.emit(true);
       });
     })
+
+    this.nav.changeLang.subscribe(()=>{
+      this.loadVoices(true);
+      this.loadCategories(true);
+    })
   }
 
-  loadVoices(){
-    if(this.voices.length==0){
+  loadVoices(redo?:boolean){
+    if(this.voices.length==0 || redo){
       this.functions.httpsCallable('getVoices')({trainerId:this.nav.activeOrganisationId,language:this.translate.currentLang}).pipe(take(1)).subscribe((res:any) => {
         this.voices = res.result;
         if(!this.voices || this.voices.length==0 || typeof this.voices === 'string'){
@@ -154,6 +161,19 @@ export class TrainerService {
       });
     }
   }
+
+  loadCategories(redo?:boolean){
+    if(this.categories.length==0 || redo){
+      this.functions.httpsCallable('getCategories')({trainerId:this.nav.activeOrganisationId,language:this.translate.currentLang}).pipe(take(1)).subscribe((res:any) => {
+        this.categories = res.result;
+        if(!this.categories || this.categories.length==0 || typeof this.categories === 'string'){
+          this.categories = [];
+        }
+        this.categories = this.sortByPipe.transform(this.categories,-1,'name');
+      });
+    }
+  }
+
 
   private runCallbacksIdle(callbacks: Function[]) {
     callbacks.forEach(cb => {
@@ -1379,6 +1399,22 @@ export class TrainerService {
     return {}
   }
 
+  basicTrainerCosts(){
+
+    let costs:any= {}
+    costs.basicCosts = 0//100
+
+    if(this.isTrainerPro || this.trainerInfo?.organisation?.active){
+      costs.basicCosts = 0;
+    }
+
+    costs.totalCosts = costs.basicCosts
+    costs.tax = costs.totalCosts * 0.21
+    costs.totalCostsPlusTax = costs.totalCosts + costs.tax
+
+    return costs
+  }
+
   countCostsTraining(trainingItem:any){
 
     if(!trainingItem.expected_conversations || trainingItem.expected_conversations<1){
@@ -1530,7 +1566,7 @@ export class TrainerService {
         }
       ],true, (result:any) => {
         if(result?.data == 'upgrade'){
-          this.nav.go('trainer/dashboard/upgrade')
+          this.nav.go('trainer/dashboard/become_trainer')
         }
       })
       return false

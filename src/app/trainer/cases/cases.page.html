@@ -348,7 +348,7 @@
                                     <ion-item detail="false" lines="none" listCard>
                                         <ion-label position="stacked">{{'cases.conversation_technique' | translate}}</ion-label>
                                         <ion-select interface="popover" [(ngModel)]="trainerService.caseItem.conversation" (ionChange)="update('conversation');changeCategory()">
-                                            <ion-select-option *ngFor="let cat of categories | filterKey : '!id' : 'main'" [value]="cat.id">{{cat.title}}</ion-select-option>
+                                            <ion-select-option *ngFor="let cat of trainerService.categories  | filterKey : '!id' : 'main'" [value]="cat.id">{{cat.title}}</ion-select-option>
                                         </ion-select>
                                         <fa-icon pointer slot="end" titleIcon font-24 (click)="trainerService.tooltip('case_conversationtype','cases.conversation_technique')" [icon]="icon.get('faInfoCircle')"></fa-icon>
 

@@ -233,7 +233,7 @@ export class MenuPage implements OnInit {
       })
     })
     await this.showshortMenu(event,list,((response:any)=>{
-      if(response.value&&response.value!=localStorage.getItem('lang')){
+      if(response?.value&&response.value!=localStorage.getItem('lang')){
         this.nav.setLang(response.value)
         this.selectMenuservice.selectedItem = undefined
         // location.reload()

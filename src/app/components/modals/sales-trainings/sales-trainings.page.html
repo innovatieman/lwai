@@ -161,7 +161,7 @@
   <ng-container *ngIf="step === 4 && !variable_amount && free">
     <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
 
-    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);">
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;" [ngStyle]="{'border-bottom':trainerService.isTrainerPro ? '1px solid var(--ion-color-medium)' : 'none'}">
       <ion-label>
         <span pointer (click)="changeCredits($event)">
           {{'customers.'+selectedCredits.label+'_credits_for' | translate}} {{prices().users}} {{prices().users>1 ? ('customers.users' | translate) : ('customers.user' | translate)}}:
@@ -170,9 +170,15 @@
       </ion-label>
       <ion-label slot="end">{{ prices().creditCosts | currency:'EUR' }}</ion-label>
     </ion-item>
-    <ion-item *ngIf="selectedCredits.label!='unlimited'" detail="false" lines="none" style="--padding-end: 17px;margin-top:-15px;margin-bottom:10px;border-bottom:1px solid var(--ion-color-medium)">
+    <ion-item *ngIf="selectedCredits.label!='unlimited'" detail="false" lines="none" style="--padding-end: 17px;margin-top:-15px;margin-bottom:10px;" [ngStyle]="{'border-bottom':trainerService.isTrainerPro ? '1px solid var(--ion-color-medium)' : 'none'}">
       <ion-text trash font-12 italic>{{ 'customers.credits_explanation_'+selectedCredits.label | translate }}</ion-text>
     </ion-item>
+
+    <ion-item detail="false" lines="none" style="--padding-end: 17px;border-bottom:1px solid var(--ion-color-medium);" *ngIf="!trainerService.isTrainerPro">
+      <ion-label>{{'trainings.costs_without_pro' | translate}}:</ion-label>
+      <ion-label slot="end">{{ prices().basicTrainerCosts | currency:'EUR' }}</ion-label>
+    </ion-item>
+
     <ion-item detail="false" lines="none" style="--padding-end: 17px;">
       <ion-label><strong>{{'customers.total_price_excl_tax' | translate}}:</strong></ion-label>
       <ion-label slot="end"><strong>{{ prices().totalPriceExcl | currency:'EUR' }}</strong></ion-label>

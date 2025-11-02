@@ -204,14 +204,13 @@
             </ion-card-content>
           </ion-card>
 
-          <div *ngIf="showPart=='settings'">
+          <!-- <div *ngIf="showPart=='settings'">
             <div *ngFor="let setting of trainerService.trainerInfo.settings">
               <ion-card basicPadding borderRadius24 borderPrimary *ngIf="setting.active" >
                 <ion-card-header>
                   <ion-card-title flex center-ver>
                       <span weight600 titleIcon>{{'dashboard.setting_'+setting.id | translate}}</span>
                       <span class="spacer"></span>
-                      <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('dashboard_trainer_info','dashboard.organisation',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
                   </ion-card-title>
                 </ion-card-header>
                 <ion-card-content *ngIf="setting.id=='organisation'">
@@ -250,107 +249,70 @@
   
               </ion-card>
             </div>
+          </div> -->
+
+          <div *ngIf="showPart=='employees'">
+            <div *ngFor="let setting of trainerService.trainerInfo.settings">
+              <ion-card basicPadding borderRadius24 *ngIf="setting.active && setting.id=='organisation'">
+                <ion-card-header>
+                  <ion-card-title flex center-ver>
+                      <span weight600 titleIcon>{{'dashboard.setting_'+setting.id | translate}}</span>
+                      <span class="spacer"></span>
+                      <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('dashboard_trainer_info','dashboard.organisation',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
+                  </ion-card-title>
+                </ion-card-header>
+                <ion-card-content *ngIf="setting.id=='organisation'">
+  
+                  <ion-card marginBottom basicPadding borderPrimary>
+                    <ion-card-title flex center-ver>
+                      <span weight600 font-16>{{'dashboard.amount_employees' | translate}}</span>
+                      <span class="spacer"></span>
+                      <span weight600 font-16 lowercase>{{trainerService.trainerInfo?.employees?.length || 0}} / {{setting.max_employees}}</span>
+                    </ion-card-title>
+                  </ion-card>
+  
+                  <div flex center-ver>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton" (click)="request_amount_employees('employees')">{{'dashboard.request_title' | translate}}</ion-button>
+                  </div>
+    
+                </ion-card-content>
+  
+              </ion-card>
+            </div>
           </div>
 
-          <!-- <ion-card basicPadding *ngIf="showPart=='settings'">
-            <ion-row>
-              <ion-col size="12">
+          <div *ngIf="showPart=='admins'">
+            <div *ngFor="let setting of trainerService.trainerInfo.settings">
+              <ion-card basicPadding borderRadius24 *ngIf="setting.active && setting.id=='trainer'">
                 <ion-card-header>
-                  <ion-card-title>{{'page_account.my_data' | translate}}</ion-card-title>
+                  <ion-card-title flex center-ver>
+                      <span weight600 titleIcon>{{'dashboard.setting_'+setting.id | translate}}</span>
+                      <span class="spacer"></span>
+                      <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('dashboard_trainer_info','dashboard.organisation',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
+                  </ion-card-title>
                 </ion-card-header>
+  
                 <ion-card-content>
-                  <ion-list style="background:white;--background:white">
-                    <ion-label position="stacked" style="margin-left:15px">{{'page_account.first_name' | translate}}</ion-label>
-                    <ion-item detail="false" lines="none" class="fieldItem" style="--padding-start:0;">
-                      <ion-input class="saveButton" borderRadius24 placeholder="Naam" type="text" [(ngModel)]="accountService.account.displayName"></ion-input>
-                    </ion-item>
-                  </ion-list>
-                  <ion-button class="saveButton" [disabled]="!accountService.account.displayName || accountService.account.displayName == this.auth.userInfo.displayName" (click)="accountService.updateAccount()">{{'buttons.save' | translate}}</ion-button>
+  
+                  <ion-card marginBottom basicPadding borderPrimary>
+                    <ion-card-title flex center-ver>
+                      <span weight600 font-16>{{'dashboard.max_admins' | translate}}</span>
+                      <span class="spacer"></span>
+                      <span weight600 font-16 lowercase>{{trainerService.trainerInfo?.admins?.length || 1}} / {{setting.max_admins}}</span>
+                    </ion-card-title>
+                  </ion-card>
+  
+                  <div flex center-ver>
+                    <div class="spacer"></div>
+                    <ion-button class="saveButton" (click)="request_amount_employees('admins')">{{'dashboard.request_title' | translate}}</ion-button>
+                  </div>
+    
                 </ion-card-content>
-              </ion-col>
-            </ion-row>
-          </ion-card> -->
-
-          <!-- <ion-card basicPadding *ngIf="showPart=='credits'">
-
-            <ion-card borderPrimary borderRadius16 pointer (click)="accountService.showInfoCredits=!accountService.showInfoCredits">
-              <ion-card-header>
-                <ion-card-title flex center-ver fullwidth>
-                  {{'page_account.credits_how_title' | translate}}
-                  <div class="spacer"></div>
-                  <fa-icon [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': accountService.showInfoCredits ? 'rotate(180deg)' : 'rotate(0deg)'}" style="transition: all 0.3s ease-in-out;"></fa-icon>
-                </ion-card-title>
-              </ion-card-header>
-              <ion-card-content *ngIf="accountService.showInfoCredits">
-                <div font-16 weight400 [innerHtml]="translate.instant('page_account.credits_how_text')"></div>
-              </ion-card-content>
-            </ion-card>
-            
-            
   
-            <ion-card-header marginTop>
-              <ion-card-title>{{'page_account.credits_open' | translate}}: 
-                <div inline-block marginLeft font-20 weight700 uppercase text-secondary *ngIf="auth.credits.total&&!auth.credits_unlimited_type">{{auth.credits.total}}</div>
-                <div inline-block marginLeft font-20 weight700 uppercase text-secondary *ngIf="auth.credits.total&&auth.credits_unlimited_type">{{'page_account.credits_unlimited_chat' | translate}}</div>
-                <div inline-block marginLeft font-20 weight700 uppercase text-secondary *ngIf="!auth.credits.total">{{'page_account.no_credits' | translate}}</div>
-  
-              </ion-card-title>
-            </ion-card-header>
-            <ion-card-header *ngIf="auth.creditsList?.length">
-              <ion-card-title>{{'page_account.your_credits' | translate}}: </ion-card-title>
-            </ion-card-header>
-            <ion-row>
-              <div fullwidth>
-                <ion-card basicPadding listCard borderPrimary borderRadius16 pointer basicMargin *ngFor="let credits of auth.creditsList | sortBy : -1 : 'expires'">
-                  <div flex center-ver fullwidth>
-                    <div font-18 weight600 text-primary>{{'page_account.credits_source_'+credits.source | translate}}</div>
-                    <div class="spacer"></div>
-                    <div font-14 weight400 align-right>{{'page_account.credits_expire' | translate}}: {{helper.showLocalDate(credits.expires,'',0,true)}}</div>
-                  </div>
-                  <div flex center-ver fullwidth *ngIf="!credits.type">
-                    <div font-18 weight600>{{'page_account.credits'| translate}}:</div>
-                    <div class="spacer"></div>
-                    <div><span font-18 weight600>{{credits.total}}</span> / <span>{{credits.amount}}</span></div>
-                  </div>
-                  <div flex center-ver fullwidth *ngIf="credits.type">
-                    <div font-18 weight600>{{'page_account.credits'| translate}}:</div>
-                    <div class="spacer"></div>
-                    <div font-18 weight600>{{'page_account.credits_unlimited_chat' | translate}}</div>
-                  </div>
-                </ion-card>
-              </div>
-            </ion-row>
-            <ion-card-header>
-              <ion-card-title>{{'page_account.more_credits' | translate}}</ion-card-title>
-            </ion-card-header>
-            <ion-row>
-              
-              <ion-col [size]="helper.cardSizeSmall" *ngFor="let product of accountService.products | sortBy : -1 : 'credits'">
-                
-                <ion-card noPadding pointer class="caseItem" (click)="accountService.showProductInfo(product)">
-                  <ion-card-content noPadding fullHeight>
-                      <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/credits.webp)'}">
-                        <div class="title">{{product.title}}</div>
-                      </div>
-                      <div flex center center-ver center-hor style="height:calc(100% - 275px)">
-                          <ion-card-header>
-                              <ion-card-title font-24 weight600>{{product.credits}} {{'page_account.credits' | translate}}</ion-card-title>
-                              <ion-card-subtitle font-14 weight600 text-secondary>{{product.conversations}}<br>{{'page_account.credits_conversations' | translate}}</ion-card-subtitle>
-                          </ion-card-header>
-                      </div>
-                      <div center flex center-ver center-hor marginBottom *ngIf="product.prices?.length">
-                          <ion-button class="saveButton cardButton" fill="outline" size="small" font-20>{{(product.prices[0].unit_amount / 100) | currency : (product.prices[0].currency | uppercase) }}</ion-button>
-                      </div>
-                  </ion-card-content>
-                </ion-card>
-                
-              </ion-col>
-  
-  
-            </ion-row>
-              
-          </ion-card> -->
-          
+              </ion-card>
+            </div>
+          </div>
 
           <ion-card basicPadding *ngIf="showPart=='employees'">
             <ion-card-header>
@@ -389,6 +351,8 @@
               </ion-card>
             </ion-card-content>
           </ion-card>
+
+          
 
 
           <ion-card basicPadding *ngIf="showPart=='admins'">
@@ -446,6 +410,8 @@
               </ion-card>
             </ion-card-content>
           </ion-card>
+
+          
           
           <ion-card basicPadding *ngIf="showPart=='bank'&&trainerDataLoaded">
             <ion-card-header *ngIf="trainerService.isTrainerPro">
@@ -736,10 +702,7 @@
 
           </ion-card>
 
-
-
-
-           <ion-card basicPadding *ngIf="showPart=='become_trainer'">
+          <ion-card basicPadding *ngIf="showPart=='become_trainer'">
             <ion-card-header>
               <ion-card-title>{{'page_account.become_trainer' | translate}}</ion-card-title>
               <div font-16 weight400>{{'page_account.become_trainer_text' | translate}}</div>

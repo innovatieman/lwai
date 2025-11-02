@@ -192,6 +192,7 @@ exports.createInvoiceElearnings = functions.region('europe-west1').runWith({ mem
         name,
         address,
         metadata: { userId },
+        preferred_locales: ['nl'],
       });
 
     } else {
@@ -200,6 +201,7 @@ exports.createInvoiceElearnings = functions.region('europe-west1').runWith({ mem
         name,
         address,
         metadata: { userId },
+        preferred_locales: ['nl'],
       });
 
       customerId = customer.id;

@@ -1011,7 +1011,7 @@
                 </ion-card-header>
               </ion-card>
 
-              <ion-card button basicPadding smallHover marginBottom *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='sell_directly'" [ngStyle]="{'background':trainerService.publishType=='sell_directly' ? 'var(--ion-color-primary)' : 'white'}">
+              <ion-card button basicPadding smallHover marginBottom *ngIf="trainerService.trainerInfo.trainer" (click)="sellDirectly()" [ngStyle]="{'background':trainerService.publishType=='sell_directly' ? 'var(--ion-color-primary)' : 'white'}">
                 <ion-card-header>
                   <ion-card-title flex center-ver [ngStyle]="{'color':trainerService.publishType=='sell_directly' ? 'white' : 'var(--ion-color-primary)'}">
                     <span weight600>{{'trainings.sell_directly' | translate}}</span>
@@ -1019,6 +1019,7 @@
                     <fa-icon pointer titleIcon font-24 [ngStyle]="{'color':trainerService.publishType=='sell_directly' ? 'white' : 'var(--ion-color-primary)'}" [icon]="icon.get('faChevronRight')"></fa-icon>
                   </ion-card-title>
                 </ion-card-header>
+                <div *ngIf="!trainerService.isTrainerPro" style="padding-left: 15px;;margin-top:-15px;" trash font-12 italic>{{'dashboard.trainer_pro_required' | translate}}</div>
               </ion-card>
 
               <ion-card button basicPadding smallHover marginBottom *ngIf="trainerService.trainerInfo.trainer" (click)="trainerService.publishType='sell_directly_free'" [ngStyle]="{'background':trainerService.publishType=='sell_directly_free' ? 'var(--ion-color-primary)' : 'white'}">
@@ -1206,9 +1207,34 @@
 
                   </ion-row>
 
+                  <ion-card-title flex center-ver style="margin-top:10px">
+                    <span weight600>{{'trainings.cost_overview' | translate}}</span>
+                    <div class="spacer"></div>
+                    <!-- <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('training_costs_publish','trainings.cost_overview',$event)" [icon]="icon.get('faInfoCircle')"></fa-icon> -->
+                  </ion-card-title>
+
+                  <ion-row basicPadding font-18 border-bottom style="margin-top:10px">
+
+                    <ion-col size="8" *ngIf="!trainerService.isTrainerPro" weight700><div>{{'trainings.costs_without_pro' | translate}} <span style="font-size:0.9em;color:var(--ion-color-success)">{{'trainings.temporarily_free' | translate}}</span></div></ion-col>
+                    <ion-col size="4" *ngIf="!trainerService.isTrainerPro" weight700 align-right><div>{{helpers.currencyChar('EUR (€)')}} {{trainerService.basicTrainerCosts().basicCosts | number : '1.2-2' }}</div></ion-col>
+                    
+                  </ion-row>
+                  <ion-row font-18 basicPadding border-bottom>
+                    <ion-col size="8" weight700><div>{{'trainings.costs_total_excl_taxes' | translate}}</div></ion-col>
+                    <ion-col size="4" weight700 align-right><div>{{helpers.currencyChar('EUR (€)')}} {{trainerService.basicTrainerCosts().totalCosts | number : '1.2-2' }}</div></ion-col>
+
+                    <ion-col size="8"><div>{{'trainings.costs_taxes' | translate}}</div></ion-col>
+                    <ion-col size="4" align-right><div>{{helpers.currencyChar('EUR (€)')}} {{trainerService.basicTrainerCosts().tax | number : '1.2-2' }}</div></ion-col>
+
+                  </ion-row>
+                  <ion-row basicPadding font-18 >
+                    <ion-col size="8" weight700><div>{{'trainings.costs_total_incl_taxes' | translate}}</div></ion-col>
+                    <ion-col size="4" weight700 align-right><div>{{helpers.currencyChar('EUR (€)')}} {{trainerService.basicTrainerCosts().totalCostsPlusTax | number : '1.2-2' }}</div></ion-col>
+                  </ion-row>
+
                   <div marginTop flex center-ver>
                     <div class="spacer"></div>
-                    <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="publishElearning()">{{'buttons.publish_elearning' | translate}}</ion-button>
+                    <ion-button class="saveButton cardButton" fill="solid" color="primary" size="small" *ngIf="trainerService.trainerInfo.trainer" (click)="publishElearning(trainerService.basicTrainerCosts().totalCosts>0)">{{'buttons.publish_elearning' | translate}}</ion-button>
                   </div>
                 </ion-card-content>
               </ion-card>
@@ -1230,8 +1256,8 @@
                   </div> -->
 
                   <ion-row>
-                    <ion-col [size]="media.smallDevice ? 12 : 4" smallHover>
-                      <ion-card pointer noPadding basicShadow (click)="trainerService.selectedSellDirectly=='participants_known' ? trainerService.selectedSellDirectly='' : trainerService.selectedSellDirectly='participants_known'" [ngStyle]="{'transform':trainerService.selectedSellDirectly=='participants_known' ? 'scale(1.07)' : 'scale(1)','background':trainerService.selectedSellDirectly=='participants_known' ? '#D6E5FD' : 'white'}">
+                    <ion-col [size]="media.smallDevice ? 12 : 4">
+                      <ion-card pointer noPadding basicShadow smallHover (click)="trainerService.selectedSellDirectly=='participants_known' ? trainerService.selectedSellDirectly='' : trainerService.selectedSellDirectly='participants_known'" [ngStyle]="{'transform':trainerService.selectedSellDirectly=='participants_known' ? 'scale(1.02)!important' : 'scale(1)','background':trainerService.selectedSellDirectly=='participants_known' ? '#D6E5FD' : 'white'}">
                         <ion-card-header>
                           <ion-card-title flex center-ver pointer>
                             <span weight600>{{'trainings.situation' | translate}} 1</span>
@@ -1245,8 +1271,8 @@
                       <div *ngIf="trainerService.selectedSellDirectly=='participants_known'" flex center-hor style="margin-top:-7px;"><div class="arrowDown"><div class="arrowDownCenter"></div></div></div>
                     </ion-col>
 
-                    <ion-col [size]="media.smallDevice ? 12 : 4" smallHover>
-                      <ion-card pointer noPadding basicShadow (click)="trainerService.selectedSellDirectly=='amount_known' ? trainerService.selectedSellDirectly='' : trainerService.selectedSellDirectly='amount_known'" [ngStyle]="{'transform':trainerService.selectedSellDirectly=='amount_known' ? 'scale(1.07)' : 'scale(1)','background':trainerService.selectedSellDirectly=='amount_known' ? '#D6E5FD' : 'white'}">
+                    <ion-col [size]="media.smallDevice ? 12 : 4">
+                      <ion-card pointer noPadding basicShadow smallHover (click)="trainerService.selectedSellDirectly=='amount_known' ? trainerService.selectedSellDirectly='' : trainerService.selectedSellDirectly='amount_known'" [ngStyle]="{'transform':trainerService.selectedSellDirectly=='amount_known' ? 'scale(1.02)!important' : 'scale(1)','background':trainerService.selectedSellDirectly=='amount_known' ? '#D6E5FD' : 'white'}">
                         <ion-card-header>
                           <ion-card-title flex center-ver pointer>
                             <span weight600>{{'trainings.situation' | translate}} 2</span>
@@ -1260,8 +1286,8 @@
                       <div *ngIf="trainerService.selectedSellDirectly=='amount_known'" flex center-hor style="margin-top:-7px;"><div class="arrowDown"><div class="arrowDownCenter"></div></div></div>
                     </ion-col>
 
-                    <ion-col [size]="media.smallDevice ? 12 : 4" smallHover>
-                      <ion-card pointer noPadding basicShadow (click)="trainerService.selectedSellDirectly=='variable_amount' ? trainerService.selectedSellDirectly='' : trainerService.selectedSellDirectly='variable_amount'" [ngStyle]="{'transform':trainerService.selectedSellDirectly=='variable_amount' ? 'scale(1.07)' : 'scale(1)','background':trainerService.selectedSellDirectly=='variable_amount' ? '#D6E5FD' : 'white'}">
+                    <ion-col [size]="media.smallDevice ? 12 : 4" >
+                      <ion-card pointer noPadding basicShadow smallHover (click)="trainerService.selectedSellDirectly=='variable_amount' ? trainerService.selectedSellDirectly='' : trainerService.selectedSellDirectly='variable_amount'" [ngStyle]="{'transform':trainerService.selectedSellDirectly=='variable_amount' ? 'scale(1.02)!important' : 'scale(1)','background':trainerService.selectedSellDirectly=='variable_amount' ? '#D6E5FD' : 'white'}">
                         <ion-card-header>
                           <ion-card-title flex center-ver pointer>
                             <span weight600>{{'trainings.situation' | translate}} 3</span>

@@ -123,7 +123,7 @@ margin-bottom: 20px;
   background-color: #f5f5f5;                      /* Lichtgrijze achtergrond */
   color: #333;                                    /* Donkere tekst */
   border: 1px solid #ccc;                         /* Zachte rand */
-  padding: 10px;                                  /* Ruimte rondom tekst */
+  padding: 10px!important;                                  /* Ruimte rondom tekst */
   border-radius: 4px;                             /* Licht afgeronde hoeken */
   white-space: pre-wrap;                          /* Behoud spaties en nieuwe regels */
   font-size: 14px;                                /* Leesbare codegrootte */

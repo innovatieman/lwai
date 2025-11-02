@@ -155,8 +155,8 @@ export class DashboardPage implements OnInit {
 
   ionViewWillEnter(){
     this.route.params.pipe(takeUntil(this.leave$)).subscribe(params=>{
-        if(params['tab']){
-          this.showPart = params['tab']
+        if(params['part']){
+          this.showPart = params['part']
         }
         if(params['status']){
           if(params['status']=='success'){

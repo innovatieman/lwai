@@ -746,7 +746,7 @@
         "link_copied":"The link has been copied to your clipboard.",
         "link_not_copied":"The link could not be copied to your clipboard. Please copy it manually.",
         "publishing_elearning":"Busy publishing the e-learning",
-        "elearning_created":"The e-learning has been created. You can now share it with users.",
+        "elearning_created":"The e-learning has been published on the marketplace. Users can now purchase the training.",
         "add_invoice_address":"You have not yet provided an invoice address. Please add it in your organization details.",
         "price_elearning_org_min":"Determine the minimum price for an organization (excl. VAT)",
         "price_elearning_org_max":"Determine the maximum price for an organization (excl. VAT)",
@@ -791,7 +791,11 @@
         "private_link":"Participation link for users",
         "action_make_copy_first":"This action can only be performed on training that has not yet been published. Make a copy of the training and perform the action there.",
         "elearnings_marketplace":"E-trainings Marketplace",
-        "elearnings_private":"E-trainings Private"
+        "elearnings_private":"E-trainings Private",
+        "publish_elearning_verify_text":"Weet je zeker dat je deze e-training wilt publiceren? De e-training wordt dan zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar voor de prijs die je hebt opgegeven.",
+        "publish_elearning_verify_text_invoice":"Weet je zeker dat je deze e-training wilt publiceren? De e-training wordt dan zichtbaar voor organisaties en gebruikers om direct aan te schaffen voor 1 jaar voor de prijs die je hebt opgegeven. Je ontvangt voor de publicatie een factuur.",
+        "costs_without_pro":"Costs without Trainer Pro subscription",
+        "temporarily_free":"Temporarily free"
       },
     "generate_case":{
       "title_step_0":"The basics",

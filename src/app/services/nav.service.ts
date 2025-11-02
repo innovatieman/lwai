@@ -83,6 +83,7 @@ export class NavService {
     this.translate.setDefaultLang(lang);
     this.translate.use(lang)
     this.translate.currentLang = lang
+    console.log('setLang',lang)
     this.changeNav.emit(true)
     this.changeLang.emit(lang)
   }

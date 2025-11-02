@@ -95,3 +95,51 @@ exports.getVoices = onCall(
   }
 
 );
+
+exports.getCategories = onCall(
+  {
+    region: 'europe-west1',
+    memory: '1GiB',
+  },
+  async (request: CallableRequest<any>,) => {
+    const { auth, data } = request;
+    if (!auth.uid) {
+      return new responder.Message('Unauthorized', 401);
+    }
+
+    if (!data) {
+      return new responder.Message('Missing required parameters', 400);
+    }
+
+    // const trainerRef = db.collection('trainers').doc(data.trainerId);
+    // const trainerDoc = await trainerRef.get();
+    // if (!trainerDoc.exists) {
+    //   return new responder.Message('Trainer not found', 404);
+    // }
+    const language = data.language || 'en';
+    const catsRef = db.collection('categories');
+    const catsSnapshot = await catsRef.get();
+    if (catsSnapshot.empty) {
+      return new responder.Message([], 200);
+    }
+
+    // get all voices and data from language subcollection
+    const cats = catsSnapshot.docs.map(doc => {
+      const catsData = doc.data();
+      const translationDoc = catsRef.doc(doc.id).collection('languages').doc(language);
+      return translationDoc.get().then(translationSnap => {
+        const translation = translationSnap.exists ? translationSnap.data() : null;
+        return {
+          id: doc.id,
+          phaseExplanation: translation?.phaseExplanation || catsData.phaseExplanation,
+          title: translation?.title || catsData.title,
+          phaseList: translation?.phaseList || catsData.phaseList,
+        };
+      });
+    });
+
+    const catsData = await Promise.all(cats);
+    return new responder.Message(catsData, 200);
+  }
+
+);

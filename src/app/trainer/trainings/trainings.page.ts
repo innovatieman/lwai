@@ -2813,21 +2813,71 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }
   }
 
-  publishElearning(){
-    if(!this.trainerService.checkIsTrainerPro()){
-        return
-    }
+  async publishElearning(invoice?:boolean){
+    // if(!this.trainerService.checkIsTrainerPro()){
+    //     return
+    // }
 
     if(!this.trainerService.validInvoiceAddress()){
       this.toast.show(this.translate.instant('trainings.add_invoice_address'), 4000, 'middle');
       return
     }
+    
+    let text = 'trainings.publish_elearning_verify_text'
+    if(invoice){
+      text = 'trainings.publish_elearning_verify_text_invoice'
+    }
+
+    let result = await this.modalService.showVerification(this.translate.instant('buttons.publish_elearning'), this.translate.instant(text), [
+      {
+        text: this.translate.instant('buttons.cancel'),
+        value: false,
+        color: 'dark',
+        fill: 'clear'
+      },
+      {
+        text: this.translate.instant('buttons.confirm'),
+        value: true,
+        color: 'primary',
+      }
+    ])
+    if(!result){
+      return
+    }
+
+    console.log('publishElearning invoice',invoice)
+    let invoiceItem:any = null
+    if(invoice){
+      invoiceItem = {
+        email:this.trainerService.trainerInfo.invoice.email,
+        name:this.trainerService.trainerInfo.invoice.name,
+        address:{
+          line1:this.trainerService.trainerInfo.invoice.address.line1 || '',
+          postal_code:this.trainerService.trainerInfo.invoice.address.zip || '',
+          city:this.trainerService.trainerInfo.invoice.address.city || '',
+          country:this.trainerService.trainerInfo.invoice.address.country || ''
+        },
+        items:[
+          {
+            description:'Published e-training: ' + this.trainerService.breadCrumbs[0].item.title,
+            quantity:1,
+            amount:10000
+          }
+        ],
+        userId:this.nav.activeOrganisationId,
+        reference:this.trainerService.trainerInfo.invoice.reference || '',
+        description:'Published e-training: ' + this.trainerService.breadCrumbs[0].item.title,
+        footer:''
+      }
+    }
 
     this.toast.showLoader(this.translate.instant('trainings.publishing_elearning'))
-    // console.log('publishElearning',this.trainerService.breadCrumbs[0].item)
+    console.log('publishElearning invoiceItem',invoiceItem)
+
     this.functions.httpsCallable('createElearning')({
       trainingId: this.trainerService.breadCrumbs[0].item.id,
       trainerId: this.nav.activeOrganisationId,
+      invoice: invoiceItem
     }).subscribe((res:any)=>{
       // console.log('createElearning',res)
       if(res?.status == 200){
@@ -3590,4 +3640,14 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       }
     },null,'',{object:true,multiple:true,field:'title'})
   }
+
+  sellDirectly(){
+    if(!this.trainerService.checkIsTrainerPro()){
+      // this.toast.show(this.translate.instant('cases.expert_knowledge_pro_required'))
+      return
+    }
+    this.trainerService.publishType='sell_directly'
+  }
+
+
 }

@@ -224,7 +224,7 @@
 
         <div style="padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="auth.userInfo?.email&&auth.userCredentials?.emailVerified" >
 
-          <ion-item detail="false" lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false" [ngClass]="{'activeItem':activeTab=='manual','notActiveItem':activeTab!='manual'}">
+          <ion-item detail="false" lines="none" button (click)="nav.go('start/dashboard')" class="itemButton" [detail]="false" class="notActiveItem">
             <div font-20 weight700>{{'page_account.dashboard' | translate}}</div>
             <fa-icon font-24 titleIcon [slot]="'end'" [icon]="icon.get('faHome')"></fa-icon>
           </ion-item>

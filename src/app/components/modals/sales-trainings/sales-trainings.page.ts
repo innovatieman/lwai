@@ -238,6 +238,12 @@ export class SalesTrainingsPage implements OnInit {
     if(this.onlyUserAmount){
       prices.users = this.maxCustomers || 0;
     }
+
+    prices.basicTrainerCosts = 0;
+    if(!this.trainerService.isTrainerPro){
+      prices.basicTrainerCosts = 100; // vaste kosten voor basic trainers
+    }
+
     prices.trainingPrice = this.basePrice || 0;
     prices.trainingPriceVat = prices.trainingPrice * 0.21;
     prices.trainingPriceIncl = prices.trainingPrice + prices.trainingPriceVat;
@@ -264,6 +270,11 @@ export class SalesTrainingsPage implements OnInit {
 
     else{
       prices.totalPriceExcl = prices.trainingPrice + prices.creditCosts;
+
+      if(prices.basicTrainerCosts){
+        prices.totalPriceExcl += prices.basicTrainerCosts;
+      }
+
       prices.totalVAT = prices.totalPriceExcl * 0.21;
       prices.totalPriceIncl = prices.totalPriceExcl + prices.totalVAT;
   

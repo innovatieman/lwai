@@ -119,6 +119,7 @@ export class MenuMobileComponent  implements OnInit {
             list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
+            list.push({title:this.translate.instant('marketplace.marketplace'),icon:'faBookOpen',url:'marketplace/elearnings'});
             if(this.auth.activeCourses?.length || this.auth.myElearnings?.length){
               list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
@@ -138,6 +139,7 @@ export class MenuMobileComponent  implements OnInit {
                 list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
                 list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
                 list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
+                list.push({title:this.translate.instant('marketplace.marketplace'),icon:'faBookOpen',url:'marketplace/elearnings'});
                 if(this.auth.activeCourses?.length || this.auth.myElearnings?.length){
                   list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
                 }
@@ -154,6 +156,7 @@ export class MenuMobileComponent  implements OnInit {
                 list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
                 list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
                 list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
+                list.push({title:this.translate.instant('marketplace.marketplace'),icon:'faBookOpen',url:'marketplace/elearnings'});
                 if(this.auth.activeCourses?.length || this.auth.myElearnings?.length){
                   list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
                 }
@@ -175,6 +178,7 @@ export class MenuMobileComponent  implements OnInit {
             list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
+            list.push({title:this.translate.instant('marketplace.marketplace'),icon:'faBookOpen',url:'marketplace/elearnings'});
             if(this.auth.activeCourses?.length || this.auth.myElearnings?.length){
               list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
@@ -191,6 +195,7 @@ export class MenuMobileComponent  implements OnInit {
             list.push({title:this.translate.instant('buttons.dashboard'),icon:'faHome',url:'start'});
             list.push({title:this.translate.instant('buttons.search_case'),icon:'faSearch',url:'start/cases/search'});
             list.push({title:this.translate.instant('buttons.create_self'),icon:'faLightbulb',url:'start/cases/create_self'});
+            list.push({title:this.translate.instant('marketplace.marketplace'),icon:'faBookOpen',url:'marketplace/elearnings'});
             if(this.auth.activeCourses?.length || this.auth.myElearnings?.length){
               list.push({title:this.translate.instant('buttons.your_trainings'),icon:'faGraduationCap',url:'start/my_trainings'});
             }
