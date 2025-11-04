@@ -1121,7 +1121,7 @@ export class ConversationService implements OnDestroy {
 
   getFeedbackChat(index:number,type:string,id?:string){
     if(!this.activeConversation.messages || this.activeConversation.messages.length<1){
-      return {};
+      return ''
     }
     let messages = JSON.parse(JSON.stringify(this.activeConversation.messages))
     let feedbackList = []

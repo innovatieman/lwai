@@ -1225,7 +1225,7 @@ export class AuthService {
               body: JSON.stringify({}),
             });
             const data = await response.json();
-            console.log(data)
+            // console.log(data)
             if(data){
               this.countrySet = true
               let country = data.country_code

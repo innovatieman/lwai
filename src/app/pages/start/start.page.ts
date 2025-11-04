@@ -527,7 +527,7 @@ export class StartPage implements OnInit {
     this.conversations$.forEach((e:any) => {
       for(let i = 0; i < e.length; i++){
         if(!e[i].closed){
-          conversations.push(e[i].conversationId)
+          conversations.push(e[i].caseId)
         }
       }
     })
@@ -743,6 +743,9 @@ export class StartPage implements OnInit {
     this.caseSuggestions = [];
     const seed = this.helper.getDailySeed();
     let cases:any = JSON.parse(JSON.stringify(this.visibleCases));
+
+    cases = this.filterKeyPipe.transform(cases, '!id', this.activeConversationsIds);
+
     cases = cases.slice(0, 15);
     let caseSuggestions = this.helper.shuffleArrayDeterministic(cases, seed);
 

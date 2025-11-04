@@ -3528,6 +3528,9 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
             if(res?.status!='200'){
               this.toast.hideLoader()
               this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+              setTimeout(() => {
+                this.toast.hideLoader()
+              }, 2000);
             }
             else {
               if(!training){

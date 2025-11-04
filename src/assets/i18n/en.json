@@ -626,6 +626,7 @@
       "type_game":"Game format",
       "select_voice":"Select voice",
       "no_voice_selected":"No voice selected. The user cannot use the voice function.",
+      "no_voice_selected_short":"No voice selected.",
       "voice_type_teenager":"Teenager",
       "voice_sex_female":"Female",
       "voice_sex_male":"Male",
@@ -1334,7 +1335,10 @@
     "watch_example":"Watch the content",
     "good_for":"Good for",
     "extended_conversations":"extended conversations",
-    "warning_no_credits":"WARNING: Without credits you cannot practice conversations."
+    "warning_no_credits":"WARNING: Without credits you cannot practice conversations.",
+    "not_found_title":"Training not found",
+    "not_found_text":"The training you are trying to view was not found. Check the marketplace for other possible trainings.",
+    "to_marketplace":"To marketplace"
   },
   "form":{
     "name":"Name",

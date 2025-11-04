@@ -16,6 +16,7 @@ import { LevelsService } from 'src/app/services/levels.service';
 import { FilterKeyPipe } from 'src/app/pipes/filter-key.pipe';
 import { CasesService } from 'src/app/services/cases.service';
 import { CaseFilterPipe } from 'src/app/pipes/case-filter.pipe';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
   selector: 'app-wait-verify',
@@ -93,7 +94,8 @@ export class WaitVerifyPage implements OnInit {
     public levelService:LevelsService,
     private filterKeyPipe:FilterKeyPipe,
     private caseFilterPipe:CaseFilterPipe,
-    private cases:CasesService
+    private cases:CasesService,
+    private afAuth: AngularFireAuth
   ) { }
 
   ngOnInit() {
@@ -147,9 +149,10 @@ export class WaitVerifyPage implements OnInit {
         this.nav.go('login')
       }
     }, 10000);
-    this.auth.isVerified().subscribe((auth) => {
+    this.auth.isVerified().subscribe(async (auth) => {
       if(auth){
-        this.isVerified = true
+        await this.checkVerification()
+        // this.isVerified = true
         this.cases.casesLoaded.subscribe((res)=>{
           this.casesLoaded = true
         })
@@ -206,10 +209,11 @@ export class WaitVerifyPage implements OnInit {
       code:code
     }
     this.toast.showLoader(this.translate.instant('page_wait_verify.code_checking'))
-    this.functions.httpsCallable('verifyEmailInitCode')({code:code,email:this.auth.userInfo.email}).subscribe((response:any)=>{
-      console.log(response)
+    this.functions.httpsCallable('verifyEmailInitCode')({code:code,email:this.auth.userInfo.email}).subscribe(async (response:any)=>{
+      // console.log(response)
       if(response.status==200){
-        this.isVerified = true
+        await this.checkVerification()
+        // this.isVerified = true
         this.verifyCode.valid = true
         setTimeout(async () => {
           await this.auth.refreshFirebaseUser()
@@ -311,10 +315,11 @@ export class WaitVerifyPage implements OnInit {
       }
       else if(response){
         this.toast.showLoader()
-        this.functions.httpsCallable('confirmMyEmail')({}).subscribe((response:any)=>{
+        this.functions.httpsCallable('confirmMyEmail')({}).subscribe(async (response:any)=>{
           console.log(response)
           if(response.status==200){
-            this.isVerified = true
+            await this.checkVerification()
+            // this.isVerified = true
             if(this.step==0){
               this.next(this.step)
             }
@@ -345,7 +350,6 @@ export class WaitVerifyPage implements OnInit {
     })
   }
 
-
   async savePreferences(types?:any){
     if(!types){
       this.modalService.showConfirmation(this.translate.instant('page_wait_verify.preferences_no_content')).then((response)=>{
@@ -363,6 +367,24 @@ export class WaitVerifyPage implements OnInit {
     }
   }
 
+
+  async checkVerification() {
+    const user = await this.afAuth.currentUser;
+    if (user) {
+      await user.reload(); // ✅ Forceer verversing van gegevens
+      if (user.emailVerified) {
+        this.isVerified = true;
+        console.log('Email verified after reload.');
+      }
+      else{
+        console.log('Email still not verified.');
+      }
+      //   this.router.navigate(['/dashboard']); // of een andere pagina
+      // } else {
+        // eventueel foutmelding of opnieuw proberen
+      // }
+    }
+  }
 
   filterTypes(){
     let filter: any = {

@@ -41,7 +41,6 @@ export class CasesService {
     })
 
     this.nav.changeNav.subscribe((res)=>{
-      console.log('changeNav',res)
       this.all = []
       this.loadCases(()=>{
         let checkInt = setInterval(() => {

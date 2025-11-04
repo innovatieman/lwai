@@ -14,7 +14,7 @@ export class ConfirmationModalComponent {
   constructor(
     private modalController: ModalController,
     public media:MediaService,
-    private translate:TranslateService
+    public translate:TranslateService
   ) {}
 
   dismiss(confirmed: boolean) {

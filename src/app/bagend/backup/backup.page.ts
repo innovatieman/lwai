@@ -60,5 +60,29 @@ export class BackupPage implements OnInit {
   }
 
 
+  clearTempUsers(){
+    this.functions.httpsCallable('deleteTempUserManual')({}).subscribe(result=>{
+      console.log('Temp users cleared:', result);
+    })
+  }
+
+  getTestUsers(){
+    this.functions.httpsCallable('deleteTestUsers')({}).subscribe(result=>{
+      console.log('Test users retrieved:', result);
+
+      for(let user of (result as any).users){
+        if(user.email!='mark@innovatieman.nl' && user.email!='curie@innovatieman.nl' && user.email!='basictrainer@innovatieman.nl'){
+          this.functions.httpsCallable('deleteUsers')({email:user.email}).subscribe(result=>{
+            console.log('Deleted user:', user.email);
+          });
+        }
+        else{
+          console.log('Skipping user:', user.email);
+        }
+      }
+
+    })
+  }
+
 
 }

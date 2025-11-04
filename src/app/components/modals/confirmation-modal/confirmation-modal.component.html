@@ -10,7 +10,7 @@
 <div [innerHtml]="message" weight400 style="padding:30px;padding-top:0;overflow: auto;line-height:1.6" [ngStyle]="{'max-height':media.smallDevice ? 'calc(100vh - 40px)' : '80vh'}"></div>
 
 <div flex style="padding:20px;justify-content: flex-end;">
-  <ion-button [color]="'dark'" class="saveButton" [innerHTML]="'Annuleren'" (click)="dismiss(false)" fill="solid"></ion-button>
+  <ion-button [color]="'dark'" class="saveButton" [innerHTML]="translate.instant('buttons.cancel')" (click)="dismiss(false)" fill="solid"></ion-button>
   <span class="spacer"></span>
-  <ion-button [color]="'danger'" class="saveButton" [innerHTML]="'Bevestigen'" (click)="dismiss(true)" fill="solid"></ion-button>
+  <ion-button [color]="'danger'" class="saveButton" [innerHTML]="translate.instant('buttons.confirm')" (click)="dismiss(true)" fill="solid"></ion-button>
 </div>

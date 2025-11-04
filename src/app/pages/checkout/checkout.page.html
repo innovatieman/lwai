@@ -5,10 +5,25 @@
       <ion-spinner name="lines-sharp" style="height:100px;width:100px"></ion-spinner>
     </div>
   </div>
+  
   <ion-grid>
     <ion-row>
       <ion-col size="12" style="padding:30px;">
-        <ion-card style="background:white" [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
+        <ion-card style="background:white;padding:30px;" *ngIf="firstLoaded && !sales.elearningItem(item_id).title" [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
+          <ion-card-header noPadding marginBottom>
+            <ion-card-title center font-28 weight700>
+              <span style="color:var(--ion-color-dark)">{{'checkout.not_found_title' | translate}}</span>
+            </ion-card-title>
+          </ion-card-header>
+
+          <p center weight600 font-16 style="margin:-10px 0 20px 0">{{'checkout.not_found_text' | translate}}</p>
+          <div flex center-ver center-hor basicMargin fullwidth>
+            <!-- <div class="spacer"></div> -->
+            <ion-button class="saveButton"  fill="outline" (click)="nav.go('marketplace/elearnings')">{{'checkout.to_marketplace' | translate}}</ion-button>
+          </div>
+
+        </ion-card>
+        <ion-card style="background:white" *ngIf="firstLoaded && sales.elearningItem(item_id).title" [ngStyle]="{'margin': media.smallDevice ? '5px' : '24px 16px'}">
           <ion-row>
             
 

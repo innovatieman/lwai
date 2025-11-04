@@ -625,6 +625,7 @@
         "type_game":"Spelvorm",
         "select_voice":"Selecteer een stem",
         "no_voice_selected":"Geen stem geselecteerd. De gebruiker kan dan geen gebruik maken van de stem functie",
+        "no_voice_selected_short":"Geen stem geselecteerd.",
         "voice_type_teenager":"Tiener",
         "voice_sex_female":"Vrouw",
         "voice_sex_male":"Man",
@@ -1336,7 +1337,10 @@
         "watch_example":"Bekijk de inhoud",
         "good_for":"Goed voor",
         "extended_conversations":"uitgebreide gesprekken",
-        "warning_no_credits":"LET OP: Zonder credits kun je geen gesprekken oefenen."
+        "warning_no_credits":"LET OP: Zonder credits kun je geen gesprekken oefenen.",
+        "not_found_title":"Training niet gevonden",
+        "not_found_text":"De training die je probeert te bekijken is helaas niet gevonden. Bekijk in de marketplace andere mogelijke trainingen.",
+        "to_marketplace":"Naar de marketplace"
     },
     "form":{
         "name":"Naam",
