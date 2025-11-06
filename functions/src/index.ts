@@ -54,5 +54,6 @@ export * from './payment/invoices'
 export * from './payment/buy'
 export * from './modules/streaming'
 export * from './maintenance/photos'
+export * from './payment/selfbilling'
 
 

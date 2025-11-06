@@ -24,7 +24,9 @@ exports.userRegister = functions.region('europe-west1').runWith({memory:'1GB'}).
           types:[],
         }
       }
-      
+      if(user.email.startsWith('stream_') && user.email.endsWith('@alicialabs.com')){
+        return null
+      }
       return admin.firestore().collection('users').doc(user.uid).set(userObj)
         .then(async ()=>{
           const basicSubscription = {

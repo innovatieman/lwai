@@ -3,6 +3,8 @@ import admin from '../firebase'
 import * as logging from '../logging/events'
 import * as responder from '../utils/responder'
 import { UserRecord } from 'firebase-functions/v1/auth';
+const { onCall, CallableRequest } = require("firebase-functions/v2/https");
+import type { CallableRequest } from 'firebase-functions/lib/common/providers/https';
 
 
 exports.setRole = functions.region('europe-west1').https.onCall((data,context)=>{
@@ -31,22 +33,38 @@ exports.confirmEmail = functions.region('europe-west1').https.onCall(async(data,
     })
 })
 
-exports.deleteUser = functions.region('europe-west1').https.onCall((data,context)=>{
-    if(context.auth?.token.admin!==true){
-        new logging.Logging('deleteUser',data,context)
-        return new responder.Message('not authorized',403)
+exports.deleteUsers = onCall(
+    {
+      region: 'europe-west1',
+      memory: '1GiB',
+    },
+    async (request: CallableRequest<any>) => {
+      
+      const { auth, data } = request;
+      if (!auth.uid) {
+        return new responder.Message('Unauthorized', 401);
+      }
+
+      let userDoc = await admin.firestore().collection('users').doc(auth.uid).get();
+      if(!userDoc.exists){
+        return new responder.Message('User not found', 404);
+      }
+      let userData:any = userDoc.data();
+      if(!userData.isAdmin){
+        return new responder.Message('Forbidden', 403);
+      } 
+        if(data.email){
+            return admin.auth().getUserByEmail(data.email)
+            .then(user=>{
+                return admin.auth().deleteUser(user.uid)
+            })
+        }
+        else if(data.uid){
+            return admin.auth().deleteUser(data.uid)
+        }
+        return new responder.Message('no email or uid',404)
     }
-    if(data.email){
-        return admin.auth().getUserByEmail(data.email)
-        .then(user=>{
-            return admin.auth().deleteUser(user.uid)
-        })
-    }
-    else if(data.uid){
-        return admin.auth().deleteUser(data.uid)
-    }
-    return new responder.Message('no email or uid',404)
-})
+)
 
 exports.removeRole = functions.region('europe-west1').https.onCall((data,context)=>{
     if(context.auth?.token.admin!==true){

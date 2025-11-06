@@ -27,4 +27,6 @@ export const config = {
   hume_api_key:process.env.HUME_API_KEY || '',
   google_ads_api_key: process.env.GOOGLE_ADS_API_KEY || '',
   google_ads_client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET || '',
+  sendgrid_api_key: process.env.SENDGRID_API_KEY || '',
+
 };

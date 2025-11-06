@@ -467,13 +467,21 @@ exports.choicesGemini = onRequest(
       let lastMessage =  cleanReactionMessage(messages[messages.length-1].content);
 
       ////////////////////////////////////////////////////////////////////
+      // Set language
+      ////////////////////////////////////////////////////////////////////
+      let language = 'nl'
+      if(body.language){
+        language = body.language;
+      }
+
+      ////////////////////////////////////////////////////////////////////
       // Get category data
       ////////////////////////////////////////////////////////////////////
       const categoryRef = db.doc(`categories/${body.categoryId}`);
       const conversationRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}`);
       const caseRef = db.doc(`users/${body.userId}/conversations/${body.conversationId}/caseItem/caseItem`);
       const [agent_instructions, categorySnap,formats,conversationSnap,caseSnap] = await Promise.all([
-        getAgentInstructions(body.instructionType,body.categoryId), 
+        getAgentInstructions(body.instructionType,body.categoryId,language), 
         categoryRef.get(), 
         getFormats(body.instructionType),
         conversationRef.get(),
@@ -528,6 +536,15 @@ exports.choicesGemini = onRequest(
         sendMessages.push({role: "system",content: systemContent})
         sendMessages.push({role: "user",content: content})
       }
+
+      db.collection('debug_logs').add({
+        type: 'choices_gemini',
+        userId: body.userId,
+        conversationId: body.conversationId,
+        timestamp: FieldValue.serverTimestamp(),
+        systemContent: systemContent,
+        userContent: content,
+      });
 
       ////////////////////////////////////////////////////////////////////
       // Stream Gemini
@@ -1339,6 +1356,7 @@ exports.closingGemini = onRequest(
         lastPhaseScores = lastPhaseScores.element_levels;
       }
       lastPhaseScores = '<pre>'+JSON.stringify(lastPhaseScores)+'</pre>';
+      
 
       ////////////////////////////////////////////////////////////////////
       // Get category data
@@ -1395,6 +1413,15 @@ exports.closingGemini = onRequest(
         {role: "system",content: systemContent},
         {role: "user",content: content}
       ]
+
+      db.collection('debug_logs').add({
+        type: 'closing_gemini',
+        userId: body.userId,
+        conversationId: body.conversationId,
+        timestamp: FieldValue.serverTimestamp(),
+        systemContent: systemContent,
+        userContent: content,
+      });
 
       ////////////////////////////////////////////////////////////////////
       // Stream Gemini
@@ -1483,7 +1510,7 @@ exports.skillsGemini = onRequest(
       if(body.language){
         language = body.language;
       }
-      console.log('language', language);
+      // console.log('language', language);
       ////////////////////////////////////////////////////////////////////
       // Check subscription
       //////////////////////////////////////////////////////////////////
@@ -1750,12 +1777,20 @@ exports.case_prompt_gemini = onRequest(
       }
 
       ////////////////////////////////////////////////////////////////////
+      // Set language
+      ////////////////////////////////////////////////////////////////////
+      let language = 'nl'
+      if(body.language){
+        language = body.language;
+      }
+
+      ////////////////////////////////////////////////////////////////////
       // Get category data
       ////////////////////////////////////////////////////////////////////
       const categoryRef = db.doc(`categories/${body.categoryId}`);
 
       const [agent_instructions,categorySnap,formats] = await Promise.all([
-        getAgentInstructions(body.instructionType,body.categoryId),
+        getAgentInstructions(body.instructionType,body.categoryId,language),
         categoryRef.get(), 
         getFormats(body.instructionType)
       ]);

@@ -1050,7 +1050,7 @@ exports.sellElearningWithInvoice = functions.region('europe-west1').runWith({mem
           return new responder.Message('Trainer not found', 400);
         }
         let trainerData = trainerRef.data();
-        if(!trainerData || !trainerData.trainerPro){
+        if(!trainerData){
           return new responder.Message('Trainer is not authorized.', 400);
         }
 
