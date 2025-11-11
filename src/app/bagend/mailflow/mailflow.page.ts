@@ -91,6 +91,8 @@ export class MailflowPage implements OnInit {
     // Initieel alle mails tonen
     this.filteredMails = this.allMails;
     this.excludeKeys.forEach(key => this.excludeFilter[key] = false);
+
+
   }
 
   ionViewWillEnter() {
@@ -125,6 +127,7 @@ export class MailflowPage implements OnInit {
       this.allMails = this.allMails.sort((a, b) => {
         return a.days - b.days || a.title.localeCompare(b.title);
       });
+      this.updateFilteredMails();
     });
   }
 
@@ -207,6 +210,16 @@ export class MailflowPage implements OnInit {
   }
 
   editMail(item:any,event?:Event) {
+    if(event){
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.modalService.designMail({ mailItem: item },(result:any)=>{
+      console.log(result);
+    })
+  }
+
+  editMailOud(item:any,event?:Event) {
     if(event){
       event.stopPropagation();
       event.preventDefault();
@@ -360,6 +373,40 @@ export class MailflowPage implements OnInit {
         return !this.excludeFilter[key] || mail.exclude[key];
       });
     });
+  }
+
+  convertContent(content:any){
+    if(!content){return ''}
+    let html = ''
+    html = html += `<div class="headerDefault" style="width:100%;text-align:center;padding-bottom:20px;"><img src="https://www.alicialabs.com/wp-content/uploads/2025/01/logo_full_black_sm.png" alt="Alicialabs Logo" style="max-width:200px;"/></div>`;
+
+    for(let item of content){
+      if(item.type=='text'){
+        let text = item.value.replace(/\n/g, '<br/>');
+        html = html += `<p style="font-size:${item.fontSize || '14px'};padding-left:${item.marginLeft || '0px'};padding-right:${item.marginRight || '0px'};padding-top:${item.marginTop || '0px'};padding-bottom:${item.marginBottom || '0px'};font-size:${item.fontSize || '14p'};font-weight:${item.fontWeight || 400};text-align:${item.alignment || 'left'}">${text}</p>`;
+      }
+      if(item.type=='button'){
+        html = html += `<div style="width:100%;text-align:${item.alignment || 'center'}";><a href="${item.url}" style="text-decoration:none;display:block;padding:5px 8px;backgound:${item.backgroundColor || '#2b6cf5'};color:${item.color || '#fff'};border-radius:${item.borderRadius || '0px'}">${item.text}</a></div>`
+      }
+      if(item.type=='image'){
+        html = html += `<div class="iets" style="width:100%;text-align:${item.alignment || 'left'};padding-left:${item.marginLeft || '0px'}; padding-right:${item.marginRight || '0px'}; padding-top:${item.marginTop || '0px'}; padding-bottom:${item.marginBottom || '0px'};"><img src="${item.src}" style="max-width:100%;border-radius:${item.borderRadius || '0px'};height:${item.height || 'auto'};" /></div>`;
+      }
+      if(item.type=='spacer'){
+        html = html += `<div style="width:100%;height:${item.height || '20px'};"></div>`;
+      }
+      if(item.type=='divider'){
+        html = html += `<div style="width:100%;padding-left:${item.marginLeft || '0px'}; padding-right:${item.marginRight || '0px'}; margin-top:${item.marginTop || '15px'}; margin-bottom:${item.marginBottom || '15px'};"><div style="width:100%;border-top:1px solid #ccc;height:1px"></div></div>`;
+      }
+     
+    }
+
+    html = html += `<div style="margin-top:20px; padding-top:10px; font-size:12px; color:#888;text-align:center;">
+      <p>&copy; ${new Date().getFullYear()} ${this.translate.instant('mails.footer_reserved')}</p>
+      <p>${this.translate.instant('mails.footer_visit_website')}</p>
+      <p>${this.translate.instant('mails.footer_text')}</p>
+    </div>`;
+
+    return html
   }
 
 }

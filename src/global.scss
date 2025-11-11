@@ -704,8 +704,11 @@ video{
     font-size: 16px;
 }
 
-.editHtmlModal .modal-wrapper, ion-modal.exampleModal .modal-wrapper {
+.editHtmlModal .modal-wrapper, ion-modal.exampleModal .modal-wrapper{
     width: 80%;
+ }
+ .designMailModal .modal-wrapper {
+    width: 100%;
  }
 
 ion-modal.caseModal{
@@ -723,6 +726,10 @@ ion-modal.evaluationModal{
 }
 ion-modal.editHtmlModal{
     --width: 1000px;
+    --max-width: 100%;
+}
+ion-modal.designMailModal {
+    --width: 100%;
     --max-width: 100%;
 }
 ion-modal.exampleModal{
@@ -750,7 +757,8 @@ ion-modal.exampleModal{
     }
 }
 
-ion-modal.infoModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal, ion-modal.evaluationModal,ion-modal.editHtmlModal,ion-modal.exampleModal {
+
+ion-modal.infoModal, ion-modal.designMailModal, ion-modal.show-modal,ion-modal.caseModal, ion-modal.selectManyModal, ion-modal.evaluationModal,ion-modal.editHtmlModal,ion-modal.exampleModal {
     --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4)!important;
     --backdrop-opacity: var(--ion-backdrop-opacity, 0.32)!important;
     --border-radius:24px;
@@ -806,6 +814,16 @@ ion-modal.exampleModal {
     }
 }
 
+ion-modal.designMailModal {
+    --border-radius:0px;
+    .ion-page {
+        height:100vh;
+    }
+    ion-card{
+            background:white;
+
+        }
+}
 
 @media only screen and (max-width: 667px) {
     ion-modal.infoModal, ion-modal.show-modal {

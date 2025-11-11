@@ -7,19 +7,29 @@
           <div backgroundImage class="avatarImage" *ngIf="!basicData.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
           <div flex center center-ver center-hor style="height:calc(100% - 275px)">
             <ion-card-header>
-              <ion-card-title font-18 weight600>{{basicData.title}}</ion-card-title>
-              <ion-card-subtitle font-14 weight400>{{'Momentje, je case wordt geladen'}} <ion-spinner></ion-spinner></ion-card-subtitle>
+              <ion-card-title font-18 weight600>{{'Oefen case'}}</ion-card-title>
+              <ion-card-title font-16 weight500>{{basicData.title}}</ion-card-title>
+              <ion-card-subtitle font-14 weight400>{{'Momentje, je case wordt geladen'}}</ion-card-subtitle>
+              <div style="text-align:center;margin-top:10px;"><ion-spinner font-20 name="dots"></ion-spinner></div>
             </ion-card-header>
           </div>
         </ion-card-content>
       </ion-card>
 
-      <ion-card noMargin basicPadding pointer caseCard *ngIf="finished">
+      <ion-card noMargin noPadding pointer caseCard *ngIf="finished">
         <ion-card-content noPadding fullHeight>
-          <div flex center center-ver center-hor style="height:100%">
+          <div backgroundImage class="avatarImage" *ngIf="basicData.photo" [ngStyle]="{'background-image': 'url(' + basicData.photo + ')'}"></div>
+          <div backgroundImage class="avatarImage" *ngIf="!basicData.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+          <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+          <!-- <div flex center center-ver center-hor style="height:100%"> -->
             <ion-card-header>
               <ion-card-title font-18 weight600>{{'Bedankt voor het oefenen!'}}</ion-card-title>
               <ion-card-subtitle font-14 weight400>{{'Je kunt dit venster nu sluiten.'}}</ion-card-subtitle>
+              <div style="text-align:center;margin-top:20px;">
+                <ion-button class="saveButton" fill="outline" color="medium" (click)="restartStream()" font-16 weight600>
+                  {{'Wil je nog een keer?'}}
+                </ion-button>
+              </div>
             </ion-card-header>
           </div>
         </ion-card-content>

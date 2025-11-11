@@ -352,9 +352,6 @@
             </ion-card-content>
           </ion-card>
 
-          
-
-
           <ion-card basicPadding *ngIf="showPart=='admins'">
             <ion-card-header>
               <ion-card-title flex center-ver>
@@ -411,8 +408,6 @@
             </ion-card-content>
           </ion-card>
 
-          
-          
           <ion-card basicPadding *ngIf="showPart=='bank'&&trainerDataLoaded">
             <ion-card-header *ngIf="trainerService.isTrainerPro">
               <ion-card-title flex center-ver>
@@ -1753,6 +1748,40 @@
 
             </ion-card-content>
           </ion-card>
+
+          <ion-card basicPadding *ngIf="showPart=='upgrade'" marginTop>
+
+            <ion-card-title flex center-ver style="margin-top:10px">
+              <span weight600>{{'trainings.cost_overview' | translate}}</span>
+              <div class="spacer"></div>
+              <fa-icon pointer titleIcon font-24 text-secondary (click)="showPart='become_trainer'" [icon]="icon.get('faTimes')"></fa-icon>
+            </ion-card-title>
+
+            <ion-row basicPadding font-18 border-bottom style="margin-top:10px">
+              
+              <ion-col *ngIf="!trainerService.isTrainerPro" size="8" weight700><div>{{'page_account.upgrade_to_pro' | translate}}</div></ion-col>
+              <ion-col *ngIf="!trainerService.isTrainerPro" size="4" weight700 align-right><div>{{helper.currencyChar('EUR (€)')}} {{trainerService.trainerProProduct.price | number : '1.2-2' }}</div></ion-col>
+
+            </ion-row>
+            <ion-row font-18 basicPadding border-bottom>
+              <ion-col size="8" weight700><div>{{'trainings.costs_total_excl_taxes' | translate}}</div></ion-col>
+              <ion-col size="4" weight700 align-right><div>{{helper.currencyChar('EUR (€)')}} {{trainerService.trainerProProduct.price | number : '1.2-2' }}</div></ion-col>
+
+              <ion-col size="8"><div>{{'trainings.costs_taxes' | translate}}</div></ion-col>
+              <ion-col size="4" align-right><div>{{helper.currencyChar('EUR (€)')}} {{trainerService.trainerProProduct.vat | number : '1.2-2' }}</div></ion-col>
+
+            </ion-row>
+            <ion-row basicPadding font-18 >
+              <ion-col size="8" weight700><div>{{'trainings.costs_total_incl_taxes' | translate}}</div></ion-col>
+              <ion-col size="4" weight700 align-right><div>{{helper.currencyChar('EUR (€)')}} {{trainerService.trainerProProduct.priceInclVat | number : '1.2-2' }}</div></ion-col>
+            </ion-row>
+
+            <div marginTop flex center-ver>
+              <div class="spacer"></div>
+              <ion-button class="saveButton cardButton" color="primary" fill="solid" size="small" (click)="trainerService.registerAsTrainerPro()">{{'page_account.upgrade_to_pro' | translate}}</ion-button>
+            </div>
+          </ion-card>
+
 
         </ion-col>
       </ion-row>

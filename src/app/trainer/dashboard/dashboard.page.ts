@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -84,6 +84,7 @@ export class DashboardPage implements OnInit {
     private route:ActivatedRoute,
     private modalService:ModalService,
     private tutorial:tutorialService,
+    private rf:ChangeDetectorRef,
   ) { }
 
   ngOnInit() {
@@ -1286,7 +1287,16 @@ export class DashboardPage implements OnInit {
       this.showPart = 'bank'; 
       return
     }
-    this.trainerService.registerAsTrainerPro(invoice);
+    this.showPart='upgrade'
+    // this.trainerService.registerAsTrainerPro(invoice);
+  }
+  registerAsTrainerProDirectly(){
+    this.trainerService.registerAsTrainerPro(()=>{
+      setTimeout(() => {
+        this.showPart='settings'
+        this.rf.detectChanges();  
+      }, 200);
+    });
   }
 
   choosePaymentMethod(){

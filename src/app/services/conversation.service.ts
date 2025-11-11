@@ -52,7 +52,19 @@ export class ConversationService implements OnDestroy {
   voiceActive:boolean = false;
   isSpeaking:boolean = false;
   fullRecording:boolean = false;
+  startingCredits:any = null;
+  countingCredits:number = 0;
 
+  creditsCost:any = {
+    reaction_voice: 75,
+    reaction: 3,
+    choices: 4,
+    facts: 7,
+    background: 4,
+    phases: 7,
+    feedback: 2,
+    soundToText:2,
+  }
 
   private conversationSub!: Subscription;
   private subCollectionSubs: Subscription[] = [];
@@ -172,12 +184,23 @@ export class ConversationService implements OnDestroy {
     //   conversationObj.trainingId = caseItem.trainingId
     // }
 
+    
+
     await this.firestoreService.createSub('users', this.auth.userInfo.uid, 'conversations',conversationObj,async (response:any)=>{
       conversationId = response.id
       let tempCaseItem = JSON.parse(JSON.stringify(caseItem))
       for(let key in tempCaseItem){
         if(tempCaseItem[key]==null || tempCaseItem[key]==undefined){
           delete tempCaseItem[key]
+        }
+      }
+      if(caseItem.startingCredits!==undefined){
+        this.startingCredits = caseItem.startingCredits;
+        conversationObj.startingCredits = caseItem.startingCredits;
+        if(caseItem.startingCredits<160){
+          setTimeout(() => {
+            this.toast.show(this.translate.instant('conversation.streaming_credits_warning_test').replace('[credits]', this.startingCredits),60000);
+          }, 1000);
         }
       }
       await this.firestoreService.set(`users/${this.auth.userInfo.uid}/conversations/${conversationId}/caseItem`,'caseItem', tempCaseItem)
@@ -468,6 +491,13 @@ export class ConversationService implements OnDestroy {
 
 
   async openai_chat(obj:any) {
+
+    if(this.startingCredits!==null && this.countingCredits >= this.startingCredits){
+      this.waiting = false;
+      this.toast.show(this.translate.instant('conversation.not_enough_credits_streaming'), 5000);
+      return;
+    }
+
     if(this.message){
       this.messages.push({role:'user',content:this.message,id:(parseInt(this.getLatestMessageId(this.messages))+1)+''})
     }
@@ -480,12 +510,13 @@ export class ConversationService implements OnDestroy {
       trainingId: this.activeConversation.trainingId,
     }
     obj.daysBetweenConversations = this.activeConversation.daysBetweenConversations || 0;
-    console.log(obj)
+    // console.log(obj)
     let url  = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGemini'
     if( this.activeConversation.conversation == 'expert' || this.activeConversation.conversationType == 'expert'){
       url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/chatExpertGemini'
     }
-    console.log(url)
+    // console.log(url)
+    this.countingCredits = this.countingCredits + this.creditsCost.reaction
     // console.log(obj)
     this.update.emit(true);
     // setTimeout(() => {
@@ -577,6 +608,13 @@ export class ConversationService implements OnDestroy {
   audioVoice:HTMLAudioElement = new Audio();
 
   async openai_chat_voice(obj: any) {
+
+    if(this.startingCredits!==null && this.countingCredits >= this.startingCredits){
+      this.waiting = false;
+      this.toast.show(this.translate.instant('conversation.not_enough_credits_streaming'), 5000);
+      return;
+    }
+
     this.update.emit(true);
     // console.log(this.activeConversation.messages)
 
@@ -591,7 +629,10 @@ export class ConversationService implements OnDestroy {
     // obj.model = "gpt-4o-mini-tts"
     obj.voice = this.activeConversation.voice
     // obj.instructions = "Voice Affect: Ondeugend, geamuseerd, licht ironisch.\n\nTone: Lichtvoetig, plagerig.\n\nPacing: Afwisselend, met ritmische cadans.\n\nPronunciation: Speelse klemtonen, lichte uithalen.\n\nPauses: Voor dramatisch effect of humor."
-    console.log('speaking with voice',obj)
+    // console.log('speaking with voice',obj)
+
+    this.countingCredits = this.countingCredits + this.creditsCost.reaction_voice;
+
     // const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGeminiVoiceElevenlabsStream2", {
     const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/chatGeminiVoiceOpenAiTTS", {
       method: "POST",
@@ -893,6 +934,11 @@ export class ConversationService implements OnDestroy {
     let url = ''
     // let url = 'https://conversationAIDirect-p2qcpa6ahq-ew.a.run.app'
     if(obj.instructionType == 'facts'){
+      if(this.startingCredits!==null && this.countingCredits >= this.startingCredits){
+        this.waiting = false;
+        this.toast.show(this.translate.instant('conversation.not_enough_credits_streaming'), 5000);
+        return;
+      }
       // url = 'https://factsai-p2qcpa6ahq-ew.a.run.app'
       // url = 'https://factsGemini-p2qcpa6ahq-ew.a.run.app'
       url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/factsGemini'
@@ -908,6 +954,11 @@ export class ConversationService implements OnDestroy {
       url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/feedbackGemini'
     }
     else if(obj.instructionType == 'choices'){
+      if(this.startingCredits!==null && this.countingCredits >= this.startingCredits){
+        this.waiting = false;
+        this.toast.show(this.translate.instant('conversation.not_enough_credits_streaming'), 5000);
+        return;
+      }
       // url = 'https://choicesai-p2qcpa6ahq-ew.a.run.app'
       // url = 'https://choicesgemini-p2qcpa6ahq-ew.a.run.app'
       url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/choicesGemini'
@@ -918,6 +969,11 @@ export class ConversationService implements OnDestroy {
       url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/goalsGemini'
     }
     else if(obj.instructionType == 'background'){
+      if(this.startingCredits!==null && this.countingCredits >= this.startingCredits){
+        this.waiting = false;
+        this.toast.show(this.translate.instant('conversation.not_enough_credits_streaming'), 5000);
+        return;
+      }
       // url = 'https://backgroundai-p2qcpa6ahq-ew.a.run.app'
       // url = 'https://backgroundgemini-p2qcpa6ahq-ew.a.run.app'
       url = 'https://europe-west1-lwai-3bac8.cloudfunctions.net/backgroundGemini'
@@ -931,6 +987,8 @@ export class ConversationService implements OnDestroy {
       trainerId: this.activeConversation.trainerId,
       trainingId: this.activeConversation.trainingId,
     }
+    this.countingCredits = this.countingCredits + (this.creditsCost[obj.instructionType] || 0)
+    
     const response = await fetch(url, {
       method: "POST",
       headers: {

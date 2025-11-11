@@ -292,6 +292,18 @@ const routes: Routes = [
     loadChildren: () => import('./pages/stream-case/stream-case.module').then( m => m.StreamCasePageModule)
   },
   {
+    path: 'bagend/payouts',
+    loadChildren: () => import('./bagend/payouts/payouts.module').then( m => m.PayoutsPageModule),
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'scorm',
+    loadChildren: () => import('./pages/scorm/scorm.module').then( m => m.ScormPageModule),
+    canActivate: [AdminGuard],
+
+  },
+
+  {
     path: '**',
     redirectTo: 'start',
     pathMatch: 'full'
@@ -394,6 +406,15 @@ const routes: Routes = [
     path: 'example',
     loadChildren: () => import('./components/modals/example/example.module').then( m => m.ExamplePageModule)
   },
+  {
+    path: 'design-mail',
+    loadChildren: () => import('./components/modals/design-mail/design-mail.module').then( m => m.DesignMailPageModule)
+  }
+  // {
+  //   path: 'case-card',
+  //   loadChildren: () => import('./components/case-card/case-card.module').then( m => m.CaseCardPageModule)
+  // },
+  
   
 
 

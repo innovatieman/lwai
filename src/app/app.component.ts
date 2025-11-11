@@ -29,8 +29,10 @@ export class AppComponent {
     this.setRealViewportHeight();
 
     if(localStorage.getItem('streamCase')){
-      this.logout('stream-case/finished')
-      return
+      setTimeout(() => {
+        this.logout('stream-case/finished');
+      }, 300);
+      return;
     }
 
     // window.addEventListener('resize', this.setRealViewportHeight);
@@ -69,6 +71,8 @@ export class AppComponent {
       await this.afAuth.signOut();
       if(localStorage.getItem('streamCase') || stream){
         localStorage.removeItem('streamCase')
+        this.nav.go('stream-case/finished');
+        return;
       }
       this.nav.go(location);
       setTimeout(() => {

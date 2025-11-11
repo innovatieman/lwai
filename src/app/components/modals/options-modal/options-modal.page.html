@@ -7,10 +7,10 @@
 </ion-button> -->
 </div>
 <div weight400 basicPadding autoScroll [ngStyle]="{'max-height':media.smallDevice ? 'calc((var(--vh) * 100) - 70px)' : 'calc(var(--vh) * 80)'}">
-  <div *ngIf="intro" marginBottom [innerHtml]="intro | sanitizeHtml"></div>
+  <div *ngIf="intro" marginBottom style="padding-left:20px;" weight500 font-16 [innerHtml]="intro | sanitizeHtml"></div>
   <div class="options">
     <div *ngFor="let option of options">
-      <ion-card margin10 font-14 basicPadding pointer (click)="modalController.dismiss(option.choice)">
+      <ion-card margin10 font-14 basicPadding pointer marginBottom style="background:white;" borderRadius16 (click)="modalController.dismiss(option.choice)">
         <div weight600>{{ option.choice }}</div>
         <div text-medium>{{ option.description }}</div>
       </ion-card>

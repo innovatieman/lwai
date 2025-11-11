@@ -148,6 +148,11 @@ export class HeaderComponent  implements OnInit {
       icon: 'faEnvelope',
       url: '/bagend/mailflow',
     },
+    {
+      title: "Uitbetalingen",
+      icon: 'faPiggyBank',
+      url: '/bagend/payouts',
+    },
 
     
     // {

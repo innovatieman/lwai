@@ -697,7 +697,7 @@ export class CheckoutPage implements OnInit {
       }
       list.push({
           title:0 + ' ' + this.translate.instant('credits.credits'),
-          subTitle:'LET OP: Zonder credits kun je geen gesprekken voeren.',
+          subTitle:this.translate.instant('checkout.warning_no_credits'),
           image:'assets/img/credits_0.webp',
           note:'€ 0,00',
           logo:true,
@@ -726,5 +726,5 @@ export class CheckoutPage implements OnInit {
           this.selectedCredits = this.selectMenuservice.selectedItem.value
         }
       })
-    }
+  }
 }

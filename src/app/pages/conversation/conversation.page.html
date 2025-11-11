@@ -66,7 +66,7 @@
       <div center>
         <ion-spinner *ngIf="!conversationHasBeenAnalyzed()&&busyAnalyzing" name="bubbles"></ion-spinner>
         <div *ngIf="!conversationHasBeenAnalyzed()&&busyAnalyzing">{{'conversation.analyzing_conversation' | translate}}</div>
-        <ion-card class="cipherCard" basicPadding *ngIf="conversation.activeConversation.rating">
+        <ion-card class="cipherCard" style="background:white;" basicPadding *ngIf="conversation.activeConversation.rating">
           <ion-card-header>
             <ion-card-title class="chartTitle" weight600 *ngIf="!conversationHasBeenAnalyzed()">{{'conversation.while_waiting' | translate}}</ion-card-title>
             <ion-card-title class="chartTitle" weight600 *ngIf="conversationHasBeenAnalyzed()">{{'conversation.analysis_ready' | translate}}</ion-card-title>
@@ -408,7 +408,7 @@
                    </ion-button>
                  </ion-col>
                  <ion-col size="3" noPadding flex center-ver center-hor>
-                   <ion-button id="assistent_menu" color="dark" fill="clear" (click)="auth.credits.total<=0 ? noCredits() :  toggleHelp()">
+                   <ion-button id="assistent_menu" color="dark" fill="clear" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  toggleHelp()">
                      <fa-icon slot="icon-only" font-24 [icon]="icon.get('faGraduationCap')" pointer></fa-icon>
                    </ion-button>
                  </ion-col>
@@ -430,7 +430,7 @@
                     </ion-button>
                   </ion-col>
                   <ion-col size="2" noPadding flex center-ver center-hor>
-                    <ion-button id="assistent_menu" color="dark" fill="clear" (click)="auth.credits.total<=0 ? noCredits() :  toggleHelp()">
+                    <ion-button id="assistent_menu" color="dark" fill="clear" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  toggleHelp()">
                       <fa-icon slot="icon-only" font-24 [icon]="icon.get('faGraduationCap')" pointer></fa-icon>
                     </ion-button>
                   </ion-col>
@@ -459,17 +459,17 @@
               <ion-col size="2" *ngIf="interaction!=='voice' && media.screenSize!=='xs'"></ion-col>
 
               <ion-col *ngIf="!conversation.fullRecording" [size]="media.screenSize==='xs' ? (interaction=='voice' ? 12 : 12) : 7">
-                <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 ? noCredits($event) :  doNothing()">
-                  <ion-textarea (keyup.enter)="auth.credits.total<=0 ? noCredits() : sendQuestion()" [disabled]="conversation.activeConversation.closed||analyzing" [autoGrow]="false" font-18 [rows]="3" [(ngModel)]="question">
+                <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits($event) :  doNothing()">
+                  <ion-textarea (keyup.enter)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() : sendQuestion()" [disabled]="conversation.activeConversation.closed||analyzing" [autoGrow]="false" font-18 [rows]="3" [(ngModel)]="question">
                     <div class="pulse-loader" *ngIf="analyzing&&media.screenSize!=='xs'" slot="start" style="position:absolute;left:0px;top:0px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:10;font-size:16px">
                       {{'conversation.analyzing_request' | translate}}
                     </div>
                     <ion-spinner *ngIf="loadingTextFromAudio" slot="end" name="dots"></ion-spinner>
-                    <ion-button fill="clear" color="dark" slot="end" absolute style="right:40px;bottom:0" *ngIf="!conversation.activeConversation.closed" (click)="auth.credits.total<=0 ? noCredits() :  (!record.recording ? startRecording($event) : stopRecording($event))">
+                    <ion-button fill="clear" color="dark" slot="end" absolute style="right:40px;bottom:0" *ngIf="!conversation.activeConversation.closed" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  (!record.recording ? startRecording($event) : stopRecording($event))">
                       <fa-icon slot="icon-only" *ngIf="!record.recording" [icon]="icon.get('faMicrophone')" pointer></fa-icon>
                       <fa-icon slot="icon-only" *ngIf="record.recording" [icon]="icon.get('faStop')" pointer></fa-icon>
                     </ion-button>
-                    <ion-button class="sendButton" size="small" slot="end" id="send_button" color="secondary" absolute style="--border-radius:100%;right:0px;bottom:2px;min-height:34px" fill="solid" *ngIf="!conversation.activeConversation.closed" [disabled]="conversation.waiting" (click)="auth.credits.total<=0 ? noCredits() :  sendQuestion()">
+                    <ion-button class="sendButton" size="small" slot="end" id="send_button" color="secondary" absolute style="--border-radius:100%;right:0px;bottom:2px;min-height:34px" fill="solid" *ngIf="!conversation.activeConversation.closed" [disabled]="conversation.waiting" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  sendQuestion()">
                       <fa-icon slot="icon-only" [icon]="icon.get('faArrowUp')" pointer></fa-icon>
                     </ion-button>
                   </ion-textarea>
@@ -477,13 +477,13 @@
               </ion-col>
 
               <!-- <ion-col *ngIf="!conversation.fullRecording" [size]="interaction=='voice' ? 7 : (media.smallDevice ? 9 : 10)">
-                <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 ? noCredits($event) :  doNothing()">
-                  <ion-textarea (keyup.enter)="auth.credits.total<=0 ? noCredits() :  sendQuestion()" [disabled]="conversation.activeConversation.closed||analyzing" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
+                <ion-card class="inputCard" id="user_input" noMargin (ionFocus)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits($event) :  doNothing()">
+                  <ion-textarea (keyup.enter)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  sendQuestion()" [disabled]="conversation.activeConversation.closed||analyzing" placeholder="Typ hier je reactie" [autoGrow]="false" font-18 rows="4" [(ngModel)]="question">
                     <div class="pulse-loader" *ngIf="analyzing" slot="start" style="position:absolute;left:0px;top:0px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:10;font-size:16px">
                       {{'conversation.analyzing_request' | translate}}
                     </div>
                     <ion-spinner *ngIf="loadingTextFromAudio" slot="end" name="dots"></ion-spinner>
-                    <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="auth.credits.total<=0 ? noCredits() :  (!record.recording ? startRecording($event) : stopRecording($event))">
+                    <ion-button fill="clear" color="secondary" slot="end" style="margin:-5px -5px 5px 5px" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  (!record.recording ? startRecording($event) : stopRecording($event))">
                       <fa-icon slot="icon-only" *ngIf="!record.recording" [icon]="icon.get('faMicrophone')" pointer></fa-icon>
                       <fa-icon slot="icon-only" *ngIf="record.recording" [icon]="icon.get('faStop')" pointer></fa-icon>
                     </ion-button>
@@ -501,7 +501,7 @@
                     </ion-button>
                   </ion-col>
                   <ion-col size="4" noPadding flex center-ver center-hor>
-                    <ion-button id="assistent_menu" color="dark" fill="clear" (click)="auth.credits.total<=0 ? noCredits() :  toggleHelp()">
+                    <ion-button id="assistent_menu" color="dark" fill="clear" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  toggleHelp()">
                       <fa-icon slot="icon-only" font-24 [icon]="icon.get('faGraduationCap')" pointer></fa-icon>
                     </ion-button>
                   </ion-col>
@@ -527,7 +527,7 @@
                 <ion-row>
 
                   <ion-col size="6" noPadding>
-                    <ion-button id="assistent_menu" color="secondary" fill="clear" (click)="auth.credits.total<=0 ? noCredits() :  toggleHelp()">
+                    <ion-button id="assistent_menu" color="secondary" fill="clear" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  toggleHelp()">
                       <fa-icon slot="icon-only" [icon]="icon.get('faGraduationCap')" pointer></fa-icon>
                     </ion-button>
                   </ion-col>
@@ -539,7 +539,7 @@
                 </ion-row>
                 <ion-row>
                   <ion-col size="6" noPadding *ngIf="!conversation.activeConversation.closed">
-                    <ion-button class="sendButton" id="send_button"  color="primary" fill="solid" [disabled]="conversation.waiting" (click)="auth.credits.total<=0 ? noCredits() :  sendQuestion()">
+                    <ion-button class="sendButton" id="send_button"  color="primary" fill="solid" [disabled]="conversation.waiting" (click)="auth.credits.total<=0 && !conversation.activeConversation.stream ? noCredits() :  sendQuestion()">
                       <fa-icon slot="icon-only" [icon]="icon.get('faPaperPlane')" pointer></fa-icon>
                     </ion-button>
                   </ion-col>

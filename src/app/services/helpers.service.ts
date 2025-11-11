@@ -3,6 +3,8 @@ import * as moment from 'moment'
 import { TranslateService } from '@ngx-translate/core';
 import { MediaService } from './media.service';
 import { ToastService } from './toast.service';
+import { LOCALE_ID, Inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +15,9 @@ export class HelpersService {
   constructor(
     public translate:TranslateService,
     private media:MediaService,
-    private toast:ToastService
+    private toast:ToastService,
+    private decimalPipe: DecimalPipe,
+    @Inject(LOCALE_ID) private locale: string
   ) { }
 
   doNothing(event?:Event){
@@ -160,6 +164,14 @@ export class HelpersService {
   isNan(nr:any):number{
     if(Number.isNaN(nr)||!nr){return 0}
     return nr
+  }
+
+  formatNumber(nr:number,digits?:string){
+    if(nr===undefined||nr===null||Number.isNaN(nr)){return '0'}
+    if(!digits){
+      digits = '1.0-0'
+    }
+    return this.decimalPipe.transform(nr, digits, this.locale);
   }
 
   floor(nr:number):number{

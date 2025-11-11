@@ -60,7 +60,7 @@
               <div class="spacer"></div>
               <div class="flowType" [ngClass]="mail.flow">{{mail.flow | capitalize}}</div>
               <ion-toggle marginLeft color="primary" [ngModel]="mail.active" (click)="toggleActive(mail,$event)"></ion-toggle>
-              <fa-icon marginLeft [icon]="icon.get('faPen')" (click)="editMail(mail,$event)"></fa-icon>
+              <fa-icon marginLeft [icon]="icon.get('faPen')" pointer (click)="editMail(mail,$event)"></fa-icon>
               <fa-icon chevron marginLeft [icon]="icon.get('faChevronDown')" [ngStyle]="{'transform': mail.showMail ? 'rotate(180deg)' : 'rotate(0deg)'}"></fa-icon>
             
             </ion-card-title>
@@ -126,10 +126,12 @@
               <span class="mailLabel">Van:</span>
               <span class="mailValue">{{mail.from}}</span>
             </div>
-            <div class="mailBody" basicPadding>
-              <p [innerHTML]="mail.body"></p>
-            </div>
           </ion-card-content>
+          <div class="mailBody" *ngIf="mail.showMail" basicPadding flex flex-column center-ver>
+            <p [innerHTML]="mail.body"></p>
+            <div style="border-top:solid 1px var(--ion-color-primary);margin: 20px 0px;"> </div>
+            <div [innerHtml]="convertContent(mail.content) | sanitizeHtml" class="mailItemPreview"></div>
+          </div>
         </ion-card>
       </ion-col>
     </ion-row>

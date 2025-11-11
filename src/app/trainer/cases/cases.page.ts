@@ -155,7 +155,6 @@ export class CasesPage implements OnInit {
   ionViewWillLeave() {
     this.leave$.next();
     this.leave$.complete();
-    console.log('trainerService.selectedModuleCases',this.trainerService.selectedModuleCases)
   }
 
   // private loadCategories() { 

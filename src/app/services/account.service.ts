@@ -35,6 +35,7 @@ export class AccountService {
 
   payments: any;
   products: any;
+  products_stream: any;
   products_trainer: any;
   products_elearnings: any;
   customers: any;
@@ -107,6 +108,7 @@ export class AccountService {
     this.fetchProducts()
     this.fetchProductsTrainer()
     this.fetchProductsElearnings()
+    this.fetchProductsStream()
     // this.fetchSubscriptionsStripe()
 
   }
@@ -140,6 +142,30 @@ export class AccountService {
         return item
       })
       // console.log(this.products)
+    })
+  }
+
+  async fetchProductsStream() {
+    this.firestoreService.queryDouble('products','metadata.type','stream_credits','==','active',true,'==').subscribe((products:any)=>{
+      this.products_stream = products.map((product:any)=>{
+        let item = {
+          id: product.payload.doc.id,
+          credits: product.payload.doc.data().metadata?.credits ? parseInt(product.payload.doc.data().metadata.credits) : 0,
+          conversations: product.payload.doc.data().metadata?.conversations ? product.payload.doc.data().metadata?.conversations : '2-3',
+          title: product.payload.doc.data().metadata?.title ? product.payload.doc.data().metadata?.title : 'Basic',
+          ...product.payload.doc.data()
+        }
+        this.firestoreService.get('products/'+item.id+'/prices').subscribe((prices:any)=>{
+          item.prices = prices.map((price:any)=>{
+            return {
+              id: price.payload.doc.id,
+              ...price.payload.doc.data()
+            }
+          })
+        })
+        return item
+      })
+      // console.log(this.products_stream)
     })
   }
 
@@ -441,6 +467,13 @@ export class AccountService {
       return null;
     }
     return this.products.find((product:any) => product.credits === credits) || null;  
+  }
+
+  getProductByCreditsStream(credits:number){
+    if(!this.products_stream){
+      return null;
+    }
+    return this.products_stream.find((product:any) => product.credits === credits) || null;  
   }
 
   getUnlimitedChatProduct(){

@@ -41,6 +41,10 @@
     </ion-button>
   </div>
 
+  <div basicPadding marginBottom>
+      <input #fileInput (change)="onFileSelected($event)" type="file" [accept]="'zip'" />
+
+  </div>
 
   <!-- <div basicPadding marginTop marginBottom>
     <ion-button expand="block" fill="outline" color="primary" (click)="getConversation()">

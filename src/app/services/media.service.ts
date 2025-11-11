@@ -500,7 +500,6 @@ export class MediaService {
     const task = this.storage.upload(filePath, file)
 
     return task.snapshotChanges().subscribe((result:any)=>{
-      console.log(result)
       this.percentageUploadingVideo = Math.round((result.bytesTransferred / result.totalBytes) * 100);
       if(result.bytesTransferred == result.totalBytes){
         fileRef.getDownloadURL().subscribe((url)=>{

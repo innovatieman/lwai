@@ -17,6 +17,7 @@ export class StreamCasePage implements OnInit {
  basicData:any = {}
  finished:boolean = false;
  parentOrigin:string = '';
+ iframeOriginal:string = '';
  
   private leave$ = new Subject<boolean>();
   constructor(
@@ -31,7 +32,15 @@ export class StreamCasePage implements OnInit {
 
   async ngOnInit() {
 
-    window.addEventListener('message', this.receiveParentOrigin.bind(this), false);
+    console.log('init stream case page');
+    if(sessionStorage.getItem('iframeOriginal') && (window.location.href.endsWith('/finished'))){
+      this.iframeOriginal = sessionStorage.getItem('iframeOriginal')||''; 
+    }
+    else{
+      this.iframeOriginal = window.location.href;
+      sessionStorage.setItem('iframeOriginal', this.iframeOriginal);
+    }
+    // window.addEventListener('message', this.receiveParentOrigin.bind(this), false);
 
     // Eerst checken of iemand is ingelogd
     const currentUser = await this.afAuth.currentUser;
@@ -53,40 +62,6 @@ export class StreamCasePage implements OnInit {
       let data = atob(stream_id);
       try{
         this.basicData = JSON.parse(data);
-        // this.parentOrigin = this.getParentOrigin()||'';
-        // this.startStream();
-      }
-      catch(e){
-        console.log('error parsing stream data',e);
-      }
-      // console.log('basic data',this.basicData);
-    }
-  }
-
-  receiveParentOrigin(event: MessageEvent) {
-    console.log(event.origin);
-    console.log(event.data);
-    console.log(event.data?.parentOrigin);
-    // Define the allowed parent domains
-  // const allowedParentDomains = ['https://innovatieman.nl', 'https://mijnlms.nl'];
-
-  // if (allowedParentDomains.includes(event.origin) && event.data?.parentOrigin) {
-    console.log('Ontvangen parent origin:', event.data.parentOrigin);
-
-    // Je kunt dit nu opslaan in een variabele
-    this.parentOrigin = event.data.parentOrigin;
-
-    const stream_id = this.route.snapshot.paramMap.get('stream_id');
-    if(stream_id){
-
-      if(stream_id=='finished'){
-        this.finished = true;
-        return;
-      }
-
-      let data = atob(stream_id);
-      try{
-        this.basicData = JSON.parse(data);
         this.parentOrigin = this.getParentOrigin()||'';
         this.startStream();
       }
@@ -95,21 +70,58 @@ export class StreamCasePage implements OnInit {
       }
       // console.log('basic data',this.basicData);
     }
+  }
 
-    // this.startStream();
-    // En meesturen naar je cloud function:
-    // this.functions.httpsCallable('validateEmbedToken')({
-    //   token: this.token,
-    //   parentOrigin: this.parentOrigin,
-    // }).subscribe(result => {
-    //   console.log('Token gevalideerd:', result);
-    // }, err => {
-    //   console.error('Validatie mislukt:', err);
-    // });
-  // } else {
-  //   console.warn('Ongeldige of ontbrekende parentOrigin ontvangen', event);
-  // }
-}
+//   receiveParentOrigin(event: MessageEvent) {
+//     console.log(event.origin);
+//     console.log(event.data);
+//     console.log(event.data?.parentOrigin);
+//     // Define the allowed parent domains
+//   // const allowedParentDomains = ['https://innovatieman.nl', 'https://mijnlms.nl'];
+
+//   // if (allowedParentDomains.includes(event.origin) && event.data?.parentOrigin) {
+//     console.log('Ontvangen parent origin:', event.data.parentOrigin);
+
+//     // Je kunt dit nu opslaan in een variabele
+//     this.parentOrigin = event.data.parentOrigin;
+
+//     const stream_id = this.route.snapshot.paramMap.get('stream_id');
+//     if(stream_id){
+
+//       if(stream_id=='finished'){
+//         this.finished = true;
+//         return;
+//       }
+
+//       let data = atob(stream_id);
+//       try{
+//         this.basicData = JSON.parse(data);
+//         this.parentOrigin = this.getParentOrigin()||'';
+//         this.startStream();
+//       }
+//       catch(e){
+//         console.log('error parsing stream data',e);
+//       }
+//       // console.log('basic data',this.basicData);
+//     }
+
+//     // this.startStream();
+//     // En meesturen naar je cloud function:
+//     // this.functions.httpsCallable('validateEmbedToken')({
+//     //   token: this.token,
+//     //   parentOrigin: this.parentOrigin,
+//     // }).subscribe(result => {
+//     //   console.log('Token gevalideerd:', result);
+//     // }, err => {
+//     //   console.error('Validatie mislukt:', err);
+//     // });
+//   // } else {
+//   //   console.warn('Ongeldige of ontbrekende parentOrigin ontvangen', event);
+//   // }
+// }
+  restartStream(){
+    location.href = this.iframeOriginal;
+  }
 
   ngOnDestroy() {
     this.leave$.next(true);
@@ -117,8 +129,6 @@ export class StreamCasePage implements OnInit {
   }
 
   getParentOrigin(): string | null {
-    console.log('start get parent origin');
-    console.log('document', document.referrer);
     try {
       let ref = document.referrer;
       if (!ref){
@@ -134,7 +144,7 @@ export class StreamCasePage implements OnInit {
   count:number = 0;
 
   async startStream(){
-    console.log('start stream',this.basicData);
+    // console.log('start stream',this.basicData);
     if(!this.basicData.trainerId || !this.basicData.trainingId || !this.basicData.caseId){
       this.toast.show('Trainer ID, Training ID and Case ID are required');
       return;

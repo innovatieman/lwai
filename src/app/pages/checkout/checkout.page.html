@@ -280,20 +280,20 @@
               
 
                 <ion-card *ngIf="!auth.credits_unlimited_type" basicPadding noMargin noShadow style="background:white" [ngStyle]="{'border': selectedCredits==0 ? 'solid 2px rgba(var(--ion-color-danger-rgb),0.6)' : 'solid 2px var(--ion-color-light)'}">
-                <div flex center-ver relative style="padding-right:20px;cursor:pointer;" (click)="selectCredits($event)">
-                  <div relative flex center-ver center-hor noOverflow borderRadius10 style="min-width:100px;width:100px;height:60px;margin-right:10px;">
-                    <img src="assets/img/credits_{{selectedCredits}}.webp" alt="Credits" >
+                  <div flex center-ver relative style="padding-right:20px;cursor:pointer;" (click)="selectCredits($event)">
+                    <div relative flex center-ver center-hor noOverflow borderRadius10 style="min-width:100px;width:100px;height:60px;margin-right:10px;">
+                      <img src="assets/img/credits_{{selectedCredits}}.webp" alt="Credits" >
+                    </div>
+                    <div>
+                      <span *ngIf="selectedCredits!=1000000" text-secondary weight500>{{selectedCredits || 0}} {{'standards.credits' | translate}}</span>
+                      <span *ngIf="selectedCredits==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
+                    </div>
+                    <div class="spacer"></div>
+                    <div style="min-width:30px">
+                      <fa-icon pointer titleIcon font-18 text-secondary [icon]="icon.get('faPen')"></fa-icon>
+                    </div>
                   </div>
-                  <div>
-                    <span *ngIf="selectedCredits!=1000000" text-secondary weight500>{{selectedCredits || 0}} {{'standards.credits' | translate}}</span>
-                    <span *ngIf="selectedCredits==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
-                  </div>
-                  <div class="spacer"></div>
-                  <div style="min-width:30px">
-                    <fa-icon pointer titleIcon font-18 text-secondary [icon]="icon.get('faPen')"></fa-icon>
-                  </div>
-                </div>
-              </ion-card> 
+                </ion-card> 
 
 
 

@@ -22,7 +22,7 @@ import {
   faBolt,faCode,faAward,faCreditCard,faCoins,faCrow,faStepBackward,faFastBackward, faCaretDown,faBars, faHandPointRight, faFilter,
   faSearch,faThumbsDown,faExternalLinkAlt,faReply,faUserNinja,faAddressCard,faPaperclip, faTh, faInfinity, faLink, faDatabase,
   faFileImport,faFileExport,faLightbulb,faUsersCog,faLevelUp,faFolderPlus,faMicrophoneAlt,faMicrophoneAltSlash,faGift,faBookOpen,
-  faPiggyBank, faPhone, faDotCircle
+  faPiggyBank, faPhone, faArrowsAltV, faMousePointer, faTable,
 
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -50,6 +50,7 @@ export class IconsService {
     faArrowRight,
     faArrowUp,
     faArrowsAlt,
+    faArrowsAltV,
     faAt,
     faAtom,
     faAward,
@@ -163,6 +164,7 @@ export class IconsService {
     faMinus,
     faMinusCircle,
     faMobileAlt,
+    faMousePointer,
     faObjectGroup,
     faPaperclip,
     faPaperPlane,
@@ -210,6 +212,7 @@ export class IconsService {
     faStreetView,
     faSuitcase,
     faSyncAlt,
+    faTable,
     faTag,
     faTasks,
     faTh,

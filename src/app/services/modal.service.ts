@@ -18,6 +18,7 @@ import { GenerateCasePage } from '../components/modals/generate-case/generate-ca
 import { TrainerInfoPage } from '../components/modals/trainer-info/trainer-info.page';
 import { SalesTrainingsPage } from '../components/modals/sales-trainings/sales-trainings.page';
 import { ExamplePage } from '../components/modals/example/example.page';
+import { DesignMailPage } from '../components/modals/design-mail/design-mail.page';
 
 @Injectable({
   providedIn: 'root',
@@ -247,6 +248,22 @@ export class ModalService {
         data:data,
       },
       cssClass:'editHtmlModal',
+      backdropDismiss:false,
+    })
+    modalItem.onWillDismiss().then(data=>{
+      callback(data)
+    })
+    return await modalItem.present()
+    // return await modalItem.present
+  }
+
+  public async designMail(data:any,callback:Function){
+    const modalItem = await this.modalController.create({
+      component:DesignMailPage,
+      componentProps:{
+        data:data,
+      },
+      cssClass:'designMailModal',
       backdropDismiss:false,
     })
     modalItem.onWillDismiss().then(data=>{

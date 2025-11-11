@@ -1687,6 +1687,184 @@ exports.sellElearningPrivateOpen = functions.region('europe-west1').runWith({mem
     }     
 });
 
+exports.buyCreditsStream = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 500);
+    }
+    
+    try {
+        if(!data.trainerId){
+          return new responder.Message('Trainer ID is required for invoice purchase', 400);
+        }
+
+        if(!data.price && (!data.price.totalValue || data.price.totalValue<=0)){
+          return new responder.Message('Price is required for invoice purchase', 400);
+        }
+
+        if(!data.products || !Array.isArray(data.products) || data.products.length===0){
+          return new responder.Message('No products provided for invoice purchase', 400);
+        }
+
+        if(!data.credits){
+          return new responder.Message('No credits provided for invoice purchase', 400);
+        }
+
+        if(!data.company){
+          return new responder.Message('Company name is required for invoice purchase', 400);
+        }
+
+        if(!data.company_email){
+          return new responder.Message('Company email is required for invoice purchase', 400);
+        }
+
+        if(!data.address || !data.address.line1 || !data.address.city || !data.address.postal_code || !data.address.country){
+          return new responder.Message('Address is required for invoice purchase', 400);
+        }
+
+        let trainerRef = await admin.firestore().collection('trainers').doc(data.trainerId).get();
+        if(!trainerRef.exists){
+          return new responder.Message('Trainer not found', 400);
+        }
+        let trainerData = trainerRef.data();
+        let basicPriceTrainer = 0
+        if(!trainerData || !trainerData.trainerPro){
+          basicPriceTrainer = 10000; //basic trainers pay € 100 more
+        }
+
+        let invoiceItem:any ={
+          
+          email: data.company_email,
+          name: data.company,
+          address: {
+            line1: data.address.line1,
+            postal_code: data.address.postal_code,
+            city: data.address.city,
+            country: data.address.country,
+          },
+          tax_percent: 21,
+          userId: data.company_email || '',
+          items:[],
+          description: `Bedankt voor je bestelling bij AliciaLabs.`,
+          footer: `Heb je vragen over deze factuur? Neem dan contact met ons op via support@alicialabs.com.`,
+        }
+        if(data.reference){
+          invoiceItem.reference = data.reference;
+        }
+
+        let items = [];
+        for(const prod of data.products){
+          if(prod.id){
+
+            const productRef = admin.firestore().collection('products').doc(prod.id);
+            const productDoc = await productRef.get();
+            if(!productDoc.exists){
+              return new responder.Message('Product not found', 404);
+            }
+            const productData = productDoc.data();
+            const productPriceRef = productRef.collection('prices').where('active', '==', true);
+            const productPriceSnapshot = await productPriceRef.get();
+            if(productPriceSnapshot.empty){
+              return new responder.Message('Product price not found', 404);
+            }
+            let priceData:any = null;
+            productPriceSnapshot.forEach(doc => {
+              priceData = doc.data();
+            });
+            if(!priceData){
+              return new responder.Message('Product price not found', 404);
+            }
+
+            let item:any = {
+              description: productData?.name + ', for 1 year',
+              amount: Math.round((priceData.unit_amount + basicPriceTrainer || 0)),
+              quantity: 1
+            }
+
+
+            const elearningRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId);
+            const elearningDoc = await elearningRef.get();
+            const elearningData = elearningDoc.data();
+        
+            if(!elearningData){
+                return new responder.Message('Stream training not found', 404);
+            }
+
+            invoiceItem.items.push(JSON.parse(JSON.stringify(item)));
+            item.elearningId = data.trainingId;
+            items.push(item);
+          }
+        }
+
+
+        if(invoiceItem.items.length===0){
+          return new responder.Message('No valid items to invoice', 400);
+        }
+
+        await admin.firestore().collection('invoices_elearnings').add(invoiceItem);
+
+        for(const item of items){
+
+
+          const creditsRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId).collection('credits').doc();
+          await creditsRef.set({
+            credits: parseInt(data.credits),
+            amount: parseInt(data.credits),
+            total: parseInt(data.credits),
+            added: moment().unix(),
+            created: moment().unix(),
+            expires: moment().add(1, 'year').unix(),
+            trainerId: data.trainerId,
+            trainingId: data.trainingId,
+            invoiceItem: item,
+          });
+                        
+        }
+
+        return new responder.Message('Credits bought successfully', 200);
+    
+    } catch (error) {
+        console.error('Error buying credits:', error);
+        return new responder.Message('Error buying credits', 500);
+    }
+});
+
+exports.publishTrainingStream = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 401);
+    }
+    try {
+        const trainingId = data.trainingId;
+        const trainerId = data.trainerId;
+        const trainingRef = admin.firestore().collection('trainers').doc(trainerId).collection('trainings').doc(trainingId);
+        const trainingDoc = await trainingRef.get();
+        const trainingData = trainingDoc.data();
+        if(!trainingData){
+            return new responder.Message('Training not found', 404);
+        }
+        if(trainingData.status !== 'concept'){ 
+            return new responder.Message('Training is not in concept', 400);
+        }
+        await admin.firestore().collection('trainers').doc(trainerId).collection('trainings').doc(trainingId).update({status: 'published',publishType:'stream',published: moment().unix()});
+
+        const creditsRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId).collection('credits').doc();
+        await creditsRef.set({
+          credits: 150,
+          amount: 150,
+          total: 150,
+          added: moment().unix(),
+          created: moment().unix(),
+          expires: moment().add(1, 'year').unix(),
+          trainerId: data.trainerId,
+          trainingId: data.trainingId,
+        });
+
+        return new responder.Message('Training published', 200);
+    } catch (error) {
+        console.error('Error fetching customer data:', error);
+        return new responder.Message('Error fetching customer data', 500);
+    }
+        
+});
 
 async function setSpecialCode(trainingItem:any,id:string,trainerId:string,allowed_domains?:string,max_customers?:number){
   let specialCode = calcSpecialCode(trainingItem.originalTrainingId,trainerId);
@@ -1717,3 +1895,128 @@ function calcSpecialCode(trainingId:any,trainerId:any){
   }
   return specialCode
 }
+
+exports.registerAsTrainerPro = functions.region('europe-west1').runWith({memory:'1GB'}).https.onCall(async (data, context) => {
+    if (!context.auth) {
+      return new responder.Message('Not authorized', 500);
+    }
+    
+    try {
+        if(!data.trainerId){
+          return new responder.Message('Trainer ID is required for invoice purchase', 400);
+        }
+
+        if(!data.company){
+          return new responder.Message('Company name is required for invoice purchase', 400);
+        }
+
+        if(!data.company_email){
+          return new responder.Message('Company email is required for invoice purchase', 400);
+        }
+
+        if(!data.address || !data.address.line1 || !data.address.city || !data.address.postal_code || !data.address.country){
+          return new responder.Message('Address is required for invoice purchase', 400);
+        }
+
+        const trainerRef = await admin.firestore().collection('trainers').doc(data.trainerId).get();
+        if(!trainerRef.exists){
+          return new responder.Message('Trainer not found', 400);
+        }
+        let trainerData = trainerRef.data();
+
+        if(trainerData && trainerData.trainerPro){
+          return new responder.Message('Trainer is already Pro.', 400);
+        }
+
+        let basicPriceTrainer = 0
+
+        let invoiceItem:any ={
+          
+          email: data.company_email,
+          name: data.company,
+          address: {
+            line1: data.address.line1,
+            postal_code: data.address.postal_code,
+            city: data.address.city,
+            country: data.address.country,
+          },
+          tax_percent: 21,
+          userId: data.company_email || '',
+          items:[],
+          description: `Bedankt voor je bestelling bij AliciaLabs.`,
+          footer: `Heb je vragen over deze factuur? Neem dan contact met ons op via support@alicialabs.com.`,
+        }
+        if(data.reference){
+          invoiceItem.reference = data.reference;
+        }
+
+        let items = [];
+
+
+            const products = admin.firestore().collection('products').where('metadata.type', '==', 'trainer').where('metadata.level', '==', 'pro');
+            
+            const productSnapshot = await products.get();
+            if(productSnapshot.empty){
+              return new responder.Message('Product not found', 404);
+            }
+            let productId = '';
+            productSnapshot.forEach(doc => {
+              productId = doc.id;
+            });
+
+            const productRef = admin.firestore().collection('products').doc(productId);
+            
+            const productDoc = await productRef.get();
+            if(!productDoc.exists){
+              return new responder.Message('Product not found', 404);
+            }
+            const productData = productDoc.data();
+            const productPriceRef = productRef.collection('prices').where('active', '==', true);
+            const productPriceSnapshot = await productPriceRef.get();
+            if(productPriceSnapshot.empty){
+              return new responder.Message('Product price not found', 404);
+            }
+            let priceData:any = null;
+            productPriceSnapshot.forEach(doc => {
+              priceData = doc.data();
+            });
+            if(!priceData){
+              return new responder.Message('Product price not found', 404);
+            }
+
+            let item:any = {
+              description: productData?.name + ', for 1 year',
+              amount: Math.round((priceData.unit_amount + basicPriceTrainer || 0)),
+              quantity: 1
+            }
+
+            invoiceItem.items.push(JSON.parse(JSON.stringify(item)));
+            items.push(item);
+
+
+
+        if(invoiceItem.items.length===0){
+          return new responder.Message('No valid items to invoice', 400);
+        }
+
+        await admin.firestore().collection('invoices_elearnings').add(invoiceItem);
+
+        admin.firestore().collection('trainers').doc(data.trainerId).update({trainerPro: true});
+
+        const settingsRef = admin.firestore().collection('trainers').doc(data.trainerId).collection('settings').doc('trainer');
+        const settingsDoc = await settingsRef.get();
+        if(settingsDoc.exists){
+          await settingsRef.update({trainerPro: true, expires: moment().add(1, 'year').unix(),max_admins:2, autorenew:true,active:true,proActivated:moment().unix()});
+        }
+        else{
+          await settingsRef.set({trainerPro: true, expires: moment().add(1, 'year').unix(),max_admins:2, autorenew:true,active:true,proActivated:moment().unix()});
+        }
+             
+
+        return new responder.Message('Upgraded to Trainer Pro successfully', 200);
+    
+    } catch (error) {
+        console.error('Error Upgrading to Trainer Pro:', error);
+        return new responder.Message('Error Upgrading to Trainer Pro', 500);
+    }
+});

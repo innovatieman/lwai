@@ -328,7 +328,7 @@ exports.reSendVerificationEmail = functions.region('europe-west1').runWith({memo
   return new responder.Message('Success', 200);
 });
 
-exports.confirmMyEmail = functions.region('europe-west1').https.onCall(async (data,context)=>{
+exports.confirmMyEmail = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onCall(async (data,context)=>{
   if(!context.auth){
     return new responder.Message('Not authorized', 500);
   }
@@ -341,7 +341,7 @@ exports.confirmMyEmail = functions.region('europe-west1').https.onCall(async (da
   return new responder.Message('Success', 200);
 })
 
-exports.editUserName = functions.region('europe-west1').https.onCall(async (data,context)=>{
+exports.editUserName = functions.region('europe-west1').runWith({ memory: '512MB' }).https.onCall(async (data,context)=>{
   const displayName = data.displayName
   const uid = context.auth?.uid
 
@@ -360,7 +360,7 @@ exports.editUserName = functions.region('europe-west1').https.onCall(async (data
   return new responder.Message('Success', 200);
 })
 
-exports.editUserLang = functions.region('europe-west1').https.onCall(async (data,context)=>{
+exports.editUserLang = functions.region('europe-west1').runWith({ memory: '512MB' }).https.onCall(async (data,context)=>{
   const language = data.language
   const uid = context.auth?.uid
 
@@ -375,7 +375,7 @@ exports.editUserLang = functions.region('europe-west1').https.onCall(async (data
   return new responder.Message('Success', 200);
 })
 
-exports.editUserCountry = functions.region('europe-west1').https.onCall(async (data,context)=>{
+exports.editUserCountry = functions.region('europe-west1').runWith({ memory: '512MB' }).https.onCall(async (data,context)=>{
   const country = data.country
   const uid = context.auth?.uid
 
@@ -390,7 +390,7 @@ exports.editUserCountry = functions.region('europe-west1').https.onCall(async (d
   return new responder.Message('Success', 200);
 })
 
-exports.editUserCurrency = functions.region('europe-west1').https.onCall(async (data,context)=>{
+exports.editUserCurrency = functions.region('europe-west1').runWith({ memory: '512MB' }).https.onCall(async (data,context)=>{
   const currency = data.currency
   const uid = context.auth?.uid
 
@@ -405,7 +405,7 @@ exports.editUserCurrency = functions.region('europe-west1').https.onCall(async (
   return new responder.Message('Success', 200);
 })
 
-exports.editUserFilter = functions.region('europe-west1').https.onCall(async (data,context)=>{
+exports.editUserFilter = functions.region('europe-west1').runWith({ memory: '512MB' }).https.onCall(async (data,context)=>{
   const filter = data.filter
   const uid = context.auth?.uid
 
@@ -420,7 +420,7 @@ exports.editUserFilter = functions.region('europe-west1').https.onCall(async (da
   return new responder.Message('Success', 200);
 })
 
-exports.passwordChangeCustom = functions.region('europe-west1').https.onCall((data,context)=>{
+exports.passwordChangeCustom = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onCall((data,context)=>{
   return admin.auth().getUser(context.auth.uid)
   .then(user=>{
       return admin.auth().updateUser(user.uid,{
@@ -436,7 +436,7 @@ exports.passwordChangeCustom = functions.region('europe-west1').https.onCall((da
 })
 
 
-exports.verifyEmailInitCode = functions.region('europe-west1').https.onCall(async (data, context) => {
+exports.verifyEmailInitCode = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onCall(async (data, context) => {
   const { email, code } = data;
 
   if (!email || !code) {
@@ -484,7 +484,7 @@ exports.verifyEmailInitCode = functions.region('europe-west1').https.onCall(asyn
   return new responder.Message({message:"email verified",oobCode:oobCodePassword}, 200);
 });
 
-exports.deleteSelf = functions.region('europe-west1').https.onCall(async (data, context) => {
+exports.deleteSelf = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onCall(async (data, context) => {
   if(!context.auth){
     return new responder.Message('Not authorized', 500);
   }
@@ -501,7 +501,7 @@ exports.deleteSelf = functions.region('europe-west1').https.onCall(async (data, 
   return new responder.Message('User deleted', 200);
 })
 
-exports.checkOffer = functions.region('europe-west1').https.onCall(async (data, context)=>{
+exports.checkOffer = functions.region('europe-west1').runWith({ memory: '512MB' }).https.onCall(async (data, context)=>{
   const code = data.code
   const uid = context.auth?.uid
 
@@ -557,7 +557,7 @@ exports.checkOffer = functions.region('europe-west1').https.onCall(async (data, 
   return new responder.Message('Offer added', 200);
 })
 
-exports.clearDeletedUsers = functions.region('europe-west1')
+exports.clearDeletedUsers = functions.region('europe-west1').runWith({ memory: '1GB' })
   .pubsub.schedule('1 1 1 * *') // Elke zaterdag om 04:00 uur
   .timeZone('Europe/Amsterdam')
   .onRun(async (context) => {

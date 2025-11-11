@@ -272,7 +272,7 @@
 
             </ion-card-title>
           </ion-card-header>
-          <ion-card-header *ngIf="auth.creditsList?.length">
+          <ion-card-header *ngIf="auth.creditsList.length">
             <ion-card-title>{{'page_account.your_credits' | translate}}: </ion-card-title>
           </ion-card-header>
           <ion-row>
@@ -432,7 +432,7 @@
                           <div class="spacer"></div>
                           <ion-button class="saveButton" fill="clear" size="small" style="opacity:0.6" color="medium" *ngIf="isTrainerPro&&setting.autorenew" (click)="trainerService.autoRenewal(false)">{{'page_account.cancel_subscription' | translate}}</ion-button>
                           <ion-button class="saveButton" fill="solid" size="small" *ngIf="isTrainerPro&&!setting.autorenew" (click)="trainerService.autoRenewal(true)">{{'page_account.renew_subscription' | translate}}</ion-button>
-                          <ion-button class="saveButton" fill="solid" size="small" *ngIf="!isTrainerPro" (click)="trainerService.registerAsTrainerPro()">{{'page_account.upgrade_to_pro' | translate}}</ion-button>
+                          <ion-button class="saveButton" fill="solid" size="small" *ngIf="!isTrainerPro" (click)="registerAsTrainerPro()">{{'page_account.upgrade_to_pro' | translate}}</ion-button>
                         </div>
                       </div>
 
@@ -483,7 +483,7 @@
               </ion-col>
 
               <ion-col [size]="helper.cardSizeSmall">
-                <ion-card noPadding pointer class="caseItem caseItem_with_ribbon" (click)="trainerService.registerAsTrainerPro()"> <!--(click)="accountService.showProductInfo(product)">-->
+                <ion-card noPadding pointer class="caseItem caseItem_with_ribbon" (click)="registerAsTrainerPro()"> <!--(click)="accountService.showProductInfo(product)">-->
                     <ion-card-content noPadding fullHeight>
                         <div backgroundImage class="avatarImage" [ngStyle]="{'background-image': 'url(assets/img/training_subscription.webp)'}">
                           <div class="title">{{'page_account.trainer_pro' | translate}}</div>
@@ -1457,6 +1457,7 @@
 
           </ion-card-content>
         </ion-card>
+
 
       </ion-col>
     </ion-row>

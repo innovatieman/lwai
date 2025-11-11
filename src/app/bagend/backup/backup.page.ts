@@ -10,6 +10,7 @@ import { AuthService } from 'src/app/auth/auth.service';
   styleUrls: ['./backup.page.scss'],
 })
 export class BackupPage implements OnInit {
+  fileField: any;
   // conversationId: string = 'GCkD5TPK5jsF0PMsiYHQ';
   // activeConversation: any = null;
   // userId: string = 'GI2ZFtzeeiZuAtOA4wvhyfFE3nj2';
@@ -61,9 +62,19 @@ export class BackupPage implements OnInit {
 
 
   clearTempUsers(){
-    this.functions.httpsCallable('deleteTempUserManual')({}).subscribe(result=>{
+    this.functions.httpsCallable('deleteStreamTempUsersOld')({}).subscribe(result=>{
       console.log('Temp users cleared:', result);
-    })
+      for(let user of (result as any).users){
+        this.functions.httpsCallable('deleteUsers')({email:user.email}).subscribe(result=>{
+          console.log('Deleted user:', user.email);
+        });
+      }
+    });
+
+
+    // this.functions.httpsCallable('deleteTempUserManual')({}).subscribe(result=>{
+    //   console.log('Temp users cleared:', result);
+    // })
   }
 
   getTestUsers(){
@@ -84,5 +95,35 @@ export class BackupPage implements OnInit {
     })
   }
 
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.fileField = file;
+    }
+    this.uploadScormFile(this.fileField,(response:any)=>{
+      console.log('SCORM upload response:', response);
+    })
+  }
+
+
+
+
+  async uploadScormFile(selectedFile:any,callback:Function){
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = (reader.result as string).split(',')[1];
+      let callableName = 'uploadAndUnpackScorm';
+      // console.log(callableName)
+      const result = await this.functions.httpsCallable(callableName)({
+        fileData: base64Data,
+        contentType: selectedFile.type,
+        fileExtension: selectedFile.name.split('.').pop()
+      }).toPromise();
+      callback(result)
+    };
+    reader.readAsDataURL(selectedFile);
+
+   }
 
 }

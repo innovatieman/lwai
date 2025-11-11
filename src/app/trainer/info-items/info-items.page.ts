@@ -612,7 +612,6 @@ export class InfoItemsPage implements OnInit {
       }
       else{
         if(field){
-          console.log(typeof infoItem[field])
           infoItem[field] = infoItem[field] || ''
           if(typeof infoItem[field] == 'string'){
             infoItem[field] = infoItem[field]

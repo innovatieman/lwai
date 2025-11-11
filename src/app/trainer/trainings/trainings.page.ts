@@ -23,6 +23,7 @@ import { ActivatedRoute } from '@angular/router';
 import { tutorialService } from 'src/app/services/tutorial.service';
 import * as moment from 'moment';
 import { Subject, take, takeUntil } from 'rxjs';
+import { AccountService } from 'src/app/services/account.service';
 
 @Component({
   selector: 'app-trainings',
@@ -55,6 +56,7 @@ export class TrainingsPage implements OnInit {
   showHtml:boolean = false
   publishTypes:any[] = []
   publishLocations:any[] = []
+  selectedCreditsStream:number = 0
   private leave$ = new Subject<void>();
 
    configModules={
@@ -99,6 +101,7 @@ export class TrainingsPage implements OnInit {
     private route:ActivatedRoute,
     private tutorial:tutorialService,
     private rf: ChangeDetectorRef,
+    public accountService:AccountService,
   ) { }
 
   ngOnInit() {
@@ -134,6 +137,7 @@ export class TrainingsPage implements OnInit {
     // })
       // this.getCourseData()
       
+    this.accountService.fetchProductsStream()
     
       
   }
@@ -416,6 +420,13 @@ export class TrainingsPage implements OnInit {
       this.toast.hideLoader()
       setTimeout(() => {
         this.toast.hideLoader()
+      }, 500);
+      setTimeout(() => {
+        this.toast.hideLoader()
+      }, 1000);
+      setTimeout(() => {
+        this.toast.hideLoader()
+        console.log(this.trainerService.trainingItem)
       }, 2000);
     }
     this.showPart = 'items'
@@ -1892,6 +1903,66 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }
   }
 
+  copyStreamingUrl(url:string){
+    if(url){
+      this.helpers.copyToClipboard(url)
+      this.toast.show(this.translate.instant('standards.copied_to_clipboard'))
+    }
+  }
+
+  removeStreamOrigin(origin:string){
+    this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
+      if(result){
+        this.toast.showLoader()
+        let updatedOrigins = this.trainerService.trainingItem.streamAllowedOrigins.filter((o:string) => o != origin)
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,{streamAllowedOrigins:updatedOrigins}).then(async ()=>{
+          try {
+            await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+            this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+            this.toast.hideLoader()
+          } catch (err) {
+            this.trainerService.trainingItem = {}
+            this.toast.hideLoader()
+          }
+        })
+      }
+    })
+  }
+
+  addStreamOrigin(){
+    this.modalService.inputFields(this.translate.instant('trainings.stream_add_origin'), '', [
+      {
+        type: 'text',
+        title: this.translate.instant('trainings.streaming_origin'),
+        placeholder: 'https://www.mydomain.com',
+        name: 'Origin',
+        value: '',
+        required: true,
+      }], (result: any) => {
+        if (result.data) {
+          this.toast.showLoader()
+          let origin = result.data[0].value
+          let updatedOrigins = this.trainerService.trainingItem.streamAllowedOrigins || []
+          if(updatedOrigins.indexOf(origin) == -1){
+            updatedOrigins.push(origin)
+            this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.trainingItem.id,{streamAllowedOrigins:updatedOrigins}).then(async ()=>{
+              try {
+                await this.trainerService.waitForItem('training', this.trainerService.trainingItem.id, 5000, 'id');
+                this.trainerService.trainingItem = this.trainerService.getTraining(this.trainerService.trainingItem.id);
+                this.toast.hideLoader()
+              } catch (err) {
+                this.trainerService.trainingItem = {}
+                this.toast.hideLoader()
+              }
+            })
+          }
+          else{
+            this.toast.show(this.translate.instant('trainings.origin_already_exists'))
+          }
+        }
+      })
+  }
+
   centerSelectItems(){
     // console.log(this.trainerService.publishType);
     if(this.trainerService.publishType!='training'){
@@ -2203,6 +2274,44 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       }
     })
   }
+
+  
+
+  async publishTrainingStream(some?:boolean){
+     
+    this.toast.showLoader(this.translate.instant('trainings.publising_training'))
+    this.functions.httpsCallable('publishTrainingStream')({trainingId:this.trainerService.trainingItem.id,trainerId:this.nav.activeOrganisationId,some:some}).subscribe((res:any)=>{
+      // console.log('publishTraining',res)
+      if(res?.status!= 200){
+        this.toast.hideLoader()
+        this.toast.show(res.result)
+        setTimeout(() => {
+            this.toast.hideLoader()
+        }, 500);
+        return
+      }
+      else{
+        this.trainerService.trainingItem.status = 'published'
+        this.trainerService.trainingItem.publishType = 'stream'
+        this.toast.hideLoader()
+        setTimeout(() => {
+            this.toast.hideLoader()
+        }, 500);
+        this.toast.show(this.translate.instant('trainings.publication_training_stream_successful'),6000,'middle')
+        this.filterWith('published')
+        setTimeout(() => {
+          let adjustedTraining = this.trainerService.getTraining(this.trainerService.trainingItem.id)
+          this.selectTraining(adjustedTraining)
+          setTimeout(() => {
+            this.toast.hideLoader()
+            this.selectedCreditsStream = 0
+            this.showPart = 'publish_stream'
+          }, 300);
+        }, 500);
+      }
+    })
+  }
+
 
   downloadTemplate(){
       window.open('assets/template_import_participants.csv','_blank')
@@ -3582,6 +3691,79 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
   }
 
+  async buyCreditsStream(training:any){
+
+    let check = false
+    await this.modalService.showConfirmation(this.translate.instant('trainings.buy_credits_streams_confirm'))
+    .then((response) => {
+      if(response) {
+        check = true;
+      }
+    })
+    if(!check){
+      return;
+    }
+    let customer:any = null
+        
+      customer = {
+        company:this.trainerService.trainerInfo.invoice.name,
+        address:this.trainerService.trainerInfo.invoice.address,
+        zip:this.trainerService.trainerInfo.invoice.zip,
+        city:this.trainerService.trainerInfo.invoice.city,
+        country:this.trainerService.trainerInfo.invoice.country,
+        phone:this.trainerService.trainerInfo.invoice.phone,
+        email:this.trainerService.trainerInfo.email,
+        email_invoice:this.trainerService.trainerInfo.invoice,
+        reference:this.trainerService.trainerInfo.invoice.reference,
+        tax_nr:this.trainerService.trainerInfo.invoice.vat_number,
+        id: this.trainerService.trainerInfo.stripeCustomerId || null,
+      }
+
+      let item:any = {
+        trainerId: this.nav.activeOrganisationId,
+        trainingId: training.id,
+        company: customer.company,
+        company_email: customer.email,
+        address:{
+          line1: customer.address,
+          postal_code: customer.zip,
+          city: customer.city,
+          country: customer.country,
+        },
+        price: this.selectedCreditPrice || {},
+        credits: this.selectedCreditsStream,
+        reference: customer.reference || '',
+        products:[this.accountService.getProductByCreditsStream(this.selectedCreditsStream)],
+      }
+
+      this.toast.showLoader()
+
+      this.functions.httpsCallable('buyCreditsStream')(item).pipe(take(1)).subscribe({
+        next: (res:any) => {
+          if(res?.status!='200'){
+            this.toast.hideLoader()
+            this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+          }
+          else {
+
+            this.toast.hideLoader()
+            this.toast.show(this.translate.instant('trainings.credits_bought_successfully'),4000,'middle')
+            setTimeout(() => {
+              let adjustedTraining = this.trainerService.getTraining(training.id)
+              this.selectTraining(adjustedTraining)
+              setTimeout(() => {
+                this.toast.hideLoader()
+                this.selectedCreditsStream = 0
+                this.showPart = 'credits_stream'
+              }, 300);
+            }, 500);
+          }
+        }
+      })
+  
+  }
+
+
   toggleMarketplaceOrder(){
     let trainings = this.filterKeyPipe.transform(this.trainerService.trainings,'marketplace',true)
     trainings = this.filterKeyPipe.transform(trainings,'status','published')
@@ -3650,6 +3832,205 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       return
     }
     this.trainerService.publishType='sell_directly'
+  }
+
+  getActivePrice(prices:any[]){
+    if(!prices || !Array.isArray(prices) || prices.length==0){
+      return {
+        value: 0,
+        inclVat: 0
+      }
+    }
+    let activePrice = prices.filter(p=>p.active)[0]
+    return activePrice ? 
+    {
+      value: activePrice.unit_amount / 100,
+      inclVat: (activePrice.unit_amount / 100) * 1.21
+    } : {
+      value: 0,
+      inclVat: 0
+    }
+  }
+
+  get selectedCreditPrice(){
+    if(!this.selectedCreditsStream){
+      return {
+        value: 0,
+        vat: 0,
+        inclVat: 0,
+        totalValue: 0,
+        totalVat: 0,
+        totalInclVat: 0
+      }
+    }
+    let product = this.accountService.getProductByCreditsStream(this.selectedCreditsStream)
+    if(!product || !product.prices || !Array.isArray(product.prices) || product.prices.length==0){
+      return {
+        value: 0,
+        vat: 0,
+        inclVat: 0,
+        totalValue: 0,
+        totalVat: 0,
+        totalInclVat: 0
+      }
+    }
+    let price = this.getActivePrice(product.prices)
+
+    let basicTrainerCosts = 0
+    if(!this.trainerService.isTrainerPro){
+      basicTrainerCosts = 100
+    }
+
+    let totalValue = price.value + basicTrainerCosts
+    let totalVat = totalValue * 0.21
+    let totalInclVat = totalValue + totalVat
+
+    return {
+      basicTrainerCosts: basicTrainerCosts,
+      value: price.value,
+      vat: price.value * 0.21,
+      inclVat: price.inclVat,
+      totalValue: totalValue,
+      totalVat: totalVat,
+      totalInclVat: totalInclVat
+    }
+
+  }
+
+  async selectCreditsStream(event?: any){
+    console.log(this.accountService.products_stream)
+      let list = []
+      for(let i=0;i<this.accountService.products_stream.length;i++){
+        list.push({
+          title: (this.helpers.formatNumber(this.accountService.products_stream[i].stripe_metadata_credits)) + ' ' + this.translate.instant('credits.credits'),
+          subTitle:(this.accountService.products_stream[i].conversations) + ' ' + this.translate.instant('page_account.credits_conversations'),
+          image:'assets/img/credits.webp',
+          note:'€ ' + (this.getActivePrice(this.accountService.products_stream[i].prices).value).toFixed(2).replace('.',','), //+ (this.pricesInclVat ? ' incl. btw' : ' excl. btw'),
+          logo:true,
+          id:this.accountService.products_stream[i].id,
+          value:parseInt(this.accountService.products_stream[i].stripe_metadata_credits),
+        })
+      }
+
+      list = list.sort((a,b) => b.value - a.value); 
+  
+      this.shortMenu = await this.popoverController.create({
+        component: MenuPage,
+        componentProps:{
+          customMenu:true,
+          pages:list,
+          customList:true,
+        },
+        cssClass: 'customMenu',
+        event: event,
+        translucent: false,
+        reference:'trigger',
+      });
+      this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+      await this.shortMenu.present();
+      await this.shortMenu.onWillDismiss().then((result:any)=>{
+        if(this.selectMenuservice.selectedItem){
+          this.selectedCreditsStream = this.selectMenuservice.selectedItem.value
+        }
+      })
+  }
+
+  countCredits(trainingItem:any){
+    let totalCredits = 0
+    if(!trainingItem.credits || !Array.isArray(trainingItem.credits) || trainingItem.credits.length==0){
+      return totalCredits
+    }
+    trainingItem.credits.forEach((credit:any) => {
+      if(credit.total>0 && credit.expires > moment().unix()){
+        totalCredits += credit.total
+      }
+    });
+    return totalCredits
+  }
+
+  editAutoRenewStreamCredits(event:any,trainingItem:any){
+    if(event){
+      event.stopPropagation()
+    }
+    this.modalService.inputFields(this.translate.instant('trainings.edit_auto_renew_credits'),this.translate.instant('trainings.edit_auto_renew_credits_info'),[
+      {
+        name: 'credits_minimum',
+        type: 'number',
+        title: this.translate.instant('trainings.minimum_credits_before_renewal'),
+        value: trainingItem.credits_stream_auto_renew_minimum || 5000,
+        required: true,
+      },
+      {
+        name: 'credits_amount',
+        type: 'select',
+        title: this.translate.instant('trainings.credits_to_add_on_renewal'),
+        value: trainingItem.credits_stream_auto_renew_amount || 250000,
+        required: true,
+        optionKeys: this.accountService.products_stream.map((product:any) => {
+          return {
+            title: this.helpers.formatNumber(product.stripe_metadata_credits) + ' ' + this.translate.instant('credits.credits'),
+            value: parseInt(product.stripe_metadata_credits),
+          }
+        })
+      },
+    ],(result:any) => {
+      if(result.data && result.data!='delete'){
+        let updates:any = {
+          credits_stream_auto_renew_minimum: result.data[0].value,
+          credits_stream_auto_renew_amount: result.data[1].value,
+        }
+        this.trainerService.trainingItem.credits_stream_auto_renew_minimum = updates.credits_stream_auto_renew_minimum
+        this.trainerService.trainingItem.credits_stream_auto_renew_amount = updates.credits_stream_auto_renew_amount
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',trainingItem.id,updates).then(() => {
+          this.toast.show(this.translate.instant('messages.saved'),3000,'bottom')
+        })
+      }
+      else if(result.data && result.data=='delete'){
+        this.trainerService.trainingItem.credits_stream_auto_renew_minimum = null
+        this.trainerService.trainingItem.credits_stream_auto_renew_amount = null
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',trainingItem.id,{
+          credits_stream_auto_renew_minimum: null,
+          credits_stream_auto_renew_amount: null,
+        }).then(() => {
+          this.toast.show(this.translate.instant('messages.deleted'),3000,'bottom')
+        })
+      }
+    },{delete:trainingItem.credits_stream_auto_renew_amount ? true : false})
+
+  }
+
+  editWarningStreamCredits(event:any,trainingItem:any){
+    if(event){
+      event.stopPropagation()
+    }
+    this.modalService.inputFields(this.translate.instant('trainings.edit_warning_credits'),'',[
+      {
+        name: 'credits_minimum_warning',
+        type: 'number',
+        title: this.translate.instant('trainings.minimum_credits_before_renewal_warning'),
+        value: trainingItem.credits_stream_auto_renew_minimum_warning || 6000,
+        required: false,
+      },
+    ],(result:any) => {
+      if(result.data && result.data!='delete'){
+        let updates:any = {
+          credits_stream_auto_renew_minimum_warning: result.data[0].value,
+        }
+        this.trainerService.trainingItem.credits_stream_auto_renew_minimum_warning = updates.credits_stream_auto_renew_minimum_warning
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',trainingItem.id,updates).then(() => {
+          this.toast.show(this.translate.instant('messages.saved'),3000,'bottom')
+        })
+      }
+      else if(result.data && result.data=='delete'){
+        this.trainerService.trainingItem.credits_stream_auto_renew_minimum_warning = null
+        this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',trainingItem.id,{
+          credits_stream_auto_renew_minimum_warning: null,
+        }).then(() => {
+          this.toast.show(this.translate.instant('messages.deleted'),3000,'bottom')
+        })
+      }
+    },{delete:trainingItem.credits_stream_auto_renew_minimum_warning ? true : false})
+
   }
 
 

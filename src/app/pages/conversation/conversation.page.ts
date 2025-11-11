@@ -44,7 +44,7 @@ export class ConversationPage implements OnInit {
   @ViewChild('draggableElement', { static: false }) draggableElement!: ElementRef;
   [x: string]: any;
   position:any = { x: this.media.screenWidth - 210, y: 10 }; // Startpositie van de div
-
+  startingCredits:any = null;
   private gesture!: Gesture;
   hideDisclaimer:boolean = false;
   Highcharts: typeof Highcharts = Highcharts;
@@ -425,6 +425,8 @@ export class ConversationPage implements OnInit {
     // console.log('start conversation',JSON.parse(JSON.stringify(caseItem)),personal)
     if(caseItem.stream){
       localStorage.setItem('streamCase','true')
+      this.startingCredits = caseItem.startingCredits || null;
+      console.log('starting credits for stream case:',this.startingCredits)
     }
     this.started = true
     let countTries = 0
@@ -714,9 +716,13 @@ export class ConversationPage implements OnInit {
       }]
     }
 
+    let btnsClosText = this.translate.instant('conversation.close_text')
+    if(this.conversation.activeConversation.stream || localStorage.getItem('streamCase')){
+      btnsClosText = this.translate.instant('conversation.close_stream_text')
+    }
     this.modalService.showVerification(
       this.translate.instant('buttons.close'),
-      this.translate.instant('conversation.close_text'),
+      btnsClosText,
       buttons
     ).then(response=>{
       

@@ -580,6 +580,23 @@ export class AccountPage implements OnInit {
     })
   }
   
+
+  registerAsTrainerPro(invoice?:boolean){
+
+    if(!this.isTrainer){
+      this.trainerService.registerAsTrainer()
+      return
+    }
+
+    if(!this.trainerService.trainerInfo?.invoice?.name){
+      this.toast.show(this.translate.instant('dashboard.complete_invoice_info'),4000,'middle')
+      this.nav.go('trainer/dashboard/bank')
+      return
+    }
+    this.nav.go('trainer/dashboard/upgrade')
+    // this.trainerService.registerAsTrainerPro(invoice);
+  }
+
   
   
 }

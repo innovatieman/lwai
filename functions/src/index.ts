@@ -55,5 +55,6 @@ export * from './payment/buy'
 export * from './modules/streaming'
 export * from './maintenance/photos'
 export * from './payment/selfbilling'
+export * from './modules/scorm'
 
 

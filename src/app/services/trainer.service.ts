@@ -1455,7 +1455,11 @@ export class TrainerService {
 
     if(trainingItem.amount_period>2){
       costs.extraPeriod = (trainingItem.amount_period - 2) 
-      costs.extraPeriodCosts = (trainingItem.amount_period - 2) * (10 / 2) * trainingItem.amount_participants
+      let extraPeriodForCosts = trainingItem.amount_period - 2
+      if(trainingItem.amount_period>4){
+        extraPeriodForCosts = 3
+      }
+      costs.extraPeriodCosts = extraPeriodForCosts * (10 / 2) * trainingItem.amount_participants
     }
 
     costs.totalCosts = costs.basicCosts + costs.extraCosts + costs.extraPeriodCosts
@@ -1775,31 +1779,118 @@ export class TrainerService {
 
   }
 
-  registerAsTrainerPro(invoice?:boolean){
+async registerAsTrainerPro(callback?:Function){
 
     if(!this.auth.organisations.length){
       this.registerAsTrainer((response:any)=>{
         if(response){
-          this.registerAsTrainerPro(invoice)
+          this.registerAsTrainerPro(callback)
         }
       })
     }
     else{
 
-      let product = this.accountService.products_trainer.find((product:any)=>product.metadata?.level=='pro' && product.metadata?.type=='trainer')
-      if(!product){
-        this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
-        return
+      let check = false
+      await this.modalService.showConfirmation(this.translate.instant('page_account.upgraded_to_pro_confirm'))
+      .then((response) => {
+        if(response) {
+          check = true;
+        }
+      })
+      if(!check){
+        return;
       }
-      let metadata = {
-        userId: this.auth.userInfo.uid,
-        trainerId:this.nav.activeOrganisationId
-      };
-      product.organisationId = this.nav.activeOrganisationId;
-      this.buy(product,metadata,invoice)
+      let customer:any = null
+          
+        customer = {
+          company:this.trainerInfo.invoice.name,
+          address:this.trainerInfo.invoice.address,
+          zip:this.trainerInfo.invoice.zip,
+          city:this.trainerInfo.invoice.city,
+          country:this.trainerInfo.invoice.country,
+          phone:this.trainerInfo.invoice.phone,
+          email:this.trainerInfo.email,
+          email_invoice:this.trainerInfo.invoice,
+          reference:this.trainerInfo.invoice.reference,
+          tax_nr:this.trainerInfo.invoice.vat_number,
+          id: this.trainerInfo.stripeCustomerId || null,
+        }
+
+        let item:any = {
+          trainerId: this.nav.activeOrganisationId,
+          company: customer.company,
+          company_email: customer.email,
+          address:{
+            line1: customer.address,
+            postal_code: customer.zip,
+            city: customer.city,
+            country: customer.country,
+          },
+          reference: customer.reference || '',
+          products:[],
+        }
+
+        this.toast.showLoader()
+
+        this.functions.httpsCallable('registerAsTrainerPro')(item).pipe(take(1)).subscribe({
+          next: (res:any) => {
+            if(res?.status!='200'){
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+            }
+            else {
+              this.toast.hideLoader()
+              this.toast.show(this.translate.instant('page_account.upgraded_to_pro'),4000,'middle')
+              if(callback){
+                callback();
+              }
+            }
+          }
+        })
+
+
+      // let product = this.accountService.products_trainer.find((product:any)=>product.metadata?.level=='pro' && product.metadata?.type=='trainer')
+      // if(!product){
+      //   this.toast.show(this.translate.instant('error_messages.failure'),4000,'middle')
+      //   return
+      // }
+      // let metadata = {
+      //   userId: this.auth.userInfo.uid,
+      //   trainerId:this.nav.activeOrganisationId
+      // };
+      // product.organisationId = this.nav.activeOrganisationId;
+      // this.buy(product,metadata,invoice)
     }
 
 
+  }
+
+  get trainerProProduct(){
+
+    let prod =  this.accountService.products_trainer.find((product:any)=>product.metadata?.level=='pro' && product.metadata?.type=='trainer')
+    if(!prod || !prod.prices || prod.prices.length<1){
+      return null;
+    }
+    
+    let nwProd:any = {}
+    let activePrice = null
+    for(let i=0;i<prod.prices.length;i++){
+      if(prod.prices[i].active){
+        activePrice = prod.prices[i]
+      }
+    }
+    if(!activePrice){
+      return null
+    }
+    nwProd.id = prod.id
+    nwProd.name = prod.name
+    nwProd.description = prod.description
+    nwProd.price = activePrice.unit_amount / 100
+    nwProd.vat = (activePrice.unit_amount / 100) * 0.21
+    nwProd.priceInclVat = nwProd.price + nwProd.vat
+    nwProd.currency = activePrice.currency
+    nwProd.metadata = prod.metadata
+    return nwProd
   }
 
   registerAsTrainerEnterprise(){

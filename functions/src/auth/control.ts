@@ -66,6 +66,36 @@ exports.deleteUsers = onCall(
     }
 )
 
+exports.verifyUsers = onCall(
+    {
+      region: 'europe-west1',
+      memory: '1GiB',
+    },
+    async (request: CallableRequest<any>) => {
+      
+      const { auth, data } = request;
+      if (!auth.uid) {
+        return new responder.Message('Unauthorized', 401);
+      }
+
+      let userDoc = await admin.firestore().collection('users').doc(auth.uid).get();
+      if(!userDoc.exists){
+        return new responder.Message('User not found', 404);
+      }
+      let userData:any = userDoc.data();
+      if(!userData.isAdmin){
+        return new responder.Message('Forbidden', 403);
+      } 
+        if(data.email){
+            return setVerified(data.email)
+        }
+        else {
+            return new responder.Message('no email',404)
+        }
+        return new responder.Message('no email or uid',404)
+    }
+)
+
 exports.removeRole = functions.region('europe-west1').https.onCall((data,context)=>{
     if(context.auth?.token.admin!==true){
         new logging.Logging('removeRole',data,context)
