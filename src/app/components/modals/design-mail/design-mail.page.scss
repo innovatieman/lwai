@@ -10,10 +10,10 @@ ion-textarea{
     }
 }
 .block:hover{
-    border:solid 2px var(--ion-color-primary);
+    outline:solid 2px var(--ion-color-primary);
 }
 .selectedBlock{
-    border:solid 2px var(--ion-color-primary);
+    outline:solid 2px var(--ion-color-primary);
 }
 .editButtons{
     position: absolute;

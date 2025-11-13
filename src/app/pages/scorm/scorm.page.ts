@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { DomSanitizer } from '@angular/platform-browser';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-scorm',
@@ -9,10 +10,14 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class ScormPage implements OnInit {
   scormUrl: any;
+  start: boolean = false;
+  closed: boolean = false;
   scormId:string = "Jh6S3CgjoFRoS99AHlywQCYsgjG3_1762808158736"
   constructor(
     public sanitizer: DomSanitizer,
-    private functions:AngularFireFunctions
+    private functions:AngularFireFunctions,
+    private toast:ToastService,
+    private rf:ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -23,7 +28,17 @@ export class ScormPage implements OnInit {
         return "true";
       },
       LMSFinish: () => {
-        console.log("SCORM Finish");
+        if(!this.closed){
+
+          console.log("SCORM Finish");
+          this.toast.show('SCORM sessie beëindigd', 6000);
+          document.querySelector('iframe')?.remove();
+          this.closed = true
+          setTimeout(() => {
+            this.closed = true
+            this.rf.detectChanges();
+          }, 200);
+        }
         return "true";
       },
       LMSSetValue: (key: string, value: string) => {
@@ -44,18 +59,18 @@ export class ScormPage implements OnInit {
       LMSGetDiagnostic: () => ""
     };
 
-    // this.setScormUrl('assets/scorm/' + this.scormId + '/index.html')
+    this.setScormUrl('assets/scorm/elearning1/training.htm')
 
-    const callable = this.functions.httpsCallable('getScormLaunchUrl');
-    callable({ scormId: this.scormId }).subscribe({
-      next: (result) => {
-        console.log('Launch URL ontvangen:', result);
-        this.setScormUrl(result.launchUrl);
-      },
-      error: (error) => {
-        console.error('Fout bij ophalen launch URL:', error);
-      }
-    });
+    // const callable = this.functions.httpsCallable('getScormLaunchUrl');
+    // callable({ scormId: this.scormId }).subscribe({
+    //   next: (result) => {
+    //     console.log('Launch URL ontvangen:', result);
+    //     this.setScormUrl(result.launchUrl);
+    //   },
+    //   error: (error) => {
+    //     console.error('Fout bij ophalen launch URL:', error);
+    //   }
+    // });
   }
 
   setScormUrl(url:string){
@@ -65,4 +80,8 @@ export class ScormPage implements OnInit {
     );
   }
 
+
+  reload(){
+    location.reload();
+  }
 }

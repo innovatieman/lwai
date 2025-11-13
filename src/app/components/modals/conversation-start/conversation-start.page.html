@@ -3,14 +3,7 @@
     <h3 class="subtitle-top" noMargin>
       {{'conversation_start.the_case' | translate}}
       <span *ngIf="step!=4"> - </span>
-      <!-- <span *ngIf="step==0">De basis</span>
-      <span *ngIf="step==1">Extra gegevens</span>
-      <span *ngIf="step==2">De gesprekspartner</span>
-      <span *ngIf="step==3">Samenvatting</span> -->
-      <!-- <span *ngIf="step==4 && !caseItem.admin">{{'conversation_start.case' | translate}}</span> -->
       <span *ngIf="step==5&&caseItem.id">{{'conversation_start.starting' | translate}}</span>
-      <!-- <span *ngIf="step==5&&!caseItem.id">Start van het gesprek</span> -->
-      <!-- <span *ngIf="step==6">Tot slot</span> -->
     </h3>
   </div>
   <span class="spacer"></span>
@@ -19,239 +12,10 @@
   </ion-button>
 </div>
 
-<!-- <div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}" *ngIf="!pageLoaded">
-  <ion-spinner *ngIf="!pageLoaded" color="primary" class="loadingSpinner"></ion-spinner>
-</div> -->
+
 <div class="content" [ngStyle]="{'margin-bottom':media.smallDevice ? '0px' : '75px'}" *ngIf="pageLoaded&&!directStart">
 
-  <!-- <div class="modalIntro" *ngIf="!step">Geef aan om welke casus het gaat en wat er precies speelt.</div>
-  <div class="modalIntro" *ngIf="step==1">Hoe meer informatie je hier geeft, des te beter wordt het gesprek gesimuleerd. Deze gegevens zijn niet verplicht</div>
-  <div class="modalIntro" *ngIf="step==2">Geef aan hoe de gesprekspartner zich opstelt en hoe de gesprekspartner er uit ziet.</div>
-  <div class="modalIntro" *ngIf="step==3">Controleer of je casus zo goed is geinterpreteerd, of pas het nog aan.</div> -->
-  <!-- <div class="modalIntro" *ngIf="step==4">
-    <span>{{'conversation_start.goal_instructions' | translate}}</span> <span *ngIf="caseItem.freeAnswer">{{'conversation_start.free_question_instructions' | translate}}</span>
-  </div> -->
   <div class="modalIntro" *ngIf="step==5&&caseItem.id">{{'conversation_start.starting_instructions' | translate}}</div>
-  <!-- <div class="modalIntro" *ngIf="step==5&&!caseItem.id">Geef aan hoe het gesprek standaard begonnen kan worden. De gesprekspartner zal hierop direct reageren als begin van het gesprek.</div> -->
-  <!-- <div class="modalIntro" *ngIf="step==6">Geef aan welke gegevens een gebruiker nog kan aanpassen als de casus gestart wordt. Als je niets aanzet, zal de casus gelijk starten wanneer deze wordt geselecteerd.<br>Wanneer er een element wordt aangezet t.b.v. de casus, zal de gebruiker ook de AI kunnen gebruiken om deze opnieuw samen te vatten. Anders niet.</div> -->
-
-  <!-- <ion-card basicPadding *ngIf="!step" class="mainCard">
-    <ion-card-content class="detailColumn">
-      <ion-row>
-          <ion-col size="12">
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.role">
-              <ion-label position="stacked">
-                <h1>Titel casus*</h1>
-                <p>Geef de casus een titel?</p>
-              </ion-label>
-              <ion-input [(ngModel)]="caseItem.title"></ion-input>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.title'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.role">
-              <ion-label position="stacked">
-                <h1>Rol*</h1>
-                <p>Welke rol moet de gesprekspartner (AI) aannemen</p>
-              </ion-label>
-              <ion-input [(ngModel)]="caseItem.role"></ion-input>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.role'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.description">
-              <ion-label position="stacked">
-                <h1>Casus / issue</h1>
-                <p>Beschrijf de casus / issue. Zo gedetailleerd mogelijk.</p>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.description">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.description'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.description">
-              <ion-label position="stacked">
-                <h1>Rol van de gebruiker</h1>
-                <p>Beschrijf vanuit welke rol de gebruiker het gesprek aangaat.</p>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.user_role">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.user_role'"></fa-icon>
-            </ion-item>
-              
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.function">
-              <ion-label position="stacked">
-                <h1>Functie</h1>
-                <p>Wat is de functie van de persoon en welke rol vervult deze in relatie tot het probleem?</p>
-              </ion-label>
-              <ion-textarea rows="4" [autoGrow]="true" [(ngModel)]="caseItem.function">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.function'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.vision">
-              <ion-label position="stacked">
-                <h1>Visie</h1>
-                <p>Hoe kijkt deze persoon tegen het issue/ de casus aan?</p>
-              </ion-label>
-              <ion-textarea rows="4" [autoGrow]="true" [(ngModel)]="caseItem.vision">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.vision'"></fa-icon>
-            </ion-item>
-              
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.interests">
-              <ion-label position="stacked">
-                <h1>Belangen</h1>
-                <p>Wat is voor deze persoon belangrijk in relatie tot het probleem? Heeft hij/zij specifieke vragen en/of zorgen?</p>
-              </ion-label>
-              <ion-textarea rows="4" [autoGrow]="true" [(ngModel)]="caseItem.interests">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.interests'"></fa-icon>
-            </ion-item>
-
-          </ion-col>
-              
-      </ion-row>
-
-
-    </ion-card-content>
-
-  </ion-card>
-
-  <ion-card basicPadding *ngIf="step==1" class="mainCard">
-    <ion-card-content class="detailColumn">
-      <ion-row>
-          <ion-col size="12">
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.communicationStyle">
-              <ion-label position="stacked">
-                <h1>Communicatiestijl</h1>
-                <p>Hoe ervaar jij de communicatiestijl van deze persoon?</p>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.communicationStyle">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.communication_style'"></fa-icon>
-            </ion-item>
-
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.externalFactors">
-              <ion-label position="stacked">
-                <h1>Externe factoren</h1>
-                <p>Zijn er externe factoren die van invloed zijn op de houding van de persoon?</p>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.externalFactors">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.external_factors'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.history">
-              <ion-label position="stacked">
-                <h1>Historie</h1>
-                <p>Zijn er andere onderwerpen waar je deze persoon recent over hebt gesproken? Zo ja, waarover en hoe verliepen deze?</p>
-              </ion-label>
-              <ion-textarea rows="4" labelPlacement="floating" [autoGrow]="true" [(ngModel)]="caseItem.history">
-              </ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.history'"></fa-icon>
-            </ion-item>
-
-          </ion-col>
-              
-      </ion-row>
-
-
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card basicPadding *ngIf="step==2" class="mainCard">
-
-    <ion-card-content class="detailColumn">
-      <ion-row>
-          <ion-col size="8">
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin">
-              <ion-label position="stacked">
-                <h1>Avatar Id</h1>
-                <p>Wat is de Avatar Id</p>
-              </ion-label>
-              <ion-input [(ngModel)]="caseItem.avatarName"></ion-input>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.avatar_name'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin">
-              <ion-label position="stacked">
-                <h1>Foto</h1>
-                <p>Wat is de Avatar Foto (voeg hier een url toe)</p>
-              </ion-label>
-              <ion-input [(ngModel)]="caseItem.photo"></ion-input>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.photo'"></fa-icon>
-            </ion-item>
-              
-          </ion-col>
-          <ion-col size="4">
-              <ion-card class="caseAvatar">
-                  <ion-card-content backgroundImage noPadding *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}">
-                  </ion-card-content>
-              </ion-card>
-          </ion-col>
-      </ion-row>
-      <ion-row>
-          <ion-col size="12">
-
-              <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.attitude">
-                  <ion-label position="stacked" >
-                      <h1>Houding</h1>
-                      <p>Hoe is de kwaliteit van jouw relatie met deze persoon?</p>
-                  </ion-label>
-                  <ion-range [min]="1" [max]="100" [pin]="true"  color="primary" [(ngModel)]="caseItem.attitude">
-                      <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="caseItem.conversation.attitudeType!='position' && info.getAttitude(caseItem.attitude)">{{info.getAttitude(caseItem.attitude).title}}</ion-label>
-                      <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="caseItem.conversation.attitudeType=='position' && info.getPosition(caseItem.attitude)">{{info.getPosition(caseItem.attitude).title}}</ion-label>
-                      <ion-label style="font-size:12px;text-align:right" slot="end" *ngIf="!info.getAttitude(caseItem.attitude)">Stel in</ion-label>
-                  </ion-range>
-                  <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.attitude'"></fa-icon>
-              </ion-item>
-
-              <ion-item detail="false" lines="none" listCard *ngIf="caseItem.admin||caseItem.editable_by_user.steadfastness">
-                  <ion-label position="stacked" >
-                      <h1>Standvastig</h1>
-                      <p>Hoe standvastig is deze persoon (0% = Vindt alles wat jij vindt, 100% = Zal nooit iets anders vinden)</p>
-                  </ion-label>
-                  <ion-range [min]="1" [max]="99" [pin]="true"  color="primary" [(ngModel)]="caseItem.steadfastness">
-                      <ion-label style="font-size:18px" slot="end">{{caseItem.steadfastness}}%</ion-label>
-                  </ion-range>
-                  <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.steadfastness'"></fa-icon>
-              </ion-item>
-
-              
-          </ion-col>
-              
-      </ion-row>
-
-
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card basicPadding *ngIf="step==3" class="mainCard">
-    <ion-card-content class="detailColumn">
-      <ion-row>
-          <ion-col size="12">
-
-            <ion-item detail="false" lines="none" listCard>
-              <ion-label position="stacked" marginBottom>
-                <h1>Samenvatting</h1>
-                <p>Onze AI specialist vat hieronder jouw input samen, zodat je ziet hoe deze wordt geinterpreteerd. Als je nog aanpassingen wilt doen, dan kan dat hier.</p>
-              </ion-label>
-              <ion-textarea marginBottom *ngIf="caseItem.casus!=undefined&&promptChecked" [rows]="media.smallDevice ? 15 : 30" [(ngModel)]="caseItem.casus"></ion-textarea>
-              <ion-textarea marginBottom *ngIf="caseItem.casus==undefined&&!promptChecked" rows="4" [disabled]="true" value="Momentje geduld... je gegevens worden geanalyseerd"></ion-textarea>
-              <ion-textarea marginBottom *ngIf="caseItem.casus==undefined&&promptChecked" [rows]="media.smallDevice ? 15 : 30" [(ngModel)]="caseItem.casus" placeholder="Voeg hier eventueel een specifieke casus toe, of laat deze genereren."></ion-textarea>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.casus'"></fa-icon>
-            </ion-item>
-
-          </ion-col>
-              
-      </ion-row>
-
-
-    </ion-card-content>
-
-  </ion-card> -->
 
   <ion-card basicPadding *ngIf="step==4" class="mainCard">
 
@@ -259,31 +23,7 @@
       <ion-row>
           <ion-col size="12" noPadding>
 
-            <!-- <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin">
-              <ion-label position="stacked" >
-                  <h1>Doel</h1>
-                  <p>Wil je een specifiek doel instellen voor het gesprek? Als niet, dan is het gesprek al een doel op zich.</p>
-              </ion-label>
-              <ion-toggle [(ngModel)]="caseItem.goal" color="primary">Specifiek doel instellen</ion-toggle>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.goal'"></fa-icon>
-            </ion-item>
-
-            <ion-item detail="false" lines="none" listCard fullwidth *ngIf="caseItem.admin&&caseItem.goal">
-              <ion-label position="stacked" >
-                  <h1>Welke doelen?</h1>
-                  <p>Welke doelen wil je allemaal instellen? En hoeveel moeten er dan gehaald worden</p>
-              </ion-label>
-              <ion-toggle *ngIf="caseItem.admin||caseItem.editable_by_user.goals.attitude" [(ngModel)]="showGoal.attitude" color="primary">De houding van de gesprekspartner</ion-toggle>
-              <ion-toggle *ngIf="caseItem.admin||caseItem.editable_by_user.goals.phases" noMargin [(ngModel)]="showGoal.phases" (ionChange)="setPhasesStart()" color="primary">Het niveau van de verschillende gespreksfases</ion-toggle>
-              <ion-toggle *ngIf="caseItem.admin||caseItem.editable_by_user.goals.free" [(ngModel)]="showGoal.free" color="primary">Vrije tekst waarin het doel beschreven wordt</ion-toggle>
-              <div flex center-ver fullwidth class="numberInput-container"  *ngIf="caseItem.admin||caseItem.editable_by_user.minimum_goals">
-                <span>Hoeveel van de doelen moeten gehaald worden om succesvol te zijn?</span>
-                <span class="spacer"></span>
-                <ion-input class="numberInput" min="0" max="3" type="number" [(ngModel)]="caseItem.minimum_goals"></ion-input>
-              </div>
-              <fa-icon pointer class="infoIcon" [icon]="icon.get('faInfoCircle')" [tooltip]="'case_info.goals'"></fa-icon>
-            </ion-item> -->
-
+ 
             <div *ngIf="caseItem.previousConversationId" fullwidth marginBottom>
               <div weight600 font-18 [innerHtml]="translate.instant('conversation.days_between_conversations')"></div>
               <ion-input type="number" listCard labelPlacement="floating" [(ngModel)]="caseItem.daysBetweenConversations"></ion-input>
@@ -326,11 +66,7 @@
 
 
     </ion-card-content>
-    <!-- <div flex center-ver>
-      <ion-button color="secondary" class="saveButton" (click)="slide(3,true)">Terug</ion-button>
-      <span class="spacer"></span>
-      <ion-button color="primary" class="saveButton" (click)="slide(5)">Volgende</ion-button>
-    </div> -->
+
   </ion-card>
 
   <ion-card basicPadding basicRadius *ngIf="step==5" class="mainCard">
@@ -346,21 +82,19 @@
         <ion-toggle [(ngModel)]="caseItem.voice_on"></ion-toggle>
         <div weight600 marginLeft font-18 [innerHtml]="translate.instant('conversation_start.start_with_voice')" *ngIf="caseItem.voice_on"></div>
         <div weight600 marginLeft font-18 [innerHtml]="translate.instant('conversation_start.start_without_voice')" *ngIf="!caseItem.voice_on"></div>
-          <!-- <div class="spacer"></div> -->
       </div>
 
       <div *ngIf="caseItem.admin||(caseItem.voice && caseItem.editable_by_user.voice)" fullwidth marginBottom flex center-ver>
         <div weight600 marginLeft font-18 [innerHtml]="translate.instant('conversation_start.selected_voice')"></div>:
         <div class="spacer"></div>
         <ion-button color="secondary" (click)="selectVoice()" class="saveButton" fill="outline">{{caseItem.voice}}</ion-button>
-          <!-- <div class="spacer"></div> -->
       </div>
 
     </ion-card-content>
 
   </ion-card>
 
-  <ion-card basicPadding basicRadius *ngIf="step==6&&caseItem.admin" class="mainCard">
+  <!-- <ion-card basicPadding basicRadius *ngIf="step==6&&caseItem.admin" class="mainCard">
     <ion-card-content>
 
       <div *ngFor="let editable of caseItem.editable_by_user | keyvalue">
@@ -391,46 +125,9 @@
     </ion-card-content>
     
               
-  </ion-card>
+  </ion-card> -->
 
 </div>
-
-<!-- <ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button *ngIf="step!=0" color="secondary" class="saveButton" (click)="slide(step-1,true)" [disabled]="step==3&&!promptChecked">
-        <span *ngIf="media.screenSize!='xs'">{{'buttons.back' | translate}}</span>
-        <span *ngIf="media.screenSize=='xs'">
-          <fa-icon [icon]="icon.get('faArrowLeft')" font-18></fa-icon>
-        </span>
-      </ion-button>
-
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button *ngIf="step!=6&&caseItem.admin&&caseItem.id" color="success" class="saveButton" (click)="close()" [disabled]="step==3&&!promptChecked">
-        <span *ngIf="media.screenSize!='xs'">{{'buttons.save' | translate}}</span>
-        <span *ngIf="media.screenSize=='xs'">
-          <fa-icon [icon]="icon.get('faSave')" font-18></fa-icon>
-        </span>
-      </ion-button>
-
-
-      <ion-button *ngIf="step!=6&&!(step==5&&!caseItem.admin)" color="primary" class="saveButton" (click)="slide(step+1)" [disabled]="step==3&&!promptChecked">
-        <span *ngIf="media.screenSize!='xs'">{{'buttons.next' | translate}}</span>
-        <span *ngIf="media.screenSize=='xs'">
-          <fa-icon [icon]="icon.get('faArrowRight')" font-18></fa-icon>
-        </span>
-      </ion-button>
-
-      <ion-button *ngIf="step==5&&!caseItem.admin" color="primary" class="saveButton" (click)="close()">
-        <span *ngIf="media.screenSize!='xs'">{{'buttons.start' | translate}}</span>
-        <span *ngIf="media.screenSize=='xs'">
-          <fa-icon [icon]="icon.get('faCheck')" font-18></fa-icon>
-        </span>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer> -->
 
 <div class="buttons" *ngIf="pageLoaded&&!directStart">
   
@@ -442,14 +139,14 @@
       </span>
     </ion-button>
 
-    <ion-button *ngIf="step==3" [disabled]="!promptChecked" color="tertiary" class="saveButton" (click)="rebuildPrompt()">
+    <!-- <ion-button *ngIf="step==3" [disabled]="!promptChecked" color="tertiary" class="saveButton" (click)="rebuildPrompt()">
       <fa-icon *ngIf="promptChecked&&!changesMade()&&caseItem.casus" [icon]="icon.get('faRedoAlt')" slot="icon-only"></fa-icon>
       <span *ngIf="promptChecked&&!changesMade()&&!caseItem.casus">Casus genereren?</span>
       <ion-spinner color="secondary" *ngIf="!promptChecked&&!changesMade()"></ion-spinner>
       <span *ngIf="!promptChecked&&!changesMade()">Moment geduld</span>
       <span *ngIf="changesMade()&&media.screenSize!='xs'">De aanpassingen verwerken?</span>
       <span *ngIf="changesMade()&&media.screenSize=='xs'">Aanpassen?</span>
-    </ion-button>
+    </ion-button> -->
 
     <span class="spacer"></span>
 
@@ -468,12 +165,13 @@
       </span>
     </ion-button>
 
-    <ion-button *ngIf="step==6" color="success" class="saveButton" (click)="close()">
+    <!-- <ion-button *ngIf="step==6" color="success" class="saveButton" (click)="close()">
       <span *ngIf="media.screenSize!='xs'">{{'buttons.save' | translate}}</span>
       <span *ngIf="media.screenSize=='xs'">
         <fa-icon [icon]="icon.get('faCheck')" font-18></fa-icon>
       </span>
-    </ion-button>
+    </ion-button> -->
+
     <ion-button *ngIf="step==5&&!caseItem.admin" color="primary" class="saveButton" (click)="close()">
       <span *ngIf="media.screenSize!='xs'">{{'buttons.start' | translate}}</span>
       <span *ngIf="media.screenSize=='xs'">
@@ -483,57 +181,6 @@
 
   </div>
 </div>
-<!-- 
-  <div flex center-ver *ngIf="step==0">
-    <span class="spacer"></span>
-    <ion-button color="primary" class="saveButton" (click)="!caseItem.role ? errorMessage('error_messages.no_role') : slide(1)">Volgende</ion-button>
-  </div>
-
-  <div flex center-ver *ngIf="step==1">
-    <ion-button color="secondary" class="saveButton" (click)="slide(0,true)">Terug</ion-button>
-    <span class="spacer"></span>
-    <ion-button color="primary" class="saveButton" (click)="slide(2)">Volgende</ion-button>
-  </div>
-
-  <div flex center-ver *ngIf="step==2">
-    <ion-button color="secondary" class="saveButton" (click)="slide(1,true)">Terug</ion-button>
-    <span class="spacer"></span>
-    <ion-button color="primary" class="saveButton" (click)="!caseItem.attitude ? errorMessage('error_messages.no_attitude') : (!caseItem.steadfastness ? errorMessage('error_messages.no_steadfastness') : slide(3))">Volgende</ion-button>
-  </div>
-
-  <div flex center-ver *ngIf="step==3">
-    <ion-button [disabled]="!promptChecked" color="secondary" class="saveButton" (click)="slide(2,true)">Terug</ion-button>
-    <ion-button [disabled]="!promptChecked" color="tertiary" class="saveButton" (click)="rebuildPrompt()">
-      <fa-icon *ngIf="promptChecked&&!changesMade()" [icon]="icon.get('faRedoAlt')" slot="icon-only"></fa-icon>
-      <ion-spinner color="secondary" *ngIf="!promptChecked&&!changesMade()"></ion-spinner>
-      <span *ngIf="!promptChecked&&!changesMade()">Moment geduld</span>
-      <span *ngIf="changesMade()">De aanpassingen verwerken?</span>
-    </ion-button>
-    <span class="spacer"></span>
-    <ion-button [disabled]="!promptChecked" color="primary" class="saveButton" (click)="slide(4)">Volgende</ion-button>
-  </div>
-
-  <div flex center-ver *ngIf="step==4">
-    <ion-button color="secondary" class="saveButton" (click)="slide(3,true)">Terug</ion-button>
-    <span class="spacer"></span>
-    <ion-button color="primary" class="saveButton" (click)="slide(5)">Volgende</ion-button>
-  </div>
-
-  <div flex center-ver *ngIf="step==5">
-    <ion-button color="secondary" class="saveButton" (click)="slide(4,true)">Terug</ion-button>
-    <span class="spacer"></span>
-    <ion-button *ngIf="!caseItem.admin" color="primary" class="saveButton" (click)="close()">Starten</ion-button>
-    <ion-button *ngIf="caseItem.admin" color="primary" class="saveButton" (click)="slide(6)">Volgende</ion-button>
-  </div>
-
-  <div flex center-ver *ngIf="step==5">
-    <ion-button color="secondary" class="saveButton" (click)="slide(4,true)">Terug</ion-button>
-    <span class="spacer"></span>
-    <ion-button *ngIf="caseItem.admin" color="primary" class="saveButton" (click)="close()">Opslaan</ion-button>
-  </div> -->
-
-<!-- </div> -->
-
 
 
 

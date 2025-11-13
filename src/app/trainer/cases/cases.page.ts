@@ -1249,7 +1249,7 @@ export class CasesPage implements OnInit {
     item.trainerId = this.nav.activeOrganisationId
     item.practiceMode = true
     this.modalService.showConversationStart(item).then((res)=>{
-      console.log(res)
+      // console.log(res)
       if(res){
         localStorage.setItem('activatedCase',item.id)
         localStorage.setItem('personalCase',JSON.stringify(item))

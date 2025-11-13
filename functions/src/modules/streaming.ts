@@ -6,6 +6,12 @@ import admin, { db } from '../firebase'
 import moment from 'moment'
 import * as responder from '../utils/responder'
 
+function base64ToUtf8(base64: string): string {
+    const binary = atob(base64);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
 exports.startStreaming = onCall(
     {
       region: 'europe-west1',
@@ -16,15 +22,15 @@ exports.startStreaming = onCall(
       let data:any = request.data;
 
     // Check if the user is authenticated
-    console.log('start streaming request',JSON.stringify(data));
-    let encryptedData = atob(data.stream);
+    // console.log('start streaming request',JSON.stringify(data));
+    let encryptedData = base64ToUtf8(data.stream);
     try{
         data = JSON.parse(encryptedData);
     } catch (error) {
         return new responder.Message('Invalid data format', 400);
     }
 
-    console.log('Decrypted stream data:', JSON.stringify(data));
+    // console.log('Decrypted stream data:', JSON.stringify(data));
     // Validate input data
     if (!data.trainerId || !data.trainingId || !data.caseId) {
       return new responder.Message('Trainer ID and Training ID are required', 400);
@@ -49,12 +55,8 @@ exports.startStreaming = onCall(
       const creditData:any = doc.data();
       totalCredits += creditData.total || 0;
     });
-    let onlyTest:boolean = false;
     if(totalCredits <= 0){
       return new responder.Message('Not enough credits to start streaming', 403);
-    }
-    if(totalCredits < 160){
-      onlyTest = true;
     }
 
     
@@ -67,6 +69,7 @@ exports.startStreaming = onCall(
 
     if(!trainingData.streamAllowedOrigins || !Array.isArray(trainingData.streamAllowedOrigins) || trainingData.streamAllowedOrigins.length == 0){
       trainingData.streamAllowedOrigins = ['*'];
+      console.log('No allowed origins configured, allowing all origins');
       // return new responder.Message('No allowed origins configured', 403);
     }
 
@@ -76,6 +79,7 @@ exports.startStreaming = onCall(
 
     if(originToCheck && trainingData.streamAllowedOrigins.indexOf(originToCheck) == -1 && trainingData.streamAllowedOrigins[0] != '*'){
       console.log('Origin not allowed:', originToCheck);
+      console.log('Origin not allowed:', JSON.stringify(trainingData.streamAllowedOrigins || []));
       return new responder.Message('Origin not allowed: ' + originToCheck, 403);
     }
 
@@ -93,12 +97,21 @@ exports.startStreaming = onCall(
     caseData.trainerId = data.trainerId;
     caseData.trainingId = data.trainingId;
     caseData.logo = trainerDoc.data()?.logo || null;
-    caseData.onlyTest = onlyTest;
     caseData.startingCredits = totalCredits;
 
 
     const user = await createTempUser(data.caseId);
     
+    await db.collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId).collection('streams').add({
+        caseId: data.caseId,
+        caseTitle: caseData.title || 'Untitled case',
+        startedAt: admin.firestore.FieldValue.serverTimestamp(),
+        email: user.email,
+        userId: user.uid,
+        origin: originToCheck,
+    });
+
+
     return { user, case: caseData };
 
   })
@@ -331,3 +344,97 @@ exports.deleteTempUser = functions.region('europe-west1')
     }
 
   )
+
+
+  exports.getStreamingReport = onCall(
+    {
+      region: 'europe-west1',
+      memory: '1GiB',
+    },
+    async (request: CallableRequest<any>) => {
+
+      let data:any = request.data;
+    
+    // Check if the user is authenticated
+    if (!request.auth?.uid) {
+      return new responder.Message('Unauthorized', 401);
+    }
+
+    // console.log('Decrypted stream data:', JSON.stringify(data));
+    // Validate input data
+    if (!data.trainerId || !data.trainingId) {
+      return new responder.Message('Trainer ID and Training ID are required', 400);
+    }
+
+    // Check if the user has permission to create an elearning
+    const trainerDoc = await db.collection('trainers').doc(data.trainerId).get();
+    if (!trainerDoc.exists) {
+      return new responder.Message('trainer does not exist', 403);
+    }
+
+    const trainerData:any = trainerDoc.data();
+    if(!trainerData.admins || !Array.isArray(trainerData.admins) || trainerData.admins.indexOf(request.auth.uid) == -1){
+      return new responder.Message('Forbidden', 403);
+    }
+
+    // Check if the training exists
+    const trainingDoc = await db.collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId).get();
+    if (!trainingDoc.exists) {
+      return new responder.Message('Training does not exist', 404);
+    } 
+
+    const streamsRef = db.collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId).collection('streams');
+    const streamsSnapshot = await streamsRef.get();
+    let streamsReport:any = {total:{total:0,countCases:0,dates:{},origins:{}}};
+    
+    for(const doc of streamsSnapshot.docs) {
+      const streamData:any = doc.data();
+      let caseId = streamData.caseId || 'unknown_case';
+      if(!streamsReport[caseId]){
+        streamsReport[caseId] = {
+          credits:0,
+          countCases:0,
+          dates:{},
+          title: streamData.caseTitle || '',
+          origins:{}
+        };
+      }
+      streamsReport[caseId].countCases += 1;
+      let added = moment(streamData.startedAt.toDate()).format('YYYY-MM-DD');
+      if(!streamsReport[caseId].dates[added]){
+        streamsReport[caseId].dates[added] = 0;
+      }
+      streamsReport[caseId].dates[added] += 1;
+
+
+      const creditsRef = db.collection('trainers').doc(data.trainerId).collection('trainings').doc(data.trainingId).collection('creditsUsers').doc(streamData.email);
+      const creditsDoc  = await creditsRef.get();
+      const creditData:any = creditsDoc.data();
+
+      let usedCredits = creditData && creditData.total ? creditData.total : 0;
+      streamsReport[caseId].credits += usedCredits;
+      streamsReport.total.total += usedCredits;
+      streamsReport.total.countCases +=1;
+
+      if(!streamsReport.total.dates[added]){
+        streamsReport.total.dates[added] = 0;
+      }
+      streamsReport.total.dates[added] += 1;
+
+      let origin = streamData.origin || 'unknown_origin';
+      if(!streamsReport[caseId].origins[origin]){
+        streamsReport[caseId].origins[origin] = 0;
+      }
+      streamsReport[caseId].origins[origin] +=1;
+
+      if(!streamsReport.total.origins[origin]){
+        streamsReport.total.origins[origin] = 0;
+      }
+      streamsReport.total.origins[origin] +=1;
+
+    }
+
+
+    return { streamsReport };
+
+  })

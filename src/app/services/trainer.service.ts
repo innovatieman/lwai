@@ -1202,13 +1202,10 @@ export class TrainerService {
           ...doc,
         }));
         
-
-        // Reset breadcrumbs en trainingItem als er geen trainingen meer zijn
         if (this.trainings.length === 0) {
           this.trainingItem = null;
           this.breadCrumbs = [];
         }
-
 
         if (callback) {
           if(this.breadCrumbs.length>0){
@@ -1302,6 +1299,19 @@ export class TrainerService {
         }
       });
   }
+
+
+  loadStreamReports(trainingId:string, callback:Function) {
+    if(!trainingId){return;}
+    this.functions.httpsCallable('getStreamingReport')({
+      trainingId: trainingId,
+      trainerId: this.nav.activeOrganisationId
+    }).subscribe((res:any) => {
+      callback(res);
+      // if(res && res.result){
+    })
+  }
+
 
   safeCombineLatest<T>(observables: Observable<T>[]): Observable<T[]> {
     return observables.length ? combineLatest(observables) : of([]);

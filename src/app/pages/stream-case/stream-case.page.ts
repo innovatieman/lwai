@@ -4,6 +4,7 @@ import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
+import { HelpersService } from 'src/app/services/helpers.service';
 import { MediaService } from 'src/app/services/media.service';
 import { NavService } from 'src/app/services/nav.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -27,7 +28,8 @@ export class StreamCasePage implements OnInit {
     private nav:NavService,
     private afAuth:AngularFireAuth,
     private toast:ToastService,
-    private auth:AuthService
+    private auth:AuthService,
+    private helpers:HelpersService
   ) { }
 
   async ngOnInit() {
@@ -157,7 +159,7 @@ export class StreamCasePage implements OnInit {
     }
     // console.log('stream data',streamData);
     try{
-      this.functions.httpsCallable('startStreaming')({ stream: btoa(JSON.stringify(streamData)) }).pipe(take(1)).subscribe(async (res:any) => {
+      this.functions.httpsCallable('startStreaming')({ stream: this.helpers.utf8ToBase64(JSON.stringify(streamData)) }).pipe(take(1)).subscribe(async (res:any) => {
         console.log('stream result',res);
         if(res && res.user && res.user.token){
           await this.afAuth.signInWithCustomToken(res.user.token);

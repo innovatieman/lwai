@@ -22,7 +22,7 @@ const embeddingModel = vertexEmbedding.textEmbeddingModel('text-embedding-005');
 const textToSpeech = require("@google-cloud/text-to-speech");
 const ttsClient = new textToSpeech.TextToSpeechClient();
 import { ElevenLabsClient} from "elevenlabs";
-import { db } from "../firebase";
+import admin, { db } from "../firebase";
 // import openai from '../configs/config-openai';
 import { config } from '../configs/config-basics';
 // import admin from '../firebase'
@@ -1015,7 +1015,7 @@ exports.feedbackGemini = onRequest(
     ////////////////////////////////////////////////////////////////////
     res = setHeaders(res);
 
-    console.log('Start feedback');
+    // console.log('Start feedback');
 
     try {
       ////////////////////////////////////////////////////////////////////
@@ -3544,7 +3544,7 @@ async function updateCredits(userId: string, creditsToSubtract: number): Promise
   // Zoek alle organisaties waar deze email als employee voorkomt
   const employeesRef = db.collectionGroup("employees").where("email", "==", userData.email);
   const employeesSnapshot = await employeesRef.get();
-  console.log("Aantal gevonden employee-records:", employeesSnapshot.size);
+  // console.log("Aantal gevonden employee-records:", employeesSnapshot.size);
 
   // Bouw een lijst met kandidaat-collecties om in te boeken (unique, in vaste volgorde)
   // 1) Alle trainers/{orgId}/credits (voor elke gevonden organisatie)
@@ -3592,6 +3592,17 @@ async function updateCreditsTraining(userEmail: string, creditsToSubtract: numbe
       .where('total', '>', 0)
       .orderBy('created', 'asc')
       .get();
+    if(creditsQuerySnapshot.empty){
+
+      const user:any = await admin.auth().getUserByEmail(userEmail);
+      if(!user?.uid){
+        throw new Error("User niet gevonden voor email: " + userEmail);
+      }
+      console.log("Geen credits in training gevonden, fallback naar gewone credits voor userId: " + user.uid);
+      return updateCredits(user.uid,creditsToSubtract);
+
+    }
+
 
     // let creditDocs = creditsQuerySnapshot.docs;
     let creditDocs: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>[] = creditsQuerySnapshot.docs;
@@ -3783,7 +3794,7 @@ async function stopLoading(body:any){
 // }
 
 async function streamGemini(messages:any, agent_instructions:any,stream:boolean){
-  console.log('streamGemini messages: ' + JSON.stringify(messages).substring(0,200));
+  // console.log('streamGemini messages: ' + JSON.stringify(messages).substring(0,200));
     let systemContent = ''
     let lastMessage = messages[messages.length-1];
     messages.splice(messages.length-1,1);

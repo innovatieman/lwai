@@ -1,4 +1,4 @@
-import { NgModule, isDevMode, LOCALE_ID } from '@angular/core';
+import { NgModule, isDevMode, LOCALE_ID, APP_INITIALIZER } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
@@ -38,6 +38,15 @@ import localeNl from '@angular/common/locales/nl';
 import localeEnUs from '@angular/common/locales/en';
 registerLocaleData(localeNl, 'nl');
 registerLocaleData(localeEnUs, 'en-US');
+import { TranslateService } from '@ngx-translate/core';
+
+export function appInitializerFactory(translate: TranslateService) {
+  return () => {
+    const defaultLang = 'en'; // of 'en', etc.
+    translate.setDefaultLang(defaultLang);
+    return translate.use(defaultLang).toPromise(); // wacht op laden
+  };
+}
 
 
 @NgModule({
@@ -86,6 +95,12 @@ registerLocaleData(localeEnUs, 'en-US');
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: LOCALE_ID, useValue: 'nl' },
     { provide: REGION, useValue: 'europe-west1' },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: appInitializerFactory,
+      deps: [TranslateService],
+      multi: true,
+    },
     { provide: USE_AUTH_EMULATOR, useValue: environment.useEmulators ? ['http://127.0.0.1', 9099] : undefined },
     { provide: USE_FIRESTORE_EMULATOR, useValue: environment.useEmulators ? ['localhost', 8080] : undefined },
     { provide: USE_FUNCTIONS_EMULATOR, useValue: environment.useEmulators ? ['localhost', 5001] : undefined },

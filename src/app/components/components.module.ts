@@ -15,6 +15,7 @@ import { MenuMobileComponent } from './menu-mobile/menu-mobile.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TrainingListItemComponent } from './training-list-item/training-list-item.component';
 import { CaseCardPage } from './case-card/case-card.page';
+import { GraphColumnComponent } from './graph-column/graph-column.component';
 // import { MenuPage } from './menu.page';
 
 @NgModule({
@@ -25,7 +26,7 @@ import { CaseCardPage } from './case-card/case-card.page';
     HighchartsChartModule,
     FontAwesomeModule
   ],
-  declarations: [HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent,TrainingListItemComponent,CaseCardPage],
-  exports:[HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent,TrainingListItemComponent,CaseCardPage  ]
+  declarations: [HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent,TrainingListItemComponent,CaseCardPage,GraphColumnComponent],
+  exports:[HeaderComponent,MainComponent,BadgeComponent,LoaderComponent,GraphGaugeComponent,StarRatingComponent,TooltipDirective,MenuMobileComponent,TrainingListItemComponent,CaseCardPage,GraphColumnComponent]
 })
 export class ComponentsModule {}

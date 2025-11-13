@@ -386,10 +386,10 @@ export class MailflowPage implements OnInit {
         html = html += `<p style="font-size:${item.fontSize || '14px'};padding-left:${item.marginLeft || '0px'};padding-right:${item.marginRight || '0px'};padding-top:${item.marginTop || '0px'};padding-bottom:${item.marginBottom || '0px'};font-size:${item.fontSize || '14p'};font-weight:${item.fontWeight || 400};text-align:${item.alignment || 'left'}">${text}</p>`;
       }
       if(item.type=='button'){
-        html = html += `<div style="width:100%;text-align:${item.alignment || 'center'}";><a href="${item.url}" style="text-decoration:none;display:block;padding:5px 8px;backgound:${item.backgroundColor || '#2b6cf5'};color:${item.color || '#fff'};border-radius:${item.borderRadius || '0px'}">${item.text}</a></div>`
+        html = html += `<div style="width:100%;text-align:${item.alignment || 'left'};padding-top:${item.marginTop || '0px'};padding-bottom:${item.marginBottom || '0px'};padding-left:${item.marginLeft || '0px'};padding-right:${item.marginRight || '0px'};"><a href="${item.url}" target="_blank" style="text-decoration:none;display:inline-block;padding:5px 8px;background-color:${item.backgroundColor || '#2b6cf5'};color:${item.color || '#fff'};border-radius:${item.borderRadius || '0px'};font-weight:500;text-transform:uppercase;padding-left:${item.paddingLeft || '14px'};padding-right:${item.paddingRight || '14px'};padding-top:${item.paddingTop || '8px'};padding-bottom:${item.paddingBottom || '8px'};">${item.text}</a></div>`
       }
       if(item.type=='image'){
-        html = html += `<div class="iets" style="width:100%;text-align:${item.alignment || 'left'};padding-left:${item.marginLeft || '0px'}; padding-right:${item.marginRight || '0px'}; padding-top:${item.marginTop || '0px'}; padding-bottom:${item.marginBottom || '0px'};"><img src="${item.src}" style="max-width:100%;border-radius:${item.borderRadius || '0px'};height:${item.height || 'auto'};" /></div>`;
+        html = html += `<div class="iets" style="width:100%;text-align:${item.alignment || 'left'};padding-left:${item.marginLeft || '0px'}; padding-right:${item.marginRight || '0px'}; padding-top:${item.marginTop || '0px'}; padding-bottom:${item.marginBottom || '0px'};">${item.url ? `<a href="${item.url}" target="_blank" style="text-decoration:none;">` : ''}<img src="${item.src}" style="max-width:100%;border-radius:${item.borderRadius || '0px'};height:${item.height || 'auto'};" />${item.url ? `</a>` : ''}</div>`;
       }
       if(item.type=='spacer'){
         html = html += `<div style="width:100%;height:${item.height || '20px'};"></div>`;
@@ -397,7 +397,42 @@ export class MailflowPage implements OnInit {
       if(item.type=='divider'){
         html = html += `<div style="width:100%;padding-left:${item.marginLeft || '0px'}; padding-right:${item.marginRight || '0px'}; margin-top:${item.marginTop || '15px'}; margin-bottom:${item.marginBottom || '15px'};"><div style="width:100%;border-top:1px solid #ccc;height:1px"></div></div>`;
       }
-     
+      if (item.type === 'table' && item.data) {
+        // console.log('Generating table:', item);
+        html += `<table style="width:100%;border-spacing:0;border-collapse:collapse;"><tr>`;
+
+        for (let i=0; i < Object.keys(item.data).length; i++) {
+          let columnItems = item.data[i];
+          html += `<td style="vertical-align:top;padding:0 10px;width:50%;">`;
+
+          for (let colItem of columnItems) {
+            if (colItem.type === 'text') {
+              const text = (colItem.value || '').replace(/\n/g, '<br/>');
+              html += `<p style="font-size:${colItem.fontSize || '14px'};padding-left:${colItem.marginLeft || '0px'};padding-right:${colItem.marginRight || '0px'};padding-top:${colItem.marginTop || '0px'};padding-bottom:${colItem.marginBottom || '0px'};font-weight:${colItem.fontWeight || 400};text-align:${colItem.alignment || 'left'}">${text}</p>`;
+            }
+
+            if (colItem.type === 'button') {
+              html += `<div style="width:100%;text-align:${colItem.alignment || 'center'};padding-top:${item.marginTop || '0px'};padding-bottom:${item.marginBottom || '0px'};padding-left:${item.marginLeft || '0px'};padding-right:${item.marginRight || '0px'};"><a href="${colItem.url}" target="_blank" style="text-decoration:none;display:inline-block;padding:5px 8px;background-color:${colItem.backgroundColor || '#2b6cf5'};color:${colItem.color || '#fff'};border-radius:${colItem.borderRadius || '0px'};;font-weight:500;text-transform:uppercase;padding-left:${item.paddingLeft || '14px'};padding-right:${item.paddingRight || '14px'};padding-top:${item.paddingTop || '8px'};padding-bottom:${item.paddingBottom || '8px'};">${colItem.text || 'Klik hier'}</a></div>`;
+            }
+
+            if (colItem.type === 'image') {
+              html += `<div style="width:100%;text-align:${colItem.alignment || 'left'};padding-left:${colItem.marginLeft || '0px'};padding-right:${colItem.marginRight || '0px'};padding-top:${colItem.marginTop || '0px'};padding-bottom:${colItem.marginBottom || '0px'};">${colItem.url ? `<a href="${colItem.url}" target="_blank" style="text-decoration:none;">` : ''}<img src="${colItem.src}" style="max-width:100%;border-radius:${colItem.borderRadius || '0px'};height:${colItem.height || 'auto'};" />${colItem.url ? `</a>` : ''}</div>`;
+            }
+
+            if (colItem.type === 'divider') {
+              html += `<div style="width:100%;margin-top:${colItem.marginTop || '15px'};margin-bottom:${colItem.marginBottom || '15px'};"><div style="width:100%;border-top:1px solid #ccc;height:1px"></div></div>`;
+            }
+
+            if (colItem.type === 'spacer') {
+              html += `<div style="width:100%;height:${colItem.height || '20px'};"></div>`;
+            }
+          }
+
+          html += `</td>`;
+        }
+
+        html += `</tr></table>`;
+      }
     }
 
     html = html += `<div style="margin-top:20px; padding-top:10px; font-size:12px; color:#888;text-align:center;">

@@ -7,7 +7,7 @@ export const environment = {
   useEmulators: false,
   log_on:true,
   verificationUrl:'http://localhost:8100/verify',
-  version: '1.4.28',
+  version: '1.4.29',
 
   firebase :{
     apiKey: "AIzaSyDc7k8O277P-27n7igbMnYtu8iiJUEk0TE",

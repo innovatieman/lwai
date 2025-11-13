@@ -174,6 +174,18 @@ export class HelpersService {
     return this.decimalPipe.transform(nr, digits, this.locale);
   }
 
+  utf8ToBase64(str: string): string {
+    const utf8Bytes = new TextEncoder().encode(str);
+    const binary = Array.from(utf8Bytes).map(b => String.fromCharCode(b)).join('');
+    return btoa(binary);
+  }
+
+  base64ToUtf8(base64: string): string {
+    const binary = atob(base64);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
   floor(nr:number):number{
     return Math.floor(nr)
   }

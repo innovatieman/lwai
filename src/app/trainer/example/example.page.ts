@@ -455,7 +455,17 @@ export class ExamplePage implements OnInit {
   showCaseInfo(caseItem:any){
     let item = JSON.parse(JSON.stringify(caseItem))
     item.practiceMode = true;
-    this.modalService.showCaseInfo(item)
+    this.modalService.showCaseInfo(item,(response:any)=>{
+      if(response?.data=='startConversation'){
+        this.modalService.showConversationStart(item).then((res)=>{
+          if(res){
+            localStorage.setItem('activatedCase',item.id)
+            localStorage.setItem('personalCase',JSON.stringify(item))
+            this.nav.go('conversation/'+item.id)
+          }
+        })
+      }
+    })
   }
 
   setPageParam(){

@@ -20,6 +20,7 @@ export class DesignMailPage implements OnInit {
   mailItem: any = null;
   selectedBlockIndex: number = -1;
   selectedSubBlockIndex: number = -1;
+  selectedFieldIndex: number = -1;
   shortMenu:any;
   caretPosition:number = 0;
   activeIndex: number | null = null;
@@ -38,13 +39,23 @@ export class DesignMailPage implements OnInit {
   ngOnInit() {
     console.log(this.data);
     this.mailItem = this.data.mailItem;
+    this.mailItem.content.forEach((contentItem:any) => {
+      if (contentItem.type === 'table') {
+        contentItem.columnArray = Object.entries(contentItem.data);
+      }
+    });
   }
 
   save(){
     console.log('Saving mail item');
-    this.fire.collection('mailflow').doc(this.mailItem.id).update(this.mailItem).then(()=>{
+    let item = JSON.parse(JSON.stringify(this.mailItem));
+    item.content.forEach((contentItem:any) => {
+      if (contentItem.type === 'table') {
+        delete contentItem.columnArray;
+      }
+    });
+    this.fire.collection('mailflow').doc(this.mailItem.id).update(item).then(()=>{
       console.log('Saved');
-      // this.modalCtrl.dismiss({updated:true});
     });
   }
 
@@ -64,7 +75,7 @@ export class DesignMailPage implements OnInit {
         if(!fieldIndex&&fieldIndex!==0){
           fieldIndex = 0;
         }
-        if(index>=0 && subIndex>=0 && fieldIndex>0){
+        if(fieldIndex>0){
           let item = this.mailItem.content[index].data[subIndex].splice(fieldIndex,1)[0];
           this.mailItem.content[index].data[subIndex].splice(fieldIndex-1,0,item);
         }
@@ -81,7 +92,7 @@ export class DesignMailPage implements OnInit {
         if(!fieldIndex&&fieldIndex!==0){
           fieldIndex = 0;
         }
-        if(index>=0 && subIndex>=0 && fieldIndex>0){
+        if(fieldIndex<this.mailItem.content[index].data[subIndex].length-1){
           let item = this.mailItem.content[index].data[subIndex].splice(fieldIndex,1)[0];
           this.mailItem.content[index].data[subIndex].splice(fieldIndex+1,0,item);
         }
@@ -89,10 +100,121 @@ export class DesignMailPage implements OnInit {
     }
   }
 
-  removeContent(index:number){
+  removeContent(index:number,subIndex?:number,fieldIndex?:number){
+    if(subIndex!==undefined){
+      this.mailItem.content[index].data[subIndex].splice(fieldIndex,1);
+      this.selectedSubBlockIndex = -1;
+      this.save();
+      return;
+    }
     this.mailItem.content.splice(index,1);
     this.selectedBlockIndex = -1;
     this.save();
+  }
+
+  addSubItem(index:number,subIndex?:number,event?:Event){
+    if(event){
+      event.stopPropagation();
+    }
+    let list = [
+      {
+        title:this.translate.instant('design_mail.add_text'),
+        icon:'faPen',
+        value:'text'
+      },
+      {
+        title:this.translate.instant('design_mail.add_image'),
+        icon:'faImage',
+        value:'image'
+      },
+      {
+        title:this.translate.instant('design_mail.add_button'),
+        icon:'faMousePointer',
+        value:'button'
+      },
+      {
+        title:this.translate.instant('design_mail.add_spacer'),
+        icon:'faArrowsAltV',
+        value:'spacer'
+      },
+      {
+        title:this.translate.instant('design_mail.add_divider'),
+        icon:'faMinus',
+        value:'divider'
+      },
+    ]
+    this.showshortMenu(event,list,(result:any)=>{
+      if(result?.value){
+        this.add(result.value,index,subIndex);
+      }
+    })
+  }
+
+  getColumnEntries(data: {[key: string]: any[]}): [string, any[]][] {
+    return Object.entries(data);
+  }
+
+  styleFor(item: any) {
+    return {
+      'text-align': item.alignment || 'left',
+      'padding-left': item.marginLeft || '0px',
+      'padding-right': item.marginRight || '0px',
+      'padding-top': item.marginTop || '0px',
+      'padding-bottom': item.marginBottom || '0px'
+    };
+  }
+
+  styleForButton(item: any) {
+    // { 'color': contentItem.color || '#ffffff','--background' : contentItem.backgroundColor || '#2b6cf5','border-radius': contentItem.borderRadius ||  '0px', '--border-radius': contentItem.borderRadius ||  '0px', '--padding-start': contentItem.paddingLeft || '14px', '--padding-end': contentItem.paddingRight || '14px', '--padding-top': contentItem.paddingTop || '8px', '--padding-bottom': contentItem.paddingBottom || '8px'}
+    return {
+      'color': item.color || '#ffffff',
+      '--background' : item.backgroundColor || '#2b6cf5',
+      'background-color' : item.backgroundColor || '#2b6cf5',
+      'border-radius': item.borderRadius ||  '0px',
+      '--border-radius': item.borderRadius ||  '0px',
+      '--padding-start': item.paddingLeft || '14px',
+      '--padding-end': item.paddingRight || '14px',
+      '--padding-top': item.paddingTop || '8px',
+      '--padding-bottom': item.paddingBottom || '8px'
+    };
+  }
+  styleForText(item: any) {
+    //{'text-align': contentItem.alignment || 'left','font-size' : contentItem.fontSize || '14px', 'font-weight' : contentItem.fontWeight || 400}
+    return {
+      'text-align': item.alignment || 'left',
+      'font-size' : item.fontSize || '14px',
+      'font-weight' : item.fontWeight || 400,
+      'color': item.color || '#000000',
+      'background-color': item.backgroundColor || 'transparent',
+    };
+  } 
+  styleForImageHolder(item: any) {
+    //{'text-align': contentItem.alignment || 'left','margin-left': contentItem.marginLeft || '0px', '--border-radius': contentItem.borderRadius ||  '0px', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}
+    return {
+      'text-align': item.alignment || 'left',
+      'margin-left': item.marginLeft || '0px',
+      '--border-radius': item.borderRadius ||  '0px',
+      'padding-left': item.marginLeft || '0px',
+      'padding-right': item.marginRight || '0px',
+      'padding-top': item.marginTop || '0px',
+      'padding-bottom': item.marginBottom || '0px'
+    };
+  }
+  styleForImage(item: any) {
+    //{'border-radius': contentItem.borderRadius ||  '12px','height': contentItem.height || 'auto'}
+    return {
+      'border-radius': item.borderRadius ||  '12px',
+      'height': item.height || 'auto'
+    };
+  }
+  styleForDivider(item: any) {
+    //{'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'margin-top': contentItem.marginTop || '0px', 'margin-bottom': contentItem.marginBottom || '0px'}
+    return {
+      'padding-left': item.marginLeft || '0px',
+      'padding-right': item.marginRight || '0px',
+      'margin-top': item.marginTop || '0px',
+      'margin-bottom': item.marginBottom || '0px'
+    };
   }
 
   add(type:string,index?:number,subIndex?:number){
@@ -118,7 +240,7 @@ export class DesignMailPage implements OnInit {
         item = {type,marginTop:'15px',marginBottom:'15px' };
       }
       else if(type=='table'){
-        item = {type, rows: 1, columns: 2, data: [[{type:'text',value:''},{type:'text',value:''}]]}
+        item = {type, columns: 2, data: {0:[{type:'text',value:''}],1:[{type:'text',value:''}]}}
       }
       else if(type=='caseCard'){
         let itemCard:any = {
@@ -131,9 +253,19 @@ export class DesignMailPage implements OnInit {
 
       if(this.selectedBlockIndex!=-1){
         this.mailItem.content.splice(this.selectedBlockIndex+1, 0, item);
+        this.mailItem.content.forEach((contentItem:any) => {
+          if (contentItem.type === 'table') {
+            contentItem.columnArray = Object.entries(contentItem.data);
+          }
+        });
       }
       else{
         this.mailItem.content.push(item);
+        this.mailItem.content.forEach((contentItem:any) => {
+          if (contentItem.type === 'table') {
+            contentItem.columnArray = Object.entries(contentItem.data);
+          }
+        });
       }
 
     }
@@ -142,41 +274,55 @@ export class DesignMailPage implements OnInit {
         subIndex = 0
       }
       if(type=='text'){
-        this.mailItem.content[index].data[subIndex].push({type, value: ''});
+        item = {type,value:''}
       }
+        
       else if(type=='image'){
-        this.mailItem.content[index].data[subIndex].push({type, src: ''});
-        // this.getInputImage(index,subIndex,this.mailItem.content[index].data[subIndex].length-1);
-        // save = false;
+        item = {type, src: ''}
       }
       else if(type=='button'){
-        this.mailItem.content[index].data[subIndex].push({type, text: '', url: ''});
+        item = {type, text: '', url: ''};
       }
       else if(type=='spacer'){
-        this.mailItem.content[index].data[subIndex].push({type, height: 20});
+        item = {type, height: '20px'};
       }
       else if(type=='divider'){
-        this.mailItem.content[index].data[subIndex].push({type});
+        item = {type,marginTop:'15px',marginBottom:'15px' };
       }
+
+      this.mailItem.content[index].data[subIndex].push(item);
+
     }
     if(save){ 
       this.save();
     }
   }
 
-  selectBlock(index:number,subIndex?:number){
-    if(this.selectedBlockIndex===index && this.selectedSubBlockIndex===subIndex){
-      this.selectedBlockIndex = -1;
-      this.selectedSubBlockIndex = -1;
+  selectBlock(index:number,subIndex?:number,fieldIndex?:number,event?:Event){
+    console.log('Select block',index,subIndex,fieldIndex);
+    if(event){
+      event.stopPropagation();
     }
-    else{
-      this.selectedBlockIndex = index;
-      this.selectedSubBlockIndex = subIndex || -1;
+    // if(this.selectedBlockIndex===index && this.selectedSubBlockIndex===subIndex){
+    //   this.selectedBlockIndex = -1;
+    //   this.selectedSubBlockIndex = -1;
+    // }
+
+    if(!subIndex&&subIndex!==0){
+      subIndex = -1;
+      fieldIndex = -1;
     }
+    if(!fieldIndex&&fieldIndex!==0){
+      fieldIndex = -1;
+    }
+    this.selectedBlockIndex = index;
+    this.selectedSubBlockIndex = subIndex;
+    this.selectedFieldIndex = fieldIndex;
   }
   clearSelectedBlock(){
     this.selectedBlockIndex = -1;
     this.selectedSubBlockIndex = -1;
+    this.selectedFieldIndex = -1;
   }
 
 
@@ -385,4 +531,159 @@ export class DesignMailPage implements OnInit {
     callback(this.selectMenuservice.selectedItem)
   }
   
+  showIf(type:string[]){
+    if(!this.selectedBlockIndex && this.selectedBlockIndex!==0){
+      return false;
+    }
+    if( type.indexOf(this.mailItem.content[this.selectedBlockIndex]?.type) > -1 ){
+      return true;
+    }
+
+    if(this.selectedSubBlockIndex!==-1){
+      if( type.indexOf(this.mailItem.content[this.selectedBlockIndex]?.data[this.selectedSubBlockIndex][this.selectedFieldIndex]?.type) > -1 ){
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
+
+  getFieldProp(prop: string): any {
+    if (this.selectedFieldIndex == null || this.selectedFieldIndex === -1) {
+      return this.mailItem.content[this.selectedBlockIndex]?.[prop];
+    } else {
+      return this.mailItem.content[this.selectedBlockIndex]?.columnArray?.[this.selectedSubBlockIndex]?.[1]?.[this.selectedFieldIndex]?.[prop];
+    }
+  }
+
+  setFieldProp(prop: string, value: any): void {
+    if (this.selectedFieldIndex == null || this.selectedFieldIndex === -1) {
+      if (this.mailItem.content[this.selectedBlockIndex]) {
+        this.mailItem.content[this.selectedBlockIndex][prop] = value;
+      }
+    } else {
+      const field = this.mailItem.content[this.selectedBlockIndex]?.columnArray?.[this.selectedSubBlockIndex]?.[1]?.[this.selectedFieldIndex];
+      if (field) {
+        field[prop] = value;
+      }
+    }
+  }
+
+  get fieldAlignment(): string {
+    return this.getFieldProp('alignment') || 'left';
+  }
+  set fieldAlignment(value: string) {
+    this.setFieldProp('alignment', value);
+  }
+  get fieldText(): string {
+    return this.getFieldProp('text') || '';
+  }
+  set fieldText(value: string) {
+    this.setFieldProp('text', value);
+  }
+  get fieldUrl(): string {
+    return this.getFieldProp('url') || '';
+  }
+  set fieldUrl(value: string) {
+    this.setFieldProp('url', value);
+  }
+  get fieldExpand(): string {
+    return this.getFieldProp('expand') || '';
+  }
+  set fieldExpand(value: string) {
+    this.setFieldProp('expand', value);
+  }
+  get fieldHeight(): string {
+    return this.getFieldProp('height') || '';
+  }
+  set fieldHeight(value: string) {
+    this.setFieldProp('height', value);
+  }
+  get fieldMarginTop(): string {
+    return this.getFieldProp('marginTop') || '';
+  }
+  set fieldMarginTop(value: string) {
+    this.setFieldProp('marginTop', value);
+  }
+  get fieldMarginBottom(): string {
+    return this.getFieldProp('marginBottom') || '';
+  }
+  set fieldMarginBottom(value: string) {
+    this.setFieldProp('marginBottom', value);
+  }
+  get fieldMarginLeft(): string {
+    return this.getFieldProp('marginLeft') || '';
+  }
+  set fieldMarginLeft(value: string) {
+    this.setFieldProp('marginLeft', value);
+  }
+  get fieldMarginRight(): string {
+    return this.getFieldProp('marginRight') || '';
+  }
+  set fieldMarginRight(value: string) {
+    this.setFieldProp('marginRight', value);
+  }
+  get fieldPaddingTop(): string {
+    return this.getFieldProp('paddingTop') || '';
+  }
+  set fieldPaddingTop(value: string) {
+    this.setFieldProp('paddingTop', value);
+  }
+  get fieldPaddingBottom(): string {
+    return this.getFieldProp('paddingBottom') || '';
+  }
+  set fieldPaddingBottom(value: string) {
+    this.setFieldProp('paddingBottom', value);
+  }
+  get fieldPaddingLeft(): string {
+    return this.getFieldProp('paddingLeft') || '';
+  }
+  set fieldPaddingLeft(value: string) {
+    this.setFieldProp('paddingLeft', value);
+  }
+  get fieldPaddingRight(): string {
+    return this.getFieldProp('paddingRight') || '';
+  }
+  set fieldPaddingRight(value: string) {
+    this.setFieldProp('paddingRight', value);
+  }
+  get fieldBackgroundColor(): string {
+    return this.getFieldProp('backgroundColor') || '';
+  }
+  set fieldBackgroundColor(value: string) {
+    this.setFieldProp('backgroundColor', value);
+  }
+  get fieldColor(): string {
+    return this.getFieldProp('color') || '';
+  }
+  set fieldColor(value: string) {
+    this.setFieldProp('color', value);
+  }
+  get fieldFontSize(): string {
+    return this.getFieldProp('fontSize') || '';
+  }
+  set fieldFontSize(value: string) {
+    this.setFieldProp('fontSize', value);
+  }
+  get fieldFontWeight(): string {
+    return this.getFieldProp('fontWeight') || '';
+  }
+  set fieldFontWeight(value: string) {
+    this.setFieldProp('fontWeight', value);
+  }
+  get fieldBorderRadius(): string {
+    return this.getFieldProp('borderRadius') || '';
+  }
+  set fieldBorderRadius(value: string) {
+    this.setFieldProp('borderRadius', value);
+  }
+  get fieldSrc(): string {
+    return this.getFieldProp('src') || '';
+  }
+  set fieldSrc(value: string) {
+    this.setFieldProp('src', value);
+  }
+
 }

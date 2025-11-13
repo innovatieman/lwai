@@ -93,76 +93,89 @@
           </div>
 
           <div style="background:white;padding:10px 0px;border-radius:16px;margin-bottom:15px;" class="notActiveItem" *ngIf="selectedBlockIndex !== -1 && mailItem.content[selectedBlockIndex]">
-            <h3 style="padding-left:15px" font-24>{{'design_mail.settings_title' | translate}}</h3>
-            
-            
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <h3 style="padding:0px 15px" font-24 flex center-ver fullwidth>
+              <span>{{'design_mail.settings_title' | translate}}</span>
+              <div class="spacer"></div>
+              <fa-icon button titleIcon [icon]="icon.get('faTimes')" pointer (click)="clearSelectedBlock()" ></fa-icon>
+            </h3>
+
+
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <ion-label font-20 weight700>{{'design_mail.text_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].text" placeholder="{{'design_mail.button_click_here' | translate}}" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldText" placeholder="{{'design_mail.button_click_here' | translate}}" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image'])">
+              <ion-label font-20 weight700>{{'design_mail.src_label' | translate}}</ion-label>
+            </ion-item>
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldSrc" placeholder="https://example.com/image.jpg" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                </ion-input>
+            </ion-item>
+
+
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image'])">
               <ion-label font-20 weight700>{{'design_mail.url_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].url" placeholder="https://example.com" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldUrl" placeholder="https://example.com" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <ion-label font-20 weight700>{{'design_mail.button_type_label' | translate}}</ion-label>
             </ion-item>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
-              <ion-select borderSecondary style="padding-left:30px;" interface="popover" borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].expand" placeholder="{{'design_mail.button_type_normal' | translate}}" (ionChange)="save()">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
+              <ion-select borderSecondary style="padding-left:30px;" interface="popover" borderRadius16 [(ngModel)]="fieldExpand" placeholder="{{'design_mail.button_type_normal' | translate}}" (ionChange)="save()">
                 <ion-select-option value="">{{'design_mail.button_type_normal' | translate}}</ion-select-option>
                 <ion-select-option value="block">{{'design_mail.button_type_block' | translate}}</ion-select-option>
               </ion-select>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <ion-label font-20 weight700>{{'design_mail.background_color_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].backgroundColor" placeholder="#2b6cf5" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldBackgroundColor" placeholder="#2b6cf5" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <ion-label font-20 weight700>{{'design_mail.color_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].color" placeholder="#000000" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldColor" placeholder="#000000" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='spacer'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['spacer'])">
               <ion-label font-20 weight700>{{'design_mail.height_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='spacer'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].height" placeholder="20px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['spacer'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldHeight" placeholder="20px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf=" mailItem.content[selectedBlockIndex].type=='image'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image'])">
               <ion-label font-20 weight700>{{'design_mail.height_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf=" mailItem.content[selectedBlockIndex].type=='image'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].height" placeholder="auto" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldHeight" placeholder="auto" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' && mailItem.content[selectedBlockIndex].type!='divider' && mailItem.content[selectedBlockIndex].type!='table'">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button'])">
               <ion-label font-20 weight700>{{'design_mail.alignment_label' | translate}}</ion-label>
             </ion-item>
 
-            <div borderSecondary borderRadius16 style="margin: 0 30px;" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' && mailItem.content[selectedBlockIndex].type!='divider' && mailItem.content[selectedBlockIndex].type!='table'">
+            <div borderSecondary borderRadius16 style="margin: 0 30px;" *ngIf="showIf(['text', 'image', 'button'])">
               <div flex center-hor>
                 <ion-item borderRadius16 style="width:130px" detail="false" lines="none" class="itemButton" [detail]="false" >
-                    <ion-select interface="popover"  [(ngModel)]="mailItem.content[selectedBlockIndex].alignment" placeholder="{{'design_mail.alignment_placeholder' | translate}}" (ionChange)="save()">
+                    <ion-select interface="popover"  [(ngModel)]="fieldAlignment" placeholder="{{'design_mail.alignment_placeholder' | translate}}" (ionChange)="save()">
                       <ion-select-option value="left">{{'design_mail.alignment_left' | translate}}</ion-select-option>
                       <ion-select-option value="center">{{'design_mail.alignment_center' | translate}}</ion-select-option>
                       <ion-select-option value="right">{{'design_mail.alignment_right' | translate}}</ion-select-option>
@@ -172,14 +185,14 @@
               </div>
             </div>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='text'">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'button'])">
               <ion-label font-20 weight700>{{'design_mail.font_size_label' | translate}}</ion-label>
             </ion-item>
 
-            <div borderSecondary borderRadius16 style="margin: 0 30px;" *ngIf="mailItem.content[selectedBlockIndex].type=='text'">
+            <div borderSecondary borderRadius16 style="margin: 0 30px;" *ngIf="showIf(['text', 'button'])">
               <div flex center-hor>
                 <ion-item borderRadius16 style="width:100px" detail="false" lines="none" class="itemButton" [detail]="false">
-                  <ion-select interface="popover" [(ngModel)]="mailItem.content[selectedBlockIndex].fontSize" placeholder="14px" (ionChange)="save()">
+                  <ion-select interface="popover" [(ngModel)]="fieldFontSize" placeholder="14px" (ionChange)="save()">
                     <ion-select-option value="8px">8px</ion-select-option>
                     <ion-select-option value="10px">10px</ion-select-option>
                     <ion-select-option value="11px">11px</ion-select-option>
@@ -198,12 +211,12 @@
               </div>
             </div>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='text'">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text'])">
               <ion-label font-20 weight700>{{'design_mail.font_weight_label' | translate}}</ion-label>
             </ion-item>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='text'">
-              <ion-select borderSecondary style="padding-left:30px;" interface="popover" borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].fontWeight" placeholder="Regular" (ionChange)="save()">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text'])">
+              <ion-select borderSecondary style="padding-left:30px;" interface="popover" borderRadius16 [(ngModel)]="fieldFontWeight" placeholder="Regular" (ionChange)="save()">
                 <ion-select-option [value]="300">{{'design_mail.weight_thin' | translate}}</ion-select-option>
                 <ion-select-option [value]="400">{{'design_mail.weight_regular' | translate}}</ion-select-option>
                 <ion-select-option [value]="500">{{'design_mail.weight_medium' | translate}}</ion-select-option>
@@ -212,75 +225,75 @@
               </ion-select>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button' || mailItem.content[selectedBlockIndex].type=='image'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image'])">
               <ion-label font-20 weight700>{{'design_mail.border_radius_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button' || mailItem.content[selectedBlockIndex].type=='image'">
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].borderRadius" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldBorderRadius" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' && mailItem.content[selectedBlockIndex].type!='table'">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
               <ion-label font-20 weight700>{{'design_mail.margin_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' && mailItem.content[selectedBlockIndex].type!='table'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_left' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].marginLeft" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginLeft" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' && mailItem.content[selectedBlockIndex].type!='table'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_right' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].marginRight " placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginRight" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' &&  mailItem.content[selectedBlockIndex].type!='table'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_top' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].marginTop" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginTop" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type!='spacer' && mailItem.content[selectedBlockIndex].type!='table'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_bottom' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].marginBottom" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginBottom" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <ion-label font-20 weight700>{{'design_mail.padding_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.padding_left' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].paddingLeft" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldPaddingLeft" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.padding_right' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].paddingRight " placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldPaddingRight" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.padding_top' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].paddingTop" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldPaddingTop" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="mailItem.content[selectedBlockIndex].type=='button'">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.padding_bottom' | translate}}</ion-label>
-                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="mailItem.content[selectedBlockIndex].paddingBottom" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldPaddingBottom" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
@@ -298,8 +311,8 @@
               <img src="https://www.alicialabs.com/wp-content/uploads/2025/01/logo_full_black_sm.png" alt="Alicialabs Logo">
             </div>
 
-            <div relative #itemRef *ngFor="let contentItem of mailItem.content; let i = index" class="block" [ngClass]="{'selectedBlock':selectedBlockIndex===i}" (click)="selectedBlockIndex=i" pointer>
-              <div *ngIf="selectedBlockIndex===i" class="editButtons" flex center-ver>
+            <div relative #itemRef *ngFor="let contentItem of mailItem.content; let i = index" class="block" [ngClass]="{'selectedBlock':selectedBlockIndex===i && selectedSubBlockIndex===-1}" (click)="selectedBlockIndex=i" pointer>
+              <div *ngIf="selectedBlockIndex===i && selectedSubBlockIndex===-1" class="editButtons" flex center-ver>
                 <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i,'up')" *ngIf="i > 0"></fa-icon>
                 <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i,'down')" *ngIf="i < mailItem.content.length - 1"></fa-icon>
                 <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i)" style="cursor:pointer;"></fa-icon>
@@ -310,39 +323,140 @@
               </div>
               
               <div *ngIf="contentItem.type=='text'">
-                <ion-textarea (click)="setActiveTextarea(i, $event)" (keyup)="setActiveTextarea(i, $event)" (ionChange)="setActiveTextarea(i, $event);save()" [(ngModel)]="contentItem.value" (ionFocus)="selectBlock(i)" placeholder="{{'design_mail.enter_text_placeholder' | translate}}" autoGrow [ngStyle]="{'text-align': contentItem.alignment || 'left','font-size' : contentItem.fontSize || '14px', 'font-weight' : contentItem.fontWeight || 400}"></ion-textarea>
-              </div>
-              
-              <div *ngIf="contentItem.type=='image'" [ngStyle]="{'text-align': contentItem.alignment || 'left','margin-left': contentItem.marginLeft || '0px', '--border-radius': contentItem.borderRadius ||  '0px', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                <img [src]="contentItem.src || 'assets/img/default_avatar.png' | sanitizeHtml : 'url'" (click)="selectBlock(i)" style="max-width:100%;cursor:pointer;" [ngStyle]="{'border-radius': contentItem.borderRadius ||  '12px','height': contentItem.height || 'auto'}"/>
+                <ion-textarea (click)="setActiveTextarea(i, $event)" (keyup)="setActiveTextarea(i, $event)" (ionChange)="setActiveTextarea(i, $event);save()" [(ngModel)]="contentItem.value" (ionFocus)="selectBlock(i)" placeholder="{{'design_mail.enter_text_placeholder' | translate}}" autoGrow [ngStyle]="styleForText(contentItem)"></ion-textarea>
               </div>
 
-              <div *ngIf="contentItem.type=='divider'" fullwidth [ngStyle]="{'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'margin-top': contentItem.marginTop || '0px', 'margin-bottom': contentItem.marginBottom || '0px'}">
+              <div *ngIf="contentItem.type=='image'" [ngStyle]="styleForImageHolder(contentItem)">
+                <img [src]="contentItem.src || 'assets/img/default_avatar.png' | sanitizeHtml : 'url'" (click)="selectBlock(i)" style="max-width:100%;cursor:pointer;" [ngStyle]="styleForImage(contentItem)"/>
+              </div>
+
+              <div *ngIf="contentItem.type=='divider'" fullwidth [ngStyle]="styleForDivider(contentItem)">
                 <div style="width:100%;border-top:1px solid #ccc;height:1px"></div>
               </div>
               
               <div *ngIf="contentItem.type=='spacer'" [ngStyle]="{'height': contentItem.height || '20px'}"></div>
               
-              <div *ngIf="contentItem.type=='button'" [ngStyle]="{'text-align': contentItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                <ion-button [expand]="contentItem.expand || undefined" (click)="selectBlock(i)" [ngStyle]="{ 'color': contentItem.color || '#ffffff','--background' : contentItem.backgroundColor || '#2b6cf5','border-radius': contentItem.borderRadius ||  '0px', '--border-radius': contentItem.borderRadius ||  '0px', '--padding-start': contentItem.paddingLeft || '14px', '--padding-end': contentItem.paddingRight || '14px', '--padding-top': contentItem.paddingTop || '8px', '--padding-bottom': contentItem.paddingBottom || '8px'}">
+              <div *ngIf="contentItem.type=='button'" [ngStyle]="styleFor(contentItem)">
+                <ion-button [expand]="contentItem.expand || undefined" (click)="selectBlock(i)" [ngStyle]="styleForButton(contentItem)">
                   {{contentItem.text || translate.instant('design_mail.button_click_here')}}
                 </ion-button>
               </div>
 
-              <div *ngIf="contentItem.type=='table'&&contentItem.data?.length" style="width:100%;display:flex;align-items:center">
-                <div *ngFor="let colItem of contentItem.data[0]; let colIndex = index" (click)="selectBlock(i,colIndex)" style="flex:1;padding:0px 10px;box-sizing:border-box;">
-                    <div *ngIf="colItem.type=='text'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                      <ion-textarea [(ngModel)]="colItem.value" (ionFocus)="selectBlock(i,colIndex)" placeholder="{{'design_mail.enter_text_placeholder' | translate}}" autoGrow [ngStyle]="{'text-align': colItem.alignment || 'left'}"></ion-textarea>
+              <div relative *ngIf="contentItem.type=='table'&&contentItem.data" style="width:100%;display:flex;align-items:center;padding:10px 0px;">
+                
+                <div
+                  relative
+                  *ngFor="let colEntry of contentItem.columnArray; let colIndex = index"
+                  (click)="selectBlock(i, colIndex, -1, $event)"
+                  style="flex:1; padding:10px 10px; box-sizing:border-box;"
+                  [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === -1 }"
+                >
+                  <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex < 0" class="editButtons" flex center-ver>
+                    <fa-icon button font-20 titleIcon success [icon]="icon.get('faPlus')" pointer (click)="addSubItem(i, colIndex, $event)"></fa-icon>
+                  </div>
+
+                  <!-- colEntry = [key, items[]] -->
+                  <ng-container *ngFor="let colItem of colEntry[1];let fieldIndex = index">
+
+                    <div relative pointer *ngIf="colItem.type == 'text'" [ngStyle]="styleFor(colItem)" class="block" [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex }">
+                      <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex" class="editButtons" flex center-ver>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i, 'up', colIndex, fieldIndex)" *ngIf="fieldIndex > 0"></fa-icon>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i, 'down', colIndex, fieldIndex)" *ngIf="fieldIndex < mailItem.content[i].data[colIndex].length - 1"></fa-icon>
+                        <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i, colIndex, fieldIndex)" style="cursor:pointer;"></fa-icon>
+                      </div>
+
+                      <ion-textarea
+                        [(ngModel)]="colItem.value"
+                        (ionFocus)="selectBlock(i, colIndex,fieldIndex, $event)"
+                        (click)="selectBlock(i, colIndex,fieldIndex, $event)"
+                        placeholder="{{ 'design_mail.enter_text_placeholder' | translate }}"
+                        autoGrow
+                        [ngStyle]="styleForText(colItem)"
+                      ></ion-textarea>
                     </div>
-                    <div *ngIf="colItem.type=='image'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                      <img [src]="colItem.src || 'assets/img/default_avatar.png' | sanitizeHtml : 'url'" (click)="selectBlock(i,colIndex)" style="max-width:100%;cursor:pointer;" [ngStyle]="{'border-radius': colItem.borderRadius ||  '12px','height': colItem.height || 'auto'}"/>
+
+                    <div relative pointer *ngIf="colItem.type == 'image'" [ngStyle]="styleForImageHolder(colItem)" class="block" [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex }">
+                      <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex" class="editButtons" flex center-ver>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i, 'up', colIndex, fieldIndex)" *ngIf="fieldIndex > 0"></fa-icon>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i, 'down', colIndex, fieldIndex)" *ngIf="fieldIndex < mailItem.content[i].data[colIndex].length - 1"></fa-icon>
+                        <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i, colIndex, fieldIndex)" style="cursor:pointer;"></fa-icon>
+                      </div>
+                      <img
+                        [src]="colItem.src || 'assets/img/default_avatar.png' | sanitizeHtml: 'url'"
+                        (click)="selectBlock(i, colIndex,fieldIndex, $event)"
+                        style="max-width:100%;cursor:pointer;"
+                        [ngStyle]="styleForImage(colItem)"
+                      />
                     </div>
-                    <div *ngIf="colItem.type=='button'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                      <ion-button expand="block" (click)="selectBlock(i,colIndex)" style="border-radius:24px;max-width:200px;cursor:pointer;">
-                        {{colItem.text || translate.instant('design_mail.button_click_here')}}
+
+                    <div relative pointer *ngIf="colItem.type == 'button'" [ngStyle]="styleFor(colItem)" class="block" [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex }">
+                      <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex" class="editButtons" flex center-ver>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i, 'up', colIndex, fieldIndex)" *ngIf="fieldIndex > 0"></fa-icon>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i, 'down', colIndex, fieldIndex)" *ngIf="fieldIndex < mailItem.content[i].data[colIndex].length - 1"></fa-icon>
+                        <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i, colIndex, fieldIndex)" style="cursor:pointer;"></fa-icon>
+                      </div>
+                      <ion-button
+                        [expand]="colItem.expand || undefined"
+                        (click)="selectBlock(i, colIndex, fieldIndex, $event)"
+                        [ngStyle]="styleForButton(colItem)"
+                      >
+                        {{ colItem.text || translate.instant('design_mail.button_click_here') }}
                       </ion-button>
                     </div>
+
+
+                    <div relative pointer *ngIf="colItem.type == 'divider'" (click)="selectBlock(i, colIndex, fieldIndex, $event)" class="block" [ngStyle]="styleForDivider(colItem)" [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex }">
+                      <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex" class="editButtons" flex center-ver>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i, 'up', colIndex, fieldIndex)" *ngIf="fieldIndex > 0"></fa-icon>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i, 'down', colIndex, fieldIndex)" *ngIf="fieldIndex < mailItem.content[i].data[colIndex].length - 1"></fa-icon>
+                        <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i, colIndex, fieldIndex)" style="cursor:pointer;"></fa-icon>
+                      </div>
+                      <div style="width:100%;border-top:1px solid #ccc;height:1px"></div>
+                    </div>
+
+                    <div relative pointer *ngIf="colItem.type == 'spacer'" (click)="selectBlock(i, colIndex, fieldIndex, $event)" class="block" [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex }">
+                      <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex" class="editButtons" flex center-ver>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i, 'up', colIndex, fieldIndex)" *ngIf="fieldIndex > 0"></fa-icon>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i, 'down', colIndex, fieldIndex)" *ngIf="fieldIndex < mailItem.content[i].data[colIndex].length - 1"></fa-icon>
+                        <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i, colIndex, fieldIndex)" style="cursor:pointer;"></fa-icon>
+                      </div>
+                      <div *ngIf="colItem.type=='spacer'" [ngStyle]="{'height': colItem.height || '20px'}"></div>
+                    </div>
+
+                  </ng-container>
+                </div>
+                
+                
+                
+                
+                
+                
+                
+                <!-- <div relative *ngFor="let colItem of contentItem.data; let colIndex = index" (click)="selectBlock(i,colIndex,$event)" style="flex:1;padding:0px 10px;box-sizing:border-box;" [ngClass]="{'selectedBlock':selectedSubBlockIndex===colIndex && selectedBlockIndex===i}">
+
+                  <div *ngIf="selectedSubBlockIndex===colIndex && selectedBlockIndex===i" class="editButtons" flex center-ver>
+                    <fa-icon button font-20 titleIcon success [icon]="icon.get('faPlus')" pointer (click)="addSubItem(i,colIndex,$event)"></fa-icon>
+                    <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i,'up',colIndex)" *ngIf="colIndex > 0"></fa-icon>
+                    <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i,'down',colIndex)" *ngIf="colIndex < mailItem.content.length - 1"></fa-icon>
+                    <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i,colIndex)" style="cursor:pointer;"></fa-icon>
                   </div>
+                
+                
+                  <div *ngIf="colItem.type=='text'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
+                    <ion-textarea [(ngModel)]="colItem.value" (ionFocus)="selectBlock(i,colIndex)" placeholder="{{'design_mail.enter_text_placeholder' | translate}}" autoGrow [ngStyle]="{'text-align': colItem.alignment || 'left'}"></ion-textarea>
+                  </div>
+                  <div *ngIf="colItem.type=='image'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
+                    <img [src]="colItem.src || 'assets/img/default_avatar.png' | sanitizeHtml : 'url'" (click)="selectBlock(i,colIndex)" style="max-width:100%;cursor:pointer;" [ngStyle]="{'border-radius': colItem.borderRadius ||  '12px','height': colItem.height || 'auto'}"/>
+                  </div>
+                  <div *ngIf="colItem.type=='button'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
+                    <ion-button expand="block" (click)="selectBlock(i,colIndex)" style="border-radius:24px;max-width:200px;cursor:pointer;">
+                      {{colItem.text || translate.instant('design_mail.button_click_here')}}
+                    </ion-button>
+                  </div>
+                </div> -->
+
+
+
               </div>
 
             </div>

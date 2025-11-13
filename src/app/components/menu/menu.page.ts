@@ -82,6 +82,14 @@ export class MenuPage implements OnInit {
       isUser:true
     },
     {
+      title: this.translateService.instant('marketplace.marketplace'),
+      url: '/marketplace/elearnings',
+      icon: 'faBookOpen',
+      isVisitor:true,
+      isAdmin:true,
+      isUser:true
+    },
+    {
       title: 'Restart tutorial',
       action: ["tutorialService","restartTutorial"],
       icon: 'faArrowRight',

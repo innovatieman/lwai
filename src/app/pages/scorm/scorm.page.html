@@ -2,7 +2,15 @@
 
 <div *ngIf="scormUrl" fullHeight fullWidth>
 
-  <iframe
+  <div flex center-ver center-hor fullwidth fullheight *ngIf="!start">
+    <ion-button (click)="start = true">Start SCORM Module</ion-button>
+  </div>
+
+  <div flex center-ver center-hor fullwidth fullheight *ngIf="closed">
+    <ion-button (click)="reload()">Herstart SCORM Module</ion-button>
+  </div>
+
+  <iframe *ngIf="start"
   [src]="scormUrl"
   width="100%"
   height="800"

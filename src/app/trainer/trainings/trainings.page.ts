@@ -395,10 +395,10 @@ export class TrainingsPage implements OnInit {
       trainerId: this.nav.activeOrganisationId,
       trainingId: this.trainerService.trainingItem.id,
       caseId: item.id,
-      photo: this.trainerService.getCase(item.id).photo || '',
+      photo: this.trainerService.getItemTraining(item.id,this.trainerService.trainingItem.id).photo || '',
       title: item.title || '',
     };
-    const encoded = btoa(JSON.stringify(data));
+    const encoded = this.encodeObjectToBase64(data);
     return (location.host.substring(0,9)=='localhost' ? location.host : location.origin) + '/stream-case/' + encoded;
   }
 
@@ -411,6 +411,38 @@ export class TrainingsPage implements OnInit {
       this.toast.show(this.translate.instant('trainings.link_not_copied'), 3000);
     });
   }
+
+  loadStreamReports(){
+    // this.toast.showLoader()
+    this.trainerService.loadStreamReports(this.trainerService.trainingItem.id,(result:any)=>{
+      if(result?.streamsReport){
+        let report:any = {total:{},cases:[],graph:{dates:[],data:[],max:5}}
+        for(let caseId in result.streamsReport){
+          if(caseId != 'total'){
+            report.cases.push({
+              id: caseId,
+              ...result.streamsReport[caseId]
+            });
+          }
+          else{
+            report.total = result.streamsReport[caseId]
+            for(let date in result.streamsReport[caseId].dates){
+              report.graph.dates.push(date)
+            }
+            report.graph.dates.sort()
+            for(let date of report.graph.dates){
+              report.graph.data.push(result.streamsReport[caseId].dates[date] || 0)
+              // date = moment(date).format('MM-DD')
+            }
+            report.graph.max = Math.max(report.graph.max, report.graph.data)
+          }
+        }
+        console.log('report',report)  
+        this.trainerService.trainingItem.streamsReport = report
+      }
+    })
+  }
+
 
   async selectTraining(training:any,clearBreadCrumbs?:boolean,module?:boolean){
     // console.log('selectTraining',JSON.parse(JSON.stringify(training)))
@@ -426,7 +458,7 @@ export class TrainingsPage implements OnInit {
       }, 1000);
       setTimeout(() => {
         this.toast.hideLoader()
-        console.log(this.trainerService.trainingItem)
+        // console.log(this.trainerService.trainingItem)
       }, 2000);
     }
     this.showPart = 'items'
@@ -463,6 +495,10 @@ export class TrainingsPage implements OnInit {
     if(!training.amount_credits){
       this.trainerService.trainingItem.amount_credits = 1000000;
       this.update('amount_credits')
+    }
+    console.log('training.publishType',training.publishType)
+    if(training.publishType=='stream'){
+      this.loadStreamReports()
     }
     // console.log('selectTraining',this.trainerService.trainingItem)
     // console.log('breadCrumbs',this.trainerService.breadCrumbs)
@@ -3804,26 +3840,27 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
     this.modalService.selectItem(this.translate.instant('trainings.add_extra_sales'), list, (result: any) => {
       if( result.data ) {
-
+        
         if(result.data.length>3){
           this.toast.show(this.translate.instant('trainings.max_extra_sales'),4000,'middle')
           return
         }
 
-        if(!this.trainerService.trainingItem.extraSales){
+        // if(!this.trainerService.trainingItem.extraSales){
           this.trainerService.trainingItem.extraSales = []
-        }
+        // }
+
         for(let i=0;i<result.data.length;i++){
           if(!this.trainerService.trainingItem.extraSales.includes(result.data[i].value)){
             this.trainerService.trainingItem.extraSales.push(result.data[i].value)
           }
         }
-        if(result.data.length==0){
-          this.trainerService.trainingItem.extraSales = []
-        }
+        // if(result.data.length==0){
+        //   this.trainerService.trainingItem.extraSales = []
+        // }
         this.update('extraSales',true)
       }
-    },null,'',{object:true,multiple:true,field:'title'})
+    },null,'',{object:true,multiple:true,field:'title',allowEmpty:true})
   }
 
   sellDirectly(){
@@ -3898,7 +3935,6 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
   }
 
   async selectCreditsStream(event?: any){
-    console.log(this.accountService.products_stream)
       let list = []
       for(let i=0;i<this.accountService.products_stream.length;i++){
         list.push({
@@ -3931,6 +3967,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       await this.shortMenu.onWillDismiss().then((result:any)=>{
         if(this.selectMenuservice.selectedItem){
           this.selectedCreditsStream = this.selectMenuservice.selectedItem.value
+          this.selectMenuservice.selectedItem = null
         }
       })
   }
