@@ -61,7 +61,7 @@ export class StreamCasePage implements OnInit {
         return;
       }
 
-      let data = atob(stream_id);
+      let data = this.helpers.base64ToUtf8(stream_id);
       try{
         this.basicData = JSON.parse(data);
         this.parentOrigin = this.getParentOrigin()||'';
