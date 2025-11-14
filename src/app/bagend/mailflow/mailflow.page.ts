@@ -397,6 +397,27 @@ export class MailflowPage implements OnInit {
       if(item.type=='divider'){
         html = html += `<div style="width:100%;padding-left:${item.marginLeft || '0px'}; padding-right:${item.marginRight || '0px'}; margin-top:${item.marginTop || '15px'}; margin-bottom:${item.marginBottom || '15px'};"><div style="width:100%;border-top:1px solid #ccc;height:1px"></div></div>`;
       }
+
+      if(item.type==='caseCard'){
+        html += this.renderCaseCard(item);
+      }
+        // <ion-card noPadding pointer fullheight class="caseItem" [ngStyle]="{'box-shadow':shadow ? '0 0 7px rgba(0, 0, 0, 0.3)' : 'none'}">
+        //   <ion-card-content noPadding fullHeight>
+        //       <div backgroundImage class="avatarImage" *ngIf="item.photo" [ngStyle]="{'background-image': 'url(' + item.photo + ')'}"></div>
+        //       <div backgroundImage class="avatarImage" *ngIf="!item.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
+        //       <div flex center center-ver center-hor style="height:calc(100% - 275px)">
+        //           <ion-card-header>
+        //               <ion-card-title font-18 weight600>{{title ? title : caseItem.title}}</ion-card-title>
+        //               <ion-card-subtitle font-14 weight400>{{userInfo ? userInfo.substring(0, 60) + (userInfo.length > 60 ? '...' : '') : caseItem.user_info.substring(0, 60) + (caseItem.user_info.length > 60 ? '...' : '')}}</ion-card-subtitle>
+        //           </ion-card-header>
+        //       </div>
+        //       <div center flex center-ver center-hor>
+        //           <ion-button class="saveButton cardButton" fill="outline" size="small">{{buttonText ? buttonText : (caseItem.buttonText || translate.instant('cases.start_conversation'))}}</ion-button>
+        //       </div>
+        //   </ion-card-content>
+        // </ion-card>
+
+
       if (item.type === 'table' && item.data) {
         // console.log('Generating table:', item);
         html += `<table style="width:100%;border-spacing:0;border-collapse:collapse;"><tr>`;
@@ -426,6 +447,10 @@ export class MailflowPage implements OnInit {
             if (colItem.type === 'spacer') {
               html += `<div style="width:100%;height:${colItem.height || '20px'};"></div>`;
             }
+
+            if(colItem.type==='caseCard'){
+              html += this.renderCaseCard(colItem);
+            }
           }
 
           html += `</td>`;
@@ -442,6 +467,33 @@ export class MailflowPage implements OnInit {
     </div>`;
 
     return html
+  }
+
+  renderCaseCard(item: any): string {
+    const title = item.title || 'Gesprekstitel';
+    const userInfo = (item.userInfo || '').substring(0, 60) + ((item.userInfo || '').length > 60 ? '...' : '');
+    const photo = item.src || 'https://conversations.alicialabs.com/assets/img/default_avatar.png'; // fallback image
+    const buttonText = item.buttonText || 'Start gesprek';
+    const url = item.url || 'https://conversations.alicialabs.com/start';
+
+    return `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 400px; margin: auto; border-radius: 24px; overflow: hidden; border: 1px solid #e0e0e0;">
+      <tr>
+        <td style="padding: 0;border-top: 1px solid #ccc;border-left: 1px solid #ccc;border-right: 1px solid #ccc;border-top-left-radius: 24px;border-top-right-radius: 24px;display: block">
+          <img src="${photo}" width="100%" height="200" style="display: block; object-fit: cover;" alt="gesprek afbeelding" />
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 24px; text-align: center;border-bottom: 1px solid #ccc;border-left: 1px solid #ccc;border-right: 1px solid #ccc;border-bottom-left-radius: 24px;border-bottom-right-radius: 24px;display: block">
+          <h2 style="margin: 0 0 12px; font-size: 18px; color: #002244; font-weight: 600;">${title}</h2>
+          <p style="margin: 0 0 24px; font-size: 14px; color: #666;">${userInfo}</p>
+          <a href="${url}" target="_blank" style="display: inline-block; padding: 12px 32px; border-radius: 38px; border: 2px solid #2b6cf5; color: #2b6cf5; text-decoration: none; font-weight: 600; font-size: 16px;">
+            ${buttonText}
+          </a>
+        </td>
+      </tr>
+    </table>
+    `.trim();
   }
 
 }

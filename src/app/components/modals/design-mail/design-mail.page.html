@@ -99,6 +99,29 @@
               <fa-icon button titleIcon [icon]="icon.get('faTimes')" pointer (click)="clearSelectedBlock()" ></fa-icon>
             </h3>
 
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['caseCard'])">
+              <ion-label font-20 weight700>{{'design_mail.title' | translate}}</ion-label>
+            </ion-item>
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['caseCard'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldTitle" placeholder="{{'design_mail.title' | translate}}" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                </ion-input>
+            </ion-item>
+
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['caseCard'])">
+              <ion-label font-20 weight700>{{'design_mail.subtitle' | translate}}</ion-label>
+            </ion-item>
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['caseCard'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldUserInfo" placeholder="{{'design_mail.subtitle' | translate}}" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                </ion-input>
+            </ion-item>
+
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['caseCard'])">
+              <ion-label font-20 weight700>{{'design_mail.button_text' | translate}}</ion-label>
+            </ion-item>
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['caseCard'])">
+                <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldText" placeholder="{{'design_mail.button_text' | translate}}" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
+                </ion-input>
+            </ion-item>
 
             <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button'])">
               <ion-label font-20 weight700>{{'design_mail.text_label' | translate}}</ion-label>
@@ -108,19 +131,19 @@
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image','caseCard'])">
               <ion-label font-20 weight700>{{'design_mail.src_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['image','caseCard'])">
                 <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldSrc" placeholder="https://example.com/image.jpg" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
 
 
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image','caseCard'])">
               <ion-label font-20 weight700>{{'design_mail.url_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['button', 'image','caseCard'])">
                 <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldUrl" placeholder="https://example.com" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
             </ion-item>
@@ -168,11 +191,11 @@
                 </ion-input>
             </ion-item>
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button'])">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'caseCard'])">
               <ion-label font-20 weight700>{{'design_mail.alignment_label' | translate}}</ion-label>
             </ion-item>
 
-            <div borderSecondary borderRadius16 style="margin: 0 30px;" *ngIf="showIf(['text', 'image', 'button'])">
+            <div borderSecondary borderRadius16 style="margin: 0 30px;" *ngIf="showIf(['text', 'image', 'button', 'caseCard'])">
               <div flex center-hor>
                 <ion-item borderRadius16 style="width:130px" detail="false" lines="none" class="itemButton" [detail]="false" >
                     <ion-select interface="popover"  [(ngModel)]="fieldAlignment" placeholder="{{'design_mail.alignment_placeholder' | translate}}" (ionChange)="save()">
@@ -234,31 +257,31 @@
             </ion-item>
 
 
-            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
+            <ion-item detail="false" lines="none" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider', 'caseCard'])">
               <ion-label font-20 weight700>{{'design_mail.margin_label' | translate}}</ion-label>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider', 'caseCard'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_left' | translate}}</ion-label>
                 <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginLeft" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider', 'caseCard'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_right' | translate}}</ion-label>
                 <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginRight" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider', 'caseCard'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_top' | translate}}</ion-label>
                 <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginTop" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
                 </ion-input>
               </div>
             </ion-item>
-            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider'])">
+            <ion-item detail="false" lines="none" style="margin-bottom: 5px;" class="itemButton" [detail]="false" *ngIf="showIf(['text', 'image', 'button', 'divider', 'caseCard'])">
               <div flex center-ver>
                 <ion-label style="width: 50px; min-width: 50px;">{{'design_mail.margin_bottom' | translate}}</ion-label>
                 <ion-input type="text" borderSecondary borderRadius16 [(ngModel)]="fieldMarginBottom" placeholder="0px" (ionChange)="save()" style="margin: 0 10px;text-align: center;">
@@ -318,8 +341,8 @@
                 <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i)" style="cursor:pointer;"></fa-icon>
               </div>
 
-              <div *ngIf="contentItem.type=='caseCard'" style="display:flex" [ngStyle]="{'justify-content': (contentItem.alignment=='left' ? 'flex-start' : (contentItem.alignment=='right' ? 'flex-end' : 'center')),'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                <app-case-card [caseItem]="contentItem.item" [shadow]="true"></app-case-card>
+              <div *ngIf="contentItem.type=='caseCard'" style="display:flex" [ngStyle]="styleForCaseCard(contentItem)">
+                <app-case-card [caseItem]="contentItem.item" [shadow]="true" [title]="contentItem.title || ''" [userInfo]="contentItem.userInfo || ''" [url]="contentItem.url || ''" [photo]="contentItem.src || ''"></app-case-card>
               </div>
               
               <div *ngIf="contentItem.type=='text'">
@@ -423,38 +446,23 @@
                       <div *ngIf="colItem.type=='spacer'" [ngStyle]="{'height': colItem.height || '20px'}"></div>
                     </div>
 
+                    <!-- <div *ngIf="contentItem.type=='caseCard'" style="display:flex" [ngStyle]="{'justify-content': (contentItem.alignment=='left' ? 'flex-start' : (contentItem.alignment=='right' ? 'flex-end' : 'center')),'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
+                      <app-case-card [caseItem]="contentItem.item" [shadow]="true" [title]="fieldTitle" [userInfo]="fieldUserInfo" [url]="fieldUrl" [photo]="fieldSrc"></app-case-card>
+                    </div> -->
+
+                    <div relative pointer *ngIf="colItem.type == 'caseCard'" (click)="selectBlock(i, colIndex, fieldIndex, $event)" class="block" [ngClass]="{ 'selectedBlock': selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex }">
+                      <div *ngIf="selectedSubBlockIndex === colIndex && selectedBlockIndex === i && selectedFieldIndex === fieldIndex" class="editButtons" flex center-ver>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i, 'up', colIndex, fieldIndex)" *ngIf="fieldIndex > 0"></fa-icon>
+                        <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i, 'down', colIndex, fieldIndex)" *ngIf="fieldIndex < mailItem.content[i].data[colIndex].length - 1"></fa-icon>
+                        <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i, colIndex, fieldIndex)" style="cursor:pointer;"></fa-icon>
+                      </div>
+                      <div style="display:flex; justify-content: center; padding:10px 0px;" [ngStyle]="styleForCaseCard(colItem)">
+                        <app-case-card [caseItem]="colItem.item" fullwidth [shadow]="true" [title]="colItem.title" [userInfo]="colItem.userInfo" [url]="colItem.url" [photo]="colItem.src" [buttonText]="colItem.text"></app-case-card>
+                      </div>
+                    </div>
+
                   </ng-container>
                 </div>
-                
-                
-                
-                
-                
-                
-                
-                <!-- <div relative *ngFor="let colItem of contentItem.data; let colIndex = index" (click)="selectBlock(i,colIndex,$event)" style="flex:1;padding:0px 10px;box-sizing:border-box;" [ngClass]="{'selectedBlock':selectedSubBlockIndex===colIndex && selectedBlockIndex===i}">
-
-                  <div *ngIf="selectedSubBlockIndex===colIndex && selectedBlockIndex===i" class="editButtons" flex center-ver>
-                    <fa-icon button font-20 titleIcon success [icon]="icon.get('faPlus')" pointer (click)="addSubItem(i,colIndex,$event)"></fa-icon>
-                    <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowUp')" pointer (click)="moveBlock(i,'up',colIndex)" *ngIf="colIndex > 0"></fa-icon>
-                    <fa-icon button font-20 titleIcon [icon]="icon.get('faArrowDown')" pointer (click)="moveBlock(i,'down',colIndex)" *ngIf="colIndex < mailItem.content.length - 1"></fa-icon>
-                    <fa-icon button font-20 titleIcon trash [icon]="icon.get('faTrashAlt')" pointer (click)="removeContent(i,colIndex)" style="cursor:pointer;"></fa-icon>
-                  </div>
-                
-                
-                  <div *ngIf="colItem.type=='text'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                    <ion-textarea [(ngModel)]="colItem.value" (ionFocus)="selectBlock(i,colIndex)" placeholder="{{'design_mail.enter_text_placeholder' | translate}}" autoGrow [ngStyle]="{'text-align': colItem.alignment || 'left'}"></ion-textarea>
-                  </div>
-                  <div *ngIf="colItem.type=='image'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                    <img [src]="colItem.src || 'assets/img/default_avatar.png' | sanitizeHtml : 'url'" (click)="selectBlock(i,colIndex)" style="max-width:100%;cursor:pointer;" [ngStyle]="{'border-radius': colItem.borderRadius ||  '12px','height': colItem.height || 'auto'}"/>
-                  </div>
-                  <div *ngIf="colItem.type=='button'" [ngStyle]="{'text-align': colItem.alignment || 'left', 'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'padding-top': contentItem.marginTop || '0px', 'padding-bottom': contentItem.marginBottom || '0px'}">
-                    <ion-button expand="block" (click)="selectBlock(i,colIndex)" style="border-radius:24px;max-width:200px;cursor:pointer;">
-                      {{colItem.text || translate.instant('design_mail.button_click_here')}}
-                    </ion-button>
-                  </div>
-                </div> -->
-
 
 
               </div>

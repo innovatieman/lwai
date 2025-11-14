@@ -1510,6 +1510,10 @@
     "weight_regular": "Regular",
     "weight_medium": "Medium",
     "weight_semi_bold": "Semi Bold",
-    "weight_bold": "Bold"
+    "weight_bold": "Bold",
+    "title":"Title",
+    "subtitle":"Subtitle",
+        "button_text":"Knop tekst"
+
   }
 }

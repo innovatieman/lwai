@@ -622,3 +622,27 @@ exports.messagesToUser = functions.region('europe-west1').runWith({ memory: '1GB
 
     return;
   });
+
+
+// function getLastestConversationUser(userId: string): Promise<any> {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       const conversationsRef = admin.firestore().collection('users').doc(userId).collection('conversations')
+//         .orderBy('lastMessageAt', 'desc')
+//         .limit(3)
+//       const snapshot = await conversationsRef.get();
+//       if (snapshot.empty) {
+//         resolve([]);
+//         return;
+//       }
+//       let conversations: any[] = [];
+//       snapshot.forEach(doc => {
+//         conversations.push({ id: doc.id, ...doc.data() });
+//       });
+//       resolve(conversations);
+//     } catch (error) {
+//       reject(error);
+//     }
+//   });
+// }
+

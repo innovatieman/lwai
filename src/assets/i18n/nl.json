@@ -1520,7 +1520,10 @@
         "weight_regular": "Normaal",
         "weight_medium": "Medium",
         "weight_semi_bold": "Semi Vet",
-        "weight_bold": "Vet"
+        "weight_bold": "Vet",
+        "title":"Titel",
+        "subtitle":"Subtitel",
+        "button_text":"Knop tekst"
     }
 }
 

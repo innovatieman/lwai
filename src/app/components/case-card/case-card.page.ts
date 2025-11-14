@@ -12,6 +12,11 @@ import { MediaService } from 'src/app/services/media.service';
 export class CaseCardPage implements OnInit {
 @Input() caseItem:any = null;
 @Input() shadow:boolean = false
+@Input() title:string = 'Title';
+@Input() userInfo:string = 'Subtitle';
+@Input() url:string = '#';
+@Input() photo:string = '';
+@Input() buttonText:string = 'Start';
   constructor(
     public icon: IconsService,
     public media: MediaService,

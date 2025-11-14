@@ -37,7 +37,7 @@ export class DesignMailPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log(this.data);
+    // console.log(this.data);
     this.mailItem = this.data.mailItem;
     this.mailItem.content.forEach((contentItem:any) => {
       if (contentItem.type === 'table') {
@@ -142,6 +142,11 @@ export class DesignMailPage implements OnInit {
         icon:'faMinus',
         value:'divider'
       },
+      {
+        title:this.translate.instant('design_mail.add_case_card'),
+        icon:'faAddressCard',
+        value:'caseCard'
+      }
     ]
     this.showshortMenu(event,list,(result:any)=>{
       if(result?.value){
@@ -201,19 +206,26 @@ export class DesignMailPage implements OnInit {
     };
   }
   styleForImage(item: any) {
-    //{'border-radius': contentItem.borderRadius ||  '12px','height': contentItem.height || 'auto'}
     return {
       'border-radius': item.borderRadius ||  '12px',
       'height': item.height || 'auto'
     };
   }
   styleForDivider(item: any) {
-    //{'padding-left': contentItem.marginLeft || '0px', 'padding-right': contentItem.marginRight || '0px', 'margin-top': contentItem.marginTop || '0px', 'margin-bottom': contentItem.marginBottom || '0px'}
     return {
       'padding-left': item.marginLeft || '0px',
       'padding-right': item.marginRight || '0px',
       'margin-top': item.marginTop || '0px',
       'margin-bottom': item.marginBottom || '0px'
+    };
+  }
+  styleForCaseCard(item: any) {
+    return {
+      'padding-left': item.marginLeft || '0px',
+      'padding-right': item.marginRight || '0px',
+      'margin-top': item.marginTop || '0px',
+      'margin-bottom': item.marginBottom || '0px',
+      'justify-content': (item.alignment=='left' ? 'flex-start' : (item.alignment=='right' ? 'flex-end' : 'center'))
     };
   }
 
@@ -288,6 +300,14 @@ export class DesignMailPage implements OnInit {
       }
       else if(type=='divider'){
         item = {type,marginTop:'15px',marginBottom:'15px' };
+      }
+      else if(type=='caseCard'){
+        let itemCard:any = {
+          photo:'',
+          title:'Dit is een case titel',
+          user_info:'Dit is een subtitel'
+        }
+        item = {type,item:itemCard};
       }
 
       this.mailItem.content[index].data[subIndex].push(item);
@@ -685,5 +705,18 @@ export class DesignMailPage implements OnInit {
   set fieldSrc(value: string) {
     this.setFieldProp('src', value);
   }
+  get fieldTitle(): string {
+    return this.getFieldProp('title') || '';
+  }
+  set fieldTitle(value: string) {
+    this.setFieldProp('title', value);
+  }
+  get fieldUserInfo(): string {
+    return this.getFieldProp('userInfo') || '';
+  }
+  set fieldUserInfo(value: string) {
+    this.setFieldProp('userInfo', value);
+  }
+
 
 }
