@@ -1,4 +1,4 @@
-<ion-card noPadding noMargin fullheight class="caseItem" [ngStyle]="{'height':media.screenSize=='xs'?'100%':'600px','border-radius':media.screenSize=='xs'?'0px':'24px'}">
+<ion-card noPadding noMargin fullheight class="caseItem" [ngStyle]="{'height':media.screenSize=='xs'?'100%':'550px','border-radius':media.screenSize=='xs'?'0px':'24px'}">
   <ion-card-content noPadding fullHeight flex flex-column>
       <div backgroundImage class="avatarImage" style="max-height:50%" *ngIf="caseItem.photo" [ngStyle]="{'background-image': 'url(' + caseItem.photo + ')'}"></div>
       <div backgroundImage class="avatarImage" style="max-height:50%" *ngIf="!caseItem.photo" [ngStyle]="{'background-image': 'url(assets/img/default_avatar.png)'}"></div>
