@@ -77,7 +77,7 @@ exports.startStreaming = onCall(
     console.log('Origin to check:', originToCheck);
 
 
-    if(originToCheck && trainingData.streamAllowedOrigins.indexOf(originToCheck) == -1 && trainingData.streamAllowedOrigins[0] != '*'){
+    if((!originToCheck && trainingData.streamAllowedOrigins[0] != '*') || (originToCheck && trainingData.streamAllowedOrigins.indexOf(originToCheck) == -1 && trainingData.streamAllowedOrigins[0] != '*')){
       console.log('Origin not allowed:', originToCheck);
       console.log('Origin not allowed:', JSON.stringify(trainingData.streamAllowedOrigins || []));
       return new responder.Message('Origin not allowed: ' + originToCheck, 403);

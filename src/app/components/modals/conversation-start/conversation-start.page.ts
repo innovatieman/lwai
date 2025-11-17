@@ -218,7 +218,7 @@ export class ConversationStartPage implements OnInit {
     else{
       this.conversationService.originUrl = ''
     }
-    console.log('caseItem',this.caseItem)
+    // console.log('caseItem',this.caseItem)
     this.modalCtrl.dismiss(this.caseItem)
   }
 

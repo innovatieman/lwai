@@ -197,15 +197,16 @@ export class StreamCasePage implements OnInit {
 showCase(caseItem:any){
   this.modalService.showCaseInfo(caseItem, (res:any)=>{
     if(res.data){
-      const caseItem = res.data;
-      this.modalService.showConversationStart(caseItem).then((res)=>{
-        if(res){
-          localStorage.setItem('activatedCase',caseItem.id)
-          localStorage.setItem('personalCase',JSON.stringify(caseItem))
-          this.nav.go('conversation/'+caseItem.id)
+      this.modalService.showConversationStart(caseItem).then((result)=>{
+        // console.log(result)
+        if(result){
+          const result = res.data;
+          localStorage.setItem('activatedCase',result.id)
+          localStorage.setItem('personalCase',JSON.stringify(result))
+          this.nav.go('conversation/'+result.id)
         }
         else{
-          this.showCase(caseItem);
+          this.showCase(result);
         }
       })
     }

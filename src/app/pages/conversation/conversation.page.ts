@@ -198,7 +198,9 @@ export class ConversationPage implements OnInit {
 
   firstMessagesLoaded:boolean = false;
   ngOnInit() {
-
+    // setTimeout(() => {
+    //   this.conversation.fullRecording = true
+    // }, 3000);
     if(localStorage.getItem('hideDisclaimer')){
       let hideDisclaimer = localStorage.getItem('hideDisclaimer')
       if(moment.unix(hideDisclaimer?parseInt(hideDisclaimer):0).isAfter(moment().subtract(14, 'days'))){
@@ -426,7 +428,7 @@ export class ConversationPage implements OnInit {
     if(caseItem.stream){
       localStorage.setItem('streamCase','true')
       this.startingCredits = caseItem.startingCredits || null;
-      console.log('starting credits for stream case:',this.startingCredits)
+      // console.log('starting credits for stream case:',this.startingCredits)
     }
     this.started = true
     let countTries = 0
@@ -1167,6 +1169,7 @@ export class ConversationPage implements OnInit {
               if(noText&&!this.record.noUpload){
                 this.sendQuestion()
                 setTimeout(() => {
+                  console.log('record.listening false and restart')
                   this.record.listening = false;
                   this.startRecording(event,noText);
                 }, 2000);
