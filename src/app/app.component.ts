@@ -70,7 +70,7 @@ export class AppComponent {
     try {
       await this.afAuth.signOut();
       if(localStorage.getItem('streamCase') || stream){
-        localStorage.removeItem('streamCase')
+        // localStorage.removeItem('streamCase')
         this.nav.go('stream-case/finished');
         return;
       }

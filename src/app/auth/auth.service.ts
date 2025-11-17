@@ -669,8 +669,8 @@ export class AuthService {
       await this.afAuth.signOut();
       this.userInfo = {}
       if(localStorage.getItem('streamCase') || stream){
-        console.log('Removing stream case from localStorage after logout...');
-        localStorage.removeItem('streamCase')
+        // console.log('Removing stream case from localStorage after logout...');
+        // localStorage.removeItem('streamCase')
       }
       this.nav.go(location);
       setTimeout(() => {

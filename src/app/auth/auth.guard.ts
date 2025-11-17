@@ -43,7 +43,7 @@ export class AuthGuard implements CanActivate {
       }),
       tap((isAuthenticated) => {
         if (!isAuthenticated) {
-          console.log('Checking for stream case in localStorage...', localStorage.getItem('streamCase'));
+          // console.log('Checking for stream case in localStorage...', localStorage.getItem('streamCase'));
           if(localStorage.getItem('streamCase')){
             this.nav.go('stream-case/finished');
             return;

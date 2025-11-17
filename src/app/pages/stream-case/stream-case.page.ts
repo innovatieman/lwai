@@ -6,6 +6,7 @@ import { Subject, take, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { HelpersService } from 'src/app/services/helpers.service';
 import { MediaService } from 'src/app/services/media.service';
+import { ModalService } from 'src/app/services/modal.service';
 import { NavService } from 'src/app/services/nav.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -15,11 +16,11 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./stream-case.page.scss'],
 })
 export class StreamCasePage implements OnInit {
- basicData:any = {}
- finished:boolean = false;
- parentOrigin:string = '';
- iframeOriginal:string = '';
- 
+  basicData:any = {}
+  finished:boolean = false;
+  parentOrigin:string = '';
+  iframeOriginal:string = '';
+  caseLoaded:boolean = false;
   private leave$ = new Subject<boolean>();
   constructor(
     private route:ActivatedRoute,
@@ -29,12 +30,13 @@ export class StreamCasePage implements OnInit {
     private afAuth:AngularFireAuth,
     private toast:ToastService,
     private auth:AuthService,
-    private helpers:HelpersService
+    private helpers:HelpersService,
+    private modalService:ModalService,
   ) { }
 
   async ngOnInit() {
 
-    console.log('init stream case page');
+    // console.log('init stream case page');
     if(sessionStorage.getItem('iframeOriginal') && (window.location.href.endsWith('/finished'))){
       this.iframeOriginal = sessionStorage.getItem('iframeOriginal')||''; 
     }
@@ -58,6 +60,9 @@ export class StreamCasePage implements OnInit {
 
       if(stream_id=='finished'){
         this.finished = true;
+        setTimeout(() => {
+          localStorage.removeItem('streamCase');
+        }, 2000);
         return;
       }
 
@@ -160,20 +165,23 @@ export class StreamCasePage implements OnInit {
     // console.log('stream data',streamData);
     try{
       this.functions.httpsCallable('startStreaming')({ stream: this.helpers.utf8ToBase64(JSON.stringify(streamData)) }).pipe(take(1)).subscribe(async (res:any) => {
-        console.log('stream result',res);
+        // console.log('stream result',res);
         if(res && res.user && res.user.token){
           await this.afAuth.signInWithCustomToken(res.user.token);
 
          this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
-            // console.log('user info after sign in',userInfo);
             if (userInfo && userInfo.uid) {
-              localStorage.setItem('activatedCase',res.case.id)
-              localStorage.setItem('personalCase',JSON.stringify(res.case))
-              this.nav.go('conversation/'+res.case.id);
+              // console.log(res.case)
+              if(!this.caseLoaded){
+                this.caseLoaded = true;
+                this.showCase(res.case)
+              }
+              // localStorage.setItem('activatedCase',res.case.id)
+              // localStorage.setItem('personalCase',JSON.stringify(res.case))
+              // this.nav.go('conversation/'+res.case.id);
             }
           });
         } else {
-          // this.toast.show('Error starting stream: Invalid user data');
           this.toast.show('Error starting stream: '+res.result);
         }
       }, (error) => {
@@ -186,6 +194,23 @@ export class StreamCasePage implements OnInit {
   }
 }
 
+showCase(caseItem:any){
+  this.modalService.showCaseInfo(caseItem, (res:any)=>{
+    if(res.data){
+      const caseItem = res.data;
+      this.modalService.showConversationStart(caseItem).then((res)=>{
+        if(res){
+          localStorage.setItem('activatedCase',caseItem.id)
+          localStorage.setItem('personalCase',JSON.stringify(caseItem))
+          this.nav.go('conversation/'+caseItem.id)
+        }
+        else{
+          this.showCase(caseItem);
+        }
+      })
+    }
+  }, false);
+}
 
 // async logoutStream(): Promise<void> {
 //     try {
@@ -201,16 +226,17 @@ export class StreamCasePage implements OnInit {
     try {
       const currentUser = await this.afAuth.currentUser;
       if (currentUser) {
-        console.log('Signing out...');
+        // console.log('Signing out...');
         await this.afAuth.signOut();
         this.auth.userInfo = {};
       } else {
-        console.log('No user signed in, skipping logout.');
+        // console.log('No user signed in, skipping logout.');
       }
     } catch (error) {
       console.error('Logout error:', error);
       this.toast.show('logout failed');
     }
   }
+
 
 }

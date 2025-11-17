@@ -124,13 +124,14 @@ export class ModalService {
     return await modalItem.present()
   }
 
-  public async showCaseInfo(caseItem:any,callback?:any){
+  public async showCaseInfo(caseItem:any,callback?:any,backdropDismiss?:boolean){
+    if(backdropDismiss==undefined){backdropDismiss = true}
     const modalItem = await this.modalController.create({
       component:CaseinfoPage,
       componentProps:{
         caseItem:caseItem
       },
-      backdropDismiss:true,
+      backdropDismiss:backdropDismiss,
       cssClass:'infoModal',
     })
     if(callback){

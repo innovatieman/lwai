@@ -21,14 +21,15 @@
       <div class="spacer"></div>
       <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type!='product'&&caseItem.type!='public_case'&&caseItem.type!='infoItem'&&caseItem.type!='text'&&caseItem.type!='video'">
         
-        <ion-button class="saveButton creditButton" fill="outline" size="small">
+        <ion-button class="saveButton creditButton" fill="outline" size="small" *ngIf="!caseItem.stream">
           <div>
             <div>{{caseItem.level}}</div>
             <div font-12 text-medium>{{'cases.level' | translate}}</div>
           </div>
         </ion-button>
-        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.back' | translate}}</ion-button>
-        <ion-button class="saveButton cardButton" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="auth.credits.total<=0 ? noCredits() : startConversation(caseItem)">{{'cases.start_conversation' | translate}}</ion-button>
+        <ion-button class="saveButton cardButton" *ngIf="!caseItem.stream" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" style="--border-color: #eaeaea!important;--color:black" fill="outline" size="small" (click)="modalController.dismiss()">{{'buttons.back' | translate}}</ion-button>
+        <ion-button class="saveButton cardButton" *ngIf="!caseItem.stream" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="auth.credits.total<=0 ? noCredits() : startConversation(caseItem)">{{'cases.start_conversation' | translate}}</ion-button>
+        <ion-button class="saveButton cardButton" *ngIf="caseItem.stream" [ngStyle]="{'margin-left':media.screenSize=='xs'?'5px':'30px'}" fill="outline" size="small" (click)="modalController.dismiss(caseItem)">{{'cases.start_conversation' | translate}}</ion-button>
       </div>
 
       <div center flex center-ver center-hor basicPadding *ngIf="caseItem.type=='product'">
