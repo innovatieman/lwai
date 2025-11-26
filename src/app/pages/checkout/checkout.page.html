@@ -276,10 +276,11 @@
                 </div>
 
 
-                <h3 weight700 font-22 *ngIf="!auth.credits_unlimited_type">{{'standards.credits' | translate}}</h3>
+                <h3 weight700 font-22 *ngIf="!auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included">{{'standards.credits' | translate}}</h3>
+                <h3 weight700 font-22 *ngIf="sales.elearningItem(item_id).credits_included">{{'checkout.credits_are_included' | translate}}</h3>
               
 
-                <ion-card *ngIf="!auth.credits_unlimited_type" basicPadding noMargin noShadow style="background:white" [ngStyle]="{'border': selectedCredits==0 ? 'solid 2px rgba(var(--ion-color-danger-rgb),0.6)' : 'solid 2px var(--ion-color-light)'}">
+                <ion-card *ngIf="!auth.credits_unlimited_type&&!sales.elearningItem(item_id).credits_included" basicPadding noMargin noShadow style="background:white" [ngStyle]="{'border': selectedCredits==0 ? 'solid 2px rgba(var(--ion-color-danger-rgb),0.6)' : 'solid 2px var(--ion-color-light)'}">
                   <div flex center-ver relative style="padding-right:20px;cursor:pointer;" (click)="selectCredits($event)">
                     <div relative flex center-ver center-hor noOverflow borderRadius10 style="min-width:100px;width:100px;height:60px;margin-right:10px;">
                       <img src="assets/img/credits_{{selectedCredits}}.webp" alt="Credits" >
@@ -289,9 +290,26 @@
                       <span *ngIf="selectedCredits==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
                     </div>
                     <div class="spacer"></div>
-                    <div style="min-width:30px">
+                    <!-- <div style="min-width:30px">
                       <fa-icon pointer titleIcon font-18 text-secondary [icon]="icon.get('faPen')"></fa-icon>
+                    </div> -->
+                  </div>
+                </ion-card>
+
+                <ion-card *ngIf="sales.elearningItem(item_id).credits_included" basicPadding noMargin noShadow style="background:white" [ngStyle]="{'border': 'solid 2px var(--ion-color-light)'}">
+                  <div flex center-ver relative style="padding-right:20px;cursor:pointer;">
+                    <div relative flex center-ver center-hor noOverflow borderRadius10 style="min-width:100px;width:100px;height:60px;margin-right:10px;">
+                      <img *ngIf="sales.elearningItem(item_id).credits_included_value?.value" src="assets/img/credits_{{sales.elearningItem(item_id).credits_included_value.value}}.webp" alt="Credits" >
+                      <img *ngIf="!sales.elearningItem(item_id).credits_included_value?.value" src="assets/img/credits_1000000.webp" alt="Credits" >
                     </div>
+                    <div>
+                      <span *ngIf="sales.elearningItem(item_id).credits_included_value?.value && sales.elearningItem(item_id).credits_included_value?.value!=1000000" text-secondary weight500>{{sales.elearningItem(item_id).credits_included_value.value || 0}} {{'standards.credits' | translate}}</span>
+                      <span *ngIf="sales.elearningItem(item_id).credits_included_value?.value==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
+                    </div>
+                    <div class="spacer"></div>
+                    <!-- <div style="min-width:30px">
+                      <fa-icon pointer titleIcon font-18 text-secondary [icon]="icon.get('faPen')"></fa-icon>
+                    </div> -->
                   </div>
                 </ion-card> 
 
@@ -314,23 +332,33 @@
                   <ion-item *ngIf="sales.elearningItem(item_id)">
                     <ion-label>
                       <!-- <div font-16 weight600>{{'checkout.unlimited_credits_year' | translate}}</div> -->
-                      <div font-16 weight600 trash *ngIf="!auth.credits_unlimited_type && !selectedCredits">{{'standards.no_credits' | translate}}</div>
-                      <div font-14 weight600 trash *ngIf="!auth.credits_unlimited_type && !selectedCredits">{{'checkout.warning_no_credits' | translate}}</div>
+                      <div font-16 weight600 trash *ngIf="!auth.credits_unlimited_type && !selectedCredits && !sales.elearningItem(item_id).credits_included">{{'standards.no_credits' | translate}}</div>
+                      <div font-14 weight600 trash *ngIf="!auth.credits_unlimited_type && !selectedCredits && !sales.elearningItem(item_id).credits_included">{{'checkout.warning_no_credits' | translate}}</div>
                      
-                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits!=1000000">{{accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits}} {{'standards.credits' | translate}}</div>
-                      <div font-16 weight600 *ngIf="(!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits==1000000) || auth.credits_unlimited_type">{{'checkout.unlimited_credits_year' | translate}}</div>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits!=1000000">{{accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits}} {{'standards.credits' | translate}}</div>
+                      <div font-16 weight600 *ngIf="((!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits==1000000) || auth.credits_unlimited_type) && !sales.elearningItem(item_id).credits_included">{{'checkout.unlimited_credits_year' | translate}}</div>
 
-                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits!=1000000">{{'checkout.good_for' | translate}} {{accountService.getProductByCredits(selectedCredits)?.conversations}} {{'checkout.extended_conversations' | translate}}</div>
-                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits==1000000">{{'checkout.unlimited_credits_description' | translate}}</div>
+                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits!=1000000">{{'checkout.good_for' | translate}} {{accountService.getProductByCredits(selectedCredits)?.conversations}} {{'checkout.extended_conversations' | translate}}</div>
+                      <div font-14 weight500 *ngIf="!auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits && accountService.getProductByCredits(selectedCredits)?.stripe_metadata_credits==1000000">{{'checkout.unlimited_credits_description' | translate}}</div>
 
                       <!-- <div font-14 weight500 *ngIf="!auth.credits_unlimited_type">{{'checkout.unlimited_credits_description' | translate}}</div> -->
-                      <div font-14 weight500 *ngIf="auth.credits_unlimited_type">{{'checkout.unlimited_credits_already' | translate}}</div>
+                      <div font-14 weight500 *ngIf="auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included">{{'checkout.unlimited_credits_already' | translate}}</div>
+                      
+                      <div font-16 weight600 *ngIf="sales.elearningItem(item_id).credits_included">
+                        <span *ngIf="sales.elearningItem(item_id).credits_included_value?.value && sales.elearningItem(item_id).credits_included_value?.value!==1000000">{{sales.elearningItem(item_id).credits_included_value?.value}} {{'standards.credits' | translate}}</span>
+                        <span *ngIf="!sales.elearningItem(item_id).credits_included_value?.value || sales.elearningItem(item_id).credits_included_value?.value===1000000">{{'checkout.unlimited_credits_year' | translate}}</span>
+                      </div>
+                      <div font-14 weight500 *ngIf="sales.elearningItem(item_id).credits_included">
+                        <span *ngIf="sales.elearningItem(item_id).credits_included_value?.value && sales.elearningItem(item_id).credits_included_value?.value!==1000000">{{'checkout.good_for' | translate}} {{accountService.getProductByCredits(sales.elearningItem(item_id).credits_included_value.value)?.conversations}} {{'checkout.extended_conversations' | translate}}</span>
+                        <span *ngIf="!sales.elearningItem(item_id).credits_included_value?.value || sales.elearningItem(item_id).credits_included_value?.value===1000000">{{'checkout.unlimited_credits_description' | translate}}</span>
+                      </div>
+
                     </ion-label>
                     <div text-end>
-                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && (!hasValidSpecialCodeCredits(sales.elearningItem(item_id)) || hasValidSpecialCodeCredits(sales.elearningItem(item_id))!=selectedCredits)">€ {{(getActivePrice(accountService.getProductByCredits(selectedCredits)?.prices)).value * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
-                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && hasValidSpecialCode(sales.elearningItem(item_id)) && hasValidSpecialCodeCredits(sales.elearningItem(item_id))==selectedCredits">€ {{0 | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included && (!hasValidSpecialCodeCredits(sales.elearningItem(item_id)) || hasValidSpecialCodeCredits(sales.elearningItem(item_id))!=selectedCredits)">€ {{(getActivePrice(accountService.getProductByCredits(selectedCredits)?.prices)).value * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="!auth.credits_unlimited_type && !sales.elearningItem(item_id).credits_included && hasValidSpecialCode(sales.elearningItem(item_id)) && hasValidSpecialCodeCredits(sales.elearningItem(item_id))==selectedCredits">€ {{0 | number : '1.2-2'}}</div>
                       <!-- <div font-14 weight400 style="text-decoration: line-through;" *ngIf="!auth.credits_unlimited_type && hasValidSpecialCode(sales.elearningItem(item_id)) && hasValidSpecialCodeCredits(sales.elearningItem(item_id))==selectedCredits">€ {{(getActivePrice(accountService.getProductByCredits(selectedCredits)?.prices)).value * (pricesInclVat ? 1.21 : 1) | number : '1.2-2'}}</div> -->
-                      <div font-16 weight600 *ngIf="auth.credits_unlimited_type">€ {{0 | number : '1.2-2'}}</div>
+                      <div font-16 weight600 *ngIf="auth.credits_unlimited_type || sales.elearningItem(item_id).credits_included">€ {{0 | number : '1.2-2'}}</div>
                     </div>
                   </ion-item>
 

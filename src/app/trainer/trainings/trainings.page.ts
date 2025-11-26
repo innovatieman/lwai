@@ -58,6 +58,7 @@ export class TrainingsPage implements OnInit {
   publishLocations:any[] = []
   selectedCreditsStream:number = 0
   private leave$ = new Subject<void>();
+  reportPeriod:string = 'day'
 
    configModules={
       toolbar: {
@@ -137,12 +138,14 @@ export class TrainingsPage implements OnInit {
     // })
       // this.getCourseData()
       
-    this.accountService.fetchProductsStream()
+    this.accountService.fetchProductsStream();
+    this.accountService.fetchProducts();
     
       
   }
 
   ionViewWillEnter(){
+
     this.extraCostOptions = {}
     this.auth.userInfo$.pipe(takeUntil(this.leave$)).subscribe(userInfo => {
       if (userInfo) {
@@ -412,35 +415,132 @@ export class TrainingsPage implements OnInit {
     });
   }
 
+  // loadStreamReports(){
+  //   // this.toast.showLoader()
+  //   this.trainerService.loadStreamReports(this.trainerService.trainingItem.id,(result:any)=>{
+  //     if(result?.streamsReport){
+  //       let report:any = {total:{},cases:[],graph:{dates:[],data:[],max:5}}
+  //       for(let caseId in result.streamsReport){
+  //         if(caseId != 'total'){
+  //           report.cases.push({
+  //             id: caseId,
+  //             ...result.streamsReport[caseId]
+  //           });
+  //         }
+  //         else{
+  //           report.total = result.streamsReport[caseId]
+  //           for(let date in result.streamsReport[caseId].dates){
+  //             report.graph.dates.push(date)
+  //           }
+  //           report.graph.dates.sort()
+  //           for(let date of report.graph.dates){
+  //             report.graph.data.push(result.streamsReport[caseId].dates[date] || 0)
+  //             // date = moment(date).format('MM-DD')
+  //           }
+  //           report.graph.max = Math.max(report.graph.max, report.graph.data)
+  //         }
+  //       }
+  //       console.log('report',report)  
+  //       this.trainerService.trainingItem.streamsReport = report
+  //     }
+  //   })
+  // }
+
   loadStreamReports(){
-    // this.toast.showLoader()
-    this.trainerService.loadStreamReports(this.trainerService.trainingItem.id,(result:any)=>{
-      if(result?.streamsReport){
-        let report:any = {total:{},cases:[],graph:{dates:[],data:[],max:5}}
-        for(let caseId in result.streamsReport){
-          if(caseId != 'total'){
+    this.trainerService.loadStreamReports(
+      this.trainerService.trainingItem.id,
+      (result: any) => {
+
+        if (!result?.streamsReport) return;
+
+        const report: any = {
+          total: {},
+          cases: [],
+          graph: {
+            day:   { dates: [], data: [], max: 5 },
+            week:  { dates: [], data: [], max: 5 },
+            month: { dates: [], data: [], max: 5 },
+            year:  { dates: [], data: [], max: 5 },
+          }
+        };
+
+        // Helper functies
+        const toWeekKey  = (d: string) => moment(d).format('YYYY-[W]WW');
+        const toMonthKey = (d: string) => moment(d).format('YYYY-MM');
+        const toYearKey  = (d: string) => moment(d).format('YYYY');
+
+        const weekAgg:  any = {};
+        const monthAgg: any = {};
+        const yearAgg:  any = {};
+
+        for (let caseId in result.streamsReport) {
+
+          if (caseId !== 'total') {
             report.cases.push({
               id: caseId,
               ...result.streamsReport[caseId]
             });
-          }
-          else{
-            report.total = result.streamsReport[caseId]
-            for(let date in result.streamsReport[caseId].dates){
-              report.graph.dates.push(date)
+
+          } else {
+            // totaal
+            report.total = result.streamsReport[caseId];
+
+            const rawDates = Object.keys(result.streamsReport[caseId].dates).sort();
+
+            // === DAG-NIVEAU ===
+            for (let date of rawDates) {
+              const value = result.streamsReport[caseId].dates[date] || 0;
+              report.graph.day.dates.push(date);
+              report.graph.day.data.push(value);
             }
-            report.graph.dates.sort()
-            for(let date of report.graph.dates){
-              report.graph.data.push(result.streamsReport[caseId].dates[date] || 0)
-              // date = moment(date).format('MM-DD')
+
+            // === AGGREGATIE WEEK/MAAND/JAAR ===
+            for (let date of rawDates) {
+              const value = result.streamsReport[caseId].dates[date] || 0;
+
+              // week
+              const w = toWeekKey(date);
+              weekAgg[w] = (weekAgg[w] || 0) + value;
+
+              // month
+              const m = toMonthKey(date);
+              monthAgg[m] = (monthAgg[m] || 0) + value;
+
+              // year
+              const y = toYearKey(date);
+              yearAgg[y] = (yearAgg[y] || 0) + value;
             }
-            report.graph.max = Math.max(report.graph.max, report.graph.data)
+
+            // === WEEK ===
+            report.graph.week.dates = Object.keys(weekAgg).sort();
+            for (let d of report.graph.week.dates) {
+              report.graph.week.data.push(weekAgg[d]);
+            }
+
+            // === MONTH ===
+            report.graph.month.dates = Object.keys(monthAgg).sort();
+            for (let d of report.graph.month.dates) {
+              report.graph.month.data.push(monthAgg[d]);
+            }
+
+            // === YEAR ===
+            report.graph.year.dates = Object.keys(yearAgg).sort();
+            for (let d of report.graph.year.dates) {
+              report.graph.year.data.push(yearAgg[d]);
+            }
+
+            // === MAXES ===
+            report.graph.day.max   = Math.max(...report.graph.day.data,   5);
+            report.graph.week.max  = Math.max(...report.graph.week.data,  5);
+            report.graph.month.max = Math.max(...report.graph.month.data, 5);
+            report.graph.year.max  = Math.max(...report.graph.year.data,  5);
           }
         }
-        console.log('report',report)  
-        this.trainerService.trainingItem.streamsReport = report
+
+        console.log('report', report);
+        this.trainerService.trainingItem.streamsReport = report;
       }
-    })
+    );
   }
 
 
@@ -496,7 +596,7 @@ export class TrainingsPage implements OnInit {
       this.trainerService.trainingItem.amount_credits = 1000000;
       this.update('amount_credits')
     }
-    console.log('training.publishType',training.publishType)
+    // console.log('training.publishType',training.publishType)
     if(training.publishType=='stream'){
       this.loadStreamReports()
     }
@@ -853,7 +953,7 @@ export class TrainingsPage implements OnInit {
     let check = false
     switch(part){
       case 'title':
-        check = this.trainerService.trainingItem?.title && this.trainerService.trainingItem?.user_info && this.trainerService.trainingItem?.photo
+        check = (this.trainerService.trainingItem?.title && this.trainerService.trainingItem?.user_info && this.trainerService.trainingItem?.photo) || (this.trainerService.trainingItem?.status == 'published' && this.trainerService.trainingItem?.publishType == 'stream' && this.trainerService.trainingItem?.title)
         break;
       case 'content':
         check = this.trainerService.trainingItem?.items?.length>0
@@ -948,7 +1048,7 @@ export class TrainingsPage implements OnInit {
     if(!trainingItem?.id){
       trainingItem = this.trainerService.trainingItem
     }
-    if(this.trainerService.breadCrumbs[0].item){
+    if(!trainingItem?.id && this.trainerService.breadCrumbs[0].item){
       trainingItem = this.trainerService.breadCrumbs[0].item
     }
     const scrollPosition = window.scrollY;
@@ -1946,6 +2046,14 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     }
   }
 
+  copyStreamingIframe(url:string){
+    if(url){
+      const iframeCode = `<iframe id="alicialabs_stream" width="100%" height="600px" style="border: none;" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><script>const iframe = document.getElementById("alicialabs_stream");iframe.src = "${url}&ts=" + Date.now();</script>`
+      this.helpers.copyToClipboard(iframeCode)
+      this.toast.show(this.translate.instant('standards.copied_to_clipboard'))
+    }
+  }
+
   removeStreamOrigin(origin:string){
     this.modalService.showConfirmation(this.translate.instant('confirmation_questions.delete')).then(async (result:any) => {
       if(result){
@@ -2791,9 +2899,15 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
     if(!amount){
       this.extraCostOptions[key] = 0
     }
-    else if(key == 'amount_period' && (this.trainerService.trainingItem.amount_period + (this.extraCostOptions['amount_period'] ? this.extraCostOptions['amount_period'] : 0) ==12)){
+    else if(key == 'amount_period' && (this.trainerService.trainingItem.amount_period + (this.extraCostOptions['amount_period'] ? this.extraCostOptions['amount_period'] : 0) ==5)){
       // do Nothing, 
     }
+    // else if(key == 'amount_period' && (this.trainerService.trainingItem.amount_period + (this.extraCostOptions['amount_period'] ? this.extraCostOptions['amount_period'] : 0) ==5)){
+    //   this.extraCostOptions[key] = 12
+    // }
+    // else if(key == 'amount_period' && (this.trainerService.trainingItem.amount_period + (this.extraCostOptions['amount_period'] ? this.extraCostOptions['amount_period'] : 0) >4 && amount <0)){
+    //   this.extraCostOptions[key] = 4
+    // }
     else{
       this.extraCostOptions[key] = this.extraCostOptions[key] + amount
     }
@@ -3934,7 +4048,7 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
   }
 
-  async selectCreditsStream(event?: any){
+  async selectCreditsStream(event?: any,field?:string){
       let list = []
       for(let i=0;i<this.accountService.products_stream.length;i++){
         list.push({
@@ -3966,7 +4080,55 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
       await this.shortMenu.present();
       await this.shortMenu.onWillDismiss().then((result:any)=>{
         if(this.selectMenuservice.selectedItem){
-          this.selectedCreditsStream = this.selectMenuservice.selectedItem.value
+          if(!field){
+            this.selectedCreditsStream = this.selectMenuservice.selectedItem.value
+          }
+          else{
+            this.trainerService.trainingItem[field] = this.selectMenuservice.selectedItem.value
+            this.update(field)
+          }
+          this.selectMenuservice.selectedItem = null
+        }
+      })
+  }
+
+  async selectAutoCreditsElearning(event: any,field:string){
+      let list = []
+      for(let i=0;i<this.accountService.products.length;i++){
+        if(this.accountService.products[i].stripe_metadata_credits=='1000000' || this.accountService.products[i].stripe_metadata_credits=='4000'){
+          list.push({
+            title: (this.accountService.products[i].stripe_metadata_credits=='1000000' ? this.translate.instant('trainings.credits_unlimited') : this.accountService.products[i].stripe_metadata_credits) + ' ' + this.translate.instant('credits.credits'),
+            subTitle:(this.accountService.products[i].stripe_metadata_credits=='1000000' ? this.translate.instant('page_account.credits_unlimited_chat') : this.accountService.products[i].conversations) + ' ' + this.translate.instant('page_account.credits_conversations'),
+            image:'assets/img/credits_' + this.accountService.products[i].stripe_metadata_credits + '.webp',
+            note:'€ ' + (this.getActivePrice(this.accountService.products[i].prices).value).toFixed(2).replace('.',','), //+ (this.pricesInclVat ? ' incl. btw' : ' excl. btw'),
+            logo:true,
+            id:this.accountService.products[i].id,
+            value:parseInt(this.accountService.products[i].stripe_metadata_credits),
+            price: this.getActivePrice(this.accountService.products[i].prices).value,
+          })
+        }
+      }
+
+      list = list.sort((a,b) => b.value - a.value); 
+  
+      this.shortMenu = await this.popoverController.create({
+        component: MenuPage,
+        componentProps:{
+          customMenu:true,
+          pages:list,
+          customList:true,
+        },
+        cssClass: 'customMenu',
+        event: event,
+        translucent: false,
+        reference:'trigger',
+      });
+      this.shortMenu.shadowRoot.lastChild.lastChild['style'].cssText = 'border-radius: 24px !important;';
+      await this.shortMenu.present();
+      await this.shortMenu.onWillDismiss().then((result:any)=>{
+        if(this.selectMenuservice.selectedItem){
+          this.trainerService.trainingItem[field] = this.selectMenuservice.selectedItem
+          this.updatePublishedElearning(field)
           this.selectMenuservice.selectedItem = null
         }
       })
@@ -4070,5 +4232,41 @@ async copyItemsToTraining(module: any, returnItem?: boolean): Promise<any> {
 
   }
 
+  countLastingConversations(credits:number){
+
+    if(!credits || credits<=0){
+      return '0 '+ this.translate.instant('page_account.credits_conversations')
+    }
+
+    let minimum = Math.floor(credits / 400)
+    let maximum = Math.ceil(credits / 300)
+
+    return minimum + ' - ' + maximum + ' ' + this.translate.instant('page_account.credits_conversations')
+  
+  }
+
+
+  updatePublishedElearning(field:string){
+    if(field=='price_elearning' || field=='credits_included' || field=='credits_included_value'){
+      if(this.trainerService.trainingItem.publishType!='elearning'){
+        this.update(field)
+        return
+      }
+      if(this.trainerService.trainingItem.status!='published'){
+        this.update(field)
+        return
+      }
+      if(!this.trainerService.trainingItem['credits_included']){
+        this.update(field)
+        return
+      }
+      //trainerService.trainingItem.price_elearning < trainerService.trainingItem.credits_included_value?.price || (!trainerService.trainingItem.credits_included_value?.price && trainerService.trainingItem.price_elearning < 20.66)
+      if(this.trainerService.trainingItem.price_elearning < (this.trainerService.trainingItem.credits_included_value?.price || 20.66)){
+        this.toast.show(this.translate.instant('trainings.elearning_publish_credits_included_warning'),4000,'middle')
+        return
+      }
+    }
+    this.update(field)
+  }
 
 }

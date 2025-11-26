@@ -167,7 +167,7 @@ exports.userRemove = functions.region('europe-west1').auth.user().onDelete(
 exports.sendVerificationEmailLanguage = functions.region('europe-west1').runWith({memory:'1GB'}).firestore.document('user_languages/{userId}')
 .onCreate(async (change, context) => {
   const data = change.data();
-  const email = data.email;
+  const email = data.email.toLowerCase();
   let language = data.language || 'en';
   let displayName = '';
 
@@ -260,7 +260,7 @@ exports.sendVerificationEmailLanguage = functions.region('europe-west1').runWith
 });
 
 exports.reSendVerificationEmail = functions.region('europe-west1').runWith({memory:'512MB'}).https.onCall(async (data, context) => {
-  const email = data.email;
+  const email = data.email.toLowerCase();
   const displayName = data.displayName || 'User';
 
   const user:any = await admin.firestore().collection('users').where('email', '==', email).get();
@@ -443,7 +443,7 @@ exports.verifyEmailInitCode = functions.region('europe-west1').runWith({ memory:
     throw new functions.https.HttpsError("invalid-argument", "Email en code zijn verplicht.");
   }
 
-  const docRef = admin.firestore().collection("email_verification_codes").doc(email);
+  const docRef = admin.firestore().collection("email_verification_codes").doc(email.toLowerCase());
   const docSnap = await docRef.get();
 
   if (!docSnap.exists) {

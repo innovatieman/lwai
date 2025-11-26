@@ -201,6 +201,7 @@ export class ConversationPage implements OnInit {
     // setTimeout(() => {
     //   this.conversation.fullRecording = true
     // }, 3000);
+
     if(localStorage.getItem('hideDisclaimer')){
       let hideDisclaimer = localStorage.getItem('hideDisclaimer')
       if(moment.unix(hideDisclaimer?parseInt(hideDisclaimer):0).isAfter(moment().subtract(14, 'days'))){
@@ -226,6 +227,9 @@ export class ConversationPage implements OnInit {
     this.conversation.speaking.subscribe((speaking:boolean)=>{
       this.isSpeaking = speaking
       this.rf.detectChanges()
+      if(!speaking && this.conversation.fullRecording){
+        this.startRecording(null,true)
+      }
     })
 
     this.conversation.analysisReady.subscribe((ready:boolean)=>{
@@ -547,7 +551,7 @@ export class ConversationPage implements OnInit {
   }
 
   startOver(){
-    console.log('start over')
+    // console.log('start over')
     this.started = true
     this.conversation.startConversation(this.cases.single(this.case_id))
   }
@@ -571,7 +575,6 @@ export class ConversationPage implements OnInit {
       this.interaction = 'voice'
       if(conversation.voice_on){
         this.conversation.voiceActive = true
-        console.log('voice active')
       }
     }
     this.conversation.loadConversation(conversation.conversationId,conversation,true)
@@ -636,6 +639,12 @@ export class ConversationPage implements OnInit {
     this.isSpeaking = false;
     this.conversation.isSpeaking = false;
     this.record.isSpeaking = false;
+    this.rf.detectChanges()
+    setTimeout(() => {
+      if(this.conversation.fullRecording){
+        this.startRecording(null,true)
+      }
+    }, 100);
   }
 
   pauseVoice(){
@@ -1104,15 +1113,15 @@ export class ConversationPage implements OnInit {
   //   })
   // }
 
-  startRecording(event?: Event,noText?:boolean) {
-    if(this.isSpeaking){
-      return
-    }
-    this.record.listening = false;
+  startRecording(event?: Event | null,noText?:boolean) {
     if(event){
       event.preventDefault();
       event.stopPropagation();
     }
+    if(this.isSpeaking){
+      return
+    }
+    this.record.listening = false;
     if(noText){
       this.conversation.fullRecording = true;
     }
@@ -1154,6 +1163,7 @@ export class ConversationPage implements OnInit {
     //     });
     //   });
     // }
+    // console.log('fullRecording',this.conversation.fullRecording)
     if(this.conversation.fullRecording){
         this.record.startSmartRecording(this.conversation.activeConversation.conversationId, (response: any) => {
           if (response === 'error') {
@@ -1164,12 +1174,10 @@ export class ConversationPage implements OnInit {
             this.record.analyzing = false;
             this.record.recording = false;
             if(this.question){
-              console.log('question from audio',this.question)
-              console.log('noText',noText,this.record.noUpload)
               if(noText&&!this.record.noUpload){
                 this.sendQuestion()
                 setTimeout(() => {
-                  console.log('record.listening false and restart')
+                  // console.log('record.listening false and restart')
                   this.record.listening = false;
                   this.startRecording(event,noText);
                 }, 2000);
@@ -1177,13 +1185,13 @@ export class ConversationPage implements OnInit {
               }
               else if(this.record.noUpload){
                 this.record.noUpload = false;
-                console.log('no upload this time')
+                // console.log('no upload this time')
               }
               this.rf.detectChanges();
             }
             else if(this.record.noUpload){
               this.record.noUpload = false;
-              console.log('no upload this time')
+              // console.log('no upload this time')
             }
             this.rf.detectChanges();
             // this.rf.detectChanges();
@@ -1210,6 +1218,7 @@ export class ConversationPage implements OnInit {
 
   stopRecording(event:Event) {
     if(this.isSpeaking){
+      console.log('is speaking, cannot stop recording')
       return
     }
     event.preventDefault();

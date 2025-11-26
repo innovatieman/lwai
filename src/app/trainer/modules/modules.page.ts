@@ -1304,10 +1304,11 @@ shortMenu:any
               delete training.type
               // console.log('training',training)
               this.firestore.createSub('trainers', this.nav.activeOrganisationId, 'trainings', training).then(async () => {
-                console.log('created training',training)
-                const found = await this.trainerService.waitForItem('training', training.created, 5000, 'created');
-                console.log('found',found)
+                // console.log('created training',training)
+                let found = await this.trainerService.waitForItem('training', training.created, 5000, 'created');
+                // console.log('found',found)
                 this.trainerService.trainingItem = found;
+                
                 
                 this.createItems(training.items,training.moduleId,() => {
                   this.trainerService.breadCrumbs = []
@@ -1315,6 +1316,7 @@ shortMenu:any
                     type: 'training',
                     item: this.trainerService.trainingItem,
                   })
+                  this.trainerService.loadItemsForTraining(this.trainerService.trainingItem.id);
                   this.nav.go('trainer/trainings')
                   this.toast.hideLoader()
 

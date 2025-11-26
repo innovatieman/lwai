@@ -49,7 +49,7 @@ exports.generateHeygenVideo = onCall(
     memory: '1GiB',
   },
   async (request: CallableRequest<any>) => {
-    const { title, storyText } = request.data;
+    const { title, storyText, lesson_number, closing_text, caption, trainerId, infoItemId, trainingId } = request.data;
 
     try {
       // const res = await axios.post(
@@ -110,38 +110,59 @@ exports.generateHeygenVideo = onCall(
       //   }
       // );
 
+      const templates:any = {
+        1: '811ca7afb93d4f72be3aae38c16370bb',
+        2: 'c71cd809802040479bf9bdc451e1fe61',
+        3: 'e69b470391934fe1aabc86087e8d4f68',
+        4: '56e58a8e74024069b112f32e22712c20',
+        5: 'f6b2c7f732e44f12b21f65f322e45203',
+        6: 'b00db5470ef044c2984264d893136ffd',
+      };
 
+      const partsLength = storyText.length
+      let templateId = 'c71cd809802040479bf9bdc451e1fe61';    
+      if (templates[partsLength]) {
+        templateId = templates[partsLength];
+      } 
 
+      let variables:any = {
+        subtitle: {
+          properties: {
+            content: `${title}`,
+          },
+          type: 'text',
+          name: 'subtitle'
+        },
+        lesson_number: {
+          properties: {content: `${lesson_number}`},
+          type: 'text',
+          name: 'lesson_number'
+        },
+        closing_text: {
+          properties: {content: `${closing_text}`},
+          type: 'text',
+          name: 'closing_text'
+        }
+      }
+          
+      for(let i=0;i<partsLength;i++){
+        variables[`part_${i+1}`] = {
+          properties: {
+            content: `${[storyText[i]]}`,
+          },
+          type: 'text',
+          name: `part_${i+1}`
+        }
+      }
 
-      
 
       const res = await axios.post(
-        `${HEYGEN_BASE_URL}/template/c71cd809802040479bf9bdc451e1fe61/generate`,
+        `${HEYGEN_BASE_URL}/template/${templateId}/generate`,
         {
-          caption: false,
+          caption: caption || false,
           include_gif: false,
-          variables: {
-            subtitle: {
-              properties: {
-                content: 'Analyse van de vacature en het bedrijf'
-              },
-              type: 'text',
-              name: 'subtitle'
-            },
-            part_1: {
-              properties: {
-                content: 'Deze is zeker beter dan de vorige keer.'
-              },
-              type: 'text',
-              name: 'part_1'
-            },
-            lesson_number: {
-              properties: {content: '1.2'},
-              type: 'text',
-              name: 'lesson_number'
-            }
-          },
-          title: 'Analyse van de vacature en het bedrijf',
+          variables: variables,
+          title: `${title}`,
           enable_sharing: false
         }, 
         {
@@ -160,7 +181,10 @@ exports.generateHeygenVideo = onCall(
         storyText,
         status: 'processing',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+        trainerId : trainerId || null,
+        infoItemId : infoItemId || null,
+        trainingId : trainingId || null
+      }); 
 
       return { success: true, videoId };
     } catch (error: any) {

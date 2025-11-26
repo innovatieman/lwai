@@ -616,6 +616,7 @@ export class ConversationService implements OnDestroy {
     }
 
     this.update.emit(true);
+    this.speaking.emit(true);
     // console.log(this.activeConversation.messages)
 
     if(!obj.voice){

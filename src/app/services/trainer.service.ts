@@ -59,6 +59,13 @@ export class TrainerService {
   selectedModuleCases:string = ''
   selectedModuleInfoItems:string = ''
 
+  revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+  revenue_direct:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
+  revenue_markets:any = {}
+  revenue_directs:any = {}
+  costs_credits:any = {all:{length:0,total:0},paid:{length:0,total:0},unpaid:{length:0,total:0}};
+  costs_credits_trainingItems:any = {}
+
   creditsPackagesPricing:any = {
     0:0,
     600: Math.round((2/1.21) * 100) / 100, // 600 credits for 2 euro excl. 21% btw
@@ -461,40 +468,57 @@ export class TrainerService {
       docRef.collection('purchases').snapshotChanges().pipe(
         map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
       ).subscribe({
-        next: purchaseItems => {
-          this.trainerInfo.purchaseItems = purchaseItems;
-
-          if (purchaseItems.length === 0) {
-            subSubSteps--;
-            maybeCallback();
-          } else {
-            subSubSteps += purchaseItems.length;
-            purchaseItems.forEach((item:any) => {
-              item.documents = [];
-              docRef.collection('purchases').doc(item.id).collection('documents').snapshotChanges().pipe(
-                map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
-              ).subscribe({
-                next: docs => {
-                  item.documents = docs;
-                  subSubSteps--;
-                  this.revenue();
-                  tryFinish();
-                },
-                error: () => {
-                  item.documents = [];
-                  subSubSteps--;
-                  tryFinish();
-                }
-              });
-            });
-            maybeCallback(); // For the parent collection
-          }
+        next: employees => {
+          this.trainerInfo.purchaseItems = employees;
+          this.revenue();
+          maybeCallback();
         },
         error: () => {
+          console.log('error loading employees');
           this.trainerInfo.purchaseItems = [];
+          this.revenue();
           maybeCallback();
         }
       });
+
+
+
+      //   map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      // ).subscribe({
+      //   next: purchaseItems => {
+      //     this.trainerInfo.purchaseItems = purchaseItems;
+
+      //     if (purchaseItems.length === 0) {
+      //       subSubSteps--;
+      //       maybeCallback();
+      //     } else {
+      //       subSubSteps += purchaseItems.length;
+      //       purchaseItems.forEach((item:any) => {
+      //         item.documents = [];
+      //         docRef.collection('purchases').doc(item.id).collection('documents').snapshotChanges().pipe(
+      //           map(docs => docs.map(e => ({ id: e.payload.doc.id, ...e.payload.doc.data() })))
+      //         ).subscribe({
+      //           next: docs => {
+      //             item.documents = docs;
+      //             subSubSteps--;
+      //             this.revenue();
+      //             tryFinish();
+      //           },
+      //           error: () => {
+      //             item.documents = [];
+      //             subSubSteps--;
+      //             tryFinish();
+      //           }
+      //         });
+      //       });
+      //       maybeCallback(); // For the parent collection
+      //     }
+      //   },
+      //   error: () => {
+      //     this.trainerInfo.purchaseItems = [];
+      //     maybeCallback();
+      //   }
+      // });
 
       // Eventuele extra setup
       if (this.trainerInfo.affiliate) this.getAffiliates();
@@ -2094,12 +2118,7 @@ async registerAsTrainerPro(callback?:Function){
   }
 
 
-  revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
-  revenue_direct:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
-  revenue_markets:any = {}
-  revenue_directs:any = {}
-  costs_credits:any = {all:{length:0,total:0},paid:{length:0,total:0},unpaid:{length:0,total:0}};
-  costs_credits_trainingItems:any = {}
+
   revenue(trainingId?:string){
     let revenue_market:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};
     let revenue_direct:any = {all:{length:0,total:0,profit:0},paid:{length:0,total:0,profit:0},unpaid:{length:0,total:0,profit:0}};

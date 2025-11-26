@@ -692,11 +692,12 @@ video{
     // --border-width:1px;
     // --border-color
     --box-shadow: 0px 0px 10px rgba(32,66,137, 0.8)!important;
-    .toast-message{
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--color-global);
-    }
+}
+.default-toast::part(message){
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-global);
+    line-height: 1.5rem!important;
 }
 
 

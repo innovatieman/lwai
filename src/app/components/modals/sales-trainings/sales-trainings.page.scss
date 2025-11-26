@@ -3,6 +3,9 @@ ion-content {
     margin-bottom: 8px;
   }
 }
+ion-textarea, ion-input{
+    --highlight-height:0;
+}
 .formatPriceInput {
   pointer-events: none;
   position: absolute;

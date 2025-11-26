@@ -19,6 +19,8 @@ export class SalesTrainingsPage implements OnInit {
 
   @Input() input: any;
   
+  visualStep = 1;
+
   step = 1;
   free:boolean = false;
   customer: any = null;
@@ -124,6 +126,7 @@ export class SalesTrainingsPage implements OnInit {
         return;
       }
       if(this.onlyTraining){
+        this.visualStep = 2;
         this.step = 3;
         this.validationError = '';
         return;
@@ -173,19 +176,24 @@ export class SalesTrainingsPage implements OnInit {
     }
 
     this.step++;
+    this.visualStep++;
   }
 
   prevStep() {
     if(this.step == 3 &&this.onlyTraining){
+      this.visualStep = 1;
       this.step = 1;
       return;
     }
     this.step--;
+    this.visualStep--;
     if(this.step<1){
       this.step = 1;
+      this.visualStep = 1;
     }
     if(this.step==5 && this.free){
       this.step = 3;
+      this.visualStep = 3;
     }
   }
 
@@ -349,7 +357,6 @@ export class SalesTrainingsPage implements OnInit {
       { title: this.translate.instant('customers.price_incl_tax'), value: 'incl' },
     ];
     this.showshortMenu(event,list,(data:any)=>{
-      console.log('data',data)
       if(data?.value){
         this.taxInput = data.value;
       }
@@ -360,6 +367,7 @@ export class SalesTrainingsPage implements OnInit {
   taxInput:string = 'excl';
   shortMenu:any;
   async showshortMenu(event:any,list:any[],callback:Function){
+    this.selectMenuservice.selectedItem = undefined;
     this.shortMenu = await this.popoverController.create({
       component: MenuPage,
       componentProps:{
@@ -376,6 +384,7 @@ export class SalesTrainingsPage implements OnInit {
     await this.shortMenu.present();
     await this.shortMenu.onDidDismiss()
     callback(this.selectMenuservice.selectedItem)
+    this.selectMenuservice.selectedItem = undefined;
   }
 
   async selectLang(user:any){
@@ -482,7 +491,7 @@ export class SalesTrainingsPage implements OnInit {
         description: this.translate.instant('customers.credits_explanation_'+option.label),
       }));
       this.showshortMenu(event,list,(data:any)=>{
-        if(data?.value!=undefined){
+        if(data?.value!=undefined && data.value){
           this.selectedCredits = data;
           this.creditPricePerUser = data.price;
         }

@@ -13,6 +13,12 @@ exports.creditsBought = functions.region('europe-west1').runWith({ memory: '1GB'
     console.log('Payment created');
     let payment = snap.data();
     if(payment.status == 'succeeded' && payment.description !== 'Subscription creation' && payment.items?.length > 0){
+
+        const processedPayment = await admin.firestore().collection('processed_payments').doc(context.params.paymentId).get();
+        if(processedPayment.exists){
+            return;
+        }
+
         await admin.firestore().collection('processed_payments').doc(context.params.paymentId).set({processed: true});
 
         for(let i=0; i<payment.items.length; i++){
@@ -36,7 +42,24 @@ exports.creditsBought = functions.region('europe-west1').runWith({ memory: '1GB'
                 }
                 else if(productData.metadata.type=='elearning'){
                     await addElearningToUser(context.params.userId, payment.items[i].price.product);
-                    await registerPurchase(context.params.userId,productData.metadata.trainingId,productData.metadata.trainerId,(payment.items[i].price.unit_amount ? (payment.items[i].price.unit_amount / 100) : 0))
+                    let price = (payment.items[i].price.unit_amount ? (payment.items[i].price.unit_amount / 100) : 0);
+                    if(productData.metadata.free_credits){
+                        const productsRef = admin.firestore().collection('products').where('metadata.credits','==',productData.metadata.free_credits+'').where('metadata.type','==','credits').where('active','==',true).limit(1);
+                        const productsSnap = await productsRef.get();
+                        if(!productsSnap.empty){
+                            const creditProductPriceRef = admin.firestore().collection('products').doc(productsSnap.docs[0].id).collection('prices').where('active','==',true).limit(1);
+                            const creditProductPriceSnap = await creditProductPriceRef.get();
+                            if(!creditProductPriceSnap.empty){
+                                const creditPriceData = creditProductPriceSnap.docs[0].data();
+                                price = price - (creditPriceData.unit_amount ? (creditPriceData.unit_amount / 100) : 0);
+                            }
+                        }
+                        let product = JSON.parse(JSON.stringify(productData));
+                        product.metadata.credits = productData.metadata.free_credits;
+                        await addCreditsToUser(context.params.userId, product);
+                    }
+                    
+                    await registerPurchase(context.params.userId,productData.metadata.trainingId,productData.metadata.trainerId,price)
                 }
             }
         }
@@ -74,7 +97,23 @@ exports.creditsBought = functions.region('europe-west1').runWith({ memory: '1GB'
                 }
                 else if(productData.metadata.type=='elearning'){
                     await addElearningToUser(context.params.userId, payment.items[i].price.product);
-                    await registerPurchase(context.params.userId,productData.metadata.trainingId,productData.metadata.trainerId,(payment.items[i].price.unit_amount ? (payment.items[i].price.unit_amount / 100) : 0))
+                    let price = (payment.items[i].price.unit_amount ? (payment.items[i].price.unit_amount / 100) : 0);
+                    if(productData.metadata.free_credits){
+                        const productsRef = admin.firestore().collection('products').where('metadata.credits','==',productData.metadata.free_credits+'').where('metadata.type','==','credits').where('active','==',true).limit(1);
+                        const productsSnap = await productsRef.get();
+                        if(!productsSnap.empty){
+                            const creditProductPriceRef = admin.firestore().collection('products').doc(productsSnap.docs[0].id).collection('prices').where('active','==',true).limit(1);
+                            const creditProductPriceSnap = await creditProductPriceRef.get();
+                            if(!creditProductPriceSnap.empty){
+                                const creditPriceData = creditProductPriceSnap.docs[0].data();
+                                price = price - (creditPriceData.unit_amount ? (creditPriceData.unit_amount / 100) : 0);
+                            }
+                        }
+                        let product = JSON.parse(JSON.stringify(productData));
+                        product.metadata.credits = productData.metadata.free_credits;
+                        await addCreditsToUser(context.params.userId, product);
+                    }
+                    await registerPurchase(context.params.userId,productData.metadata.trainingId,productData.metadata.trainerId,price)
                 }
             }
         }

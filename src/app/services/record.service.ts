@@ -7,6 +7,7 @@ import { AuthService } from '../auth/auth.service';
 export class RecordService {
   recording: boolean = false;
   stream: MediaStream | null = null;
+  smartStream: MediaStream | null = null;
   analyzing: boolean = false;
   isSpeaking: boolean = false;
   smartAudioContext: AudioContext | null = null;
@@ -184,7 +185,7 @@ export class RecordService {
       this.smartRecordingActive = false; // voorkom dat onstop iets doet
       this.mediaRecorder.stop();
     }
-    if (this.smartAudioContext) {
+    if (this.smartAudioContext && this.smartAudioContext.state !== 'closed') {
       this.smartAudioContext.close();
       this.smartAudioContext = null;
     }
@@ -195,10 +196,10 @@ export class RecordService {
     const silenceDelay = 1000; // 1s stilte = stop
     const preSpeechPadding = 500; // 0.5s vóór eerste spraak behouden
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    this.smartStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
 
     const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/ogg;codecs=opus";
-    const mediaRecorder = new MediaRecorder(stream, { mimeType });
+    const mediaRecorder = new MediaRecorder(this.smartStream, { mimeType });
     const chunks: Blob[] = [];
     let startTime = Date.now();
     let firstSpeechTime: number | null = null;
@@ -221,7 +222,7 @@ export class RecordService {
     // const audioContext = new AudioContext();
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 2048;
-    const micSource = audioContext.createMediaStreamSource(stream);
+    const micSource = audioContext.createMediaStreamSource(this.smartStream!);
     micSource.connect(analyser);
 
     const dataArray = new Uint8Array(analyser.fftSize);
@@ -452,6 +453,12 @@ export class RecordService {
       this.mediaRecorder?.stop();
       setTimeout(() => {
         this.stream!.getTracks().forEach((track) => track.stop());
+      }, 200);
+    }
+    if (this.smartStream) {
+      this.mediaRecorder?.stop();
+      setTimeout(() => {
+        this.smartStream!.getTracks().forEach((track) => track.stop());
       }, 200);
     }
     this.recording = false;

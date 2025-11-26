@@ -726,6 +726,10 @@ export class CasesPage implements OnInit {
           updateInArray(this.trainerService.breadCrumbs[0].item?.items);
           this.firestore.updateSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,{items:this.trainerService.breadCrumbs[0].item?.items},()=>{});
 
+          if(this.trainerService.breadCrumbs[0].item?.status=='published' && this.trainerService.breadCrumbs[0].item.publishType == 'stream' &&(field=='title' || field=='photo')){
+            this.toast.show(this.translate.instant('trainings.updating_case_stream'))
+          }
+
           if(this.trainerService.breadCrumbs[0].item?.status=='published' && this.trainerService.breadCrumbs[0].item?.publishType == 'elearning'){
             this.functions.httpsCallable('adjustElearning')({
               elearningId: this.trainerService.breadCrumbs[0].item.id,

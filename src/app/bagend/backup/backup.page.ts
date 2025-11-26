@@ -23,7 +23,7 @@ export class BackupPage implements OnInit {
 
   constructor(
     private functions:AngularFireFunctions, // Assuming you have AngularFireFunctions set up
-    // private firestore: AngularFirestore, // Assuming you have AngularFirestore set up
+    private firestore: AngularFirestore, // Assuming you have AngularFirestore set up
     // private auth:AuthService
   ) { }
 
@@ -44,7 +44,15 @@ export class BackupPage implements OnInit {
 
   createVideo(){
     const callable = this.functions.httpsCallable('generateHeygenVideo');
-    callable({ title: 'Test Les', storyText: 'Deze is nog sneller dan de vorige keer.' }).subscribe({
+    callable({ 
+      title: 'Doel en mindset van het sollicitatiegesprek', 
+      storyText: [
+          "...Een sollicitatiegesprek is méér dan een beoordelingsmoment… Het is een tweezijdig gesprek waarin jij en de organisatie samen verkennen of er een goede match is. ",
+          "Als je dit van tevoren helder hebt, kun je hier tijdens het gesprek bewust op sturen."
+      ],
+      lesson_number: '1.1',
+      closing_text: 'Bedankt voor het volgen van deze les.'
+    }).subscribe({
       next: (result) => {
         console.log('Video creation initiated:', result);
       },
@@ -125,5 +133,28 @@ export class BackupPage implements OnInit {
     reader.readAsDataURL(selectedFile);
 
    }
+
+   sendTestMails(){
+
+    let mails = `test6@innovatieman.nl`
+
+
+    const emailData = {
+        template:'free',
+        language:'nl',
+        to: mails, //'alicia@innovatieman.nl',
+        subject: `Verzoek van Mark`,
+        data:{
+          subject: `Verzoek van Mark`,
+          content: `Verzoek tot test<br><br>Afzender: Mark)`,
+          replyTo: 'mailercheck@innovatieman.nl',
+        }
+      };
+    
+      this.firestore.collection('emailsToProcess').add(emailData);
+
+  } 
+
+
 
 }

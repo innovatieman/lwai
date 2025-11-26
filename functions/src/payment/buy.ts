@@ -280,6 +280,7 @@ exports.createCheckoutSession = functions.region('europe-west1').runWith({ memor
 
       await customerRef.set({
         stripeCustomerId: stripeId,
+        stripeId: stripeId,
         email: dummyEmail,
         organisationId,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
@@ -298,6 +299,7 @@ exports.createCheckoutSession = functions.region('europe-west1').runWith({ memor
 
       await customerRef.set({
         stripeCustomerId: stripeId,
+        stripeId: stripeId,
         email: context.auth.token.email,
         userId,
         createdAt: admin.firestore.FieldValue.serverTimestamp()

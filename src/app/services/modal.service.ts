@@ -342,6 +342,7 @@ export class ModalService {
   async startSalesTraining(obj:any,callback:Function){
     const modalItem = await this.modalController.create({
       component:SalesTrainingsPage,
+      backdropDismiss: false,
       componentProps:{
         input:obj
       },

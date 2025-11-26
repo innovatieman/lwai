@@ -26,8 +26,13 @@ ion-header{
 }
 
 .voiceAvatar{
-  max-height: 800px;
-  // height:90%;
+  max-height: 80%;
+  height:auto;
+  border-radius: 24px;
+}
+.voiceAvatarDiv{
+  // max-height: 80%;
+  height:auto;
   border-radius: 24px;
 }
 .voiceAttitude{
@@ -37,6 +42,24 @@ ion-header{
     border-radius: 24px;
     right: 40px;
     top: 25px;
+    app-graph-gauge{
+      margin-top:20px;
+    }
+    div{
+      margin-top:-35px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+}
+
+.voiceAttitudeSm{
+    position: absolute;
+    width: 100px;
+    background: white;
+    border-radius: 24px;
+    right: 15px;
+    top: 15px;
     app-graph-gauge{
       margin-top:20px;
     }
@@ -96,11 +119,42 @@ ion-header{
   font-size:24px;
 }
 
-  .explanation{
-    color: rgba(0, 0, 0, 0.5);
-    font-style: italic;
-    margin-top: 10px;
-  }
+.voiceStatusHolder{
+  position: absolute;
+  width: 100%;
+  bottom: -60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.voiceStatus{
+  font-weight: 600;
+  padding:5px 15px;
+  background: white;
+  border-radius: 24px;
+}
+.stopLiveHolder{
+  position: absolute;
+  width: 200px;
+  bottom: 30px;
+  left: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.stopLiveHolderSm{
+  width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top:40px;
+}
+
+.explanation{
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  margin-top: 10px;
+}
 
 .cipherCard{
   padding-top:10px;
@@ -857,15 +911,15 @@ video{
 }
 .voiceSpeakingAnimation{
     position: absolute;
-    top: 0;
+    top: 0px;
     left: 0px;
     width: 100%;
-    height: calc(90% - 0px);
+    height: calc(100% - 90px);
     display: flex;
     justify-content: center;
     align-items: flex-end;
     z-index: 10;
-    max-height: 760px;
+    max-height: calc(80% - 90px);
     pointer-events: none;
 }
 

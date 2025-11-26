@@ -574,17 +574,19 @@ export class InfoItemsPage implements OnInit {
         };
 
         if(field){
-
+          // console.log('updating field in training info item:', infoItem[field])
           infoItem[field] = infoItem[field] || ''
-          infoItem[field] = infoItem[field]
-          .split('</ol><p><br></p><p>').join('</ol>')
-          .split('</p><p><br></p><ol>').join('<ol>')
-          .split('</ul><p><br></p><p>').join('</ul>')
-          .split('</p><p><br></p><ul>').join('<ul>')
-          .split('<p><br></p>').join('<br>')
-          .split('</p><br><p>').join('<br><br>')
-          .split('</p><p>').join('<br>')
-          .split('&nbsp;').join(' ')
+          if(typeof infoItem[field] == 'string'){
+            infoItem[field] = infoItem[field]
+            .split('</ol><p><br></p><p>').join('</ol>')
+            .split('</p><p><br></p><ol>').join('<ol>')
+            .split('</ul><p><br></p><p>').join('</ul>')
+            .split('</p><p><br></p><ul>').join('<ul>')
+            .split('<p><br></p>').join('<br>')
+            .split('</p><br><p>').join('<br><br>')
+            .split('</p><p>').join('<br>')
+            .split('&nbsp;').join(' ')
+          }
 
           this.firestore.setSubSub('trainers',this.nav.activeOrganisationId,'trainings',this.trainerService.breadCrumbs[0].item.id,'items',infoItem.id,infoItem[field],field,()=>{
             setTimeout(() => {
@@ -1470,6 +1472,128 @@ export class InfoItemsPage implements OnInit {
     });
   }
 
+  async createVideo(){
+    this.modalService.inputFields(this.translate.instant('cases.create_video'),'',[{
+      type: 'text',
+      title: 'Welk hoofstuk en lesnummer is dit? (bijvoorbeeld: 1.1)',
+      value: '',
+    }], async (res:any)=>{
+      console.log(res)
+      if(res?.data){
+        let text:string = ''
+        text += this.trainerService.infoItem.intro + '\n\n'
+        text += this.trainerService.infoItem.content + '\n\n'
+    
+        this.toast.showLoader(this.translate.instant('cases.generating_video'))
+    
+        const prompt = await this.getPromptOpenAI(text)
+        console.log('prompt',prompt)
+        
+        this.trainerService.infoItem.video_prompt = prompt || ''
+        this.update('video_prompt',true)
+    
+        await this.createVideoHeygen(prompt,res.data[0].value || '')
+        
+        this.toast.hideLoader()
+        this.toast.show(this.translate.instant('cases.video_generation_started'),4000,'middle')
+    
+      }
+    })
+
+  }
+
+
+  async getPromptOpenAI(input: string) {
+    
+    try {
+      const response = await fetch("https://europe-west1-lwai-3bac8.cloudfunctions.net/video_prompt_gemini", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: this.auth.userInfo.uid,
+          content: input,
+          instructionType:'video_prompter',
+          categoryId: 'main',
+        }),
+      });
+  
+      if (!response.ok) {
+        console.error("Request failed:", response.status, response.statusText);
+        this.toast.show(this.translate.instant('error_messages.error'),3000,'middle')
+        return;
+      }
+  
+      // Response uitlezen
+      let data = await response.json();
+      data.content = data.content.split('```html').join('').split('```').join('').split('html').join('').trim()
+      if(data?.content.startsWith('json')){
+        data.content = data.content.replace('json','').trim()
+      }
+
+      let defContent=[]
+      let text = ''
+      let textArr = JSON.parse(data.content)
+      for(let i=0;i<textArr.length;i++){
+        if(text.length + textArr[i].length + '...'.length < 1500){
+          text += '...' + textArr[i] 
+          if(i==textArr.length-1){
+            defContent.push(text)
+          }
+        }
+        else{
+          defContent.push(text + '...')
+          text = textArr[i]
+        }
+      }
+
+      this.toast.hideLoader()
+      return defContent;
+    } catch (error) {
+      console.error("Error fetch:", error);
+      throw error;
+    }
+  }
+
+  async createVideoHeygen(inputArr?:string[], lesson_number?:string){
+    if(!inputArr || !inputArr.length){
+      this.toast.show(this.translate.instant('cases.generate_video_no_prompt'),4000,'middle')
+      return;
+    }
+    let title = this.trainerService.infoItem.title || 'Training'
+    if(["0","1","2","3","4","5","6","7","8","9"].includes(title.charAt(0))){
+      if(title.includes(':')){
+        title = title.split(':')[1].trim()
+      }
+      else if(title.includes('-')){
+        title = title.split('-')[1].trim()
+      }
+      else{
+        title = title.substring(1).trim()
+      }
+    }
+    
+    const callable = this.functions.httpsCallable('generateHeygenVideo');
+    callable({ 
+      title: title, 
+      storyText: inputArr,
+      lesson_number: 'Les ' + (lesson_number || ''),
+      closing_text: 'Bedankt voor het volgen van deze les.',
+      trainerId: this.nav.activeOrganisationId,
+      infoItemId: this.trainerService.infoItem.id,
+      trainingId: this.trainerService.trainingItem?.id || '',
+    }).subscribe({
+      next: (result) => {
+        console.log('Video creation initiated:', result);
+        return result;
+      },
+      error: (error) => {
+        console.error('Error creating video:', error);
+        return error;
+      }
+    });
+  }
 
 }
   

@@ -7,6 +7,11 @@ import Stripe from "stripe";
 const stripe = new Stripe(config.stripe.live_secret_key, {
   apiVersion: '2025-02-24.acacia',
 });
+import { onRequest } from "firebase-functions/v2/https";
+import { db } from '../firebase';
+import moment from 'moment';
+
+const endpointSecret = config.stripe.live_secret_webhook;
 
   exports.createTaxRate = functions.region('europe-west1').runWith({ memory: '1GB' }).firestore
   .document('taxRates/{taxRateId}')
@@ -298,3 +303,85 @@ exports.createInvoiceElearnings = functions.region('europe-west1').runWith({ mem
 
     return null;
   });
+
+
+
+
+exports.stripeInvoiceWebhook = onRequest(
+  { region: "europe-west1",  memory: '1GiB', timeoutSeconds: 540 },
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"] as string;
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+    } catch (err: any) {
+      console.error("Webhook signature verification failed", err.message);
+      res.status(400).send("Invalid signature");
+      return;
+    }
+
+    switch (event.type) {
+      case "invoice.paid": {
+        const invoice = event.data.object;
+        console.log("Invoice paid:", invoice.id);
+
+        // Update Firestore
+        const invoiceRecordRef =  db.collection("invoices_elearnings").where("stripeInvoiceId", "==", invoice.id);
+        const invoiceSnapshot = await invoiceRecordRef.get();
+
+        if (invoiceSnapshot.empty) {
+          console.warn("No matching invoice found in Firestore for", invoice.id);
+          break;
+        }
+        const invoiceDocId = invoiceSnapshot.docs[0].id;
+        const invoiceData = invoiceSnapshot.docs[0].data();
+        const trainerId = invoiceData.trainerId || '';
+
+
+        await db
+          .collection("invoices_elearnings")
+          .doc(invoiceDocId)
+          .update({ status: "paid", paidAt: new Date() });
+
+        if(trainerId){
+          const trainerPurchaseRef = db.collection('trainers').doc(trainerId).collection('purchases').where('stripeInvoiceId', '==', invoice.id);
+          const trainerPurchaseSnapshot = await trainerPurchaseRef.get();
+          if(!trainerPurchaseSnapshot.empty){
+            const trainerPurchaseDocId = trainerPurchaseSnapshot.docs[0].id;
+            await db.collection('trainers').doc(trainerId).collection('purchases').doc(trainerPurchaseDocId).update({
+              invoice_status: 'paid',
+              invoice_paidAt: moment().unix()
+            });
+          }
+        }
+
+        break;
+      }
+
+      case "invoice.payment_failed": {
+       const invoice = event.data.object;
+        console.log("Invoice payment failed:", invoice.id);
+
+        // Update Firestore
+        const invoiceRecordRef =  db.collection("invoices_elearnings").where("stripeInvoiceId", "==", invoice.id);
+        const invoiceSnapshot = await invoiceRecordRef.get();
+
+        if (invoiceSnapshot.empty) {
+          console.warn("No matching invoice found in Firestore for", invoice.id);
+          break;
+        }
+        const invoiceDocId = invoiceSnapshot.docs[0].id;
+
+        await db
+          .collection("invoices_elearnings")
+          .doc(invoiceDocId)
+          .update({ status: "payment_failed" });
+
+        break;
+      }
+    }
+
+    res.json({ received: true });
+  }
+);

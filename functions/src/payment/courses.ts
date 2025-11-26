@@ -15,14 +15,19 @@ exports.createStripeProductElearning = functions.region("europe-west1")
 
     try {
       // Stap 1: Maak het product aan in Stripe
+      let metadata:any = {
+        type: 'elearning',
+        trainerId: elearningData.trainerId,
+        trainingId: elearningData.originalTrainingId,
+      };
+      if(elearningData.credits_included){
+        metadata['free_credits'] = elearningData.credits_included_value?.value || 1000000;
+      };
+        
       const product = await stripe.products.create({
         name: elearningData.title,  // Gebruik de titel van de training
         description: elearningData.trainer?.name || "",
-        metadata:{
-            type: 'elearning',
-            trainerId: elearningData.trainerId,
-            trainingId: elearningData.originalTrainingId,
-        }
+        metadata:metadata
       });
 
       // console.log(`elearningData`, JSON.stringify(elearningData, null, 2));

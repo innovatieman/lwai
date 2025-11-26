@@ -17,9 +17,10 @@
   <!-- Stap 1 -->
   <ng-container *ngIf="step === 1">
     <h2 font-20 flex center-ver>
-      <span>{{'customers.step' | translate}} 1: {{ steps[0].title }}</span>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[0].title }}</span>
       <span class="spacer"></span>
       <ion-button fill="clear" color="primary" (click)="editCustomer()">{{'customers.new_customer' | translate}}</ion-button>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_select_customer',steps[0].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
     </h2>
     <div>
       <ion-searchbar borderRadius16 placeholder="{{'buttons.search' | translate}}" [(ngModel)]="searchTermCustomer" (ionClear)="searchTermCustomer=''" (ionCancel)="searchTermCustomer=''" showCancelButton="focus"></ion-searchbar>
@@ -43,7 +44,11 @@
 
   <!-- Stap 2 -->
   <ng-container *ngIf="step === 2">
-    <h2 font-20>{{'customers.step' | translate}} 2: {{ steps[1].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[1].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_select_training',steps[1].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+      </h2>
     <ion-list borderRadius16>
       <ion-radio-group [(ngModel)]="selectedTraining">
         <ion-item button detail="false" [ngStyle]="{'--background': selectedTraining?.id === training.id ? 'var(--ion-color-primary)' : 'transparent'}" *ngFor="let training of trainings" lines="none" style="margin-bottom:10px;border:1px solid var(--ion-color-primary);border-radius:16px;" (click)="validationError = ''">
@@ -59,7 +64,11 @@
 
   <!-- Stap 3 -->
   <ng-container *ngIf="step === 3 && !onlyUserAmount && !variable_amount">
-    <h2 font-20>{{'customers.step' | translate}} 3: {{ steps[2].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[2].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_add_users',steps[2].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
     <ion-item *ngFor="let user of users; let i = index" detail="false" lines="none" style="--padding-start:0">
       <ion-input style="width:50%" class="userInput" type="email" (keydown)="validationError = ''" [(ngModel)]="user.email" placeholder="E-mailadres (verplicht)"></ion-input>
       <ion-input style="width:50%" class="userInput" type="text" (keydown)="validationError = ''" [(ngModel)]="user.displayName" placeholder="Naam (optioneel)"></ion-input>
@@ -84,7 +93,11 @@
 
   <!-- Stap 3 -->
   <ng-container *ngIf="step === 3 && (onlyUserAmount || variable_amount)">
-    <h2 font-20>{{'customers.step' | translate}} 3: {{ steps[2].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[2].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_add_user_maximum',steps[2].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
     <ion-row>
       <ion-col size="8" *ngIf="onlyUserAmount"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.max_users') | sanitizeHtml"></div></ion-col>
       <ion-col size="8" *ngIf="variable_amount"><div weight500 style="padding:10px 0px" [innerHtml]="translate.instant('trainings.max_users_total') | sanitizeHtml"></div></ion-col>
@@ -105,7 +118,11 @@
 
   <!-- Stap 4 -->
   <ng-container *ngIf="step === 4 && !variable_amount && !free">
-    <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[3].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_set_price',steps[3].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
 
     <ion-item detail="false" lines="none" relative *ngIf="taxInput=='excl'">
       <ion-label  >
@@ -113,7 +130,7 @@
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
         </span>
       </ion-label>
-      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePrice = true" (ionBlur)="hideBasePrice = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePrice')" [(ngModel)]="basePrice">
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePrice = true" (ionBlur)="hideBasePrice = false" [step]="5" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePrice')" [(ngModel)]="basePrice">
         <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
       </ion-input>
       <div absolute *ngIf="!hideBasePrice" class="formatPriceInput">{{ basePrice | currency:'EUR':'' }}</div>
@@ -125,7 +142,7 @@
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
         </span>
       </ion-label>
-      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePriceIncl = true" (ionBlur)="hideBasePriceIncl = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceIncl')" [(ngModel)]="basePriceIncl">
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePriceIncl = true" (ionBlur)="hideBasePriceIncl = false" [step]="5" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceIncl')" [(ngModel)]="basePriceIncl">
         <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
       </ion-input>
       <div absolute *ngIf="!hideBasePriceIncl" class="formatPriceInput">{{ basePriceIncl | currency:'EUR':'' }}</div>
@@ -159,7 +176,11 @@
 
   <!-- Stap 4 -->
   <ng-container *ngIf="step === 4 && !variable_amount && free">
-    <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[3].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_set_price',steps[3].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
 
     <ion-item detail="false" lines="none" style="--padding-end: 17px;" [ngStyle]="{'border-bottom':trainerService.isTrainerPro ? '1px solid var(--ion-color-medium)' : 'none'}">
       <ion-label>
@@ -195,7 +216,11 @@
 
    <!-- Stap 4 -->
   <ng-container *ngIf="step === 4 && variable_amount">
-    <h2 font-20>{{'customers.step' | translate}} 4: {{ steps[3].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[3].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_set_price_with_maximum',steps[3].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
 
     <h3 font-18 weight700>{{'customers.one_time_price' | translate}}</h3>
 
@@ -205,7 +230,7 @@
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
         </span>
       </ion-label>
-      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePrice = true" (ionBlur)="hideBasePrice = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePrice')" [(ngModel)]="basePrice">
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePrice = true" (ionBlur)="hideBasePrice = false" [step]="5" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePrice')" [(ngModel)]="basePrice">
         <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
       </ion-input>
       <div absolute *ngIf="!hideBasePrice" class="formatPriceInput">{{ basePrice | currency:'EUR':'' }}</div>
@@ -218,7 +243,7 @@
           <fa-icon titleIcon [icon]="icon.get('faChevronDown')" font-20></fa-icon>
         </span>
       </ion-label>
-      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePriceIncl = true" (ionBlur)="hideBasePriceIncl = false" [step]="0.01" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceIncl')" [(ngModel)]="basePriceIncl">
+      <ion-input style="text-align:right;min-height:36px;" (ionFocus)="hideBasePriceIncl = true" (ionBlur)="hideBasePriceIncl = false" [step]="5" placeholder="0.00" borderMedium borderRadius16 slot="end" type="number" (keyup)="updatePrice('basePriceIncl')" [(ngModel)]="basePriceIncl">
         <ion-icon slot="start" name="logo-euro" aria-hidden="true"></ion-icon>
       </ion-input>
       <div absolute *ngIf="!hideBasePriceIncl" class="formatPriceInput">{{ basePriceIncl | currency:'EUR':'' }}</div>
@@ -298,7 +323,11 @@
 
   <!-- Stap 5 -->
   <ng-container *ngIf="step === 5 && !variable_amount">
-    <h2 font-20>{{'customers.step' | translate}} 5: {{ steps[4].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[4].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_review_with_users',steps[4].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
     <ion-row>
       <ion-col size="6" style="padding-bottom:20px;">
         <h3 weight600 font-18 style="padding-left:20px">{{'customers.details_sale' | translate}}</h3>
@@ -338,7 +367,7 @@
         </table>
       </ion-col>
 
-      <ion-col size="6" style="padding-bottom:20px;">
+      <ion-col size="6" style="padding-bottom:20px;" *ngIf="!free">
         <h3 weight600 font-18 style="padding-left:20px">{{'customers.your_profit' | translate}}</h3>
         <table customerDetails>
           <tr>
@@ -360,7 +389,11 @@
 
   <!-- Stap 5 -->
   <ng-container *ngIf="step === 5 && variable_amount">
-    <h2 font-20>{{'customers.step' | translate}} 5: {{ steps[4].title }}</h2>
+    <h2 font-20 flex center-ver>
+      <span>{{'customers.step' | translate}} {{visualStep}}: {{ steps[4].title }}</span>
+      <span class="spacer"></span>
+      <fa-icon pointer titleIcon font-24 text-secondary (click)="trainerService.tooltip('sell_direct_step_review_with_maximum',steps[4].title,$event)" [icon]="icon.get('faInfoCircle')"></fa-icon>
+    </h2>
     <ion-row>
       <ion-col size="4" style="padding-bottom:20px;">
         <h3 weight600 font-18 style="padding-left:20px">{{'customers.details_sale' | translate}}</h3>

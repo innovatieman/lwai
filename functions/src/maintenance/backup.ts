@@ -21,7 +21,7 @@ exports.scheduledFirestoreBackup = onSchedule(
   {
     schedule: 'every day 03:00',
     timeZone: 'Europe/Amsterdam',
-    memory: '1GiB',
+    memory: '4GiB',
     region: 'europe-west1',
   },
   async () => {
@@ -61,7 +61,7 @@ exports.scheduledFirestoreBackupMonthly = onSchedule(
   {
     schedule: '0 2 1 * *',
     timeZone: 'Europe/Amsterdam',
-    memory: '1GiB',
+    memory: '4GiB',
     region: 'europe-west1',
   },
   async () => {

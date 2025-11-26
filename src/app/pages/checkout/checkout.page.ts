@@ -296,7 +296,12 @@ export class CheckoutPage implements OnInit {
         }
       }
     }
-    if(!this.auth?.credits_unlimited_type) {
+    if(this.sales.elearningItem(this.item_id).credits_included) {
+      if(!this.sales.elearningItem(this.item_id).credits_included_value || this.sales.elearningItem(this.item_id).credits_included_value.value===1000000) {
+        total += 0;
+      }
+    }
+    else if(!this.auth?.credits_unlimited_type) {
       if(!this.selectedCredits || this.selectedCredits == 0) {
         total += 0;
       }
@@ -457,7 +462,11 @@ export class CheckoutPage implements OnInit {
       }
     }
 
-    if(!this.auth?.credits_unlimited_type) {
+    if(this.sales.elearningItem(this.item_id).credits_included) {
+      
+    }
+
+    else if(!this.auth?.credits_unlimited_type) {
       if(this.selectedCredits && this.selectedCredits > 0) {
         let product = this.accountService.getProductByCredits(this.selectedCredits)
         if(product && product.id){

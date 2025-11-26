@@ -59,6 +59,7 @@ const creditsCost:any = {
   closing: 7,
   promptChecker: 2,
   case_prompt: 5,
+  video_prompt: 10,
   goal: 3,
   soundToText:2,
   skills: 5,
@@ -1842,6 +1843,108 @@ exports.case_prompt_gemini = onRequest(
       })
       
       await updateCredits(body.userId, creditsCost['case_prompt']); 
+      
+      res.status(200).send({content:completeMessage});
+
+        
+    } catch (error) {
+      console.error("Error tijdens streaming:", error);
+      res.status(500).send("Error tijdens streaming");
+    }
+  }
+);
+
+exports.video_prompt_gemini = onRequest(
+  { cors: config.allowed_cors, region: "europe-west1" , memory: '1GiB', timeoutSeconds: 540},
+  async (req: any, res: any) => {
+    setHeaders(res);
+
+    try {
+    ////////////////////////////////////////////////////////////////////
+      // Check required parameters
+      ////////////////////////////////////////////////////////////////////
+      const body = req.body;
+      if((!body.userId) || (!body.instructionType) || (!body.content) || (!body.categoryId)){
+        console.log("Missing required parameters in request body");
+        res.status(400).send("Missing required parameters in request body");
+        return;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Check subscription
+      //////////////////////////////////////////////////////////////////
+      const hasValidSubscription = await checkUserSubscription(body.userId);
+      if (!hasValidSubscription) {
+        res.status(403).send("User does not have a valid subscription");
+        return;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Set language
+      ////////////////////////////////////////////////////////////////////
+      let language = 'nl'
+      if(body.language){
+        language = body.language;
+      }
+
+      ////////////////////////////////////////////////////////////////////
+      // Get category data
+      ////////////////////////////////////////////////////////////////////
+      const categoryRef = db.doc(`categories/${body.categoryId}`);
+
+      const [agent_instructions,categorySnap,formats] = await Promise.all([
+        getAgentInstructions(body.instructionType,body.categoryId,language),
+        categoryRef.get(), 
+        getFormats(body.instructionType)
+      ]);
+
+      if (!categorySnap.exists) {
+        throw new Error("Category not found");
+      }
+      const categoryData = categorySnap.data();
+
+      ////////////////////////////////////////////////////////////////////
+      // Set system content
+      ////////////////////////////////////////////////////////////////////
+      let systemContent = agent_instructions.systemContent.split("[category]").join(categoryData.title);
+
+      ////////////////////////////////////////////////////////////////////
+      // Set user content
+      ////////////////////////////////////////////////////////////////////
+      let content = agent_instructions.content.split("[case_data]").join(body.content)
+      content = content + '\n\n' + formats.format + '\n\n' + formats.instructions;
+
+      ////////////////////////////////////////////////////////////////////
+      // Set messages
+      ////////////////////////////////////////////////////////////////////
+      let sendMessages:any[] = [
+        { role: "system", content: systemContent },
+        { role: "user", content: content },
+      ]
+
+      ////////////////////////////////////////////////////////////////////
+      // Stream Gemini
+      ////////////////////////////////////////////////////////////////////
+      const result:any = await streamGemini(sendMessages,agent_instructions,false)
+      let completeMessage = result.text();
+
+      ////////////////////////////////////////////////////////////////////
+      // set case Metadata in Firebase
+      ////////////////////////////////////////////////////////////////////
+      let messageRef = db.collection(`users/${body.userId}/video_creations`);
+      
+      await messageRef.add({
+        agent: body.instructionType,
+        usage: {
+            prompt_tokens: result.usageMetadata.promptTokenCount,
+            candidates_tokens: result.usageMetadata.candidatesTokenCount,
+            total_tokens: result.usageMetadata.promptTokenCount + result.usageMetadata.candidatesTokenCount,
+        },
+        timestamp: new Date().getTime(),
+        credits: creditsCost['case_prompt'],
+      })
+      
+      await updateCredits(body.userId, creditsCost['video_prompt']); 
       
       res.status(200).send({content:completeMessage});
 

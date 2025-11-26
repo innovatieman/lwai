@@ -1,3 +1,6 @@
+ion-textarea,ion-input{
+    --highlight-height:0;
+}
 .selectColumn,
 .detailColumn {
     height: 100%;  // Zorg dat de kolommen de volledige hoogte van hun container hebben
@@ -379,4 +382,11 @@
     padding-left:10px
   }
 
+}
+
+.lastConversations{
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ion-color-medium);
+  text-align: center;
 }
