@@ -224,7 +224,7 @@
                 </div>
 
 
-                <div>
+                <div *ngIf="sales.elearningItem(item_id).extraSales?.length">
                   <h3 weight700 font-22 *ngIf="(sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | filterKey : 'originalTrainingId' : (sales.elearningItem(item_id).extraSales ? sales.elearningItem(item_id).extraSales : []))?.length">{{'checkout.add_to_your_order' | translate}}</h3>
                   <!-- <ion-card basicPadding style="margin:10px 0px;" noShadow pointer borderMedium (click)="addToExtraOrderList(item)" *ngFor="let item of sales.elearnings | filterKey : 'marketplace' : true | filterKey : 'trainerId' : sales.elearningItem(item_id).trainerId | filterKey : '!id' : sales.elearningItem(item_id).id | maxLength : 3">
                     <ion-row>
