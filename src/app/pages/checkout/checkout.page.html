@@ -304,7 +304,7 @@
                     </div>
                     <div>
                       <span *ngIf="sales.elearningItem(item_id).credits_included_value?.value && sales.elearningItem(item_id).credits_included_value?.value!=1000000" text-secondary weight500>{{sales.elearningItem(item_id).credits_included_value.value || 0}} {{'standards.credits' | translate}}</span>
-                      <span *ngIf="sales.elearningItem(item_id).credits_included_value?.value==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
+                      <span *ngIf="!sales.elearningItem(item_id).credits_included_value || sales.elearningItem(item_id).credits_included_value?.value==1000000" text-secondary weight500>{{'page_account.credits_unlimited_chat' | translate}} {{'standards.credits' | translate}}</span>
                     </div>
                     <div class="spacer"></div>
                     <!-- <div style="min-width:30px">
